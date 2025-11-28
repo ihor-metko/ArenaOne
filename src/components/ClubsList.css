@@ -1,0 +1,160 @@
+.tm-clubs-page {
+  @apply min-h-screen p-8;
+  background-color: var(--rsp-background);
+  color: var(--rsp-foreground);
+}
+
+.tm-clubs-header {
+  @apply mb-8;
+}
+
+.tm-clubs-title {
+  @apply text-3xl font-bold;
+  color: var(--rsp-foreground);
+}
+
+.tm-clubs-subtitle {
+  @apply mt-2 text-gray-500;
+}
+
+.dark .tm-clubs-subtitle {
+  @apply text-gray-400;
+}
+
+.tm-clubs-grid {
+  @apply grid gap-6;
+}
+
+@media (min-width: 768px) {
+  .tm-clubs-grid {
+    @apply grid-cols-2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tm-clubs-grid {
+    @apply grid-cols-3;
+  }
+}
+
+.tm-club-card {
+  @apply rounded-lg p-6 shadow-md transition-all duration-200;
+  background-color: var(--rsp-card-bg);
+  border: 1px solid var(--rsp-border);
+}
+
+.tm-club-card:hover {
+  @apply shadow-lg;
+  border-color: var(--rsp-primary);
+}
+
+.tm-club-card-header {
+  @apply flex items-center gap-3 mb-4;
+}
+
+.tm-club-logo {
+  @apply w-12 h-12 rounded-full object-cover;
+  background-color: var(--rsp-border);
+}
+
+.tm-club-logo-placeholder {
+  @apply w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold;
+  background-color: var(--rsp-primary);
+  color: var(--rsp-background);
+}
+
+.tm-club-name {
+  @apply text-lg font-semibold;
+  color: var(--rsp-foreground);
+}
+
+.tm-club-details {
+  @apply space-y-2 text-sm mb-4;
+}
+
+.tm-club-detail-row {
+  @apply flex items-start gap-2;
+}
+
+.tm-club-detail-label {
+  @apply font-medium min-w-24;
+  color: var(--rsp-foreground);
+}
+
+.tm-club-detail-value {
+  @apply text-gray-600;
+}
+
+.dark .tm-club-detail-value {
+  @apply text-gray-400;
+}
+
+.tm-clubs-loading {
+  @apply flex items-center justify-center py-12;
+}
+
+.tm-clubs-loading-spinner {
+  @apply w-8 h-8 border-4 rounded-full animate-spin;
+  border-color: var(--rsp-border);
+  border-top-color: var(--rsp-primary);
+}
+
+.tm-clubs-loading-text {
+  @apply ml-3 text-gray-500;
+}
+
+.tm-clubs-empty {
+  @apply text-center py-12;
+}
+
+.tm-clubs-empty-text {
+  @apply text-gray-500 text-lg;
+}
+
+.dark .tm-clubs-empty-text {
+  @apply text-gray-400;
+}
+
+.tm-clubs-error {
+  @apply text-center py-12 text-red-500;
+}
+
+.dark .tm-clubs-error {
+  @apply text-red-400;
+}
+
+.tm-clubs-navigation {
+  @apply mt-8;
+}
+
+.tm-clubs-link {
+  @apply text-blue-500 hover:underline;
+}
+
+.dark .tm-clubs-link {
+  @apply text-blue-400;
+}
+
+.tm-view-courts-button {
+  @apply w-full;
+}
+
+.tm-access-denied {
+  @apply text-center py-12;
+}
+
+.tm-access-denied-title {
+  @apply text-2xl font-bold text-red-500 mb-4;
+}
+
+.dark .tm-access-denied-title {
+  @apply text-red-400;
+}
+
+.tm-access-denied-text {
+  @apply text-gray-500 mb-4;
+}
+
+.dark .tm-access-denied-text {
+  @apply text-gray-400;
+}
