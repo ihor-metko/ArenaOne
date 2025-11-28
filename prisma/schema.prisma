@@ -63,6 +63,9 @@ model Club {
   id           String        @id @default(uuid())
   name         String
   location     String
+  contactInfo  String?
+  openingHours String?
+  logo         String?
   createdAt    DateTime      @default(now())
   courts       Court[]
   coaches      Coach[]
