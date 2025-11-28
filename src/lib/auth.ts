@@ -2,7 +2,13 @@ import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-development";
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET && process.env.NODE_ENV === "production") {
+  throw new Error("JWT_SECRET environment variable must be set in production");
+}
+
+const jwtSecret = JWT_SECRET || "fallback-secret-for-development";
 const TOKEN_NAME = "auth-token";
 const TOKEN_EXPIRY = 60 * 60 * 24 * 7; // 7 days in seconds
 
@@ -13,12 +19,12 @@ export interface JwtPayload {
 }
 
 export function createToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+  return jwt.sign(payload, jwtSecret, { expiresIn: TOKEN_EXPIRY });
 }
 
 export function verifyToken(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JwtPayload;
+    return jwt.verify(token, jwtSecret) as JwtPayload;
   } catch {
     return null;
   }
