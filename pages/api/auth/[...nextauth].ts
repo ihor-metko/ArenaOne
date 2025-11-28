@@ -1,7 +1,11 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, { NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
+
+interface AuthUser extends User {
+  role: string;
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,7 +17,6 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log("Missing credentials");
           return null;
         }
 
@@ -23,7 +26,6 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!user) {
-            console.log("User not found:", credentials.email);
             return null;
           }
 
@@ -33,11 +35,9 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (!isPasswordValid) {
-            console.log("Invalid password for user:", credentials.email);
             return null;
           }
 
-          console.log("User authenticated successfully:", user.email);
           return {
             id: user.id,
             name: user.name,
@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
           };
         } catch (error) {
-          console.error("Error during authentication:", error);
+          console.error("Authentication error:", error);
           return null;
         }
       },
@@ -58,7 +58,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role: string }).role;
+        token.role = (user as AuthUser).role;
       }
       return token;
     },

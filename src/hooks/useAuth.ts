@@ -2,20 +2,28 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
-export function useAuth(options?: { required?: boolean; redirectTo?: string }) {
+interface UseAuthOptions {
+  required?: boolean;
+  redirectTo?: string;
+}
+
+export function useAuth(options?: UseAuthOptions) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const loading = status === "loading";
   const authenticated = status === "authenticated";
   const unauthenticated = status === "unauthenticated";
 
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
   useEffect(() => {
-    if (options?.required && unauthenticated) {
-      router.push(options.redirectTo || "/auth/login");
+    if (optionsRef.current?.required && unauthenticated) {
+      router.push(optionsRef.current.redirectTo || "/auth/login");
     }
-  }, [unauthenticated, options?.required, options?.redirectTo, router]);
+  }, [unauthenticated, router]);
 
   return {
     session,

@@ -51,8 +51,6 @@ export default async function handler(
       },
     });
 
-    console.log("User registered successfully:", user.email);
-
     return res.status(201).json({
       id: user.id,
       name: user.name,
@@ -60,7 +58,7 @@ export default async function handler(
       role: user.role,
     });
   } catch (error) {
-    console.error("Error during registration:", error);
+    console.error("Registration error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
