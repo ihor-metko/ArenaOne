@@ -1,0 +1,102 @@
+"use client";
+
+import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
+import type { UserRole } from "@/lib/auth";
+
+const roleColors: Record<UserRole, string> = {
+  admin: "bg-red-500",
+  coach: "bg-blue-500",
+  player: "bg-green-500",
+};
+
+const roleLabels: Record<UserRole, string> = {
+  admin: "Admin",
+  coach: "Coach",
+  player: "Player",
+};
+
+const VALID_ROLES: UserRole[] = ["admin", "coach", "player"];
+
+function isValidRole(role: unknown): role is UserRole {
+  return typeof role === "string" && VALID_ROLES.includes(role as UserRole);
+}
+
+export function UserRoleIndicator() {
+  const { data: session, status } = useSession();
+
+  if (status === "loading") {
+    return (
+      <div className="rsp-user-indicator flex items-center gap-2">
+        <span className="text-gray-400 text-sm">Loading...</span>
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return (
+      <div className="rsp-user-indicator flex items-center gap-4">
+        <Link
+          href="/auth/sign-in"
+          className="rsp-link text-blue-500 hover:underline text-sm"
+        >
+          Sign In
+        </Link>
+        <Link
+          href="/auth/sign-up"
+          className="rsp-link text-blue-500 hover:underline text-sm"
+        >
+          Register
+        </Link>
+      </div>
+    );
+  }
+
+  const role = session.user.role;
+  
+  // Handle case where role is undefined or invalid
+  if (!isValidRole(role)) {
+    return (
+      <div className="rsp-user-indicator flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-400 dark:text-gray-300 text-sm">
+            {session.user.name || session.user.email}
+          </span>
+          <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+            No Role
+          </span>
+        </div>
+        <button
+          onClick={() => signOut({ callbackUrl: "/auth/sign-in" })}
+          className="rsp-link text-red-500 hover:underline text-sm"
+        >
+          Sign Out
+        </button>
+      </div>
+    );
+  }
+
+  const roleBgColor = roleColors[role];
+  const roleLabel = roleLabels[role];
+
+  return (
+    <div className="rsp-user-indicator flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <span className="text-gray-400 dark:text-gray-300 text-sm">
+          {session.user.name || session.user.email}
+        </span>
+        <span
+          className={`${roleBgColor} text-white text-xs px-2 py-1 rounded-full font-medium`}
+        >
+          {roleLabel}
+        </span>
+      </div>
+      <button
+        onClick={() => signOut({ callbackUrl: "/auth/sign-in" })}
+        className="rsp-link text-red-500 hover:underline text-sm"
+      >
+        Sign Out
+      </button>
+    </div>
+  );
+}
