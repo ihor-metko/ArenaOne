@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import "./DarkModeToggle.css";
 
 export function DarkModeToggle() {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState<boolean | null>(null);
 
   useEffect(() => {
     const isDarkMode = document.documentElement.classList.contains("dark");
@@ -21,6 +21,15 @@ export function DarkModeToggle() {
       document.documentElement.classList.remove("dark");
     }
   };
+
+  // Prevent hydration mismatch by not rendering until client-side state is determined
+  if (isDark === null) {
+    return (
+      <button className="rsp-dark-toggle" aria-label="Toggle dark mode">
+        <span className="rsp-dark-toggle-icon" />
+      </button>
+    );
+  }
 
   return (
     <button
