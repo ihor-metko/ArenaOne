@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Input } from "@/components/ui";
 
+const MIN_PASSWORD_LENGTH = 8;
+
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -13,9 +15,17 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isPasswordValid = password.length >= MIN_PASSWORD_LENGTH;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!isPasswordValid) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -73,11 +83,17 @@ export default function RegisterPage() {
             <Input
               label="Password"
               type="password"
-              placeholder="Create a password"
+              placeholder="Create a password (min 8 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={MIN_PASSWORD_LENGTH}
             />
+            {password.length > 0 && !isPasswordValid && (
+              <p className="text-sm text-red-500 mt-1">
+                Password must be at least {MIN_PASSWORD_LENGTH} characters
+              </p>
+            )}
           </div>
           <div className="rsp-button-group">
             <Button type="submit" disabled={loading} className="w-full">

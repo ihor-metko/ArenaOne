@@ -48,6 +48,40 @@ describe("POST /api/auth/register", () => {
     expect(data.error).toBe("Email and password are required");
   });
 
+  it("should return 400 if email format is invalid", async () => {
+    const request = new Request("http://localhost:3000/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "invalid-email",
+        password: "password123",
+      }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Invalid email format");
+  });
+
+  it("should return 400 if password is too short", async () => {
+    const request = new Request("http://localhost:3000/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "test@example.com",
+        password: "short",
+      }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Password must be at least 8 characters");
+  });
+
   it("should return 400 if user already exists", async () => {
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: "existing-user-id",
