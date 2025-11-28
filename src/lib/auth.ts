@@ -6,6 +6,17 @@ import { prisma } from "@/lib/prisma";
 
 export type UserRole = "player" | "coach" | "admin";
 
+const VALID_ROLES: UserRole[] = ["player", "coach", "admin"];
+const DEFAULT_ROLE: UserRole = "player";
+
+function isValidRole(role: unknown): role is UserRole {
+  return typeof role === "string" && VALID_ROLES.includes(role as UserRole);
+}
+
+function validateRole(role: unknown): UserRole {
+  return isValidRole(role) ? role : DEFAULT_ROLE;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -41,7 +52,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role as UserRole,
+          role: validateRole(user.role),
         };
       },
     }),
@@ -56,14 +67,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role as UserRole;
+        token.role = validateRole(user.role);
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as UserRole;
+        session.user.role = validateRole(token.role);
       }
       return session;
     },
