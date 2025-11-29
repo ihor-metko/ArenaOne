@@ -33,10 +33,16 @@ function formatDisplayDate(date: Date): string {
   });
 }
 
-// Helper to format time from ISO string
+// Helper to format time from ISO string for display
 function formatTime(isoString: string): string {
   const date = new Date(isoString);
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+// Helper to extract HH:MM from ISO string for price matching
+function extractTimeFromISO(isoString: string): string {
+  const date = new Date(isoString);
+  return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
 }
 
 function getStatusColor(status: AvailabilitySlot["status"]): string {
@@ -145,7 +151,7 @@ export default function CourtDetailPage({
 
       // Merge price info into slots
       const slotsWithPrices = slots.map((slot) => {
-        const slotTime = formatTime(slot.start);
+        const slotTime = extractTimeFromISO(slot.start);
         
         // Find matching price segment
         const priceSegment = priceTimeline.find((seg) => {

@@ -1,10 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import type { PriceSegment } from "@/types/court";
 
-export interface PriceSegment {
-  start: string; // "HH:MM" format
-  end: string;   // "HH:MM" format
-  priceCents: number;
-}
+// Re-export PriceSegment for backward compatibility
+export type { PriceSegment };
 
 /**
  * Parses a time string in "HH:MM" format to minutes since midnight.
