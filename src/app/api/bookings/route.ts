@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/requireRole";
+import { resolveBusinessHours } from "@/server/utils/resolveBusinessHours";
 
 interface BookingRequest {
   courtId: string;
@@ -72,10 +73,33 @@ export async function POST(request: Request) {
       // Get court to retrieve default price
       const court = await tx.court.findUnique({
         where: { id: body.courtId },
+        select: {
+          id: true,
+          clubId: true,
+          defaultPriceCents: true,
+        },
       });
 
       if (!court) {
         throw new Error("COURT_NOT_FOUND");
+      }
+
+      // Validate booking is within business hours
+      const businessHours = await resolveBusinessHours(
+        court.clubId,
+        startTime,
+        body.courtId
+      );
+
+      const bookingStartHour = startTime.getUTCHours();
+      const bookingEndHour = endTime.getUTCHours();
+
+      if (
+        bookingStartHour < businessHours.openTime ||
+        bookingEndHour > businessHours.closeTime ||
+        (bookingEndHour === businessHours.closeTime && endTime.getUTCMinutes() > 0)
+      ) {
+        throw new Error("OUTSIDE_BUSINESS_HOURS");
       }
 
       // Create new booking with status = 'reserved'
@@ -117,6 +141,12 @@ export async function POST(request: Request) {
       if (error.message === "COURT_NOT_FOUND") {
         return NextResponse.json(
           { error: "Court not found" },
+          { status: 400 }
+        );
+      }
+      if (error.message === "OUTSIDE_BUSINESS_HOURS") {
+        return NextResponse.json(
+          { error: "Booking time is outside business hours" },
           { status: 400 }
         );
       }

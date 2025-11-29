@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { resolveBusinessHours } from "@/server/utils/resolveBusinessHours";
 
-// Business hours configuration
-const BUSINESS_START_HOUR = 9;
-const BUSINESS_END_HOUR = 22;
 const SLOT_DURATION_HOURS = 1;
 
 interface AvailabilitySlot {
@@ -15,6 +13,10 @@ interface AvailabilitySlot {
 export interface AvailabilityResponse {
   date: string;
   slots: AvailabilitySlot[];
+  businessHours: {
+    openTime: number;
+    closeTime: number;
+  };
 }
 
 export async function GET(
@@ -51,11 +53,22 @@ export async function GET(
     // Check if court exists
     const court = await prisma.court.findUnique({
       where: { id: courtId },
+      select: {
+        id: true,
+        clubId: true,
+      },
     });
 
     if (!court) {
       return NextResponse.json({ error: "Court not found" }, { status: 404 });
     }
+
+    // Resolve business hours for this court on this date
+    const businessHours = await resolveBusinessHours(
+      court.clubId,
+      targetDate,
+      courtId
+    );
 
     // Fetch bookings for the court on the specified date
     const bookings = await prisma.booking.findMany({
@@ -72,11 +85,11 @@ export async function GET(
       orderBy: { start: "asc" },
     });
 
-    // Generate hourly slots for the day
+    // Generate hourly slots for the day based on resolved business hours
     const slots: AvailabilitySlot[] = [];
     const slotDurationMs = SLOT_DURATION_HOURS * 60 * 60 * 1000;
 
-    for (let hour = BUSINESS_START_HOUR; hour < BUSINESS_END_HOUR; hour += SLOT_DURATION_HOURS) {
+    for (let hour = businessHours.openTime; hour < businessHours.closeTime; hour += SLOT_DURATION_HOURS) {
       const slotStart = new Date(`${dateStr}T${hour.toString().padStart(2, "0")}:00:00.000Z`);
       const slotEnd = new Date(slotStart.getTime() + slotDurationMs);
 
@@ -110,6 +123,7 @@ export async function GET(
     const response: AvailabilityResponse = {
       date: dateStr,
       slots,
+      businessHours,
     };
 
     return NextResponse.json(response);

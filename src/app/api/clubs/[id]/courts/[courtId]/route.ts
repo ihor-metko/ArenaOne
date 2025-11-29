@@ -33,12 +33,42 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, slug, type, surface, indoor, defaultPriceCents } = body;
+    const { name, slug, type, surface, indoor, defaultPriceCents, courtOpenTime, courtCloseTime } = body;
 
     // Validate name if provided
     if (name !== undefined && (typeof name !== "string" || name.trim() === "")) {
       return NextResponse.json(
         { error: "Name cannot be empty" },
+        { status: 400 }
+      );
+    }
+
+    // Validate court hours if provided
+    if (courtOpenTime !== undefined && courtOpenTime !== null) {
+      if (typeof courtOpenTime !== "number" || courtOpenTime < 0 || courtOpenTime > 23) {
+        return NextResponse.json(
+          { error: "courtOpenTime must be a number between 0 and 23" },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (courtCloseTime !== undefined && courtCloseTime !== null) {
+      if (typeof courtCloseTime !== "number" || courtCloseTime < 0 || courtCloseTime > 24) {
+        return NextResponse.json(
+          { error: "courtCloseTime must be a number between 0 and 24" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Determine effective open/close times for validation
+    const effectiveOpenTime = courtOpenTime !== undefined ? courtOpenTime : existingCourt.courtOpenTime;
+    const effectiveCloseTime = courtCloseTime !== undefined ? courtCloseTime : existingCourt.courtCloseTime;
+
+    if (effectiveOpenTime !== null && effectiveCloseTime !== null && effectiveOpenTime >= effectiveCloseTime) {
+      return NextResponse.json(
+        { error: "courtOpenTime must be before courtCloseTime" },
         { status: 400 }
       );
     }
@@ -63,6 +93,8 @@ export async function PUT(
     if (surface !== undefined) updateData.surface = surface?.trim() || null;
     if (indoor !== undefined) updateData.indoor = indoor;
     if (defaultPriceCents !== undefined) updateData.defaultPriceCents = defaultPriceCents;
+    if (courtOpenTime !== undefined) updateData.courtOpenTime = courtOpenTime;
+    if (courtCloseTime !== undefined) updateData.courtCloseTime = courtCloseTime;
 
     const updatedCourt = await prisma.court.update({
       where: { id: courtId },

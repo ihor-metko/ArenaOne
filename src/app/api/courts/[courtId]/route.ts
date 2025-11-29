@@ -19,6 +19,8 @@ export async function GET(
         surface: true,
         indoor: true,
         defaultPriceCents: true,
+        courtOpenTime: true,
+        courtCloseTime: true,
         clubId: true,
         createdAt: true,
         updatedAt: true,

@@ -6,6 +6,8 @@ export interface Court {
   surface?: string | null;
   indoor: boolean;
   defaultPriceCents: number;
+  courtOpenTime?: number | null;
+  courtCloseTime?: number | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -19,4 +21,8 @@ export interface AvailabilitySlot {
 export interface AvailabilityResponse {
   date: string;
   slots: AvailabilitySlot[];
+  businessHours?: {
+    openTime: number;
+    closeTime: number;
+  };
 }

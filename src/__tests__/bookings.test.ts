@@ -8,6 +8,15 @@ import { prisma } from "@/lib/prisma";
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     $transaction: jest.fn(),
+    club: {
+      findUnique: jest.fn(),
+    },
+    clubSpecialHours: {
+      findUnique: jest.fn(),
+    },
+    court: {
+      findUnique: jest.fn(),
+    },
   },
 }));
 
@@ -23,6 +32,35 @@ jest.mock("@/lib/requireRole", () => ({
 describe("POST /api/bookings", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Default mock for club hours (open 9-22)
+    (prisma.club.findUnique as jest.Mock).mockResolvedValue({
+      mondayOpen: 9,
+      mondayClose: 22,
+      tuesdayOpen: 9,
+      tuesdayClose: 22,
+      wednesdayOpen: 9,
+      wednesdayClose: 22,
+      thursdayOpen: 9,
+      thursdayClose: 22,
+      fridayOpen: 9,
+      fridayClose: 22,
+      saturdayOpen: 9,
+      saturdayClose: 22,
+      sundayOpen: 9,
+      sundayClose: 22,
+    });
+    
+    // Default mock for special hours (none)
+    (prisma.clubSpecialHours.findUnique as jest.Mock).mockResolvedValue(null);
+    
+    // Default mock for court (no custom hours)
+    (prisma.court.findUnique as jest.Mock).mockResolvedValue({
+      id: "court-123",
+      clubId: "club-123",
+      courtOpenTime: null,
+      courtCloseTime: null,
+    });
   });
 
   const createRequest = (body: Record<string, unknown>) => {
@@ -180,6 +218,7 @@ describe("POST /api/bookings", () => {
       const mockCourt = {
         id: "court-123",
         name: "Court 1",
+        clubId: "club-123",
         defaultPriceCents: 5000,
       };
 
@@ -245,6 +284,7 @@ describe("POST /api/bookings", () => {
       const mockCourt = {
         id: "court-123",
         name: "Court 1",
+        clubId: "club-123",
         defaultPriceCents: 5000,
       };
 

@@ -67,9 +67,37 @@ model Club {
   openingHours String?
   logo         String?
   createdAt    DateTime      @default(now())
+  // Weekly schedule - stored as hour (0-23) for each day
+  mondayOpen     Int?
+  mondayClose    Int?
+  tuesdayOpen    Int?
+  tuesdayClose   Int?
+  wednesdayOpen  Int?
+  wednesdayClose Int?
+  thursdayOpen   Int?
+  thursdayClose  Int?
+  fridayOpen     Int?
+  fridayClose    Int?
+  saturdayOpen   Int?
+  saturdayClose  Int?
+  sundayOpen     Int?
+  sundayClose    Int?
   courts       Court[]
   coaches      Coach[]
   pricingRules PricingRule[]
+  specialHours ClubSpecialHours[]
+}
+
+model ClubSpecialHours {
+  id        String   @id @default(uuid())
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  clubId    String
+  date      DateTime @db.Date
+  openTime  Int      // Hour of opening (0-23)
+  closeTime Int      // Hour of closing (0-23)
+  createdAt DateTime @default(now())
+
+  @@unique([clubId, date])
 }
 
 model Court {
@@ -81,6 +109,8 @@ model Court {
   surface           String?
   indoor            Boolean       @default(false)
   defaultPriceCents Int           @default(0)
+  courtOpenTime     Int?          // Optional: hour when court opens (0-23)
+  courtCloseTime    Int?          // Optional: hour when court closes (0-23)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 

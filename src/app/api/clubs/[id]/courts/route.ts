@@ -30,6 +30,8 @@ export async function GET(
         surface: true,
         indoor: true,
         defaultPriceCents: true,
+        courtOpenTime: true,
+        courtCloseTime: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -71,11 +73,39 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { name, slug, type, surface, indoor, defaultPriceCents } = body;
+    const { name, slug, type, surface, indoor, defaultPriceCents, courtOpenTime, courtCloseTime } = body;
 
     if (!name || typeof name !== "string" || name.trim() === "") {
       return NextResponse.json(
         { error: "Name is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate court hours if provided
+    if (courtOpenTime !== undefined && courtOpenTime !== null) {
+      if (typeof courtOpenTime !== "number" || courtOpenTime < 0 || courtOpenTime > 23) {
+        return NextResponse.json(
+          { error: "courtOpenTime must be a number between 0 and 23" },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (courtCloseTime !== undefined && courtCloseTime !== null) {
+      if (typeof courtCloseTime !== "number" || courtCloseTime < 0 || courtCloseTime > 24) {
+        return NextResponse.json(
+          { error: "courtCloseTime must be a number between 0 and 24" },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (courtOpenTime !== undefined && courtCloseTime !== undefined &&
+        courtOpenTime !== null && courtCloseTime !== null &&
+        courtOpenTime >= courtCloseTime) {
+      return NextResponse.json(
+        { error: "courtOpenTime must be before courtCloseTime" },
         { status: 400 }
       );
     }
@@ -102,6 +132,8 @@ export async function POST(
         surface: surface?.trim() || null,
         indoor: indoor ?? false,
         defaultPriceCents: defaultPriceCents ?? 0,
+        courtOpenTime: courtOpenTime ?? null,
+        courtCloseTime: courtCloseTime ?? null,
       },
     });
 

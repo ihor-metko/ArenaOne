@@ -17,6 +17,8 @@ interface Court {
   surface: string | null;
   indoor: boolean;
   defaultPriceCents: number;
+  courtOpenTime: number | null;
+  courtCloseTime: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -321,6 +323,8 @@ export default function AdminCourtsPage({
                   surface: editingCourt.surface || "",
                   indoor: editingCourt.indoor,
                   defaultPriceCents: editingCourt.defaultPriceCents,
+                  courtOpenTime: editingCourt.courtOpenTime,
+                  courtCloseTime: editingCourt.courtCloseTime,
                 }
               : undefined
           }
