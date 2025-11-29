@@ -55,6 +55,14 @@ export async function GET(request: Request) {
       );
     }
 
+    // Check if coach has a club assigned
+    if (!coach.club) {
+      return NextResponse.json(
+        { error: "Coach is not assigned to a club" },
+        { status: 400 }
+      );
+    }
+
     // Fetch coach availability slots for the specified date
     const availabilitySlots = await prisma.coachAvailability.findMany({
       where: {
