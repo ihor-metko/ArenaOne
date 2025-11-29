@@ -9,21 +9,36 @@ export interface BusinessHours {
   closeTime: number;
 }
 
-// Day of week mapping (JavaScript getDay(): 0 = Sunday, 6 = Saturday)
-type DayField = {
-  open: string;
-  close: string;
-};
+interface ClubWeeklySchedule {
+  mondayOpen: number | null;
+  mondayClose: number | null;
+  tuesdayOpen: number | null;
+  tuesdayClose: number | null;
+  wednesdayOpen: number | null;
+  wednesdayClose: number | null;
+  thursdayOpen: number | null;
+  thursdayClose: number | null;
+  fridayOpen: number | null;
+  fridayClose: number | null;
+  saturdayOpen: number | null;
+  saturdayClose: number | null;
+  sundayOpen: number | null;
+  sundayClose: number | null;
+}
 
-const dayFields: Record<number, DayField> = {
-  0: { open: "sundayOpen", close: "sundayClose" },
-  1: { open: "mondayOpen", close: "mondayClose" },
-  2: { open: "tuesdayOpen", close: "tuesdayClose" },
-  3: { open: "wednesdayOpen", close: "wednesdayClose" },
-  4: { open: "thursdayOpen", close: "thursdayClose" },
-  5: { open: "fridayOpen", close: "fridayClose" },
-  6: { open: "saturdayOpen", close: "saturdayClose" },
-};
+// Get open/close hours for a specific day of week (0 = Sunday, 6 = Saturday)
+function getHoursForDay(club: ClubWeeklySchedule, dayOfWeek: number): { open: number | null; close: number | null } {
+  switch (dayOfWeek) {
+    case 0: return { open: club.sundayOpen, close: club.sundayClose };
+    case 1: return { open: club.mondayOpen, close: club.mondayClose };
+    case 2: return { open: club.tuesdayOpen, close: club.tuesdayClose };
+    case 3: return { open: club.wednesdayOpen, close: club.wednesdayClose };
+    case 4: return { open: club.thursdayOpen, close: club.thursdayClose };
+    case 5: return { open: club.fridayOpen, close: club.fridayClose };
+    case 6: return { open: club.saturdayOpen, close: club.saturdayClose };
+    default: return { open: null, close: null };
+  }
+}
 
 /**
  * Resolves the effective business hours for a court on a specific date.
@@ -91,12 +106,9 @@ export async function resolveBusinessHours(
     clubCloseTime = specialHours.closeTime;
   } else {
     // Use weekly schedule based on day of week
-    const dayField = dayFields[dayOfWeek];
-    const openField = dayField.open as keyof typeof club;
-    const closeField = dayField.close as keyof typeof club;
-
-    clubOpenTime = (club[openField] as number | null) ?? DEFAULT_OPEN_HOUR;
-    clubCloseTime = (club[closeField] as number | null) ?? DEFAULT_CLOSE_HOUR;
+    const dayHours = getHoursForDay(club, dayOfWeek);
+    clubOpenTime = dayHours.open ?? DEFAULT_OPEN_HOUR;
+    clubCloseTime = dayHours.close ?? DEFAULT_CLOSE_HOUR;
   }
 
   // If no courtId provided, return club-level hours

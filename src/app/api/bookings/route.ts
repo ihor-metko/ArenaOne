@@ -93,12 +93,20 @@ export async function POST(request: Request) {
 
       const bookingStartHour = startTime.getUTCHours();
       const bookingEndHour = endTime.getUTCHours();
+      const bookingEndMinutes = endTime.getUTCMinutes();
 
-      if (
-        bookingStartHour < businessHours.openTime ||
-        bookingEndHour > businessHours.closeTime ||
-        (bookingEndHour === businessHours.closeTime && endTime.getUTCMinutes() > 0)
-      ) {
+      // Check if booking is within business hours
+      // Note: closeTime can be 24 to represent end of day (midnight)
+      const isOutsideOpenHours = bookingStartHour < businessHours.openTime;
+      
+      // For closeTime of 24 (midnight), any hour 0-23 is valid
+      // For other closeTimes, the end hour must not exceed close hour
+      const isOutsideCloseHours = businessHours.closeTime === 24 
+        ? false  // 24:00 means end of day, so all hours are valid
+        : (bookingEndHour > businessHours.closeTime || 
+           (bookingEndHour === businessHours.closeTime && bookingEndMinutes > 0));
+
+      if (isOutsideOpenHours || isOutsideCloseHours) {
         throw new Error("OUTSIDE_BUSINESS_HOURS");
       }
 
