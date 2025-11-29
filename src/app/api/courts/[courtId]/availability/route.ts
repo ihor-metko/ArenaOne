@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 // Business hours configuration
 const BUSINESS_START_HOUR = 9;
 const BUSINESS_END_HOUR = 22;
-const SLOT_DURATION_MINUTES = 60;
+const SLOT_DURATION_HOURS = 1;
 
 interface AvailabilitySlot {
   start: string;
@@ -74,10 +74,11 @@ export async function GET(
 
     // Generate hourly slots for the day
     const slots: AvailabilitySlot[] = [];
+    const slotDurationMs = SLOT_DURATION_HOURS * 60 * 60 * 1000;
 
-    for (let hour = BUSINESS_START_HOUR; hour < BUSINESS_END_HOUR; hour += SLOT_DURATION_MINUTES / 60) {
+    for (let hour = BUSINESS_START_HOUR; hour < BUSINESS_END_HOUR; hour += SLOT_DURATION_HOURS) {
       const slotStart = new Date(`${dateStr}T${hour.toString().padStart(2, "0")}:00:00.000Z`);
-      const slotEnd = new Date(slotStart.getTime() + SLOT_DURATION_MINUTES * 60 * 1000);
+      const slotEnd = new Date(slotStart.getTime() + slotDurationMs);
 
       // Check if this slot overlaps with any booking
       let status: "available" | "booked" | "partial" = "available";

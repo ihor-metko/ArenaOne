@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Card, Button } from "@/components/ui";
@@ -79,8 +79,18 @@ export default function CourtDetailPage({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const userId = session?.user?.id || "guest";
+
+  // Cleanup toast timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Fetch court details
   useEffect(() => {
@@ -169,8 +179,12 @@ export default function CourtDetailPage({
     if (court?.id) {
       fetchAvailability(court.id, selectedDate);
     }
+    // Clear any existing timeout
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
     // Clear toast after 3 seconds
-    setTimeout(() => setToast(null), 3000);
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 3000);
   };
 
   // Convert selected slot to BookingModal format
