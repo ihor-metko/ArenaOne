@@ -414,6 +414,7 @@ export default function ClubDetailPage({
         playerId={userId}
         isOpen={isRequestTrainingOpen}
         onClose={handleRequestTrainingClose}
+        onSuccess={handleBookingSuccess}
       />
 
       {selectedTimeSlot && (
