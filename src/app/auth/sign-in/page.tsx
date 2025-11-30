@@ -4,10 +4,12 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button, Card, Input } from "@/components/ui";
 
 export default function SignInPage() {
   const router = useRouter();
+  const t = useTranslations();
   const [email, setEmail] = useState("ihor.metko@gmail.com");
   const [password, setPassword] = useState("12345678");
   const [error, setError] = useState("");
@@ -26,13 +28,13 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        setError(t("auth.invalidCredentials"));
       } else {
         router.push("/");
         router.refresh();
       }
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("auth.errorOccurred"));
     } finally {
       setLoading(false);
     }
@@ -40,7 +42,7 @@ export default function SignInPage() {
 
   return (
     <main className="rsp-container min-h-screen p-8 flex items-center justify-center">
-      <Card title="Login" className="w-full max-w-md">
+      <Card title={t("auth.login")} className="w-full max-w-md">
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded">
@@ -49,9 +51,9 @@ export default function SignInPage() {
           )}
           <div className="rsp-form-group">
             <Input
-              label="Email"
+              label={t("common.email")}
               type="email"
-              placeholder="Enter your email"
+              placeholder={t("auth.enterEmail")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -59,9 +61,9 @@ export default function SignInPage() {
           </div>
           <div className="rsp-form-group">
             <Input
-              label="Password"
+              label={t("common.password")}
               type="password"
-              placeholder="Enter your password"
+              placeholder={t("auth.enterPassword")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -69,13 +71,13 @@ export default function SignInPage() {
           </div>
           <div className="rsp-button-group">
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? t("auth.signingIn") : t("common.signIn")}
             </Button>
           </div>
           <p className="rsp-text text-center text-sm">
-            Don&apos;t have an account?{" "}
+            {t("auth.dontHaveAccount")}{" "}
             <Link href="/auth/sign-up" className="rsp-link text-blue-500 hover:underline">
-              Register
+              {t("common.register")}
             </Link>
           </p>
         </form>

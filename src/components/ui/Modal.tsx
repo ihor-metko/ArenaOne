@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import "./Modal.css";
 
 interface ModalProps {
@@ -11,6 +12,8 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+  const t = useTranslations("modal");
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -37,7 +40,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         <button
           className="rsp-modal-close"
           onClick={onClose}
-          aria-label="Close modal"
+          aria-label={t("closeModal")}
         >
           ✕
         </button>

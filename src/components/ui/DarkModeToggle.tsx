@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import "./DarkModeToggle.css";
 
 export function DarkModeToggle() {
   const [isDark, setIsDark] = useState<boolean | null>(null);
+  const t = useTranslations("darkMode");
 
   useEffect(() => {
     const isDarkMode = document.documentElement.classList.contains("dark");
@@ -25,7 +27,7 @@ export function DarkModeToggle() {
   // Prevent hydration mismatch by not rendering until client-side state is determined
   if (isDark === null) {
     return (
-      <button className="rsp-dark-toggle" aria-label="Toggle dark mode">
+      <button className="rsp-dark-toggle" aria-label={t("toggleDarkMode")}>
         <span className="rsp-dark-toggle-icon" />
       </button>
     );
@@ -35,7 +37,7 @@ export function DarkModeToggle() {
     <button
       onClick={toggleDarkMode}
       className="rsp-dark-toggle"
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={isDark ? t("switchToLight") : t("switchToDark")}
     >
       {isDark ? (
         <svg

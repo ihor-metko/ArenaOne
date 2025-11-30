@@ -2,18 +2,13 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { UserRole } from "@/lib/auth";
 
 const roleColors: Record<UserRole, string> = {
   admin: "bg-red-500",
   coach: "bg-blue-500",
   player: "bg-green-500",
-};
-
-const roleLabels: Record<UserRole, string> = {
-  admin: "Admin",
-  coach: "Coach",
-  player: "Player",
 };
 
 const VALID_ROLES: UserRole[] = ["admin", "coach", "player"];
@@ -24,11 +19,18 @@ function isValidRole(role: unknown): role is UserRole {
 
 export function UserRoleIndicator() {
   const { data: session, status } = useSession();
+  const t = useTranslations();
+
+  const roleLabels: Record<UserRole, string> = {
+    admin: t("admin.coaches.roles.admin"),
+    coach: t("admin.coaches.roles.coach"),
+    player: t("admin.coaches.roles.player"),
+  };
 
   if (status === "loading") {
     return (
       <div className="rsp-user-indicator flex items-center gap-2">
-        <span className="text-gray-400 text-sm">Loading...</span>
+        <span className="text-gray-400 text-sm">{t("common.loading")}</span>
       </div>
     );
   }
@@ -40,13 +42,13 @@ export function UserRoleIndicator() {
           href="/auth/sign-in"
           className="rsp-link text-blue-500 hover:underline text-sm"
         >
-          Sign In
+          {t("common.signIn")}
         </Link>
         <Link
           href="/auth/sign-up"
           className="rsp-link text-blue-500 hover:underline text-sm"
         >
-          Register
+          {t("common.register")}
         </Link>
       </div>
     );
@@ -63,14 +65,14 @@ export function UserRoleIndicator() {
             {session.user.name || session.user.email}
           </span>
           <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-            No Role
+            {t("common.noRole")}
           </span>
         </div>
         <button
           onClick={() => signOut({ callbackUrl: "/auth/sign-in" })}
           className="rsp-link text-red-500 hover:underline text-sm"
         >
-          Sign Out
+          {t("common.signOut")}
         </button>
       </div>
     );
@@ -95,7 +97,7 @@ export function UserRoleIndicator() {
         onClick={() => signOut({ callbackUrl: "/auth/sign-in" })}
         className="rsp-link text-red-500 hover:underline text-sm"
       >
-        Sign Out
+        {t("common.signOut")}
       </button>
     </div>
   );

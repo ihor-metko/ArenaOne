@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button, Card, Input } from "@/components/ui";
 
 const MIN_PASSWORD_LENGTH = 8;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const t = useTranslations();
   const [name, setName] = useState("Ihor Metko");
   const [email, setEmail] = useState("ihor.metko@gmail.com");
   const [password, setPassword] = useState("12345678");
@@ -22,7 +24,7 @@ export default function RegisterPage() {
     setError("");
 
     if (!isPasswordValid) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+      setError(t("auth.passwordMinLength", { minLength: MIN_PASSWORD_LENGTH }));
       return;
     }
 
@@ -40,12 +42,12 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Registration failed");
+        setError(data.error || t("auth.registrationFailed"));
       } else {
         router.push("/auth/sign-in");
       }
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("auth.errorOccurred"));
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ export default function RegisterPage() {
 
   return (
     <main className="rsp-container min-h-screen p-8 flex items-center justify-center">
-      <Card title="Register" className="w-full max-w-md">
+      <Card title={t("auth.registerTitle")} className="w-full max-w-md">
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded">
@@ -62,18 +64,18 @@ export default function RegisterPage() {
           )}
           <div className="rsp-form-group">
             <Input
-              label="Name"
+              label={t("common.name")}
               type="text"
-              placeholder="Enter your name"
+              placeholder={t("auth.enterName")}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="rsp-form-group">
             <Input
-              label="Email"
+              label={t("common.email")}
               type="email"
-              placeholder="Enter your email"
+              placeholder={t("auth.enterEmail")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -81,9 +83,9 @@ export default function RegisterPage() {
           </div>
           <div className="rsp-form-group">
             <Input
-              label="Password"
+              label={t("common.password")}
               type="password"
-              placeholder="Create a password (min 8 characters)"
+              placeholder={t("auth.createPassword")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -91,19 +93,19 @@ export default function RegisterPage() {
             />
             {password.length > 0 && !isPasswordValid && (
               <p className="text-sm text-red-500 mt-1">
-                Password must be at least {MIN_PASSWORD_LENGTH} characters
+                {t("auth.passwordMinLength", { minLength: MIN_PASSWORD_LENGTH })}
               </p>
             )}
           </div>
           <div className="rsp-button-group">
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Creating account..." : "Create Account"}
+              {loading ? t("auth.creatingAccount") : t("auth.createAccount")}
             </Button>
           </div>
           <p className="rsp-text text-center text-sm">
-            Already have an account?{" "}
+            {t("auth.alreadyHaveAccount")}{" "}
             <Link href="/auth/sign-in" className="rsp-link text-blue-500 hover:underline">
-              Sign in
+              {t("common.signIn")}
             </Link>
           </p>
         </form>

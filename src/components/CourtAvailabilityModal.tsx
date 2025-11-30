@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Modal, Button } from "@/components/ui";
 import type { CourtAvailabilityStatus } from "@/types/court";
 import "./CourtAvailabilityModal.css";
@@ -28,18 +29,6 @@ function formatDate(dateStr: string): string {
   });
 }
 
-// Get status label
-function getStatusLabel(status: "available" | "booked" | "partial"): string {
-  switch (status) {
-    case "available":
-      return "Available";
-    case "partial":
-      return "Partially booked";
-    case "booked":
-      return "Booked";
-  }
-}
-
 export function CourtAvailabilityModal({
   isOpen,
   onClose,
@@ -48,6 +37,20 @@ export function CourtAvailabilityModal({
   courts,
   onSelectCourt,
 }: CourtAvailabilityModalProps) {
+  const t = useTranslations();
+
+  // Get status label
+  const getStatusLabel = (status: "available" | "booked" | "partial"): string => {
+    switch (status) {
+      case "available":
+        return t("common.available");
+      case "partial":
+        return t("court.partiallyBooked");
+      case "booked":
+        return t("common.booked");
+    }
+  };
+
   const handleSelectCourt = (courtId: string) => {
     if (onSelectCourt) {
       const startTime = formatHour(hour);
@@ -69,7 +72,7 @@ export function CourtAvailabilityModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Court Availability"
+      title={t("court.availability")}
     >
       <div className="tm-court-availability-modal">
         <div className="tm-court-availability-header">
@@ -84,7 +87,7 @@ export function CourtAvailabilityModal({
         {courts.length === 0 ? (
           <div className="tm-court-availability-empty">
             <p className="tm-court-availability-empty-text">
-              No courts found for this club.
+              {t("court.noCourtsFound")}
             </p>
           </div>
         ) : (
@@ -108,7 +111,7 @@ export function CourtAvailabilityModal({
                           : "tm-court-badge--outdoor"
                       }`}
                     >
-                      {court.indoor ? "Indoor" : "Outdoor"}
+                      {court.indoor ? t("common.indoor") : t("common.outdoor")}
                     </span>
                   </div>
                 </div>
@@ -122,9 +125,9 @@ export function CourtAvailabilityModal({
                     <Button
                       className="tm-court-book-btn"
                       onClick={() => handleSelectCourt(court.courtId)}
-                      aria-label={`Book ${court.courtName}`}
+                      aria-label={`${t("booking.book")} ${court.courtName}`}
                     >
-                      Book
+                      {t("booking.book")}
                     </Button>
                   )}
                 </div>
@@ -135,7 +138,7 @@ export function CourtAvailabilityModal({
 
         {!hasAvailableCourts && courts.length > 0 && (
           <p className="text-sm text-center mt-4 opacity-70">
-            No courts available at this time. Try another slot.
+            {t("court.noAvailableAtTime")}
           </p>
         )}
       </div>

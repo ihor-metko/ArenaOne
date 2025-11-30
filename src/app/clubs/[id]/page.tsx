@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { QuickBookingModal } from "@/components/QuickBookingModal";
 import { RequestTrainingModal } from "@/components/training/RequestTrainingModal";
@@ -47,6 +48,7 @@ export default function ClubDetailPage({
 }) {
   const { data: session, status: authStatus } = useSession();
   const router = useRouter();
+  const t = useTranslations();
   const [club, setClub] = useState<ClubWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,9 +108,9 @@ export default function ClubDetailPage({
         const response = await fetch(`/api/clubs/${resolvedParams.id}`);
         if (!response.ok) {
           if (response.status === 404) {
-            setError("Club not found");
+            setError(t("clubs.clubNotFound"));
           } else {
-            setError("Failed to load club data");
+            setError(t("clubs.failedToLoadClub"));
           }
           return;
         }
@@ -121,13 +123,13 @@ export default function ClubDetailPage({
           setAvailabilityLoading(false);
         }
       } catch {
-        setError("Failed to load club data");
+        setError(t("clubs.failedToLoadClub"));
       } finally {
         setIsLoading(false);
       }
     }
     fetchClubData();
-  }, [params, fetchAvailability]);
+  }, [params, fetchAvailability, t]);
 
   const handleBookClick = (courtId: string) => {
     setSelectedCourtId(courtId);
@@ -290,11 +292,11 @@ export default function ClubDetailPage({
     return (
       <main className="tm-club-page min-h-screen p-8">
         <div className="tm-error-banner text-center p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded">
-          {error || "Club not found"}
+          {error || t("clubs.clubNotFound")}
         </div>
         <div className="mt-4 text-center">
           <Link href="/clubs" className="text-blue-500 hover:underline">
-            ← Back to Clubs
+            {t("common.backToClubs")}
           </Link>
         </div>
       </main>
@@ -313,7 +315,7 @@ export default function ClubDetailPage({
             href={`/admin/clubs/${club.id}/courts`}
             className="rsp-link text-blue-500 hover:underline"
           >
-            Admin → Courts
+            {t("clubs.adminCourts")}
           </Link>
         )}
       </header>
@@ -323,9 +325,9 @@ export default function ClubDetailPage({
         <Button
           onClick={handleQuickBookingClick}
           className="tm-quick-booking-btn"
-          aria-label="Quick booking"
+          aria-label={t("clubs.quickBooking")}
         >
-          Quick booking
+          {t("clubs.quickBooking")}
         </Button>
       </div>
 
@@ -344,7 +346,7 @@ export default function ClubDetailPage({
         {club.courts.length === 0 ? (
           <div className="tm-empty-state col-span-full text-center p-8 bg-gray-50 dark:bg-gray-800 rounded">
             <p className="text-gray-500 dark:text-gray-400">
-              No courts defined for this club yet. Contact admin.
+              {t("clubs.noCourts")}
             </p>
           </div>
         ) : (
@@ -373,16 +375,16 @@ export default function ClubDetailPage({
             onClick={handleRequestTrainingClick}
             className="tm-request-training-btn"
             variant="outline"
-            aria-label="Request Training"
+            aria-label={t("clubs.requestTraining")}
           >
-            Request Training
+            {t("clubs.requestTraining")}
           </Button>
         </div>
       )}
 
       <div className="mt-8">
         <Link href="/clubs" className="text-blue-500 hover:underline">
-          ← Back to Clubs
+          {t("common.backToClubs")}
         </Link>
       </div>
 

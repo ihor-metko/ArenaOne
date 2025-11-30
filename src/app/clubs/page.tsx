@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui";
 import type { Club } from "@/types/club";
 import "@/components/ClubsList.css";
@@ -21,6 +22,7 @@ function isValidImageUrl(url: string | null | undefined): boolean {
 export default function ClubsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslations();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -35,7 +37,7 @@ export default function ClubsPage() {
           return;
         }
         if (response.status === 403) {
-          setError("Access denied. Only players can view the clubs list.");
+          setError(t("clubs.accessDeniedPlayers"));
           return;
         }
         throw new Error("Failed to fetch clubs");
@@ -44,11 +46,11 @@ export default function ClubsPage() {
       setClubs(data);
       setError("");
     } catch {
-      setError("Failed to load clubs. Please try again later.");
+      setError(t("clubs.failedToLoad"));
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, t]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -59,20 +61,20 @@ export default function ClubsPage() {
     }
 
     if (session.user.role !== "player") {
-      setError("Access denied. Only players can view the clubs list.");
+      setError(t("clubs.accessDeniedPlayers"));
       setLoading(false);
       return;
     }
 
     fetchClubs();
-  }, [session, status, router, fetchClubs]);
+  }, [session, status, router, fetchClubs, t]);
 
   if (status === "loading" || loading) {
     return (
       <main className="tm-clubs-page">
         <div className="tm-clubs-loading">
           <div className="tm-clubs-loading-spinner" />
-          <span className="tm-clubs-loading-text">Loading clubs...</span>
+          <span className="tm-clubs-loading-text">{t("clubs.loadingClubs")}</span>
         </div>
       </main>
     );
@@ -82,10 +84,10 @@ export default function ClubsPage() {
     return (
       <main className="tm-clubs-page">
         <div className="tm-access-denied">
-          <h1 className="tm-access-denied-title">Access Denied</h1>
+          <h1 className="tm-access-denied-title">{t("clubs.accessDenied")}</h1>
           <p className="tm-access-denied-text">{error}</p>
           <Link href="/" className="tm-clubs-link">
-            ← Back to Home
+            {t("common.backToHome")}
           </Link>
         </div>
       </main>
@@ -95,13 +97,13 @@ export default function ClubsPage() {
   return (
     <main className="tm-clubs-page">
       <header className="tm-clubs-header">
-        <h1 className="tm-clubs-title">Clubs</h1>
-        <p className="tm-clubs-subtitle">Browse available paddle clubs</p>
+        <h1 className="tm-clubs-title">{t("clubs.title")}</h1>
+        <p className="tm-clubs-subtitle">{t("clubs.subtitle")}</p>
       </header>
 
       {clubs.length === 0 ? (
         <div className="tm-clubs-empty">
-          <p className="tm-clubs-empty-text">No clubs available yet.</p>
+          <p className="tm-clubs-empty-text">{t("clubs.noClubs")}</p>
         </div>
       ) : (
         <section className="tm-clubs-grid">
@@ -125,12 +127,12 @@ export default function ClubsPage() {
 
               <div className="tm-club-details">
                 <div className="tm-club-detail-row">
-                  <span className="tm-club-detail-label">Address:</span>
+                  <span className="tm-club-detail-label">{t("common.address")}:</span>
                   <span className="tm-club-detail-value">{club.location}</span>
                 </div>
                 {club.contactInfo && (
                   <div className="tm-club-detail-row">
-                    <span className="tm-club-detail-label">Contact:</span>
+                    <span className="tm-club-detail-label">{t("common.contact")}:</span>
                     <span className="tm-club-detail-value">
                       {club.contactInfo}
                     </span>
@@ -138,7 +140,7 @@ export default function ClubsPage() {
                 )}
                 {club.openingHours && (
                   <div className="tm-club-detail-row">
-                    <span className="tm-club-detail-label">Hours:</span>
+                    <span className="tm-club-detail-label">{t("common.hours")}:</span>
                     <span className="tm-club-detail-value">
                       {club.openingHours}
                     </span>
@@ -147,7 +149,7 @@ export default function ClubsPage() {
               </div>
 
               <Link href={`/clubs/${club.id}`}>
-                <Button className="tm-view-courts-button">View Courts</Button>
+                <Button className="tm-view-courts-button">{t("clubs.viewCourts")}</Button>
               </Link>
             </div>
           ))}
@@ -156,7 +158,7 @@ export default function ClubsPage() {
 
       <div className="tm-clubs-navigation">
         <Link href="/" className="tm-clubs-link">
-          ← Back to Home
+          {t("common.backToHome")}
         </Link>
       </div>
     </main>
