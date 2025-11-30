@@ -75,9 +75,13 @@ export function RequestTrainingModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null);
+  const [requestStatus, setRequestStatus] = useState<string>("pending");
 
   // Reference for focus trapping
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // Polling interval in milliseconds
+  const POLL_INTERVAL = 5000;
 
   // Fetch trainer availability when trainer is selected
   const fetchTrainerAvailability = useCallback(async (trainerId: string) => {
@@ -110,6 +114,34 @@ export function RequestTrainingModal({
       setTrainerAvailability(null);
     }
   }, [selectedTrainerId, fetchTrainerAvailability]);
+
+  // Poll for training request status updates
+  useEffect(() => {
+    if (!submittedRequestId || !isOpen) return;
+
+    const pollStatus = async () => {
+      try {
+        const response = await fetch(`/api/trainings/${submittedRequestId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status !== requestStatus) {
+            setRequestStatus(data.status);
+            // Show appropriate message based on status change
+            if (data.status === "confirmed") {
+              setAlert({ type: "success", message: "Training request confirmed by trainer!" });
+            } else if (data.status === "rejected") {
+              setAlert({ type: "error", message: "Training request was rejected by trainer." });
+            }
+          }
+        }
+      } catch {
+        // Silently ignore polling errors
+      }
+    };
+
+    const intervalId = setInterval(pollStatus, POLL_INTERVAL);
+    return () => clearInterval(intervalId);
+  }, [submittedRequestId, isOpen, requestStatus]);
 
   // Check if selected date and time is valid for the trainer
   const getAvailabilityStatus = (): { isValid: boolean; message: string } => {
@@ -195,6 +227,7 @@ export function RequestTrainingModal({
       }
 
       setSubmittedRequestId(data.id);
+      setRequestStatus("pending");
       setAlert({ type: "success", message: data.message });
 
       // Notify parent of success
@@ -222,6 +255,7 @@ export function RequestTrainingModal({
       if (response.ok) {
         setAlert({ type: "success", message: "Training request cancelled" });
         setSubmittedRequestId(null);
+        setRequestStatus("pending");
         // Reset form
         setSelectedTrainerId("");
         setSelectedDate(getTodayDateString());
@@ -247,6 +281,7 @@ export function RequestTrainingModal({
     setTrainerAvailability(null);
     setAlert(null);
     setSubmittedRequestId(null);
+    setRequestStatus("pending");
     onClose();
   };
 
@@ -320,17 +355,30 @@ export function RequestTrainingModal({
           </div>
         )}
 
-        {/* Show cancel option if request was submitted */}
+        {/* Show status and cancel option if request was submitted */}
         {submittedRequestId && (
-          <div className="tm-request-training-status tm-request-training-status--pending">
-            <p className="mb-3">Your training request is pending confirmation.</p>
-            <Button
-              variant="outline"
-              onClick={handleCancelRequest}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Cancelling..." : "Cancel Request"}
-            </Button>
+          <div className={`tm-request-training-status tm-request-training-status--${requestStatus}`}>
+            {requestStatus === "pending" && (
+              <>
+                <p className="mb-3">Your training request is pending confirmation.</p>
+                <Button
+                  variant="outline"
+                  onClick={handleCancelRequest}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Cancelling..." : "Cancel Request"}
+                </Button>
+              </>
+            )}
+            {requestStatus === "confirmed" && (
+              <p className="mb-3">Your training has been confirmed by the trainer!</p>
+            )}
+            {requestStatus === "rejected" && (
+              <p className="mb-3">Your training request was rejected by the trainer.</p>
+            )}
+            {requestStatus === "cancelled" && (
+              <p className="mb-3">Your training request has been cancelled.</p>
+            )}
           </div>
         )}
 
