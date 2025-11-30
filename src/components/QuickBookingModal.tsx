@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Modal, Button, Card } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import "./QuickBookingModal.css";
@@ -52,6 +53,7 @@ export function QuickBookingModal({
   onClose,
   onSelectCourt,
 }: QuickBookingModalProps) {
+  const t = useTranslations();
   const [date, setDate] = useState<string>(getTodayDateString());
   const [startTime, setStartTime] = useState<string>("10:00");
   const [duration, setDuration] = useState<number>(60);
@@ -118,12 +120,12 @@ export function QuickBookingModal({
 
       setAvailableCourts(courtsWithPrices);
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t("auth.errorOccurred"));
       setAvailableCourts([]);
     } finally {
       setIsLoading(false);
     }
-  }, [clubId, date, startTime, duration]);
+  }, [clubId, date, startTime, duration, t]);
 
   const handleSelectCourt = (court: AvailableCourt) => {
     // Calculate end time based on start time and duration
@@ -168,13 +170,13 @@ export function QuickBookingModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Quick booking">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("booking.quickBooking.title")}>
       <div className="tm-quick-booking-modal">
         <div className="tm-quick-booking-form">
           {/* Date picker */}
           <div className="tm-booking-select-wrapper">
             <label htmlFor="quick-booking-date" className="tm-booking-label">
-              Date
+              {t("common.date")}
             </label>
             <input
               id="quick-booking-date"
@@ -190,7 +192,7 @@ export function QuickBookingModal({
           {/* Time picker */}
           <div className="tm-booking-select-wrapper">
             <label htmlFor="quick-booking-time" className="tm-booking-label">
-              Start time
+              {t("booking.quickBooking.startTime")}
             </label>
             <select
               id="quick-booking-time"
@@ -210,7 +212,7 @@ export function QuickBookingModal({
           {/* Duration picker */}
           <div className="tm-booking-select-wrapper">
             <label htmlFor="quick-booking-duration" className="tm-booking-label">
-              Duration
+              {t("common.duration")}
             </label>
             <select
               id="quick-booking-duration"
@@ -221,7 +223,7 @@ export function QuickBookingModal({
             >
               {DURATION_OPTIONS.map((mins) => (
                 <option key={mins} value={mins}>
-                  {mins} minutes
+                  {mins} {t("common.minutes")}
                 </option>
               ))}
             </select>
@@ -230,7 +232,7 @@ export function QuickBookingModal({
           {/* Find courts button */}
           <div className="tm-quick-booking-search">
             <Button onClick={handleFindCourts} disabled={isLoading}>
-              {isLoading ? "Searching..." : "Find available courts"}
+              {isLoading ? t("booking.quickBooking.searching") : t("booking.quickBooking.findAvailableCourts")}
             </Button>
           </div>
         </div>
@@ -248,16 +250,16 @@ export function QuickBookingModal({
             {availableCourts.length === 0 ? (
               <div className="tm-quick-booking-empty">
                 <p className="tm-quick-booking-empty-text">
-                  No courts available at selected time.
+                  {t("booking.quickBooking.noCourtsAvailable")}
                 </p>
                 <p className="tm-quick-booking-empty-hint">
-                  Try another time or check court schedules.
+                  {t("booking.quickBooking.tryAnotherTime")}
                 </p>
               </div>
             ) : (
               <div className="tm-quick-booking-courts">
                 <p className="tm-quick-booking-results-title">
-                  Available courts ({availableCourts.length})
+                  {t("booking.quickBooking.availableCourts", { count: availableCourts.length })}
                 </p>
                 <div className="tm-quick-booking-court-list" role="list">
                   {availableCourts.map((court) => (
@@ -282,7 +284,7 @@ export function QuickBookingModal({
                           )}
                           {court.indoor && (
                             <span className="tm-badge tm-badge-indoor">
-                              Indoor
+                              {t("common.indoor")}
                             </span>
                           )}
                         </div>
@@ -290,16 +292,16 @@ export function QuickBookingModal({
                           {court.priceCents !== undefined ? (
                             <span className="font-semibold">{formatPrice(court.priceCents)}</span>
                           ) : (
-                            <span>{formatPrice(court.defaultPriceCents)} / hour</span>
+                            <span>{formatPrice(court.defaultPriceCents)} {t("common.perHour")}</span>
                           )}
                         </div>
                       </div>
                       <Button
                         onClick={() => handleSelectCourt(court)}
                         className="tm-quick-booking-select-btn"
-                        aria-label={`Select ${court.name}${court.priceCents !== undefined ? ` - ${formatPrice(court.priceCents)}` : ""}`}
+                        aria-label={`${t("booking.quickBooking.select")} ${court.name}${court.priceCents !== undefined ? ` - ${formatPrice(court.priceCents)}` : ""}`}
                       >
-                        Select
+                        {t("booking.quickBooking.select")}
                       </Button>
                     </Card>
                   ))}

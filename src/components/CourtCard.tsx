@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Card, Button } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import type { Court } from "@/types/court";
@@ -21,6 +22,8 @@ export function CourtCard({
   showBookButton = true,
   showViewSchedule = true,
 }: CourtCardProps) {
+  const t = useTranslations();
+
   return (
     <Card className="tm-court-card">
       <div className="tm-court-card-header">
@@ -38,7 +41,7 @@ export function CourtCard({
           )}
           {court.indoor && (
             <span className="tm-badge tm-badge-indoor inline-block px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-              Indoor
+              {t("common.indoor")}
             </span>
           )}
         </div>
@@ -47,7 +50,7 @@ export function CourtCard({
       <div className="tm-court-card-body mt-3">
         <p className="tm-court-price text-sm font-medium">
           {formatPrice(court.defaultPriceCents)}{" "}
-          <span className="text-gray-500">/ hour</span>
+          <span className="text-gray-500">{t("common.perHour")}</span>
         </p>
 
         {todaySlots && (
@@ -60,9 +63,9 @@ export function CourtCard({
           <Button
             className="tm-book-button"
             onClick={() => onBook(court.id)}
-            aria-label={`Book ${court.name}, today`}
+            aria-label={`${t("booking.book")} ${court.name}`}
           >
-            Book
+            {t("booking.book")}
           </Button>
         )}
         {showViewSchedule && onViewSchedule && (
@@ -70,9 +73,9 @@ export function CourtCard({
             variant="outline"
             className="tm-view-schedule-button"
             onClick={() => onViewSchedule(court.id)}
-            aria-label={`View schedule for ${court.name}`}
+            aria-label={`${t("booking.viewSchedule")} ${court.name}`}
           >
-            View schedule
+            {t("booking.viewSchedule")}
           </Button>
         )}
       </div>

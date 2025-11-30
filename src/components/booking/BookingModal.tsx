@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Modal, Button } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import "./BookingModal.css";
@@ -45,6 +46,7 @@ export function BookingModal({
   userId,
   onBookingSuccess,
 }: BookingModalProps) {
+  const t = useTranslations();
   const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(null);
   const [selectedCoachId, setSelectedCoachId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +56,7 @@ export function BookingModal({
 
   const handleConfirm = async () => {
     if (selectedSlotIndex === null || !selectedSlot) {
-      setAlert({ type: "error", message: "Please select a time slot" });
+      setAlert({ type: "error", message: t("booking.pleaseSelectSlot") });
       return;
     }
 
@@ -81,7 +83,7 @@ export function BookingModal({
       if (response.status === 409) {
         setAlert({
           type: "error",
-          message: "Selected time slot is already booked. Please choose another slot.",
+          message: t("booking.slotAlreadyBooked"),
         });
         return;
       }
@@ -89,14 +91,14 @@ export function BookingModal({
       if (!response.ok) {
         setAlert({
           type: "error",
-          message: data.error || "Failed to create booking",
+          message: data.error || t("auth.errorOccurred"),
         });
         return;
       }
 
       setAlert({
         type: "success",
-        message: `Booking reserved successfully${data.priceCents ? ` - ${formatPrice(data.priceCents)}` : ""}`,
+        message: `${t("booking.bookingSuccess")}${data.priceCents ? ` - ${formatPrice(data.priceCents)}` : ""}`,
       });
 
       if (onBookingSuccess) {
@@ -117,7 +119,7 @@ export function BookingModal({
       }
       setAlert({
         type: "error",
-        message: "An error occurred. Please try again.",
+        message: t("auth.errorOccurred"),
       });
     } finally {
       setIsLoading(false);
@@ -143,7 +145,7 @@ export function BookingModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Reserve Booking">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("booking.reserveBooking")}>
       <div className="tm-booking-modal">
         {alert && (
           <div
@@ -159,7 +161,7 @@ export function BookingModal({
         <div className="tm-booking-form">
           <div className="tm-booking-select-wrapper">
             <label htmlFor="slot-select" className="tm-booking-label">
-              Select Time Slot
+              {t("booking.selectTimeSlot")}
             </label>
             <select
               id="slot-select"
@@ -170,7 +172,7 @@ export function BookingModal({
               }
               disabled={isLoading}
             >
-              <option value="">Choose a time slot...</option>
+              <option value="">{t("booking.chooseTimeSlot")}</option>
               {availableSlots.map((slot, index) => (
                 <option key={`${slot.startTime}-${slot.endTime}`} value={index}>
                   {formatSlot(slot)}
@@ -182,7 +184,7 @@ export function BookingModal({
           {/* Show selected slot price */}
           {selectedSlot?.priceCents !== undefined && (
             <div className="tm-booking-price-info mt-3 p-3 rounded bg-gray-50 dark:bg-gray-800">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Price: </span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">{t("common.price")}: </span>
               <span className="font-semibold">{formatPrice(selectedSlot.priceCents)}</span>
             </div>
           )}
@@ -190,7 +192,7 @@ export function BookingModal({
           {coachList && coachList.length > 0 && (
             <div className="tm-booking-select-wrapper">
               <label htmlFor="coach-select" className="tm-booking-label">
-                Select Coach (Optional)
+                {t("booking.selectCoach")}
               </label>
               <select
                 id="coach-select"
@@ -199,7 +201,7 @@ export function BookingModal({
                 onChange={(e) => setSelectedCoachId(e.target.value || null)}
                 disabled={isLoading}
               >
-                <option value="">No coach</option>
+                <option value="">{t("booking.noCoach")}</option>
                 {coachList.map((coach) => (
                   <option key={coach.id} value={coach.id}>
                     {coach.name}
@@ -211,10 +213,10 @@ export function BookingModal({
 
           <div className="tm-booking-actions">
             <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleConfirm} disabled={isLoading || selectedSlotIndex === null}>
-              {isLoading ? "Reserving..." : "Reserve Booking"}
+              {isLoading ? t("booking.reserving") : t("booking.reserve")}
             </Button>
           </div>
         </div>
