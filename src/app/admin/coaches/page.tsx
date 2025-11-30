@@ -61,8 +61,11 @@ export default function AdminCoachesPage() {
         const data = await response.json();
         setClubs(data);
       }
-    } catch {
-      // Clubs loading error can be ignored, will show empty dropdown
+    } catch (err) {
+      // Log error for debugging but don't block the UI
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to load clubs:", err);
+      }
     }
   }, []);
 

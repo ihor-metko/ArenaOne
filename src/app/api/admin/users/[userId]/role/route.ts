@@ -108,19 +108,24 @@ export async function POST(
           .filter((c) => c.clubId !== null)
           .map((c) => c.clubId as string);
 
+        // Use Sets for O(1) lookup performance
+        const existingClubIdSet = new Set(existingClubIds);
+        const newClubIdSet = new Set(clubIds as string[]);
+
         // Determine which clubs to add and which to remove
         const clubIdsToAdd = clubIds.filter(
-          (id: string) => !existingClubIds.includes(id)
+          (id: string) => !existingClubIdSet.has(id)
         );
         const clubIdsToRemove = existingClubIds.filter(
-          (id: string) => !clubIds.includes(id)
+          (id: string) => !newClubIdSet.has(id)
         );
 
         // Remove coach records for clubs that are no longer selected
         if (clubIdsToRemove.length > 0) {
+          const clubIdsToRemoveSet = new Set(clubIdsToRemove);
           // First find the coach IDs to remove
           const coachesToRemove = existingCoaches.filter(
-            (c) => c.clubId && clubIdsToRemove.includes(c.clubId)
+            (c) => c.clubId && clubIdsToRemoveSet.has(c.clubId)
           );
           const coachIdsToRemove = coachesToRemove.map((c) => c.id);
 
