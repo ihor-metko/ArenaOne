@@ -37,9 +37,10 @@
   color: white;
 }
 
-/* Grid layout */
+/* Grid layout - 14 columns for hours (BUSINESS_END_HOUR - BUSINESS_START_HOUR = 22 - 8) */
 .tm-weekly-grid {
   @apply grid gap-px;
+  /* First column is day label (80px), remaining 14 are hourly slots */
   grid-template-columns: 80px repeat(14, minmax(50px, 1fr));
   background-color: var(--rsp-border);
 }
@@ -202,6 +203,7 @@
 
 .tm-weekly-skeleton-grid {
   @apply grid gap-1 p-4;
+  /* Same as .tm-weekly-grid: 14 hourly slots (22:00 - 08:00) */
   grid-template-columns: 80px repeat(14, minmax(50px, 1fr));
 }
 

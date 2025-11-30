@@ -263,4 +263,46 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
     expect(court1Detail.courtType).toBe("Padel");
     expect(court1Detail.indoor).toBe(true);
   });
+
+  it("should correctly prioritize complete bookings over partial ones", async () => {
+    // This tests the edge case where bookings might be processed in any order
+    // A complete booking should result in "booked" status regardless of order
+    const mockBookings = [
+      // Partial booking comes first in the list
+      {
+        courtId: "court-1",
+        start: new Date("2024-01-15T10:30:00.000Z"),
+        end: new Date("2024-01-15T11:30:00.000Z"),
+      },
+      // Complete booking for a different time slot
+      {
+        courtId: "court-1",
+        start: new Date("2024-01-15T12:00:00.000Z"),
+        end: new Date("2024-01-15T13:00:00.000Z"),
+      },
+    ];
+
+    (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+    (prisma.booking.findMany as jest.Mock).mockResolvedValue(mockBookings);
+
+    const request = createRequest("club-123", "2024-01-15");
+    const response = await GET(request, {
+      params: Promise.resolve({ id: "club-123" }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    
+    const monday = data.days.find((d: { date: string }) => d.date === "2024-01-15");
+    
+    // The 10:00 slot should be partial (booking 10:30-11:30 doesn't fully cover 10:00-11:00)
+    const slot10am = monday.hours.find((h: { hour: number }) => h.hour === 10);
+    const court1At10 = slot10am.courts.find((c: { courtId: string }) => c.courtId === "court-1");
+    expect(court1At10.status).toBe("partial");
+    
+    // The 12:00 slot should be fully booked
+    const slot12pm = monday.hours.find((h: { hour: number }) => h.hour === 12);
+    const court1At12 = slot12pm.courts.find((c: { courtId: string }) => c.courtId === "court-1");
+    expect(court1At12.status).toBe("booked");
+  });
 });

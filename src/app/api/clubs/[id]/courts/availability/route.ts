@@ -45,7 +45,10 @@ interface WeeklyAvailabilityResponse {
   }>;
 }
 
-const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+// Helper to get day name using native Date API
+function getDayName(date: Date): string {
+  return date.toLocaleDateString("en-US", { weekday: "long" });
+}
 
 function getWeekDates(startDate: Date): string[] {
   const dates: string[] = [];
@@ -139,7 +142,7 @@ export async function GET(
     for (const dateStr of weekDates) {
       const date = new Date(dateStr);
       const dayOfWeek = date.getDay();
-      const dayName = DAY_NAMES[dayOfWeek];
+      const dayName = getDayName(date);
 
       const hours: HourSlotAvailability[] = [];
 
@@ -166,9 +169,9 @@ export async function GET(
               // If the booking completely covers the slot, it's booked
               if (bookingStart <= slotStart && bookingEnd >= slotEnd) {
                 status = "booked";
-                break;
+                break; // Complete booking found, no need to check further
               } else {
-                // Partial overlap
+                // Partial overlap - only upgrade from available to partial
                 status = "partial";
               }
             }

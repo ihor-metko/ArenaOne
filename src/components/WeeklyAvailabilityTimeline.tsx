@@ -22,6 +22,9 @@ interface WeeklyAvailabilityTimelineProps {
 const BUSINESS_START_HOUR = 8;
 const BUSINESS_END_HOUR = 22;
 
+// Days of the week indices
+const DAYS_OF_WEEK = [0, 1, 2, 3, 4, 5, 6] as const;
+
 // Generate hours array for header
 function generateHours(): number[] {
   const hours: number[] = [];
@@ -115,7 +118,7 @@ function LoadingSkeleton() {
           <div key={`header-${h}`} className="tm-weekly-skeleton-cell" />
         ))}
         {/* Day rows */}
-        {[0, 1, 2, 3, 4, 5, 6].map((day) => (
+        {DAYS_OF_WEEK.map((day) => (
           <>
             <div key={`day-${day}`} className="tm-weekly-skeleton-cell" />
             {HOURS.map((h) => (
