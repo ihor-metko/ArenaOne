@@ -502,7 +502,9 @@ export function RequestTrainingModal({
                     <span className="tm-suggestion-datetime">
                       {formatDateDisplay(suggestion.date)} at {suggestion.time}
                     </span>
-                    <span className="tm-suggestion-court">🏟️ {suggestion.courtName}</span>
+                    <span className="tm-suggestion-court">
+                      <span role="img" aria-label="Court">🏟️</span> Court: {suggestion.courtName}
+                    </span>
                   </button>
                 ))}
               </div>

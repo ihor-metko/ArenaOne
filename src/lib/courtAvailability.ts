@@ -18,8 +18,12 @@ function timeToMinutes(time: string): number {
 
 /**
  * Helper to convert minutes to HH:MM format
+ * Only handles valid positive minutes values (0-1439 for 00:00-23:59)
  */
 function minutesToTime(minutes: number): string {
+  if (minutes < 0) {
+    return "00:00";
+  }
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
@@ -173,6 +177,12 @@ export async function getCourtAvailabilitySuggestions(
       if (suggestions.length >= MAX_SUGGESTIONS) break;
 
       const newMinutes = requestedMinutes + offset;
+      
+      // Skip if newMinutes is negative or outside business hours
+      if (newMinutes < 0) {
+        continue;
+      }
+      
       const newTime = minutesToTime(newMinutes);
       
       // Skip if outside business hours
