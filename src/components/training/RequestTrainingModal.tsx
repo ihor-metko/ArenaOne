@@ -80,8 +80,9 @@ export function RequestTrainingModal({
   // Reference for focus trapping
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Polling interval in milliseconds
-  const POLL_INTERVAL = 5000;
+  // Status polling interval in milliseconds (5 seconds)
+  // This can be adjusted based on server load and user experience requirements
+  const STATUS_POLL_INTERVAL_MS = 5000;
 
   // Fetch trainer availability when trainer is selected
   const fetchTrainerAvailability = useCallback(async (trainerId: string) => {
@@ -134,12 +135,15 @@ export function RequestTrainingModal({
             }
           }
         }
-      } catch {
-        // Silently ignore polling errors
+      } catch (error) {
+        // Log errors in development mode to help with debugging
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error polling training request status:", error);
+        }
       }
     };
 
-    const intervalId = setInterval(pollStatus, POLL_INTERVAL);
+    const intervalId = setInterval(pollStatus, STATUS_POLL_INTERVAL_MS);
     return () => clearInterval(intervalId);
   }, [submittedRequestId, isOpen, requestStatus]);
 

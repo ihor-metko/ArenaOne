@@ -65,17 +65,18 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       document.body.style.overflow = "hidden";
 
       // Focus the first focusable element in the modal
-      const timer = setTimeout(() => {
+      // Using requestAnimationFrame ensures the DOM is fully rendered before focusing
+      const animationFrameId = requestAnimationFrame(() => {
         if (modalRef.current) {
           const firstFocusable = modalRef.current.querySelector(
             FOCUSABLE_ELEMENTS
           ) as HTMLElement;
           firstFocusable?.focus();
         }
-      }, 0);
+      });
 
       return () => {
-        clearTimeout(timer);
+        cancelAnimationFrame(animationFrameId);
         document.removeEventListener("keydown", handleKeyDown);
         document.body.style.overflow = "unset";
 
