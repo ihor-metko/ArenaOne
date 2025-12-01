@@ -57,8 +57,8 @@ export function Select({
     }
   }, [disabled, open, options, value]);
 
-  const handleSelect = useCallback((optionValue: string, optionDisabled?: boolean) => {
-    if (disabled || optionDisabled) return;
+  const handleSelect = useCallback((optionValue: string) => {
+    if (disabled) return;
 
     onChange?.(optionValue);
     setOpen(false);
@@ -75,7 +75,7 @@ export function Select({
         if (open && focusedIndex >= 0) {
           const option = options[focusedIndex];
           if (!option.disabled) {
-            handleSelect(option.value, option.disabled);
+            handleSelect(option.value);
           }
         } else {
           toggleOpen();
@@ -207,7 +207,7 @@ export function Select({
                 aria-selected={isSelected}
                 aria-disabled={option.disabled}
                 className={`im-select-option ${isSelected ? "im-selected" : ""} ${isFocused ? "im-focused" : ""} ${option.disabled ? "im-disabled" : ""}`}
-                onClick={() => !option.disabled && handleSelect(option.value, option.disabled)}
+                onClick={() => !option.disabled && handleSelect(option.value)}
                 onMouseEnter={() => setFocusedIndex(index)}
               >
                 {option.icon && (
