@@ -1,12 +1,22 @@
-# Paddle Club MVP
+# Padel Club MVP
 
-A booking MVP for the Paddle Club.
+A booking MVP for the Padel Club.
 
 ## Stack
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
+
+## System Settings
+
+Before starting any new feature or component, please review the [System Settings](./SYSTEM_SETTINGS.md) document which defines coding rules and conventions for this project.
+
+Key rules:
+- Use `im-*` prefix for all CSS classes
+- Always use "Padel" (not "Paddle")
+- Use CSS variables for colors (no hardcoding)
+- Support both light and dark themes
 
 ## Future Backend
 
