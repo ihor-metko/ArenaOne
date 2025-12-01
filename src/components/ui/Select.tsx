@@ -50,7 +50,7 @@ export function Select({
         value={value}
         onChange={handleChange}
         disabled={disabled}
-        aria-label={ariaLabel || (!label ? undefined : undefined)}
+        aria-label={ariaLabel}
         aria-describedby={ariaDescribedBy}
         {...props}
       >
