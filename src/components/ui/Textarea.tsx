@@ -1,3 +1,4 @@
+// Reusing Input styles for consistent form element appearance
 import "./Input.css";
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {

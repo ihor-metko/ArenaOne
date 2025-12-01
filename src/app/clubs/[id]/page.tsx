@@ -387,7 +387,7 @@ export default function ClubDetailPage({
               Instagram
             </h3>
             <a
-              href={`https://instagram.com/${club.instagram.replace("@", "")}`}
+              href={`https://instagram.com/${club.instagram?.replace("@", "") ?? ""}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500 hover:underline"

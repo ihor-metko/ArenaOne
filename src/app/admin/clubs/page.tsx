@@ -420,11 +420,11 @@ export default function AdminClubsPage() {
             placeholder="@clubhandle"
           />
           <Input
-            label="Contact Info (deprecated)"
+            label="Additional Contact Info"
             name="contactInfo"
             value={formData.contactInfo}
             onChange={handleInputChange}
-            placeholder="Phone or email (legacy field)"
+            placeholder="Additional contact details"
           />
           <Input
             label="Opening Hours"
@@ -452,7 +452,7 @@ export default function AdminClubsPage() {
             name="galleryImages"
             value={formData.galleryImages.join("\n")}
             onChange={handleGalleryImagesChange}
-            placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
+            placeholder={"https://example.com/image1.jpg\nhttps://example.com/image2.jpg"}
             rows={3}
           />
           <div className="flex justify-end gap-2 mt-4">
