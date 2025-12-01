@@ -2,12 +2,10 @@
 
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Card, DarkModeToggle, LanguageSwitcher, IMLink } from "@/components/ui";
-import { UserRoleIndicator } from "@/components/UserRoleIndicator";
+import { Card, IMLink } from "@/components/ui";
 import { PublicSearchBar } from "@/components/PublicSearchBar";
 import { PublicClubCard } from "@/components/PublicClubCard";
 import { PersonalizedSection } from "@/components/PersonalizedSection";
-import { useCurrentLocale } from "@/hooks/useCurrentLocale";
 import { useEffect, useState } from "react";
 
 interface ClubWithCounts {
@@ -24,7 +22,6 @@ interface ClubWithCounts {
 export default function Home() {
   const { data: session, status } = useSession();
   const t = useTranslations();
-  const currentLocale = useCurrentLocale();
   const [popularClubs, setPopularClubs] = useState<ClubWithCounts[]>([]);
   const [loadingClubs, setLoadingClubs] = useState(true);
 
@@ -50,15 +47,6 @@ export default function Home() {
 
   return (
     <main className="rsp-container min-h-screen">
-      {/* Header with navigation */}
-      <header className="rsp-header flex items-center justify-between p-4 md:p-8">
-        <h1 className="rsp-title text-xl md:text-2xl font-bold">{t("home.title")}</h1>
-        <div className="flex items-center gap-2 md:gap-4">
-          <UserRoleIndicator />
-          <LanguageSwitcher currentLocale={currentLocale} />
-          <DarkModeToggle />
-        </div>
-      </header>
 
       {/* Hero section with background and search */}
       <section className="tm-hero relative overflow-hidden bg-linear-to-br from-(--rsp-primary) via-[#0a1040] to-(--rsp-primary)">
