@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Modal, Button, Input } from "@/components/ui";
+import { doTimesOverlap } from "@/utils/dateTime";
 import "./RequestTrainingModal.css";
 
 interface Trainer {
@@ -9,11 +10,19 @@ interface Trainer {
   name: string;
 }
 
+interface TimeOffEntry {
+  fullDay: boolean;
+  startTime: string | null;
+  endTime: string | null;
+  reason: string | null;
+}
+
 interface TrainerAvailability {
   trainerId: string;
   trainerName: string;
   availability: Record<string, { start: string; end: string }[]>;
   busyTimes: Record<string, string[]>;
+  timeOff?: Record<string, TimeOffEntry[]>;
 }
 
 interface RequestTrainingModalProps {
@@ -29,6 +38,9 @@ interface RequestTrainingModalProps {
 const BUSINESS_START_HOUR = 9;
 const BUSINESS_END_HOUR = 22;
 const DEFAULT_TIME = "10:00";
+
+// Training session duration in minutes
+const TRAINING_DURATION_MINUTES = 60;
 
 // Get today's date in YYYY-MM-DD format
 function getTodayDateString(): string {
@@ -206,6 +218,36 @@ export function RequestTrainingModal({
       };
     }
 
+    // Check for coach time off
+    const timeOffEntries = trainerAvailability.timeOff?.[selectedDate] || [];
+    if (timeOffEntries.length > 0) {
+      // Calculate end time for the training session
+      const [hours, mins] = selectedTime.split(":").map(Number);
+      const totalMinutes = hours * 60 + mins + TRAINING_DURATION_MINUTES;
+      const endHours = Math.floor(totalMinutes / 60);
+      const endMins = totalMinutes % 60;
+      const trainingEndTime = `${endHours.toString().padStart(2, "0")}:${endMins.toString().padStart(2, "0")}`;
+
+      for (const timeOff of timeOffEntries) {
+        // Full-day time off blocks the entire day
+        if (timeOff.fullDay) {
+          return {
+            isValid: false,
+            message: "This coach is unavailable on the selected day.",
+          };
+        }
+        // Partial-day time off - check if training time overlaps with time off
+        if (timeOff.startTime && timeOff.endTime) {
+          if (doTimesOverlap(selectedTime, trainingEndTime, timeOff.startTime, timeOff.endTime)) {
+            return {
+              isValid: false,
+              message: "This coach is unavailable during the selected time.",
+            };
+          }
+        }
+      }
+    }
+
     // Check if court is available
     if (!courtAvailability.hasAvailableCourt) {
       return {
@@ -368,11 +410,26 @@ export function RequestTrainingModal({
         <p className="tm-trainer-availability-title">Trainer availability:</p>
         {availabilityDates.map((date) => {
           const slots = trainerAvailability.availability[date];
+          const timeOffEntries = trainerAvailability.timeOff?.[date] || [];
+          const hasFullDayOff = timeOffEntries.some(t => t.fullDay);
+          const partialTimeOff = timeOffEntries.filter(t => !t.fullDay && t.startTime && t.endTime);
           const hoursStr = slots.map((s) => `${s.start}-${s.end}`).join(", ");
+          
           return (
             <div key={date} className="tm-trainer-availability-item">
               <span className="tm-trainer-availability-date">{formatDateDisplay(date)}</span>
-              <span className="tm-trainer-availability-hours">{hoursStr}</span>
+              {hasFullDayOff ? (
+                <span className="tm-trainer-timeoff-indicator">Unavailable</span>
+              ) : (
+                <span className="tm-trainer-availability-hours">
+                  {hoursStr}
+                  {partialTimeOff.length > 0 && (
+                    <span className="tm-trainer-timeoff-partial">
+                      {" "}(off: {partialTimeOff.map(t => `${t.startTime}-${t.endTime}`).join(", ")})
+                    </span>
+                  )}
+                </span>
+              )}
             </div>
           );
         })}
