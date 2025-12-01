@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Input, Button } from "@/components/ui";
 
+const DEFAULT_SEARCH = "";
+const DEFAULT_INDOOR_ONLY = false;
+
 interface PublicSearchBarProps {
   initialSearch?: string;
   initialIndoorOnly?: boolean;
@@ -11,8 +14,8 @@ interface PublicSearchBarProps {
 }
 
 export function PublicSearchBar({
-  initialSearch = "",
-  initialIndoorOnly = false,
+  initialSearch = DEFAULT_SEARCH,
+  initialIndoorOnly = DEFAULT_INDOOR_ONLY,
   onSearchChange,
 }: PublicSearchBarProps) {
   const t = useTranslations();
@@ -31,9 +34,9 @@ export function PublicSearchBar({
   }, [searchTerm, indoorOnly, onSearchChange]);
 
   const handleClear = () => {
-    setSearchTerm("");
-    setIndoorOnly(false);
-    onSearchChange("", false);
+    setSearchTerm(DEFAULT_SEARCH);
+    setIndoorOnly(DEFAULT_INDOOR_ONLY);
+    onSearchChange(DEFAULT_SEARCH, DEFAULT_INDOOR_ONLY);
   };
 
   return (

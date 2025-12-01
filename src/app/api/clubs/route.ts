@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 // Public endpoint - no authentication required
 export async function GET(request: Request) {
@@ -10,8 +11,7 @@ export async function GET(request: Request) {
     const indoor = url.searchParams.get("indoor");
 
     // Build where clause for filtering
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const whereClause: Record<string, any> = {};
+    const whereClause: Prisma.ClubWhereInput = {};
 
     if (search) {
       whereClause.OR = [

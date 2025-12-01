@@ -83,7 +83,8 @@
     "promptTitle": "Please sign in to book",
     "promptMessage": "To proceed with booking, please log in or create an account.",
     "continueBrowsing": "Continue browsing",
-    "signInToBook": "Sign up / Log in to book"
+    "signInToBook": "Sign up / Log in to book",
+    "signInToBookTooltip": "Sign in to book this court"
   },
   "clubs": {
     "title": "Clubs",

@@ -20,6 +20,16 @@ interface ClubWithCounts {
   outdoorCount: number;
 }
 
+// Helper function to determine empty state message
+function getEmptyStateMessage(
+  searchTerm: string,
+  indoorOnly: boolean,
+  t: ReturnType<typeof useTranslations>
+): string {
+  const hasFilters = searchTerm || indoorOnly;
+  return hasFilters ? t("clubs.noClubsFound") : t("clubs.noClubs");
+}
+
 export default function ClubsPage() {
   const { data: session, status } = useSession();
   const t = useTranslations();
@@ -133,10 +143,7 @@ export default function ClubsPage() {
       ) : clubs.length === 0 ? (
         <div className="tm-clubs-empty">
           <p className="tm-clubs-empty-text">
-            {searchTerm || indoorOnly 
-              ? t("clubs.noClubsFound")
-              : t("clubs.noClubs")
-            }
+            {getEmptyStateMessage(searchTerm, indoorOnly, t)}
           </p>
         </div>
       ) : (

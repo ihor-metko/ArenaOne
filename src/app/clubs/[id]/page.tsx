@@ -376,7 +376,7 @@ export default function ClubDetailPage({
               onBook={handleBookClick}
               onViewSchedule={handleViewSchedule}
               isBookDisabled={!isAuthenticated}
-              bookDisabledTooltip={t("auth.promptTitle")}
+              bookDisabledTooltip={t("auth.signInToBookTooltip")}
               todaySlots={
                 <CourtSlotsToday
                   slots={courtAvailability[court.id] || []}
