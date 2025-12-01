@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Modal, Button } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
@@ -168,8 +168,8 @@ export function BookingModal({
 
   const filteredSlots = getFilteredSlots();
 
-  // Get unavailability reason for selected slot
-  const getSelectedSlotUnavailabilityReason = (): string | null => {
+  // Memoize unavailability reason for selected slot
+  const selectedSlotUnavailabilityReason = useMemo(() => {
     if (selectedSlotIndex === null || !selectedCoachId) {
       return null;
     }
@@ -178,7 +178,7 @@ export function BookingModal({
       return slotInfo.reason;
     }
     return null;
-  };
+  }, [selectedSlotIndex, selectedCoachId, filteredSlots]);
 
   const handleConfirm = async () => {
     if (selectedSlotIndex === null || !selectedSlot) {
@@ -346,9 +346,9 @@ export function BookingModal({
           </div>
 
           {/* Show warning if selected slot is unavailable for coach */}
-          {getSelectedSlotUnavailabilityReason() && (
+          {selectedSlotUnavailabilityReason && (
             <div className="tm-booking-alert tm-booking-alert--error" role="alert">
-              {getSelectedSlotUnavailabilityReason()}
+              {selectedSlotUnavailabilityReason}
             </div>
           )}
 
@@ -370,7 +370,7 @@ export function BookingModal({
                 isLoading || 
                 isLoadingCoachAvailability ||
                 selectedSlotIndex === null ||
-                getSelectedSlotUnavailabilityReason() !== null
+                selectedSlotUnavailabilityReason !== null
               }
             >
               {isLoading ? t("booking.reserving") : t("booking.reserve")}
