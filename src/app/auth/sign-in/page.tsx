@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Card, Input, IMLink } from "@/components/ui";
-import { getRedirectPath } from "@/utils/roleRedirect";
+import { getRoleHomepage } from "@/utils/roleRedirect";
 import type { UserRole } from "@/lib/auth";
 
 export default function SignInPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const t = useTranslations();
   const [email, setEmail] = useState("ihor.metko@gmail.com");
   const [password, setPassword] = useState("12345678");
@@ -18,13 +18,38 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
+  // Clear toast after display
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   // Redirect already logged-in users to their role-specific homepage
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
-      const redirectPath = getRedirectPath(session.user.role as UserRole | undefined);
+      const redirectPath = getRoleHomepage(session.user.role as UserRole | undefined);
       router.push(redirectPath);
     }
   }, [status, session, router]);
+
+  const handleRedirect = useCallback((userName: string | null | undefined, userRole: UserRole | undefined) => {
+    const redirectPath = getRoleHomepage(userRole);
+    
+    // Show welcome toast if user has a name
+    if (userName) {
+      setToast(t("auth.welcomeBack", { name: userName }));
+      // Wait briefly to show toast before redirect
+      setTimeout(() => {
+        router.push(redirectPath);
+        router.refresh();
+      }, 1000);
+    } else {
+      router.push(redirectPath);
+      router.refresh();
+    }
+  }, [router, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,24 +66,17 @@ export default function SignInPage() {
       if (result?.error) {
         setError(t("auth.invalidCredentials"));
       } else {
-        // Fetch the session to get user role
-        const sessionResponse = await fetch("/api/auth/session");
-        const sessionData = await sessionResponse.json();
+        // Refresh the session to get updated user data
+        const updatedSession = await updateSession();
         
-        const userRole = sessionData?.user?.role as UserRole | undefined;
-        const userName = sessionData?.user?.name || "";
-        const redirectPath = getRedirectPath(userRole);
-        
-        // Show welcome toast
-        if (userName) {
-          setToast(t("auth.welcomeBack", { name: userName }));
-          // Wait briefly to show toast before redirect
-          setTimeout(() => {
-            router.push(redirectPath);
-            router.refresh();
-          }, 1000);
+        if (updatedSession?.user) {
+          handleRedirect(
+            updatedSession.user.name,
+            updatedSession.user.role as UserRole | undefined
+          );
         } else {
-          router.push(redirectPath);
+          // Fallback: redirect to default player page if session update fails
+          router.push(getRoleHomepage(undefined));
           router.refresh();
         }
       }

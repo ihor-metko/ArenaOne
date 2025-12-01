@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-import { getRoleHomepage, getRedirectPath, ROLE_HOMEPAGES } from "@/utils/roleRedirect";
+import { getRoleHomepage, ROLE_HOMEPAGES } from "@/utils/roleRedirect";
 import type { UserRole } from "@/lib/auth";
 
 describe("Role Redirect Utilities", () => {
@@ -41,33 +41,15 @@ describe("Role Redirect Utilities", () => {
       // Type assertion to test edge case
       expect(getRoleHomepage("unknown" as UserRole)).toBe("/clubs");
     });
-  });
-
-  describe("getRedirectPath", () => {
-    it("should return admin dashboard for admin role", () => {
-      expect(getRedirectPath("admin")).toBe("/admin/clubs");
-    });
-
-    it("should return coach dashboard for coach role", () => {
-      expect(getRedirectPath("coach")).toBe("/coach/dashboard");
-    });
-
-    it("should return clubs page for player role", () => {
-      expect(getRedirectPath("player")).toBe("/clubs");
-    });
-
-    it("should return clubs page for undefined role", () => {
-      expect(getRedirectPath(undefined)).toBe("/clubs");
-    });
 
     it("should prioritize admin over coach in role priority", () => {
       // Test that admin role gets admin page (admin > coach > player priority)
-      expect(getRedirectPath("admin")).toBe("/admin/clubs");
+      expect(getRoleHomepage("admin")).toBe("/admin/clubs");
     });
 
     it("should prioritize coach over player in role priority", () => {
       // Test that coach role gets coach page
-      expect(getRedirectPath("coach")).toBe("/coach/dashboard");
+      expect(getRoleHomepage("coach")).toBe("/coach/dashboard");
     });
   });
 
@@ -76,7 +58,7 @@ describe("Role Redirect Utilities", () => {
       const roles: UserRole[] = ["admin", "coach", "player"];
       
       roles.forEach((role) => {
-        const redirectPath = getRedirectPath(role);
+        const redirectPath = getRoleHomepage(role);
         expect(redirectPath).toBe(ROLE_HOMEPAGES[role]);
       });
     });
@@ -90,7 +72,7 @@ describe("Role Redirect Utilities", () => {
       ];
 
       testCases.forEach((role) => {
-        const path = getRedirectPath(role);
+        const path = getRoleHomepage(role);
         expect(path).toMatch(/^\//);
         expect(path.length).toBeGreaterThan(1);
       });
