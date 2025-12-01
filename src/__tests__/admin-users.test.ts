@@ -38,8 +38,8 @@ jest.mock("bcryptjs", () => ({
   hash: jest.fn().mockResolvedValue("hashed_password"),
 }));
 
-import { GET, POST } from "@/app/api/admin/users/route";
-import { POST as updateRole } from "@/app/api/admin/users/[userId]/role/route";
+import { GET, POST } from "../../archived_features/api/admin/users/route";
+import { POST as updateRole } from "../../archived_features/api/admin/users/[userId]/role/route";
 import { prisma } from "@/lib/prisma";
 
 describe("Admin Users API", () => {
@@ -383,7 +383,7 @@ describe("Admin Users API", () => {
 
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
       (prisma.club.findMany as jest.Mock).mockResolvedValue([{ id: "club-123" }]);
-      
+
       // Mock the transaction to execute the callback with mocked tx object
       (prisma.$transaction as jest.Mock).mockImplementation(async (fn) => {
         const tx = {
@@ -457,7 +457,7 @@ describe("Admin Users API", () => {
 
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
       (prisma.club.findMany as jest.Mock).mockResolvedValue([{ id: "club-123" }]);
-      
+
       (prisma.$transaction as jest.Mock).mockImplementation(async (fn) => {
         const tx = {
           user: {
@@ -480,7 +480,7 @@ describe("Admin Users API", () => {
         "http://localhost:3000/api/admin/users/user-123/role",
         {
           method: "POST",
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             role: "coach",
             clubIds: ["club-123"],
             bio: "Professional tennis coach",
@@ -531,7 +531,7 @@ describe("Admin Users API", () => {
 
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
       (prisma.club.findMany as jest.Mock).mockResolvedValue([{ id: "club-123" }]);
-      
+
       const mockCoachCreate = jest.fn();
       (prisma.$transaction as jest.Mock).mockImplementation(async (fn) => {
         const tx = {
@@ -594,11 +594,11 @@ describe("Admin Users API", () => {
       };
 
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
-      
+
       const mockCoachFindMany = jest.fn().mockResolvedValue([{ id: "coach-123" }]);
       const mockCoachAvailabilityDeleteMany = jest.fn().mockResolvedValue({ count: 0 });
       const mockCoachDeleteMany = jest.fn().mockResolvedValue({ count: 1 });
-      
+
       (prisma.$transaction as jest.Mock).mockImplementation(async (fn) => {
         const tx = {
           user: {

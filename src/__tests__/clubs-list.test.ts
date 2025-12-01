@@ -11,7 +11,7 @@ jest.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { GET } from "@/app/api/clubs/route";
+import { GET } from "@/app/api/(player)/clubs/route";
 import { prisma } from "@/lib/prisma";
 
 describe("GET /api/clubs", () => {

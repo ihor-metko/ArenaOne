@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { GET } from "@/app/api/courts/[courtId]/availability/route";
+import { GET } from "@/app/api/(player)/courts/[courtId]/availability/route";
 import { prisma } from "@/lib/prisma";
 
 // Mock Prisma

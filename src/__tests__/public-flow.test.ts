@@ -20,9 +20,9 @@ jest.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { GET as getClubs } from "@/app/api/clubs/route";
-import { GET as getClubDetail } from "@/app/api/clubs/[id]/route";
-import { GET as getCourtAvailability } from "@/app/api/courts/[courtId]/availability/route";
+import { GET as getClubs } from "@/app/api/(player)/clubs/route";
+import { GET as getClubDetail } from "@/app/api/(player)/clubs/[id]/route";
+import { GET as getCourtAvailability } from "@/app/api/(player)/courts/[courtId]/availability/route";
 import { prisma } from "@/lib/prisma";
 
 describe("Public Flow API Endpoints", () => {

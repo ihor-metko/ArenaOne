@@ -1,8 +1,8 @@
 /**
  * @jest-environment node
  */
-import { GET, POST } from "@/app/api/courts/[courtId]/price-rules/route";
-import { PUT, DELETE } from "@/app/api/courts/[courtId]/price-rules/[ruleId]/route";
+import { GET, POST } from "@/app/api/(player)/courts/[courtId]/price-rules/route";
+import { PUT, DELETE } from "@/app/api/(player)/courts/[courtId]/price-rules/[ruleId]/route";
 import { prisma } from "@/lib/prisma";
 
 // Mock Prisma

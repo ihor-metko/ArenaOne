@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button, Card, IMLink } from "@/components/ui";
 import { UserRoleIndicator } from "@/components/UserRoleIndicator";
 import { DashboardFooter } from "@/components/layout";
-import { CoachTimeOff } from "@/components/coach";
+import { CoachTimeOff } from "../../../components/coach";
 
 interface CoachProfile {
   id: string;
@@ -40,27 +40,27 @@ export default function CoachTimeOffPage() {
     const fetchCoachProfile = async () => {
       try {
         const response = await fetch("/api/coach/profile");
-        
+
         if (response.status === 401) {
           router.push("/auth/sign-in");
           return;
         }
-        
+
         if (response.status === 403) {
           setError("Access denied. Only coaches can access this page.");
           return;
         }
-        
+
         if (response.status === 404) {
           setError("Coach profile not found. Please complete your coach profile setup.");
           return;
         }
-        
+
         if (!response.ok) {
           const data = await response.json();
           throw new Error(data.error || "Failed to fetch coach profile");
         }
-        
+
         const data = await response.json();
         setCoachProfile(data);
       } catch (err) {

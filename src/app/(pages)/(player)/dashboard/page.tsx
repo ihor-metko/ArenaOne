@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { Button, Card, Modal, IMLink, Select } from "@/components/ui";
 import { UserRoleIndicator } from "@/components/UserRoleIndicator";
 import { QuickBookingModal } from "@/components/QuickBookingModal";
-import { RequestTrainingModal } from "@/components/training/RequestTrainingModal";
+import { RequestTrainingModal } from "../../../../../archived_features/components/training/RequestTrainingModal";
 import { DarkModeToggle, LanguageSwitcher } from "@/components/ui";
 import { PublicFooter } from "@/components/layout";
 import { useCurrentLocale } from "@/hooks/useCurrentLocale";
@@ -363,9 +363,9 @@ export default function PlayerDashboardPage() {
                       clubs.length === 0
                         ? [{ value: "", label: t("playerDashboard.quickBook.noClubs") }]
                         : clubs.map((club) => ({
-                            value: club.id,
-                            label: `${club.name} - ${club.location}`,
-                          }))
+                          value: club.id,
+                          label: `${club.name} - ${club.location}`,
+                        }))
                     }
                     value={selectedClubId}
                     onChange={(value) => setSelectedClubId(value)}
@@ -383,11 +383,10 @@ export default function PlayerDashboardPage() {
                     <button
                       key={day.date}
                       onClick={() => setSelectedDate(day.date)}
-                      className={`tm-calendar-day shrink-0 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        day.isSelected
+                      className={`tm-calendar-day shrink-0 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${day.isSelected
                           ? "bg-(--rsp-primary) text-white"
                           : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                      }`}
+                        }`}
                       role="option"
                       aria-selected={day.isSelected}
                     >
@@ -447,13 +446,12 @@ export default function PlayerDashboardPage() {
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         {booking.court?.club?.name || ""} - {booking.court?.name || ""}
                       </p>
-                      <span className={`tm-booking-status inline-block px-2 py-0.5 text-xs rounded-full mt-1 ${
-                        booking.status === "paid" || booking.status === "confirmed"
+                      <span className={`tm-booking-status inline-block px-2 py-0.5 text-xs rounded-full mt-1 ${booking.status === "paid" || booking.status === "confirmed"
                           ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                           : booking.status === "reserved"
-                          ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400"
-                      }`}>
+                            ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400"
+                        }`}>
                         {t(`common.${booking.status}`) || booking.status}
                       </span>
                     </div>
@@ -565,13 +563,12 @@ export default function PlayerDashboardPage() {
                           {formatDate(event.date, currentLocale)} • {event.clubName}
                         </p>
                       </div>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        event.type === "tournament"
+                      <span className={`px-2 py-1 text-xs rounded-full ${event.type === "tournament"
                           ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"
                           : event.type === "promotion"
-                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400"
-                      }`}>
+                            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400"
+                        }`}>
                         {event.type}
                       </span>
                     </div>
