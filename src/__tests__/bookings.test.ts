@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { POST } from "@/app/api/bookings/route";
+import { POST } from "@/app/api/(player)/bookings/route";
 import { prisma } from "@/lib/prisma";
 
 // Mock Prisma

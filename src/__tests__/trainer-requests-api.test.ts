@@ -1,9 +1,9 @@
 /**
  * @jest-environment node
  */
-import { GET } from "@/app/api/trainer/requests/route";
-import { PUT as confirmRequest } from "@/app/api/trainer/requests/[requestId]/confirm/route";
-import { PUT as rejectRequest } from "@/app/api/trainer/requests/[requestId]/reject/route";
+import { GET } from "../../archived_features/api/requests/route";
+import { PUT as confirmRequest } from "../../archived_features/api/requests/[requestId]/confirm/route";
+import { PUT as rejectRequest } from "../../archived_features/api/requests/[requestId]/reject/route";
 import { prisma } from "@/lib/prisma";
 
 // Mock Prisma

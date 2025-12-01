@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { POST, GET } from "@/app/api/trainings/route";
+import { POST, GET } from "../../archived_features/api/trainings/route";
 import { prisma } from "@/lib/prisma";
 
 // Mock Prisma
@@ -215,7 +215,7 @@ describe("Training Requests API", () => {
         time: "10:00",
         status: "pending",
       });
-      
+
       (getCourtAvailabilitySuggestions as jest.Mock).mockResolvedValue([]);
 
       const request = createRequest({
@@ -366,7 +366,7 @@ describe("Training Requests API", () => {
       (prisma.court.findMany as jest.Mock).mockResolvedValue([
         { id: "court-1", name: "Court 1", defaultPriceCents: 5000 },
       ]);
-      
+
       const mockBooking = {
         id: "booking-123",
         courtId: "court-1",
@@ -377,7 +377,7 @@ describe("Training Requests API", () => {
         price: 5000,
         status: "pending",
       };
-      
+
       const mockTrainingRequest = {
         id: "training-123",
         trainerId: "trainer-123",

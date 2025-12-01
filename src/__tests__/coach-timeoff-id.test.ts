@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { PUT, DELETE } from "@/app/api/coach/timeoff/[id]/route";
+import { PUT, DELETE } from "../../archived_features/api/coach/timeoff/[id]/route";
 import { prisma } from "@/lib/prisma";
 
 // Mock Prisma

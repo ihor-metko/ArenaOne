@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { GET, PATCH } from "@/app/api/trainings/[id]/route";
+import { GET, PATCH } from "../../archived_features/api/trainings/[id]/route";
 import { prisma } from "@/lib/prisma";
 
 // Mock Prisma

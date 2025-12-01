@@ -24,8 +24,8 @@ jest.mock("@/lib/auth", () => ({
   auth: () => mockAuth(),
 }));
 
-import { GET, POST } from "@/app/api/clubs/[id]/courts/route";
-import { PUT, DELETE } from "@/app/api/clubs/[id]/courts/[courtId]/route";
+import { GET, POST } from "@/app/api/(player)/clubs/[id]/courts/route";
+import { PUT, DELETE } from "@/app/api/(player)/clubs/[id]/courts/[courtId]/route";
 import { prisma } from "@/lib/prisma";
 
 describe("Courts API", () => {

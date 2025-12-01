@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { IMLink } from "@/components/ui";
 import { UserRoleIndicator } from "@/components/UserRoleIndicator";
-import { TrainingHistory } from "@/components/training/TrainingHistory";
+import { TrainingHistory } from "../../components/training/TrainingHistory";
 
 export default function TrainingsPage() {
   const { data: session, status } = useSession();

@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { GET } from "@/app/api/clubs/[id]/courts/availability/route";
+import { GET } from "@/app/api/(player)/clubs/[id]/courts/availability/route";
 import { prisma } from "@/lib/prisma";
 
 // Mock Prisma
@@ -65,14 +65,14 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
     expect(data.weekEnd).toBe("2024-01-21");
     expect(data.days).toHaveLength(7);
     expect(data.courts).toHaveLength(2);
-    
+
     // Check first day structure
     const firstDay = data.days[0];
     expect(firstDay.date).toBe("2024-01-15");
     expect(firstDay.dayOfWeek).toBe(1); // Monday
     expect(firstDay.dayName).toBe("Monday");
     expect(firstDay.hours.length).toBeGreaterThan(0);
-    
+
     // Check hour structure
     const firstHour = firstDay.hours[0];
     expect(firstHour.hour).toBe(8);
@@ -131,15 +131,15 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    
+
     // Find the 10:00 slot for Monday
     const monday = data.days.find((d: { date: string }) => d.date === "2024-01-15");
     const slot10am = monday.hours.find((h: { hour: number }) => h.hour === 10);
-    
+
     // Court 1 should be booked, Court 2 should be available
     const court1 = slot10am.courts.find((c: { courtId: string }) => c.courtId === "court-1");
     const court2 = slot10am.courts.find((c: { courtId: string }) => c.courtId === "court-2");
-    
+
     expect(court1.status).toBe("booked");
     expect(court2.status).toBe("available");
     expect(slot10am.summary.available).toBe(1);
@@ -169,10 +169,10 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    
+
     const monday = data.days.find((d: { date: string }) => d.date === "2024-01-15");
     const slot10am = monday.hours.find((h: { hour: number }) => h.hour === 10);
-    
+
     const court1 = slot10am.courts.find((c: { courtId: string }) => c.courtId === "court-1");
     expect(court1.status).toBe("partial");
   });
@@ -204,10 +204,10 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    
+
     const monday = data.days.find((d: { date: string }) => d.date === "2024-01-15");
     const slot10am = monday.hours.find((h: { hour: number }) => h.hour === 10);
-    
+
     expect(slot10am.summary.booked).toBe(2);
     expect(slot10am.summary.available).toBe(0);
     expect(slot10am.overallStatus).toBe("booked");
@@ -228,7 +228,7 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
 
     expect(response.status).toBe(200);
     expect(data.days).toHaveLength(7);
-    
+
     // The first day should be a Monday (dayOfWeek = 1)
     // Note: This test may be flaky depending on the current day
     // The implementation calculates Monday from the current date
@@ -264,7 +264,7 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    
+
     // Check courts list
     expect(data.courts[0].name).toBe("Court 1");
     expect(data.courts[0].type).toBe("Padel");
@@ -272,11 +272,11 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
     expect(data.courts[1].name).toBe("Court 2");
     expect(data.courts[1].type).toBe("Tennis");
     expect(data.courts[1].indoor).toBe(false);
-    
+
     // Check court details in hour slots
     const monday = data.days.find((d: { date: string }) => d.date === "2024-01-15");
     const firstHour = monday.hours[0];
-    
+
     const court1Detail = firstHour.courts.find((c: { courtId: string }) => c.courtId === "court-1");
     expect(court1Detail.courtName).toBe("Court 1");
     expect(court1Detail.courtType).toBe("Padel");
@@ -314,14 +314,14 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    
+
     const monday = data.days.find((d: { date: string }) => d.date === "2024-01-15");
-    
+
     // The 10:00 slot should be partial (booking 10:30-11:30 doesn't fully cover 10:00-11:00)
     const slot10am = monday.hours.find((h: { hour: number }) => h.hour === 10);
     const court1At10 = slot10am.courts.find((c: { courtId: string }) => c.courtId === "court-1");
     expect(court1At10.status).toBe("partial");
-    
+
     // The 12:00 slot should be fully booked
     const slot12pm = monday.hours.find((h: { hour: number }) => h.hour === 12);
     const court1At12 = slot12pm.courts.find((c: { courtId: string }) => c.courtId === "court-1");
@@ -350,15 +350,15 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    
+
     // Find the 14:00 slot for Monday
     const monday = data.days.find((d: { date: string }) => d.date === "2024-01-15");
     const slot14pm = monday.hours.find((h: { hour: number }) => h.hour === 14);
-    
+
     // Court 1 should be pending, Court 2 should be available
     const court1 = slot14pm.courts.find((c: { courtId: string }) => c.courtId === "court-1");
     const court2 = slot14pm.courts.find((c: { courtId: string }) => c.courtId === "court-2");
-    
+
     expect(court1.status).toBe("pending");
     expect(court2.status).toBe("available");
     expect(slot14pm.summary.pending).toBe(1);

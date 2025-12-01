@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { QuickBookingModal } from "@/components/QuickBookingModal";
-import { RequestTrainingModal } from "@/components/training/RequestTrainingModal";
+import { RequestTrainingModal } from "../../../../../../archived_features/components/training/RequestTrainingModal";
 import { CourtCard } from "@/components/CourtCard";
 import { CourtSlotsToday } from "@/components/CourtSlotsToday";
 import { WeeklyAvailabilityTimeline } from "@/components/WeeklyAvailabilityTimeline";

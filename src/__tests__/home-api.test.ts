@@ -19,7 +19,7 @@ jest.mock("@/lib/auth", () => ({
   auth: jest.fn(),
 }));
 
-import { GET } from "@/app/api/home/route";
+import { GET } from "@/app/api/(player)/home/route";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
