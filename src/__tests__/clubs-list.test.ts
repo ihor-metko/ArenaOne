@@ -11,12 +11,6 @@ jest.mock("@/lib/prisma", () => ({
   },
 }));
 
-// Mock auth function
-const mockAuth = jest.fn();
-jest.mock("@/lib/auth", () => ({
-  auth: () => mockAuth(),
-}));
-
 import { GET } from "@/app/api/clubs/route";
 import { prisma } from "@/lib/prisma";
 
@@ -25,25 +19,7 @@ describe("GET /api/clubs", () => {
     jest.clearAllMocks();
   });
 
-  it("should return 401 when not authenticated", async () => {
-    mockAuth.mockResolvedValue(null);
-
-    const request = new Request("http://localhost:3000/api/clubs", {
-      method: "GET",
-    });
-
-    const response = await GET(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(401);
-    expect(data.error).toBe("Unauthorized");
-  });
-
-  it("should return clubs for authenticated player", async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: "player-123", role: "player" },
-    });
-
+  it("should return clubs for public access (no authentication required)", async () => {
     const mockClubs = [
       {
         id: "club-1",
@@ -53,6 +29,7 @@ describe("GET /api/clubs", () => {
         openingHours: "9am-10pm",
         logo: "https://example.com/logo.png",
         createdAt: new Date().toISOString(),
+        courts: [{ id: "court-1", indoor: true }, { id: "court-2", indoor: false }],
       },
       {
         id: "club-2",
@@ -62,6 +39,7 @@ describe("GET /api/clubs", () => {
         openingHours: null,
         logo: null,
         createdAt: new Date().toISOString(),
+        courts: [],
       },
     ];
 
@@ -80,46 +58,14 @@ describe("GET /api/clubs", () => {
     expect(data[0].location).toBe("123 Main St");
     expect(data[0].contactInfo).toBe("contact@a.com");
     expect(data[0].openingHours).toBe("9am-10pm");
+    expect(data[0].indoorCount).toBe(1);
+    expect(data[0].outdoorCount).toBe(1);
     expect(data[1].name).toBe("Club B");
-  });
-
-  it("should return 403 for authenticated coach", async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: "coach-123", role: "coach" },
-    });
-
-    const request = new Request("http://localhost:3000/api/clubs", {
-      method: "GET",
-    });
-
-    const response = await GET(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(403);
-    expect(data.error).toBe("Forbidden");
-  });
-
-  it("should return 403 for authenticated admin", async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: "admin-123", role: "admin" },
-    });
-
-    const request = new Request("http://localhost:3000/api/clubs", {
-      method: "GET",
-    });
-
-    const response = await GET(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(403);
-    expect(data.error).toBe("Forbidden");
+    expect(data[1].indoorCount).toBe(0);
+    expect(data[1].outdoorCount).toBe(0);
   });
 
   it("should return empty array when no clubs exist", async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: "player-123", role: "player" },
-    });
-
     (prisma.club.findMany as jest.Mock).mockResolvedValue([]);
 
     const request = new Request("http://localhost:3000/api/clubs", {
@@ -134,10 +80,6 @@ describe("GET /api/clubs", () => {
   });
 
   it("should return 500 for database errors", async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: "player-123", role: "player" },
-    });
-
     (prisma.club.findMany as jest.Mock).mockRejectedValue(
       new Error("Database error")
     );
@@ -154,10 +96,6 @@ describe("GET /api/clubs", () => {
   });
 
   it("should return clubs with all fields populated", async () => {
-    mockAuth.mockResolvedValue({
-      user: { id: "player-123", role: "player" },
-    });
-
     const mockClubs = [
       {
         id: "club-1",
@@ -167,6 +105,7 @@ describe("GET /api/clubs", () => {
         openingHours: "Mon-Fri 6am-11pm, Sat-Sun 7am-10pm",
         logo: "https://example.com/complete-logo.png",
         createdAt: new Date().toISOString(),
+        courts: [{ id: "court-1", indoor: true }],
       },
     ];
 
@@ -188,7 +127,83 @@ describe("GET /api/clubs", () => {
         contactInfo: "+1-555-0123",
         openingHours: "Mon-Fri 6am-11pm, Sat-Sun 7am-10pm",
         logo: "https://example.com/complete-logo.png",
+        indoorCount: 1,
+        outdoorCount: 0,
       })
     );
+  });
+
+  it("should filter clubs by search query", async () => {
+    const mockClubs = [
+      {
+        id: "club-1",
+        name: "Main Club",
+        location: "123 Main St",
+        contactInfo: null,
+        openingHours: null,
+        logo: null,
+        createdAt: new Date().toISOString(),
+        courts: [],
+      },
+    ];
+
+    (prisma.club.findMany as jest.Mock).mockResolvedValue(mockClubs);
+
+    const request = new Request("http://localhost:3000/api/clubs?search=Main", {
+      method: "GET",
+    });
+
+    const response = await GET(request);
+    await response.json();
+
+    expect(response.status).toBe(200);
+    expect(prisma.club.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          OR: expect.arrayContaining([
+            expect.objectContaining({ name: expect.objectContaining({ contains: "Main" }) }),
+          ]),
+        }),
+      })
+    );
+  });
+
+  it("should filter clubs by indoor param", async () => {
+    const mockClubs = [
+      {
+        id: "club-1",
+        name: "Indoor Club",
+        location: "123 Main St",
+        contactInfo: null,
+        openingHours: null,
+        logo: null,
+        createdAt: new Date().toISOString(),
+        courts: [{ id: "court-1", indoor: true }],
+      },
+      {
+        id: "club-2",
+        name: "Outdoor Club",
+        location: "456 Oak Ave",
+        contactInfo: null,
+        openingHours: null,
+        logo: null,
+        createdAt: new Date().toISOString(),
+        courts: [{ id: "court-2", indoor: false }],
+      },
+    ];
+
+    (prisma.club.findMany as jest.Mock).mockResolvedValue(mockClubs);
+
+    const request = new Request("http://localhost:3000/api/clubs?indoor=true", {
+      method: "GET",
+    });
+
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    // Only the club with indoor courts should be returned
+    expect(data).toHaveLength(1);
+    expect(data[0].name).toBe("Indoor Club");
   });
 });

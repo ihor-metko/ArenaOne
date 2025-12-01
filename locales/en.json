@@ -79,7 +79,11 @@
     "alreadyHaveAccount": "Already have an account?",
     "passwordMinLength": "Password must be at least {minLength} characters",
     "registrationFailed": "Registration failed",
-    "errorOccurred": "An error occurred. Please try again."
+    "errorOccurred": "An error occurred. Please try again.",
+    "promptTitle": "Please sign in to book",
+    "promptMessage": "To proceed with booking, please log in or create an account.",
+    "continueBrowsing": "Continue browsing",
+    "signInToBook": "Sign up / Log in to book"
   },
   "clubs": {
     "title": "Clubs",
@@ -88,6 +92,7 @@
     "failedToLoad": "Failed to load clubs. Please try again later.",
     "noClubs": "No clubs available yet.",
     "viewCourts": "View Courts",
+    "viewClub": "View Club",
     "accessDenied": "Access Denied",
     "accessDeniedPlayers": "Access denied. Only players can view the clubs list.",
     "clubNotFound": "Club not found",
@@ -95,7 +100,11 @@
     "noCourts": "No courts defined for this club yet. Contact admin.",
     "quickBooking": "Quick booking",
     "requestTraining": "Request Training",
-    "adminCourts": "Admin → Courts"
+    "adminCourts": "Admin → Courts",
+    "searchPlaceholder": "Search by name or location...",
+    "indoorOnly": "Indoor only",
+    "clearFilters": "Clear filters",
+    "noClubsFound": "No clubs found — try other filters."
   },
   "admin": {
     "clubs": {
