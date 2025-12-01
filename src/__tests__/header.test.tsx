@@ -69,9 +69,11 @@ jest.mock("@/components/ui", () => ({
 
 // Mock next/link
 jest.mock("next/link", () => {
-  return ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
+  const MockLink = ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...props}>{children}</a>
   );
+  MockLink.displayName = "MockLink";
+  return MockLink;
 });
 
 const mockUseSession = useSession as jest.Mock;

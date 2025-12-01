@@ -25,6 +25,15 @@ interface NavLink {
 }
 
 /**
+ * Strip trailing arrow from label
+ * Translation labels may include arrows like "View Clubs →"
+ * but the header nav should display clean text
+ */
+function stripArrow(label: string): string {
+  return label.replace(" →", "");
+}
+
+/**
  * Get navigation links based on user role
  */
 function getRoleNavLinks(role: UserRole | undefined, t: ReturnType<typeof useTranslations>): NavLink[] {
@@ -212,7 +221,7 @@ export default function Header({ title, showSearch = false, hideProfile = false 
                   href={link.href}
                   className="rsp-header-nav-link"
                 >
-                  {link.icon && <span aria-hidden="true">{link.icon}</span>} {link.label.replace(" →", "")}
+                  {link.icon && <span aria-hidden="true">{link.icon}</span>} {stripArrow(link.label)}
                 </IMLink>
               ))}
             </nav>
@@ -269,8 +278,7 @@ export default function Header({ title, showSearch = false, hideProfile = false 
                       </span>
                     </div>
                     <svg
-                      className="w-4 h-4 transition-transform"
-                      style={{ transform: isProfileOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                      className={`rsp-header-chevron ${isProfileOpen ? "rsp-header-chevron--open" : ""}`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -290,10 +298,10 @@ export default function Header({ title, showSearch = false, hideProfile = false 
                       {/* User info section */}
                       <div className="rsp-header-dropdown-section">
                         <div className="px-4 py-2">
-                          <p className="text-sm font-medium" style={{ color: "var(--rsp-foreground)" }}>
+                          <p className="rsp-header-dropdown-user-name">
                             {userName || userEmail}
                           </p>
-                          <p className="text-xs" style={{ color: "var(--rsp-foreground)", opacity: 0.6 }}>
+                          <p className="rsp-header-dropdown-user-email">
                             {userEmail}
                           </p>
                         </div>
@@ -310,7 +318,7 @@ export default function Header({ title, showSearch = false, hideProfile = false 
                             onClick={() => setIsProfileOpen(false)}
                           >
                             {item.icon && <span aria-hidden="true">{item.icon}</span>}
-                            {item.label.replace(" →", "")}
+                            {stripArrow(item.label)}
                           </Link>
                         ))}
                       </div>
@@ -376,7 +384,7 @@ export default function Header({ title, showSearch = false, hideProfile = false 
                   className="rsp-header-mobile-nav-link"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  {link.icon && <span aria-hidden="true">{link.icon}</span>} {link.label.replace(" →", "")}
+                  {link.icon && <span aria-hidden="true">{link.icon}</span>} {stripArrow(link.label)}
                 </Link>
               ))}
             </nav>

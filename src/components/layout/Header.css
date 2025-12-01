@@ -143,6 +143,27 @@
   background-color: rgba(239, 68, 68, 0.1);
 }
 
+/* Dropdown user info */
+.rsp-header-dropdown-user-name {
+  @apply text-sm font-medium;
+  color: var(--rsp-foreground);
+}
+
+.rsp-header-dropdown-user-email {
+  @apply text-xs;
+  color: var(--rsp-foreground);
+  opacity: 0.6;
+}
+
+/* Chevron icon */
+.rsp-header-chevron {
+  @apply w-4 h-4 transition-transform;
+}
+
+.rsp-header-chevron--open {
+  transform: rotate(180deg);
+}
+
 /* Mobile menu toggle */
 .rsp-header-mobile-toggle {
   @apply md:hidden p-2 rounded-md transition-colors;
