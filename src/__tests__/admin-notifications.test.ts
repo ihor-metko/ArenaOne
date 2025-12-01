@@ -18,9 +18,11 @@ jest.mock("@/lib/prisma", () => ({
     },
     user: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
     },
     coach: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
     },
   },
 }));
@@ -103,15 +105,15 @@ describe("Admin Notifications API", () => {
       (prisma.adminNotification.count as jest.Mock)
         .mockResolvedValueOnce(1) // totalCount
         .mockResolvedValueOnce(1); // unreadCount
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.user.findMany as jest.Mock).mockResolvedValue([{
         id: "player-123",
         name: "John Player",
         email: "john@example.com",
-      });
-      (prisma.coach.findUnique as jest.Mock).mockResolvedValue({
+      }]);
+      (prisma.coach.findMany as jest.Mock).mockResolvedValue([{
         id: "coach-123",
         user: { name: "Coach Smith" },
-      });
+      }]);
 
       const request = new Request("http://localhost:3000/api/admin/notifications");
       const response = await GET(request);
@@ -134,6 +136,8 @@ describe("Admin Notifications API", () => {
 
       (prisma.adminNotification.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.adminNotification.count as jest.Mock).mockResolvedValue(0);
+      (prisma.user.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.coach.findMany as jest.Mock).mockResolvedValue([]);
 
       const request = new Request("http://localhost:3000/api/admin/notifications?unreadOnly=true");
       await GET(request);

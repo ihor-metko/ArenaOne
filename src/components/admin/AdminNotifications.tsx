@@ -107,6 +107,11 @@ export function AdminNotificationsPanel({ pollInterval = 30000 }: AdminNotificat
   }, []);
 
   const fetchNotifications = useCallback(async () => {
+    // Skip fetching if the page is not visible
+    if (document.hidden) {
+      return;
+    }
+
     try {
       const url = showUnreadOnly
         ? "/api/admin/notifications?unreadOnly=true"
@@ -139,10 +144,23 @@ export function AdminNotificationsPanel({ pollInterval = 30000 }: AdminNotificat
     fetchNotifications();
   }, [fetchNotifications]);
 
-  // Polling for updates
+  // Polling for updates with visibility-based optimization
   useEffect(() => {
     const interval = setInterval(fetchNotifications, pollInterval);
-    return () => clearInterval(interval);
+
+    // Fetch immediately when page becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchNotifications();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [fetchNotifications, pollInterval]);
 
   const handleMarkAsRead = async (notificationId: string, currentlyRead: boolean) => {

@@ -25,7 +25,7 @@ export async function GET(request: Request) {
       whereClause.read = false;
     }
 
-    // Get notifications with enriched data
+    // Get notifications
     const notifications = await prisma.adminNotification.findMany({
       where: whereClause,
       orderBy: { createdAt: "desc" },
@@ -33,38 +33,47 @@ export async function GET(request: Request) {
       skip: offset,
     });
 
-    // Enrich notifications with player, coach, and court names
-    const enrichedNotifications = await Promise.all(
-      notifications.map(async (notification) => {
-        const [player, coach] = await Promise.all([
-          prisma.user.findUnique({
-            where: { id: notification.playerId },
-            select: { id: true, name: true, email: true },
-          }),
-          prisma.coach.findUnique({
-            where: { id: notification.coachId },
-            include: { user: { select: { name: true } } },
-          }),
-        ]);
+    // Batch fetch players and coaches to avoid N+1 queries
+    const playerIds = [...new Set(notifications.map((n) => n.playerId))];
+    const coachIds = [...new Set(notifications.map((n) => n.coachId))];
 
-        return {
-          id: notification.id,
-          type: notification.type,
-          playerId: notification.playerId,
-          playerName: player?.name || "Unknown Player",
-          playerEmail: player?.email || null,
-          coachId: notification.coachId,
-          coachName: coach?.user?.name || "Unknown Coach",
-          trainingRequestId: notification.trainingRequestId,
-          bookingId: notification.bookingId,
-          sessionDate: notification.sessionDate?.toISOString().split("T")[0] || null,
-          sessionTime: notification.sessionTime,
-          courtInfo: notification.courtInfo,
-          read: notification.read,
-          createdAt: notification.createdAt.toISOString(),
-        };
-      })
-    );
+    const [players, coaches] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: playerIds } },
+        select: { id: true, name: true, email: true },
+      }),
+      prisma.coach.findMany({
+        where: { id: { in: coachIds } },
+        include: { user: { select: { name: true } } },
+      }),
+    ]);
+
+    // Create lookup maps for fast access
+    const playerMap = new Map(players.map((p) => [p.id, p]));
+    const coachMap = new Map(coaches.map((c) => [c.id, c]));
+
+    // Enrich notifications with player and coach names
+    const enrichedNotifications = notifications.map((notification) => {
+      const player = playerMap.get(notification.playerId);
+      const coach = coachMap.get(notification.coachId);
+
+      return {
+        id: notification.id,
+        type: notification.type,
+        playerId: notification.playerId,
+        playerName: player?.name || "Unknown Player",
+        playerEmail: player?.email || null,
+        coachId: notification.coachId,
+        coachName: coach?.user?.name || "Unknown Coach",
+        trainingRequestId: notification.trainingRequestId,
+        bookingId: notification.bookingId,
+        sessionDate: notification.sessionDate?.toISOString().split("T")[0] || null,
+        sessionTime: notification.sessionTime,
+        courtInfo: notification.courtInfo,
+        read: notification.read,
+        createdAt: notification.createdAt.toISOString(),
+      };
+    });
 
     // Get total count and unread count
     const [totalCount, unreadCount] = await Promise.all([
