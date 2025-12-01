@@ -12,6 +12,8 @@ interface CourtCardProps {
   todaySlots?: React.ReactNode;
   showBookButton?: boolean;
   showViewSchedule?: boolean;
+  isBookDisabled?: boolean;
+  bookDisabledTooltip?: string;
 }
 
 export function CourtCard({
@@ -21,6 +23,8 @@ export function CourtCard({
   todaySlots,
   showBookButton = true,
   showViewSchedule = true,
+  isBookDisabled = false,
+  bookDisabledTooltip,
 }: CourtCardProps) {
   const t = useTranslations();
 
@@ -61,9 +65,11 @@ export function CourtCard({
       <div className="tm-court-card-footer mt-4 flex gap-2">
         {showBookButton && onBook && (
           <Button
-            className="tm-book-button"
+            className={`tm-book-button ${isBookDisabled ? "opacity-60" : ""}`}
             onClick={() => onBook(court.id)}
             aria-label={`${t("booking.book")} ${court.name}`}
+            aria-disabled={isBookDisabled}
+            title={isBookDisabled ? bookDisabledTooltip : undefined}
           >
             {t("booking.book")}
           </Button>

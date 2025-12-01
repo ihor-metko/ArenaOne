@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { QuickBookingModal } from "@/components/QuickBookingModal";
@@ -12,6 +12,7 @@ import { CourtCard } from "@/components/CourtCard";
 import { CourtSlotsToday } from "@/components/CourtSlotsToday";
 import { WeeklyAvailabilityTimeline } from "@/components/WeeklyAvailabilityTimeline";
 import { CourtAvailabilityModal } from "@/components/CourtAvailabilityModal";
+import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { Button } from "@/components/ui";
 import type { Court, AvailabilitySlot, AvailabilityResponse, CourtAvailabilityStatus } from "@/types/court";
 
@@ -66,9 +67,11 @@ export default function ClubDetailPage({
     courts: CourtAvailabilityStatus[];
   } | null>(null);
   const [timelineKey, setTimelineKey] = useState(0);
+  const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
 
   // Get user ID from session, or use a placeholder for unauthenticated users
   const userId = session?.user?.id || "guest";
+  const isAuthenticated = authStatus === "authenticated" && session?.user;
 
   // Fetch availability for all courts
   const fetchAvailability = useCallback(async (courts: Court[]) => {
@@ -132,6 +135,11 @@ export default function ClubDetailPage({
   }, [params, fetchAvailability, t]);
 
   const handleBookClick = (courtId: string) => {
+    // If user is not authenticated, show auth prompt modal
+    if (!isAuthenticated) {
+      setIsAuthPromptOpen(true);
+      return;
+    }
     setSelectedCourtId(courtId);
     setIsModalOpen(true);
   };
@@ -164,9 +172,9 @@ export default function ClubDetailPage({
 
   // Handle Quick Booking button click
   const handleQuickBookingClick = () => {
-    // If user is not authenticated, trigger login flow
-    if (authStatus === "unauthenticated") {
-      signIn();
+    // If user is not authenticated, show auth prompt modal
+    if (!isAuthenticated) {
+      setIsAuthPromptOpen(true);
       return;
     }
     setIsQuickBookingOpen(true);
@@ -174,9 +182,9 @@ export default function ClubDetailPage({
 
   // Handle court selection from QuickBookingModal
   const handleQuickBookingSelectCourt = (courtId: string, date: string, startTime: string, endTime: string) => {
-    // If user is not authenticated, trigger login flow
-    if (authStatus === "unauthenticated") {
-      signIn();
+    // If user is not authenticated, show auth prompt modal
+    if (!isAuthenticated) {
+      setIsAuthPromptOpen(true);
       return;
     }
 
@@ -201,9 +209,9 @@ export default function ClubDetailPage({
 
   // Handle Request Training button click
   const handleRequestTrainingClick = () => {
-    // If user is not authenticated, trigger login flow
-    if (authStatus === "unauthenticated") {
-      signIn();
+    // If user is not authenticated, show auth prompt modal
+    if (!isAuthenticated) {
+      setIsAuthPromptOpen(true);
       return;
     }
     setIsRequestTrainingOpen(true);
@@ -244,9 +252,9 @@ export default function ClubDetailPage({
     startTime: string,
     endTime: string
   ) => {
-    // If user is not authenticated, trigger login flow
-    if (authStatus === "unauthenticated") {
-      signIn();
+    // If user is not authenticated, show auth prompt modal
+    if (!isAuthenticated) {
+      setIsAuthPromptOpen(true);
       return;
     }
 
@@ -320,6 +328,17 @@ export default function ClubDetailPage({
         )}
       </header>
 
+      {/* Sign in prompt for unauthenticated users */}
+      {!isAuthenticated && (
+        <div className="tm-auth-cta mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-blue-800 dark:text-blue-200 text-sm">
+            <Link href="/auth/sign-in" className="font-semibold underline hover:no-underline">
+              {t("auth.signInToBook")}
+            </Link>
+          </p>
+        </div>
+      )}
+
       {/* Quick booking button - above courts list */}
       <div className="tm-quick-booking-action mb-6">
         <Button
@@ -356,6 +375,8 @@ export default function ClubDetailPage({
               court={court}
               onBook={handleBookClick}
               onViewSchedule={handleViewSchedule}
+              isBookDisabled={!isAuthenticated}
+              bookDisabledTooltip={t("auth.signInToBookTooltip")}
               todaySlots={
                 <CourtSlotsToday
                   slots={courtAvailability[court.id] || []}
@@ -388,7 +409,8 @@ export default function ClubDetailPage({
         </Link>
       </div>
 
-      {selectedCourtId && (
+      {/* Booking Modal - only rendered for authenticated users */}
+      {isAuthenticated && selectedCourtId && (
         <BookingModal
           courtId={selectedCourtId}
           availableSlots={getSlotsForBookingModal(selectedCourtId)}
@@ -400,22 +422,27 @@ export default function ClubDetailPage({
         />
       )}
 
-      <QuickBookingModal
-        clubId={club.id}
-        isOpen={isQuickBookingOpen}
-        onClose={handleQuickBookingClose}
-        onSelectCourt={handleQuickBookingSelectCourt}
-      />
+      {/* Quick Booking Modal - only rendered for authenticated users */}
+      {isAuthenticated && (
+        <QuickBookingModal
+          clubId={club.id}
+          isOpen={isQuickBookingOpen}
+          onClose={handleQuickBookingClose}
+          onSelectCourt={handleQuickBookingSelectCourt}
+        />
+      )}
 
-      {/* Request Training Modal */}
-      <RequestTrainingModal
-        clubId={club.id}
-        trainers={club.coaches}
-        playerId={userId}
-        isOpen={isRequestTrainingOpen}
-        onClose={handleRequestTrainingClose}
-        onSuccess={handleBookingSuccess}
-      />
+      {/* Request Training Modal - only rendered for authenticated users */}
+      {isAuthenticated && (
+        <RequestTrainingModal
+          clubId={club.id}
+          trainers={club.coaches}
+          playerId={userId}
+          isOpen={isRequestTrainingOpen}
+          onClose={handleRequestTrainingClose}
+          onSuccess={handleBookingSuccess}
+        />
+      )}
 
       {selectedTimeSlot && (
         <CourtAvailabilityModal
@@ -427,6 +454,12 @@ export default function ClubDetailPage({
           onSelectCourt={handleSelectCourtFromTimeline}
         />
       )}
+
+      {/* Auth Prompt Modal for unauthenticated users */}
+      <AuthPromptModal
+        isOpen={isAuthPromptOpen}
+        onClose={() => setIsAuthPromptOpen(false)}
+      />
     </main>
   );
 }

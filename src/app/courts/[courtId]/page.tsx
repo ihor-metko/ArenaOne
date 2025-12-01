@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Card, Button } from "@/components/ui";
 import { BookingModal } from "@/components/booking/BookingModal";
+import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { formatPrice } from "@/utils/price";
 import type { Court, AvailabilitySlot, AvailabilityResponse, PriceTimelineResponse, PriceSegment } from "@/types/court";
 
@@ -76,7 +78,8 @@ export default function CourtDetailPage({
 }: {
   params: Promise<{ courtId: string }>;
 }) {
-  const { data: session } = useSession();
+  const { data: session, status: authStatus } = useSession();
+  const t = useTranslations();
   const [court, setCourt] = useState<CourtWithClub | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,9 +89,11 @@ export default function CourtDetailPage({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const userId = session?.user?.id || "guest";
+  const isAuthenticated = authStatus === "authenticated" && session?.user;
 
   // Cleanup toast timeout on unmount
   useEffect(() => {
@@ -199,6 +204,13 @@ export default function CourtDetailPage({
 
   const handleSlotClick = (slot: AvailabilitySlot) => {
     if (slot.status === "booked") return;
+    
+    // If user is not authenticated, show auth prompt modal
+    if (!isAuthenticated) {
+      setIsAuthPromptOpen(true);
+      return;
+    }
+    
     setSelectedSlot(slot);
     setIsModalOpen(true);
   };
@@ -209,7 +221,7 @@ export default function CourtDetailPage({
   };
 
   const handleBookingSuccess = () => {
-    setToast({ type: "success", message: "Booking created successfully!" });
+    setToast({ type: "success", message: t("booking.bookingSuccess") });
     // Refresh availability
     if (court?.id) {
       fetchAvailability(court.id, selectedDate, court.defaultPriceCents);
@@ -254,7 +266,7 @@ export default function CourtDetailPage({
         </div>
         <div className="mt-4 text-center">
           <Link href="/clubs" className="text-blue-500 hover:underline">
-            ← Back to Clubs
+            {t("common.backToClubs")}
           </Link>
         </div>
       </main>
@@ -279,6 +291,17 @@ export default function CourtDetailPage({
         </div>
       )}
 
+      {/* Sign in prompt for unauthenticated users */}
+      {!isAuthenticated && (
+        <div className="tm-auth-cta mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-blue-800 dark:text-blue-200 text-sm">
+            <Link href="/auth/sign-in" className="font-semibold underline hover:no-underline">
+              {t("auth.signInToBook")}
+            </Link>
+          </p>
+        </div>
+      )}
+
       {/* Header with court info */}
       <header className="tm-court-header mb-8">
         <Card className="tm-court-info-card">
@@ -298,7 +321,7 @@ export default function CourtDetailPage({
                 )}
                 {court.indoor && (
                   <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                    Indoor
+                    {t("common.indoor")}
                   </span>
                 )}
               </div>
@@ -306,7 +329,7 @@ export default function CourtDetailPage({
             <div className="text-right">
               <p className="text-lg font-semibold">
                 {formatPrice(court.defaultPriceCents)}
-                <span className="text-sm text-gray-500 font-normal"> / hour</span>
+                <span className="text-sm text-gray-500 font-normal"> {t("common.perHour")}</span>
               </p>
             </div>
           </div>
@@ -351,10 +374,10 @@ export default function CourtDetailPage({
       <section className="tm-slots-legend mb-4">
         <div className="flex justify-center gap-4 text-sm">
           <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded bg-green-500" /> Available
+            <span className="w-3 h-3 rounded bg-green-500" /> {t("common.available")}
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded bg-red-500" /> Booked
+            <span className="w-3 h-3 rounded bg-red-500" /> {t("common.booked")}
           </span>
           <span className="flex items-center gap-1">
             <span className="w-3 h-3 rounded bg-yellow-500" /> Limited
@@ -421,13 +444,13 @@ export default function CourtDetailPage({
           </Link>
         ) : (
           <Link href="/clubs" className="text-blue-500 hover:underline">
-            ← Back to Clubs
+            {t("common.backToClubs")}
           </Link>
         )}
       </div>
 
-      {/* Booking modal */}
-      {selectedSlot && court && (
+      {/* Booking modal - only rendered for authenticated users */}
+      {isAuthenticated && selectedSlot && court && (
         <BookingModal
           courtId={court.id}
           availableSlots={getAvailableSlots()}
@@ -437,6 +460,12 @@ export default function CourtDetailPage({
           onBookingSuccess={handleBookingSuccess}
         />
       )}
+
+      {/* Auth Prompt Modal for unauthenticated users */}
+      <AuthPromptModal
+        isOpen={isAuthPromptOpen}
+        onClose={() => setIsAuthPromptOpen(false)}
+      />
     </main>
   );
 }

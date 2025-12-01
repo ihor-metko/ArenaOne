@@ -3,43 +3,53 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui";
-import type { Club } from "@/types/club";
+import { PublicClubCard } from "@/components/PublicClubCard";
+import { PublicSearchBar } from "@/components/PublicSearchBar";
 import "@/components/ClubsList.css";
 
-function isValidImageUrl(url: string | null | undefined): boolean {
-  if (!url) return false;
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === "https:" || parsed.protocol === "http:";
-  } catch {
-    return false;
-  }
+interface ClubWithCounts {
+  id: string;
+  name: string;
+  location: string;
+  contactInfo?: string | null;
+  openingHours?: string | null;
+  logo?: string | null;
+  createdAt: string;
+  indoorCount: number;
+  outdoorCount: number;
+}
+
+// Helper function to determine empty state message
+function getEmptyStateMessage(
+  searchTerm: string,
+  indoorOnly: boolean,
+  t: ReturnType<typeof useTranslations>
+): string {
+  const hasFilters = searchTerm || indoorOnly;
+  return hasFilters ? t("clubs.noClubsFound") : t("clubs.noClubs");
 }
 
 export default function ClubsPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const t = useTranslations();
-  const [clubs, setClubs] = useState<Club[]>([]);
+  const [clubs, setClubs] = useState<ClubWithCounts[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [indoorOnly, setIndoorOnly] = useState(false);
 
-  const fetchClubs = useCallback(async () => {
+  const fetchClubs = useCallback(async (search: string, indoor: boolean) => {
     try {
       setLoading(true);
-      const response = await fetch("/api/clubs");
+      const params = new URLSearchParams();
+      if (search) params.set("search", search);
+      if (indoor) params.set("indoor", "true");
+      
+      const url = `/api/clubs${params.toString() ? `?${params.toString()}` : ""}`;
+      const response = await fetch(url);
+      
       if (!response.ok) {
-        if (response.status === 401) {
-          router.push("/auth/sign-in");
-          return;
-        }
-        if (response.status === 403) {
-          setError(t("clubs.accessDeniedPlayers"));
-          return;
-        }
         throw new Error("Failed to fetch clubs");
       }
       const data = await response.json();
@@ -50,26 +60,21 @@ export default function ClubsPage() {
     } finally {
       setLoading(false);
     }
-  }, [router, t]);
+  }, [t]);
 
   useEffect(() => {
-    if (status === "loading") return;
+    fetchClubs(searchTerm, indoorOnly);
+  }, [fetchClubs, searchTerm, indoorOnly]);
 
-    if (!session?.user) {
-      router.push("/auth/sign-in");
-      return;
-    }
+  const handleSearchChange = useCallback((search: string, indoor: boolean) => {
+    setSearchTerm(search);
+    setIndoorOnly(indoor);
+  }, []);
 
-    if (session.user.role !== "player") {
-      setError(t("clubs.accessDeniedPlayers"));
-      setLoading(false);
-      return;
-    }
+  // Determine if user is authenticated
+  const isAuthenticated = status === "authenticated" && session?.user;
 
-    fetchClubs();
-  }, [session, status, router, fetchClubs, t]);
-
-  if (status === "loading" || loading) {
+  if (loading && clubs.length === 0) {
     return (
       <main className="tm-clubs-page">
         <div className="tm-clubs-loading">
@@ -80,11 +85,11 @@ export default function ClubsPage() {
     );
   }
 
-  if (error) {
+  if (error && clubs.length === 0) {
     return (
       <main className="tm-clubs-page">
         <div className="tm-access-denied">
-          <h1 className="tm-access-denied-title">{t("clubs.accessDenied")}</h1>
+          <h1 className="tm-access-denied-title">{t("common.error")}</h1>
           <p className="tm-access-denied-text">{error}</p>
           <Link href="/" className="tm-clubs-link">
             {t("common.backToHome")}
@@ -101,57 +106,50 @@ export default function ClubsPage() {
         <p className="tm-clubs-subtitle">{t("clubs.subtitle")}</p>
       </header>
 
-      {clubs.length === 0 ? (
+      {/* Sign in prompt for unauthenticated users */}
+      {!isAuthenticated && (
+        <div className="tm-auth-cta mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-blue-800 dark:text-blue-200 text-sm">
+            <Link href="/auth/sign-in" className="font-semibold underline hover:no-underline">
+              {t("auth.signInToBook")}
+            </Link>
+          </p>
+        </div>
+      )}
+
+      {/* Search bar */}
+      <PublicSearchBar
+        initialSearch={searchTerm}
+        initialIndoorOnly={indoorOnly}
+        onSearchChange={handleSearchChange}
+      />
+
+      {loading ? (
+        <div className="tm-clubs-grid">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="tm-club-card animate-pulse">
+              <div className="tm-club-card-header">
+                <div className="tm-club-logo-placeholder bg-gray-200 dark:bg-gray-700" />
+                <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+              <div className="tm-club-details space-y-2">
+                <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-4 w-2/3 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+              <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded mt-4" />
+            </div>
+          ))}
+        </div>
+      ) : clubs.length === 0 ? (
         <div className="tm-clubs-empty">
-          <p className="tm-clubs-empty-text">{t("clubs.noClubs")}</p>
+          <p className="tm-clubs-empty-text">
+            {getEmptyStateMessage(searchTerm, indoorOnly, t)}
+          </p>
         </div>
       ) : (
         <section className="tm-clubs-grid">
           {clubs.map((club) => (
-            <div key={club.id} className="tm-club-card">
-              <div className="tm-club-card-header">
-                {isValidImageUrl(club.logo) ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={club.logo as string}
-                    alt={`${club.name} logo`}
-                    className="tm-club-logo"
-                  />
-                ) : (
-                  <div className="tm-club-logo-placeholder">
-                    {club.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <h2 className="tm-club-name">{club.name}</h2>
-              </div>
-
-              <div className="tm-club-details">
-                <div className="tm-club-detail-row">
-                  <span className="tm-club-detail-label">{t("common.address")}:</span>
-                  <span className="tm-club-detail-value">{club.location}</span>
-                </div>
-                {club.contactInfo && (
-                  <div className="tm-club-detail-row">
-                    <span className="tm-club-detail-label">{t("common.contact")}:</span>
-                    <span className="tm-club-detail-value">
-                      {club.contactInfo}
-                    </span>
-                  </div>
-                )}
-                {club.openingHours && (
-                  <div className="tm-club-detail-row">
-                    <span className="tm-club-detail-label">{t("common.hours")}:</span>
-                    <span className="tm-club-detail-value">
-                      {club.openingHours}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <Link href={`/clubs/${club.id}`}>
-                <Button className="tm-view-courts-button">{t("clubs.viewCourts")}</Button>
-              </Link>
-            </div>
+            <PublicClubCard key={club.id} club={club} />
           ))}
         </section>
       )}
