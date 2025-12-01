@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import Header from "@/components/layout/Header";
 import { PublicFooter } from "@/components/layout";
 import { Card, IMLink } from "@/components/ui";
 import { PublicSearchBar } from "@/components/PublicSearchBar";
@@ -47,7 +48,9 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="rsp-container min-h-screen">
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="rsp-container flex-1">
 
       {/* Hero section with background and search */}
       <section className="tm-hero relative overflow-hidden bg-linear-to-br from-(--rsp-primary) via-[#0a1040] to-(--rsp-primary)">
@@ -189,9 +192,9 @@ export default function Home() {
           </Card>
         </div>
       </section>
-
+      </main>
       {/* Footer */}
       <PublicFooter />
-    </main>
+    </div>
   );
 }
