@@ -142,6 +142,7 @@ export function PersonalizedSection({ userName }: PersonalizedSectionProps) {
   }, [fetchHomeData, fetchClubs]);
 
   // Handle quick booking court selection
+  // Note: priceCents is passed by QuickBookingModal but not used in navigation
   const handleQuickBookingSelectCourt = (courtId: string, date: string, startTime: string, endTime: string) => {
     router.push(`/clubs/${selectedClubId}?courtId=${courtId}&date=${date}&start=${startTime}&end=${endTime}`);
     setIsQuickBookingOpen(false);
@@ -297,7 +298,7 @@ export function PersonalizedSection({ userName }: PersonalizedSectionProps) {
                       </div>
                     )}
                     {notification.courtInfo && (
-                      <div className="text-sm text-gray-500 dark:text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {notification.courtInfo}
                       </div>
                     )}
