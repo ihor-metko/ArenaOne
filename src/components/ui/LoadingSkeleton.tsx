@@ -32,7 +32,7 @@ export function ClubCardsGridSkeleton({ count = 4 }: { count?: number }) {
   return (
     <div className="rsp-popular-clubs-grid">
       {Array.from({ length: count }).map((_, i) => (
-        <ClubCardSkeleton key={i} />
+        <ClubCardSkeleton key={`club-skeleton-${i}`} />
       ))}
     </div>
   );
@@ -48,7 +48,7 @@ export function PersonalizedSectionSkeleton() {
         <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-sm animate-pulse mb-6" />
         <div className="grid gap-6 md:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="tm-personalized-block">
+            <div key={`personalized-skeleton-${i}`} className="tm-personalized-block">
               <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded-sm animate-pulse mb-4" />
               <div className="space-y-3">
                 <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded-sm animate-pulse" />
