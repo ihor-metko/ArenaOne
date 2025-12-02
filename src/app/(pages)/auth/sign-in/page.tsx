@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, Card, Input, IMLink } from "@/components/ui";
+import { Input, IMLink } from "@/components/ui";
 import { getRoleHomepage } from "@/utils/roleRedirect";
 import { validateRedirectUrl } from "@/utils/redirectValidation";
 import type { UserRole } from "@/lib/auth";
@@ -96,73 +96,115 @@ export default function SignInPage() {
   // Show loading state while checking session
   if (status === "loading") {
     return (
-      <main className="rsp-container p-8 flex items-center justify-center">
-        <div className="rsp-loading text-center">{t("common.loading")}</div>
-      </main>
+      <div className="im-auth-card">
+        <div className="text-center" style={{ color: "var(--im-auth-text)" }}>
+          {t("common.loading")}
+        </div>
+      </div>
     );
   }
 
   // If already authenticated, show loading while redirecting
   if (status === "authenticated") {
     return (
-      <main className="rsp-container p-8 flex items-center justify-center">
-        <div className="rsp-loading text-center">{t("common.loading")}</div>
-      </main>
+      <div className="im-auth-card">
+        <div className="text-center" style={{ color: "var(--im-auth-text)" }}>
+          {t("common.loading")}
+        </div>
+      </div>
     );
   }
 
   return (
-    <main className="rsp-container p-8 flex items-center justify-center">
+    <>
       {/* Toast Notification */}
       {toast && (
-        <div
-          role="alert"
-          className="fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-400"
-        >
+        <div role="alert" className="im-auth-toast">
           {toast}
         </div>
       )}
 
-      <Card title={t("auth.login")} className="w-full max-w-md">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="im-auth-card">
+        {/* Header */}
+        <div className="im-auth-card-header">
+          <h1 className="im-auth-card-title">{t("auth.signInTitle")}</h1>
+          <p className="im-auth-card-subtitle">{t("auth.signInSubtitle")}</p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="im-auth-form">
+          {/* Error message */}
           {error && (
-            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm">
+            <div role="alert" className="im-auth-error">
               {error}
             </div>
           )}
-          <div className="rsp-form-group">
-            <Input
-              label={t("common.email")}
+
+          {/* Email field */}
+          <div className="im-auth-input-group">
+            <label htmlFor="email" className="im-auth-label">
+              {t("common.email")}
+            </label>
+            <input
+              id="email"
               type="email"
+              className="im-auth-input"
               placeholder={t("auth.enterEmail")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
           </div>
-          <div className="rsp-form-group">
+
+          {/* Password field */}
+          <div className="im-auth-input-group">
+            <label htmlFor="password" className="im-auth-label">
+              {t("common.password")}
+            </label>
             <Input
-              label={t("common.password")}
+              id="password"
               type="password"
+              className="im-auth-input"
               placeholder={t("auth.enterPassword")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
+              showPasswordToggle
             />
           </div>
-          <div className="rsp-button-group">
-            <Button type="submit" disabled={loading} className="w-full">
-              {loading ? t("auth.signingIn") : t("common.signIn")}
-            </Button>
+
+          {/* Forgot password link */}
+          <div className="text-right">
+            <IMLink href="#" className="im-auth-forgot-link">
+              {t("auth.forgotPassword")}
+            </IMLink>
           </div>
-          <p className="rsp-text text-center text-sm">
+
+          {/* Submit button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="im-auth-button"
+          >
+            {loading ? t("auth.signingIn") : t("common.signIn")}
+          </button>
+        </form>
+
+        {/* Links section */}
+        <div className="im-auth-links">
+          <p className="im-auth-link-text">
             {t("auth.dontHaveAccount")}{" "}
-            <IMLink href={redirectTo ? `/auth/sign-up?redirectTo=${encodeURIComponent(redirectTo)}` : "/auth/sign-up"}>
+            <IMLink
+              href={redirectTo ? `/auth/sign-up?redirectTo=${encodeURIComponent(redirectTo)}` : "/auth/sign-up"}
+              className="im-auth-link"
+            >
               {t("common.register")}
             </IMLink>
           </p>
-        </form>
-      </Card>
-    </main>
+        </div>
+      </div>
+    </>
   );
 }

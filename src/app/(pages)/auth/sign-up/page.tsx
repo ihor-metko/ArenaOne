@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, Card, Input, IMLink } from "@/components/ui";
+import { Input, IMLink } from "@/components/ui";
 import { validateRedirectUrl } from "@/utils/redirectValidation";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -62,62 +62,101 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="rsp-container p-8 flex items-center justify-center">
-      <Card title={t("auth.registerTitle")} className="w-full max-w-md">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm">
-              {error}
-            </div>
+    <div className="im-auth-card">
+      {/* Header */}
+      <div className="im-auth-card-header">
+        <h1 className="im-auth-card-title">{t("auth.registerTitle")}</h1>
+        <p className="im-auth-card-subtitle">{t("auth.registerSubtitle")}</p>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="im-auth-form">
+        {/* Error message */}
+        {error && (
+          <div role="alert" className="im-auth-error">
+            {error}
+          </div>
+        )}
+
+        {/* Name field */}
+        <div className="im-auth-input-group">
+          <label htmlFor="name" className="im-auth-label">
+            {t("common.name")}
+          </label>
+          <input
+            id="name"
+            type="text"
+            className="im-auth-input"
+            placeholder={t("auth.enterName")}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoComplete="name"
+          />
+        </div>
+
+        {/* Email field */}
+        <div className="im-auth-input-group">
+          <label htmlFor="email" className="im-auth-label">
+            {t("common.email")}
+          </label>
+          <input
+            id="email"
+            type="email"
+            className="im-auth-input"
+            placeholder={t("auth.enterEmail")}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
+        </div>
+
+        {/* Password field */}
+        <div className="im-auth-input-group">
+          <label htmlFor="password" className="im-auth-label">
+            {t("common.password")}
+          </label>
+          <Input
+            id="password"
+            type="password"
+            className="im-auth-input"
+            placeholder={t("auth.createPassword")}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={MIN_PASSWORD_LENGTH}
+            autoComplete="new-password"
+            showPasswordToggle
+          />
+          {password.length > 0 && !isPasswordValid && (
+            <p className="im-auth-validation">
+              {t("auth.passwordMinLength", { minLength: MIN_PASSWORD_LENGTH })}
+            </p>
           )}
-          <div className="rsp-form-group">
-            <Input
-              label={t("common.name")}
-              type="text"
-              placeholder={t("auth.enterName")}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div className="rsp-form-group">
-            <Input
-              label={t("common.email")}
-              type="email"
-              placeholder={t("auth.enterEmail")}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="rsp-form-group">
-            <Input
-              label={t("common.password")}
-              type="password"
-              placeholder={t("auth.createPassword")}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={MIN_PASSWORD_LENGTH}
-            />
-            {password.length > 0 && !isPasswordValid && (
-              <p className="text-sm text-red-500 mt-1">
-                {t("auth.passwordMinLength", { minLength: MIN_PASSWORD_LENGTH })}
-              </p>
-            )}
-          </div>
-          <div className="rsp-button-group">
-            <Button type="submit" disabled={loading} className="w-full">
-              {loading ? t("auth.creatingAccount") : t("auth.createAccount")}
-            </Button>
-          </div>
-          <p className="rsp-text text-center text-sm">
-            {t("auth.alreadyHaveAccount")}{" "}
-            <IMLink href={redirectTo ? `/auth/sign-in?redirectTo=${encodeURIComponent(redirectTo)}` : "/auth/sign-in"}>
-              {t("common.signIn")}
-            </IMLink>
-          </p>
-        </form>
-      </Card>
-    </main>
+        </div>
+
+        {/* Submit button */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="im-auth-button"
+        >
+          {loading ? t("auth.creatingAccount") : t("auth.createAccount")}
+        </button>
+      </form>
+
+      {/* Links section */}
+      <div className="im-auth-links">
+        <p className="im-auth-link-text">
+          {t("auth.alreadyHaveAccount")}{" "}
+          <IMLink
+            href={redirectTo ? `/auth/sign-in?redirectTo=${encodeURIComponent(redirectTo)}` : "/auth/sign-in"}
+            className="im-auth-link"
+          >
+            {t("common.signIn")}
+          </IMLink>
+        </p>
+      </div>
+    </div>
   );
 }

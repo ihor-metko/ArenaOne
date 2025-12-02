@@ -1,0 +1,253 @@
+@reference "tailwindcss";
+
+/* Auth page semantic color variables */
+:root {
+  --im-auth-overlay: rgba(0, 0, 0, 0.4);
+  --im-auth-card-bg: rgba(255, 255, 255, 0.9);
+  --im-auth-card-border: rgba(255, 255, 255, 0.3);
+  --im-auth-input-bg: rgba(255, 255, 255, 0.8);
+  --im-auth-input-border: rgba(0, 0, 0, 0.1);
+  --im-auth-input-focus-border: var(--im-primary);
+  --im-auth-text: #1f2937;
+  --im-auth-text-muted: #6b7280;
+  --im-auth-error-bg: rgba(239, 68, 68, 0.1);
+  --im-auth-error-border: rgba(239, 68, 68, 0.3);
+  --im-auth-error-text: #dc2626;
+  --im-auth-success-bg: rgba(34, 197, 94, 0.1);
+  --im-auth-success-border: rgba(34, 197, 94, 0.3);
+  --im-auth-success-text: #16a34a;
+}
+
+.dark {
+  --im-auth-overlay: rgba(0, 0, 0, 0.7);
+  --im-auth-card-bg: rgba(18, 18, 18, 0.85);
+  --im-auth-card-border: rgba(255, 255, 255, 0.1);
+  --im-auth-input-bg: rgba(30, 30, 30, 0.8);
+  --im-auth-input-border: rgba(255, 255, 255, 0.1);
+  --im-auth-input-focus-border: var(--im-primary);
+  --im-auth-text: #eaeaea;
+  --im-auth-text-muted: #9ca3af;
+  --im-auth-error-bg: rgba(239, 68, 68, 0.15);
+  --im-auth-error-border: rgba(239, 68, 68, 0.4);
+  --im-auth-error-text: #f87171;
+  --im-auth-success-bg: rgba(34, 197, 94, 0.15);
+  --im-auth-success-border: rgba(34, 197, 94, 0.4);
+  --im-auth-success-text: #4ade80;
+}
+
+/* Auth page background with full-screen image */
+.im-auth-background {
+  @apply fixed inset-0 w-full h-full;
+  background-image: url('/platform/padel-club-banner.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -2;
+}
+
+/* Semi-transparent overlay that adapts to theme */
+.im-auth-overlay {
+  @apply fixed inset-0 w-full h-full;
+  background-color: var(--im-auth-overlay);
+  backdrop-filter: blur(2px);
+  z-index: -1;
+}
+
+/* Decorative element - subtle sports pattern */
+.im-auth-decorative {
+  @apply fixed inset-0 w-full h-full pointer-events-none;
+  background-image: 
+    radial-gradient(circle at 20% 80%, var(--im-primary) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--im-primary) 0%, transparent 50%);
+  opacity: 0.05;
+  z-index: -1;
+}
+
+/* Main container for auth pages */
+.im-auth-container {
+  @apply flex items-center justify-center min-h-screen p-4;
+  @apply sm:p-6 md:p-8;
+}
+
+/* Glassmorphism card for auth forms */
+.im-auth-card {
+  @apply w-full rounded-2xl p-6 sm:p-8;
+  @apply shadow-2xl;
+  max-width: 440px;
+  background: var(--im-auth-card-bg);
+  border: 1px solid var(--im-auth-card-border);
+  backdrop-filter: blur(20px);
+}
+
+/* Card header with title */
+.im-auth-card-header {
+  @apply text-center mb-6 sm:mb-8;
+}
+
+.im-auth-card-title {
+  @apply text-2xl sm:text-3xl font-bold mb-2;
+  color: var(--im-auth-text);
+}
+
+.im-auth-card-subtitle {
+  @apply text-sm sm:text-base;
+  color: var(--im-auth-text-muted);
+}
+
+/* Form container */
+.im-auth-form {
+  @apply space-y-5;
+}
+
+/* Input group with label */
+.im-auth-input-group {
+  @apply relative;
+}
+
+.im-auth-label {
+  @apply block text-sm font-medium mb-2;
+  color: var(--im-auth-text);
+}
+
+/* Auth-specific input styling */
+.im-auth-input {
+  @apply w-full rounded-lg px-4 py-3 text-sm;
+  @apply transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-0;
+  background: var(--im-auth-input-bg);
+  border: 1px solid var(--im-auth-input-border);
+  color: var(--im-auth-text);
+}
+
+.im-auth-input::placeholder {
+  color: var(--im-auth-text-muted);
+  opacity: 0.7;
+}
+
+.im-auth-input:focus {
+  border-color: var(--im-auth-input-focus-border);
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+}
+
+/* Primary button styling */
+.im-auth-button {
+  @apply w-full py-3 px-4 rounded-lg;
+  @apply font-semibold text-sm sm:text-base;
+  @apply transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  background-color: var(--im-primary);
+  color: #ffffff;
+}
+
+.im-auth-button:hover:not(:disabled) {
+  background-color: var(--im-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.im-auth-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Error message styling */
+.im-auth-error {
+  @apply px-4 py-3 rounded-lg text-sm;
+  @apply border;
+  background: var(--im-auth-error-bg);
+  border-color: var(--im-auth-error-border);
+  color: var(--im-auth-error-text);
+}
+
+/* Success/Toast message styling */
+.im-auth-success {
+  @apply px-4 py-3 rounded-lg text-sm;
+  @apply border;
+  background: var(--im-auth-success-bg);
+  border-color: var(--im-auth-success-border);
+  color: var(--im-auth-success-text);
+}
+
+/* Links section below form */
+.im-auth-links {
+  @apply mt-6 text-center space-y-3;
+}
+
+.im-auth-link-text {
+  @apply text-sm;
+  color: var(--im-auth-text-muted);
+}
+
+.im-auth-link {
+  @apply font-medium transition-colors duration-200;
+  color: var(--im-primary);
+}
+
+.im-auth-link:hover {
+  color: var(--im-primary-hover);
+  text-decoration: underline;
+}
+
+/* Forgot password link */
+.im-auth-forgot-link {
+  @apply block text-sm text-right mb-4;
+  color: var(--im-auth-text-muted);
+}
+
+.im-auth-forgot-link:hover {
+  color: var(--im-primary);
+}
+
+/* Inline validation message */
+.im-auth-validation {
+  @apply text-xs mt-1.5;
+  color: var(--im-auth-error-text);
+}
+
+/* Toast notification (positioned) */
+.im-auth-toast {
+  @apply fixed top-4 right-4 z-50;
+  @apply px-4 py-3 rounded-lg shadow-lg;
+  @apply text-sm font-medium;
+  background: var(--im-auth-success-bg);
+  border: 1px solid var(--im-auth-success-border);
+  color: var(--im-auth-success-text);
+  animation: im-auth-slide-in 0.3s ease-out forwards;
+}
+
+/* Animation for toast */
+@keyframes im-auth-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Divider with text */
+.im-auth-divider {
+  @apply flex items-center my-6;
+}
+
+.im-auth-divider::before,
+.im-auth-divider::after {
+  @apply flex-1;
+  content: '';
+  border-bottom: 1px solid var(--im-auth-input-border);
+}
+
+.im-auth-divider-text {
+  @apply px-4 text-sm;
+  color: var(--im-auth-text-muted);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .im-auth-card {
+    @apply mx-2;
+    max-width: 100%;
+  }
+}
