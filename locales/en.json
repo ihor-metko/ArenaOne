@@ -47,7 +47,10 @@
     "processing": "Processing...",
     "language": "Language",
     "published": "Published",
-    "draft": "Draft"
+    "draft": "Draft",
+    "courts": "Courts",
+    "events": "Events",
+    "settings": "Settings"
   },
   "home": {
     "title": "Padel Club",
@@ -63,6 +66,7 @@
     "manageClubs": "Manage Clubs (Admin) →",
     "manageCoaches": "Manage Coaches (Admin) →",
     "manageNotifications": "Notifications (Admin) →",
+    "coaches": "Coaches",
     "exampleModal": "Example Modal",
     "exampleModalContent": "This is an example modal dialog. Press Escape or click outside to close.",
     "heroHeadline": "Find Your Perfect Padel Court",
