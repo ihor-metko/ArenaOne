@@ -571,5 +571,33 @@
     "terms": "Terms of Service",
     "allRightsReserved": "All rights reserved.",
     "socialLinks": "Social Links"
+  },
+  "wizard": {
+    "progress": "Booking progress",
+    "steps": {
+      "dateTime": "Date & Time",
+      "selectCourt": "Select Court",
+      "payment": "Payment"
+    },
+    "step1Title": "Select date, time and duration",
+    "step2Title": "Choose an available court",
+    "step3Title": "Review and confirm payment",
+    "estimatedPrice": "Estimated Price",
+    "priceVariesByTime": "Final price may vary based on court selection",
+    "peakHoursHint": "Peak hours - courts may fill up quickly",
+    "loadingCourts": "Finding available courts...",
+    "selectCourt": "Select a court",
+    "availableCount": "{count} available",
+    "courtUnavailable": "Not available at this time",
+    "court": "Court",
+    "total": "Total",
+    "selectPaymentMethod": "Select payment method",
+    "payWithCard": "Card",
+    "applePay": "Apple Pay",
+    "googlePay": "Google Pay",
+    "confirmBooking": "Confirm Booking",
+    "continue": "Continue",
+    "bookingConfirmed": "Booking Confirmed!",
+    "bookingConfirmedMessage": "Your court has been reserved successfully."
   }
 }

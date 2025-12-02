@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { BookingModal } from "@/components/booking/BookingModal";
-import { QuickBookingModal } from "@/components/QuickBookingModal";
+import { QuickBookingWizard } from "@/components/QuickBookingWizard";
 import { RequestTrainingModal } from "../../../../../../archived_features/components/training/RequestTrainingModal";
 import { CourtCard } from "@/components/CourtCard";
 import { CourtSlotsToday } from "@/components/CourtSlotsToday";
@@ -269,17 +269,12 @@ export default function ClubDetailPage({
     setIsQuickBookingOpen(true);
   };
 
-  const handleQuickBookingSelectCourt = (courtId: string, date: string, startTime: string, endTime: string) => {
-    if (!isAuthenticated) {
-      setIsAuthPromptOpen(true);
-      return;
+  const handleQuickBookingComplete = () => {
+    // Refresh availability data after successful booking
+    if (club?.courts) {
+      fetchAvailability(club.courts);
     }
-    const startDateTime = `${date}T${startTime}:00.000Z`;
-    const endDateTime = `${date}T${endTime}:00.000Z`;
-    setPreselectedSlot({ startTime: startDateTime, endTime: endDateTime });
-    setSelectedCourtId(courtId);
-    setIsQuickBookingOpen(false);
-    setIsModalOpen(true);
+    setTimelineKey((prev) => prev + 1);
   };
 
   const handleQuickBookingClose = () => {
@@ -356,17 +351,6 @@ export default function ClubDetailPage({
 
   const handleGalleryNavigate = (index: number) => {
     setGalleryIndex(index);
-  };
-
-  // Get availability status for quick view
-  const getCourtAvailabilityStatus = (courtId: string): "available" | "limited" | "booked" => {
-    const slots = courtAvailability[courtId] || [];
-    if (slots.length === 0) return "booked";
-
-    const availableSlots = slots.filter((slot) => slot.status === "available");
-    if (availableSlots.length === 0) return "booked";
-    if (availableSlots.length < slots.length / 2) return "limited";
-    return "available";
   };
 
   // Loading skeleton
@@ -801,11 +785,11 @@ export default function ClubDetailPage({
       )}
 
       {isAuthenticated && (
-        <QuickBookingModal
+        <QuickBookingWizard
           clubId={club.id}
           isOpen={isQuickBookingOpen}
           onClose={handleQuickBookingClose}
-          onSelectCourt={handleQuickBookingSelectCourt}
+          onBookingComplete={handleQuickBookingComplete}
         />
       )}
 

@@ -571,5 +571,33 @@
     "terms": "Умови використання",
     "allRightsReserved": "Усі права захищено.",
     "socialLinks": "Соціальні мережі"
+  },
+  "wizard": {
+    "progress": "Прогрес бронювання",
+    "steps": {
+      "dateTime": "Дата та час",
+      "selectCourt": "Вибір корту",
+      "payment": "Оплата"
+    },
+    "step1Title": "Виберіть дату, час та тривалість",
+    "step2Title": "Виберіть доступний корт",
+    "step3Title": "Перегляньте та підтвердіть оплату",
+    "estimatedPrice": "Орієнтовна ціна",
+    "priceVariesByTime": "Остаточна ціна може залежати від вибору корту",
+    "peakHoursHint": "Пікові години - корти можуть швидко заповнитися",
+    "loadingCourts": "Пошук доступних кортів...",
+    "selectCourt": "Виберіть корт",
+    "availableCount": "{count} доступно",
+    "courtUnavailable": "Недоступний у цей час",
+    "court": "Корт",
+    "total": "Разом",
+    "selectPaymentMethod": "Виберіть спосіб оплати",
+    "payWithCard": "Картка",
+    "applePay": "Apple Pay",
+    "googlePay": "Google Pay",
+    "confirmBooking": "Підтвердити бронювання",
+    "continue": "Продовжити",
+    "bookingConfirmed": "Бронювання підтверджено!",
+    "bookingConfirmedMessage": "Ваш корт успішно заброньований."
   }
 }
