@@ -58,11 +58,12 @@ function parseTags(tags: string | null | undefined): string[] {
     if (Array.isArray(parsed)) {
       return parsed.filter((tag): tag is string => typeof tag === "string");
     }
+    // If JSON but not an array, fall through to comma-separated parsing
   } catch {
-    // If not JSON, treat as comma-separated
-    return tags.split(",").map((t) => t.trim()).filter(Boolean);
+    // If not valid JSON, fall through to comma-separated parsing
   }
-  return [];
+  // Fallback: treat as comma-separated string
+  return tags.split(",").map((t) => t.trim()).filter(Boolean);
 }
 
 export function PublicClubCard({ club, role = "player" }: PublicClubCardProps) {

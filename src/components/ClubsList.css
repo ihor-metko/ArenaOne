@@ -235,9 +235,13 @@
 }
 
 .rsp-club-description {
-  @apply text-sm mb-3 line-clamp-2;
+  @apply text-sm mb-3;
   color: var(--rsp-foreground);
   opacity: 0.8;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* Address Section */
