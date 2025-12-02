@@ -50,7 +50,13 @@
     "draft": "Чернетка",
     "courts": "Корти",
     "events": "Події",
-    "settings": "Налаштування"
+    "settings": "Налаштування",
+    "imageCarousel": "Карусель зображень",
+    "previousImage": "Попереднє зображення",
+    "nextImage": "Наступне зображення",
+    "carouselSlides": "Слайди каруселі",
+    "slide": "Слайд",
+    "slideOf": "Слайд {current} з {total}"
   },
   "home": {
     "title": "Падел Клуб MVP",

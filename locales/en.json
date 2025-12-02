@@ -50,7 +50,13 @@
     "draft": "Draft",
     "courts": "Courts",
     "events": "Events",
-    "settings": "Settings"
+    "settings": "Settings",
+    "imageCarousel": "Image carousel",
+    "previousImage": "Previous image",
+    "nextImage": "Next image",
+    "carouselSlides": "Carousel slides",
+    "slide": "Slide",
+    "slideOf": "Slide {current} of {total}"
   },
   "home": {
     "title": "Padel Club",
