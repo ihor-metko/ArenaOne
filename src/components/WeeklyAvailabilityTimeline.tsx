@@ -1,13 +1,30 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui";
+import { isSlotBlocked } from "@/utils/slotBlocking";
 import type {
   WeeklyAvailabilityResponse,
   HourSlotAvailability,
   CourtAvailabilityStatus,
 } from "@/types/court";
 import "./WeeklyAvailabilityTimeline.css";
+
+/**
+ * WeeklyAvailabilityTimeline - Weekly court availability matrix/timetable
+ * 
+ * BLOCKING RULES (client-side):
+ * - Past days: Any day before the current local date is blocked
+ * - Today: Slots with slotStartHour < currentLocalHour are blocked
+ * - Ongoing slots: If slotStartHour === currentLocalHour, the slot is ALLOWED (not blocked)
+ *   This allows users to book slots that are currently in progress (e.g., 20:00 slot at 20:05)
+ * 
+ * NOTE: These rules are UI-only. Server-side booking endpoints MUST enforce the same
+ * blocking logic independently. Do not rely on client-side blocking alone.
+ * 
+ * TODO: Backend developers - ensure booking API validates same blocking rules server-side
+ */
 
 interface WeeklyAvailabilityTimelineProps {
   clubId: string;
@@ -47,25 +64,31 @@ function getCurrentWeekMonday(): Date {
   return monday;
 }
 
-// Format date for display
-function formatWeekRange(weekStart: string, weekEnd: string): string {
+// Format date for display using locale
+function formatWeekRange(weekStart: string, weekEnd: string, locale: string): string {
   const start = new Date(weekStart);
   const end = new Date(weekEnd);
-  const startMonth = start.toLocaleDateString("en-US", { month: "short" });
-  const endMonth = end.toLocaleDateString("en-US", { month: "short" });
-  const startDay = start.getDate();
-  const endDay = end.getDate();
-  const year = start.getFullYear();
-
-  if (startMonth === endMonth) {
-    return `${startMonth} ${startDay} - ${endDay}, ${year}`;
-  }
-  return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
+  const dateFormat = new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" });
+  const yearFormat = new Intl.DateTimeFormat(locale, { year: "numeric" });
+  
+  const startFormatted = dateFormat.format(start);
+  const endFormatted = dateFormat.format(end);
+  const year = yearFormat.format(start);
+  
+  return `${startFormatted} - ${endFormatted}, ${year}`;
 }
 
-// Format hour for display
-function formatHour(hour: number): string {
-  return `${hour.toString().padStart(2, "0")}:00`;
+// Format hour for display using locale
+function formatHour(hour: number, locale: string): string {
+  const date = new Date();
+  date.setHours(hour, 0, 0, 0);
+  return new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
+}
+
+// Get localized day name
+function getLocalizedDayName(dateStr: string, locale: string, format: "short" | "long" = "short"): string {
+  const date = new Date(dateStr + "T00:00:00");
+  return new Intl.DateTimeFormat(locale, { weekday: format }).format(date);
 }
 
 // Tooltip component
@@ -73,9 +96,12 @@ interface TooltipProps {
   slot: HourSlotAvailability;
   dayName: string;
   position: { x: number; y: number };
+  locale: string;
+  isBlocked?: boolean;
+  blockReason?: string;
 }
 
-function Tooltip({ slot, dayName, position }: TooltipProps) {
+function Tooltip({ slot, dayName, position, locale, isBlocked, blockReason }: TooltipProps) {
   return (
     <div
       className="tm-availability-tooltip"
@@ -86,34 +112,42 @@ function Tooltip({ slot, dayName, position }: TooltipProps) {
       }}
     >
       <div className="tm-tooltip-title">
-        {dayName} {formatHour(slot.hour)}
+        {dayName} {formatHour(slot.hour, locale)}
       </div>
-      <div className="tm-tooltip-summary">
-        <span className="tm-tooltip-stat">
-          <span className="tm-tooltip-dot tm-tooltip-dot--available" />
-          {slot.summary.available}
-        </span>
-        <span className="tm-tooltip-stat">
-          <span className="tm-tooltip-dot tm-tooltip-dot--partial" />
-          {slot.summary.partial}
-        </span>
-        <span className="tm-tooltip-stat">
-          <span className="tm-tooltip-dot tm-tooltip-dot--booked" />
-          {slot.summary.booked}
-        </span>
-        <span className="tm-tooltip-stat">
-          <span className="tm-tooltip-dot tm-tooltip-dot--pending" />
-          {slot.summary.pending}
-        </span>
-      </div>
+      {isBlocked ? (
+        <div className="tm-tooltip-blocked">{blockReason}</div>
+      ) : (
+        <div className="tm-tooltip-summary">
+          <span className="tm-tooltip-stat">
+            <span className="tm-tooltip-dot tm-tooltip-dot--available" />
+            {slot.summary.available}
+          </span>
+          <span className="tm-tooltip-stat">
+            <span className="tm-tooltip-dot tm-tooltip-dot--partial" />
+            {slot.summary.partial}
+          </span>
+          <span className="tm-tooltip-stat">
+            <span className="tm-tooltip-dot tm-tooltip-dot--booked" />
+            {slot.summary.booked}
+          </span>
+          <span className="tm-tooltip-stat">
+            <span className="tm-tooltip-dot tm-tooltip-dot--pending" />
+            {slot.summary.pending}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
 
 // Loading skeleton
-function LoadingSkeleton() {
+interface LoadingSkeletonProps {
+  ariaLabel: string;
+}
+
+function LoadingSkeleton({ ariaLabel }: LoadingSkeletonProps) {
   return (
-    <div className="tm-weekly-skeleton" aria-label="Loading availability">
+    <div className="tm-weekly-skeleton" aria-label={ariaLabel}>
       <div className="tm-weekly-skeleton-header" />
       <div className="tm-weekly-skeleton-grid">
         {/* Header row */}
@@ -139,16 +173,18 @@ function LoadingSkeleton() {
 interface ErrorStateProps {
   message: string;
   onRetry: () => void;
+  errorTitle: string;
+  retryLabel: string;
 }
 
-function ErrorState({ message, onRetry }: ErrorStateProps) {
+function ErrorState({ message, onRetry, errorTitle, retryLabel }: ErrorStateProps) {
   return (
     <div className="tm-weekly-error" role="alert">
       <div className="tm-weekly-error-icon">⚠️</div>
-      <div className="tm-weekly-error-title">Unable to load availability</div>
+      <div className="tm-weekly-error-title">{errorTitle}</div>
       <div className="tm-weekly-error-message">{message}</div>
       <button className="tm-weekly-error-retry" onClick={onRetry}>
-        Try again
+        {retryLabel}
       </button>
     </div>
   );
@@ -158,6 +194,7 @@ export function WeeklyAvailabilityTimeline({
   clubId,
   onSlotClick,
 }: WeeklyAvailabilityTimelineProps) {
+  const t = useTranslations("weeklyAvailability");
   const [weekStart, setWeekStart] = useState<Date>(getCurrentWeekMonday);
   const [data, setData] = useState<WeeklyAvailabilityResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -166,8 +203,16 @@ export function WeeklyAvailabilityTimeline({
     slot: HourSlotAvailability;
     dayName: string;
     position: { x: number; y: number };
+    isBlocked?: boolean;
+    blockReason?: string;
   } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Get browser locale for Intl formatting
+  const locale = typeof window !== "undefined" ? navigator.language : "en-US";
+  
+  // Compute current time once per render for consistent blocking checks
+  const now = useMemo(() => new Date(), []);
 
   const fetchAvailability = useCallback(async () => {
     setIsLoading(true);
@@ -212,8 +257,13 @@ export function WeeklyAvailabilityTimeline({
   const handleBlockClick = (
     date: string,
     hour: number,
-    courts: CourtAvailabilityStatus[]
+    courts: CourtAvailabilityStatus[],
+    blocked: boolean
   ) => {
+    // Early return for blocked slots - do not call click handler
+    if (blocked) {
+      return;
+    }
     if (onSlotClick) {
       onSlotClick(date, hour, courts);
     }
@@ -222,7 +272,9 @@ export function WeeklyAvailabilityTimeline({
   const handleBlockHover = (
     event: React.MouseEvent,
     slot: HourSlotAvailability,
-    dayName: string
+    dayName: string,
+    isBlocked: boolean,
+    blockReason: string | undefined
   ) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const containerRect = containerRef.current?.getBoundingClientRect();
@@ -235,6 +287,8 @@ export function WeeklyAvailabilityTimeline({
           x: rect.left + rect.width / 2 - containerRect.left,
           y: rect.top - containerRect.top - 8,
         },
+        isBlocked,
+        blockReason,
       });
     }
   };
@@ -242,13 +296,31 @@ export function WeeklyAvailabilityTimeline({
   const handleBlockLeave = () => {
     setTooltip(null);
   };
+  
+  // Get block reason text based on reason code
+  const getBlockReasonText = (reason: "past_day" | "past_hour" | null): string => {
+    if (reason === "past_day") {
+      return t("slotBlockedPastDay");
+    }
+    if (reason === "past_hour") {
+      return t("slotBlockedPastHour");
+    }
+    return "";
+  };
 
   if (isLoading) {
-    return <LoadingSkeleton />;
+    return <LoadingSkeleton ariaLabel={t("loadingAvailability")} />;
   }
 
   if (error) {
-    return <ErrorState message={error} onRetry={fetchAvailability} />;
+    return (
+      <ErrorState
+        message={error}
+        onRetry={fetchAvailability}
+        errorTitle={t("errorTitle")}
+        retryLabel={t("tryAgain")}
+      />
+    );
   }
 
   if (!data) {
@@ -259,35 +331,35 @@ export function WeeklyAvailabilityTimeline({
     <div className="tm-weekly-timeline" ref={containerRef}>
       <div className="tm-weekly-timeline-container">
         <div className="tm-weekly-timeline-header">
-          <h3 className="tm-weekly-timeline-title">Weekly Court Availability</h3>
+          <h3 className="tm-weekly-timeline-title">{t("title")}</h3>
           <div className="tm-weekly-timeline-week-nav">
             <Button
               variant="outline"
               className="tm-weekly-timeline-nav-btn"
               onClick={handlePrevWeek}
-              aria-label="Previous week"
+              aria-label={t("previousWeek")}
             >
               ←
             </Button>
             <span className="tm-weekly-timeline-week-label">
-              {formatWeekRange(data.weekStart, data.weekEnd)}
+              {formatWeekRange(data.weekStart, data.weekEnd, locale)}
             </span>
             <Button
               variant="outline"
               className="tm-weekly-timeline-nav-btn"
               onClick={handleNextWeek}
-              aria-label="Next week"
+              aria-label={t("nextWeek")}
             >
               →
             </Button>
           </div>
         </div>
 
-        <div className="tm-weekly-grid" role="grid" aria-label="Weekly court availability">
+        <div className="tm-weekly-grid" role="grid" aria-label={t("ariaGridLabel")}>
           {/* Header row */}
           <div className="tm-weekly-grid-header" role="row">
             <div className="tm-weekly-grid-corner" role="columnheader">
-              Day / Hour
+              {t("dayHour")}
             </div>
             {HOURS.map((hour) => (
               <div
@@ -295,63 +367,100 @@ export function WeeklyAvailabilityTimeline({
                 className="tm-weekly-grid-hour-header"
                 role="columnheader"
               >
-                {formatHour(hour)}
+                {formatHour(hour, locale)}
               </div>
             ))}
           </div>
 
           {/* Day rows */}
-          {data.days.map((day) => (
-            <div key={day.date} className="tm-weekly-grid-row" role="row">
-              <div className="tm-weekly-grid-day-label" role="rowheader">
-                <span>{day.dayName.slice(0, 3)}</span>
-                <span className="ml-1 opacity-60 text-[10px]">
-                  {new Date(day.date).getDate()}
-                </span>
-              </div>
-              {day.hours.map((slot) => (
-                <div
-                  key={`${day.date}-${slot.hour}`}
-                  className={`tm-availability-block tm-availability-block--${slot.overallStatus}`}
-                  role="gridcell"
-                  tabIndex={0}
-                  aria-label={`${day.dayName} ${formatHour(slot.hour)}: ${slot.summary.available} available, ${slot.summary.partial} partially booked, ${slot.summary.booked} booked, ${slot.summary.pending} pending`}
-                  onClick={() =>
-                    handleBlockClick(day.date, slot.hour, slot.courts)
-                  }
-                  onMouseEnter={(e) => handleBlockHover(e, slot, day.dayName)}
-                  onMouseLeave={handleBlockLeave}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleBlockClick(day.date, slot.hour, slot.courts);
-                    }
-                  }}
-                >
-                  {slot.summary.available}/{slot.summary.total}
+          {data.days.map((day) => {
+            const localizedDayName = getLocalizedDayName(day.date, locale, "short");
+            
+            return (
+              <div key={day.date} className="tm-weekly-grid-row" role="row">
+                <div className="tm-weekly-grid-day-label" role="rowheader">
+                  <span>{localizedDayName}</span>
+                  <span className="ml-1 opacity-60 text-[10px]">
+                    {new Date(day.date + "T00:00:00").getDate()}
+                  </span>
                 </div>
-              ))}
-            </div>
-          ))}
+                {day.hours.map((slot) => {
+                  const blockStatus = isSlotBlocked(day.date, slot.hour, now);
+                  const { isBlocked, reason } = blockStatus;
+                  const blockReasonText = getBlockReasonText(reason);
+                  
+                  // Determine CSS class - blocked slots get a special class
+                  const slotClass = isBlocked 
+                    ? "tm-availability-block tm-availability-block--blocked-past"
+                    : `tm-availability-block tm-availability-block--${slot.overallStatus}`;
+                  
+                  // Build aria-label based on blocked state
+                  const ariaLabel = isBlocked
+                    ? t("ariaSlotBlockedLabel", { 
+                        dayName: getLocalizedDayName(day.date, locale, "long"),
+                        time: formatHour(slot.hour, locale),
+                        reason: blockReasonText
+                      })
+                    : t("ariaSlotLabel", {
+                        dayName: getLocalizedDayName(day.date, locale, "long"),
+                        time: formatHour(slot.hour, locale),
+                        available: slot.summary.available,
+                        partial: slot.summary.partial,
+                        booked: slot.summary.booked,
+                        pending: slot.summary.pending
+                      });
+                  
+                  return (
+                    <div
+                      key={`${day.date}-${slot.hour}`}
+                      className={slotClass}
+                      role="gridcell"
+                      tabIndex={isBlocked ? -1 : 0}
+                      aria-disabled={isBlocked}
+                      aria-label={ariaLabel}
+                      title={isBlocked ? blockReasonText : undefined}
+                      onClick={() =>
+                        handleBlockClick(day.date, slot.hour, slot.courts, isBlocked)
+                      }
+                      onMouseEnter={(e) => handleBlockHover(e, slot, localizedDayName, isBlocked, blockReasonText)}
+                      onMouseLeave={handleBlockLeave}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleBlockClick(day.date, slot.hour, slot.courts, isBlocked);
+                        }
+                      }}
+                    >
+                      {isBlocked ? "—" : `${slot.summary.available}/${slot.summary.total}`}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
 
         {/* Legend */}
         <div className="tm-weekly-legend">
           <div className="tm-legend-item">
             <span className="tm-legend-dot tm-legend-dot--available" />
-            <span>Available</span>
+            <span>{t("slotAvailable")}</span>
           </div>
           <div className="tm-legend-item">
             <span className="tm-legend-dot tm-legend-dot--partial" />
-            <span>Partially occupied</span>
+            <span>{t("slotPartial")}</span>
           </div>
           <div className="tm-legend-item">
             <span className="tm-legend-dot tm-legend-dot--booked" />
-            <span>Fully booked</span>
+            <span>{t("slotBooked")}</span>
           </div>
           <div className="tm-legend-item">
             <span className="tm-legend-dot tm-legend-dot--pending" />
-            <span>Pending</span>
+            <span>{t("slotPending")}</span>
+          </div>
+          <div className="tm-legend-item">
+            <span className="tm-legend-dot tm-legend-dot--blocked-past" />
+            <span>{t("slotBlockedPast")}</span>
           </div>
         </div>
 
@@ -361,6 +470,9 @@ export function WeeklyAvailabilityTimeline({
             slot={tooltip.slot}
             dayName={tooltip.dayName}
             position={tooltip.position}
+            locale={locale}
+            isBlocked={tooltip.isBlocked}
+            blockReason={tooltip.blockReason}
           />
         )}
       </div>
