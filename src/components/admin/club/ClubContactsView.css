@@ -1,5 +1,5 @@
 .im-contacts-view-link {
-  color: var(--rsp-link, #0066cc);
+  color: var(--rsp-primary);
   text-decoration: none;
 }
 
