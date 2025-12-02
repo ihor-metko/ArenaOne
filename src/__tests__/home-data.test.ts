@@ -28,6 +28,7 @@ describe("Home Data Server Functions", () => {
           location: "123 Test St",
           contactInfo: "test@test.com",
           openingHours: "9am-10pm",
+          shortDescription: "A great club",
           logo: "https://example.com/logo.png",
           courts: [
             { id: "court-1", indoor: true },
@@ -41,6 +42,7 @@ describe("Home Data Server Functions", () => {
           location: "456 Test Ave",
           contactInfo: null,
           openingHours: null,
+          shortDescription: null,
           logo: null,
           courts: [
             { id: "court-4", indoor: false },
@@ -59,6 +61,7 @@ describe("Home Data Server Functions", () => {
         location: "123 Test St",
         contactInfo: "test@test.com",
         openingHours: "9am-10pm",
+        shortDescription: "A great club",
         logo: "https://example.com/logo.png",
         indoorCount: 2,
         outdoorCount: 1,
@@ -69,6 +72,7 @@ describe("Home Data Server Functions", () => {
         location: "456 Test Ave",
         contactInfo: null,
         openingHours: null,
+        shortDescription: null,
         logo: null,
         indoorCount: 0,
         outdoorCount: 1,
@@ -105,6 +109,7 @@ describe("Home Data Server Functions", () => {
           location: true,
           contactInfo: true,
           openingHours: true,
+          shortDescription: true,
           logo: true,
           courts: {
             select: {
