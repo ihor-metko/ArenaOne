@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button, Input, Card } from "@/components/ui";
 import { UploadField } from "./UploadField.client";
 import { BusinessHoursField } from "./BusinessHoursField.client";
@@ -306,9 +307,9 @@ export function ClubForm() {
       {/* Header with breadcrumb and actions */}
       <div className="im-club-form-header">
         <div className="im-club-form-breadcrumb">
-          <a href="/admin/clubs" className="im-club-form-breadcrumb-link">
+          <Link href="/admin/clubs" className="im-club-form-breadcrumb-link">
             Clubs
-          </a>
+          </Link>
           <span className="im-club-form-breadcrumb-separator">/</span>
           <span className="im-club-form-breadcrumb-current">New Club</span>
         </div>
