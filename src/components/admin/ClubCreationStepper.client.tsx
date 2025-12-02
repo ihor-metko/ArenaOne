@@ -7,6 +7,7 @@ import { Button, Card, Input } from "@/components/ui";
 import { BusinessHoursField } from "./BusinessHoursField.client";
 import { UploadField } from "./UploadField.client";
 import "./ClubCreationStepper.css";
+import "./InlineCourtsField.css";
 
 // Types
 interface UploadedFile {
@@ -303,7 +304,7 @@ export function ClubCreationStepper() {
           indoor: court.indoor,
           defaultPriceCents: court.defaultPriceCents,
         })),
-        tags: formData.clubType ? `["${formData.clubType}"]` : null,
+        tags: formData.clubType ? JSON.stringify([formData.clubType]) : null,
       };
 
       const response = await fetch("/api/admin/clubs/new", {
