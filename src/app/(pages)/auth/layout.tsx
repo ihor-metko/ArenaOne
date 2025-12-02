@@ -1,7 +1,9 @@
+import "./auth.css";
+
 /**
  * Auth Layout
  * Authentication pages layout without header for a cleaner auth experience.
- * Footer anchored to bottom of viewport.
+ * Features a full-screen background image with semi-transparent overlay.
  */
 export default function AuthLayout({
   children,
@@ -9,10 +11,20 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-1 flex items-center justify-center">
+    <div className="relative min-h-screen overflow-auto">
+      {/* Full-screen background image */}
+      <div className="im-auth-background" aria-hidden="true" />
+      
+      {/* Semi-transparent overlay */}
+      <div className="im-auth-overlay" aria-hidden="true" />
+      
+      {/* Decorative elements */}
+      <div className="im-auth-decorative" aria-hidden="true" />
+      
+      {/* Main content */}
+      <main className="im-auth-container">
         {children}
-      </div>
+      </main>
     </div>
   );
 }
