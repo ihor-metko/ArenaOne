@@ -66,7 +66,7 @@ function getRoleNavLinks(role: UserRole | undefined, t: ReturnType<typeof useTra
  * Get dropdown menu items based on user role
  */
 function getRoleDropdownItems(
-  role: UserRole | undefined, 
+  role: UserRole | undefined,
   t: ReturnType<typeof useTranslations>
 ): NavLink[] {
   const items: NavLink[] = [];
@@ -140,7 +140,7 @@ export default function Header({ title, showSearch = false, hideProfile = false 
   const { data: session, status } = useSession();
   const t = useTranslations();
   const currentLocale = useCurrentLocale();
-  
+
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -207,7 +207,6 @@ export default function Header({ title, showSearch = false, hideProfile = false 
         <div className="rsp-header-left">
           <div className="rsp-header-brand">
             <Link href="/" aria-label={t("home.title")}>
-              <span>🏓</span>
               <span className="rsp-header-title">{title || t("home.title")}</span>
             </Link>
           </div>

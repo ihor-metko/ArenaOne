@@ -48,8 +48,8 @@
     "language": "Language"
   },
   "home": {
-    "title": "Paddle Club MVP",
-    "welcomeTitle": "Welcome to Paddle Club",
+    "title": "Padel Club",
+    "welcomeTitle": "Welcome to Padel Club",
     "welcomeMessage": "This is an example card component using rsp- prefixed classes for structure and styling.",
     "yourName": "Your Name",
     "enterYourName": "Enter your name",
@@ -63,14 +63,14 @@
     "manageNotifications": "Notifications (Admin) →",
     "exampleModal": "Example Modal",
     "exampleModalContent": "This is an example modal dialog. Press Escape or click outside to close.",
-    "heroHeadline": "Find Your Perfect Paddle Court",
-    "heroSubheadline": "Discover and book courts at the best paddle clubs near you",
+    "heroHeadline": "Find Your Perfect Padel Court",
+    "heroSubheadline": "Discover and book courts at the best padel clubs near you",
     "popularClubs": "Popular Clubs",
     "whyChooseUs": "Why Choose Us",
     "feature1Title": "Easy Booking",
     "feature1Desc": "Book courts in seconds with our simple and intuitive booking system.",
     "feature2Title": "Top Clubs",
-    "feature2Desc": "Access the best paddle clubs with quality courts and facilities.",
+    "feature2Desc": "Access the best padel clubs with quality courts and facilities.",
     "feature3Title": "Train with Pros",
     "feature3Desc": "Connect with professional coaches to improve your game.",
     "personalized": {
@@ -114,7 +114,7 @@
   },
   "clubs": {
     "title": "Clubs",
-    "subtitle": "Browse available paddle clubs",
+    "subtitle": "Browse available padel clubs",
     "loadingClubs": "Loading clubs...",
     "failedToLoad": "Failed to load clubs. Please try again later.",
     "noClubs": "No clubs available yet.",
@@ -138,7 +138,7 @@
   "admin": {
     "clubs": {
       "title": "Admin - Clubs",
-      "subtitle": "Manage all paddle clubs",
+      "subtitle": "Manage all padel clubs",
       "createClub": "Create Club",
       "editClub": "Edit Club",
       "deleteClub": "Delete Club",
@@ -367,7 +367,7 @@
   "playerDashboard": {
     "player": "Player",
     "greeting": "Hello, {name}!",
-    "subtitle": "Your paddle club dashboard",
+    "subtitle": "Your padel club dashboard",
     "quickBook": {
       "title": "Quick Book",
       "selectClub": "Select Club",
@@ -408,8 +408,8 @@
     "bookingsError": "Failed to load bookings. Please try again."
   },
   "footer": {
-    "brandName": "Paddle Club",
-    "tagline": "Find and book paddle courts at the best clubs near you.",
+    "brandName": "Padel Club",
+    "tagline": "Find and book padel courts at the best clubs near you.",
     "quickLinks": "Quick Links",
     "home": "Home",
     "clubs": "Clubs",
