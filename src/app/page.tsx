@@ -66,7 +66,7 @@ export default function Home() {
         </div>
 
         {/* Search bar in hero */}
-        <div className="tm-hero-search max-w-2xl mx-auto rounded-lg p-4">
+        <div className="tm-hero-search w-full max-w-2xl mx-auto rounded-lg p-4">
           <PublicSearchBar navigateOnSearch compact />
         </div>
       </section>
