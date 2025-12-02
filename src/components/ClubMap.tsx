@@ -46,8 +46,6 @@ export function ClubMap({ latitude, longitude, clubName, className = "" }: ClubM
       zoom={15}
       scrollWheelZoom={true}
       className={`rsp-club-map ${className}`.trim()}
-      role="application"
-      aria-label={`Map showing location of ${clubName}`}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
