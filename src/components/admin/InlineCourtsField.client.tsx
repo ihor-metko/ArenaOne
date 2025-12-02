@@ -21,7 +21,7 @@ interface InlineCourtsFieldProps {
 }
 
 function generateTempId(): string {
-  return `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `temp-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
 export function InlineCourtsField({ value, onChange, disabled }: InlineCourtsFieldProps) {

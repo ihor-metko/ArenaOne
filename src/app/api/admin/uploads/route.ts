@@ -10,6 +10,14 @@ const ALLOWED_MIME_TYPES = [
   "image/webp",
 ];
 
+// Allowed file extensions (whitelist)
+const ALLOWED_EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/jpg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
 // Max file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -47,8 +55,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate unique key for the file
-    const extension = file.name.split(".").pop() || "jpg";
+    // Generate unique key for the file using validated extension from MIME type
+    const extension = ALLOWED_EXTENSIONS[file.type] || "jpg";
     const key = `clubs/${randomUUID()}.${extension}`;
 
     // In production, this would upload to Supabase/S3/Cloudinary

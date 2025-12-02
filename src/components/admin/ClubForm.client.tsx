@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Card } from "@/components/ui";
 import { UploadField } from "./UploadField.client";
@@ -677,7 +677,7 @@ interface GalleryFieldProps {
 }
 
 function GalleryField({ label, value, onChange, disabled }: GalleryFieldProps) {
-  const inputRef = { current: null as HTMLInputElement | null };
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -736,7 +736,7 @@ function GalleryField({ label, value, onChange, disabled }: GalleryFieldProps) {
       </div>
       
       <input
-        ref={(el) => { inputRef.current = el; }}
+        ref={inputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp"
         multiple
