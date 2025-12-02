@@ -97,6 +97,17 @@ describe("PublicClubCard", () => {
       expect(img).toHaveAttribute("src", "https://example.com/hero.jpg");
     });
 
+    it("renders hero image with relative URL path", () => {
+      const clubWithRelativeHero = {
+        ...baseClub,
+        heroImage: "/uploads/clubs/hero.jpg",
+      };
+      render(<PublicClubCard club={clubWithRelativeHero} />);
+      const img = screen.getByAltText("Test Club main image");
+      expect(img).toBeInTheDocument();
+      expect(img).toHaveAttribute("src", "/uploads/clubs/hero.jpg");
+    });
+
     it("falls back to logo when heroImage is not provided", () => {
       const clubWithLogo = {
         ...baseClub,
@@ -108,9 +119,32 @@ describe("PublicClubCard", () => {
       expect(img).toHaveAttribute("src", "https://example.com/logo.png");
     });
 
+    it("falls back to logo with relative URL path when heroImage is not provided", () => {
+      const clubWithRelativeLogo = {
+        ...baseClub,
+        logo: "/uploads/clubs/logo.png",
+      };
+      render(<PublicClubCard club={clubWithRelativeLogo} />);
+      const img = screen.getByAltText("Test Club logo");
+      expect(img).toBeInTheDocument();
+      expect(img).toHaveAttribute("src", "/uploads/clubs/logo.png");
+    });
+
     it("renders placeholder when no images are provided", () => {
       render(<PublicClubCard club={baseClub} />);
       expect(screen.getByText("T")).toBeInTheDocument(); // First letter of "Test Club"
+    });
+
+    it("prefers heroImage over logo when both are provided", () => {
+      const clubWithBothImages = {
+        ...baseClub,
+        heroImage: "/uploads/clubs/hero.jpg",
+        logo: "/uploads/clubs/logo.png",
+      };
+      render(<PublicClubCard club={clubWithBothImages} />);
+      const img = screen.getByAltText("Test Club main image");
+      expect(img).toBeInTheDocument();
+      expect(img).toHaveAttribute("src", "/uploads/clubs/hero.jpg");
     });
   });
 
