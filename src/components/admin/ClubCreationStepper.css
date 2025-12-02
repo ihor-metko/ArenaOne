@@ -402,3 +402,56 @@
   font-size: 1.5rem;
   font-weight: 300;
 }
+
+/* Edit mode specific styles */
+.im-stepper--edit {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.im-stepper-indicator-step--clickable {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.im-stepper-indicator-step--clickable:hover .im-stepper-indicator-number {
+  border-color: var(--rsp-primary);
+}
+
+.im-stepper-indicator-step--clickable:focus {
+  outline: 2px solid var(--rsp-primary);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+.im-stepper-unsaved {
+  color: #f59e0b;
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
+/* Checkbox styles for edit mode */
+.im-stepper-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.im-stepper-checkbox {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--rsp-border);
+  accent-color: var(--rsp-primary);
+}
+
+.im-stepper-checkbox-label {
+  font-size: 0.875rem;
+  color: var(--rsp-foreground);
+}

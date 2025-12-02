@@ -3,15 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Modal, IMLink } from "@/components/ui";
+import { Button, Modal, IMLink } from "@/components/ui";
 import { UserRoleIndicator } from "@/components/UserRoleIndicator";
 import { NotificationBell } from "@/components/admin/NotificationBell";
-import { ClubHeaderView } from "@/components/admin/club/ClubHeaderView";
-import { ClubContactsView } from "@/components/admin/club/ClubContactsView";
-import { ClubHoursView } from "@/components/admin/club/ClubHoursView";
-import { ClubCourtsQuickList } from "@/components/admin/club/ClubCourtsQuickList";
-import { ClubGalleryView } from "@/components/admin/club/ClubGalleryView";
-import { ClubCoachesView } from "@/components/admin/club/ClubCoachesView";
+import { ClubEditStepper, StepperFormData } from "@/components/admin/club-stepper";
 import type { ClubDetail } from "@/types/club";
 import "./page.css";
 
@@ -81,10 +76,125 @@ export default function AdminClubDetailPage({
     setTimeout(() => setToast(null), 4000);
   }, []);
 
-  const handleSectionUpdate = useCallback(async (section: string, payload: Record<string, unknown>) => {
+  // Upload file helper
+  const uploadFile = useCallback(async (file: File): Promise<{ url: string; key: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/admin/uploads", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Upload failed");
+    }
+
+    return response.json();
+  }, []);
+
+  // Generate slug from name
+  const generateSlug = useCallback((name: string): string => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }, []);
+
+  const handleSaveStep = useCallback(async (step: number, formData: Partial<StepperFormData>) => {
     if (!clubId) return;
 
     try {
+      let section: string;
+      let payload: Record<string, unknown>;
+
+      switch (step) {
+        case 1: {
+          section = "header";
+          payload = {
+            name: formData.name?.trim() || "",
+            slug: formData.slug?.trim() || generateSlug(formData.name || ""),
+            shortDescription: formData.shortDescription?.trim() || "",
+            isPublic: formData.isPublic ?? club?.isPublic ?? false,
+          };
+          break;
+        }
+        case 2: {
+          section = "contacts";
+          payload = {
+            location: formData.address?.trim() || "Address not provided",
+            city: formData.city?.trim() || null,
+            phone: formData.phone?.trim() || null,
+            email: formData.email?.trim() || null,
+            website: formData.website?.trim() || null,
+          };
+          break;
+        }
+        case 3: {
+          section = "hours";
+          payload = {
+            businessHours: formData.businessHours || [],
+            specialHours: [], // Preserve existing special hours
+          };
+          break;
+        }
+        case 4: {
+          // Courts are managed separately via the existing court management
+          // We'll use the courts section update to sync inline courts
+          section = "courts";
+          payload = {
+            courts: (formData.courts || []).map((court) => ({
+              id: court.id.startsWith("temp-") ? undefined : court.id,
+              name: court.name,
+              type: court.type || null,
+              surface: court.surface || null,
+              indoor: court.indoor,
+              defaultPriceCents: court.defaultPriceCents,
+            })),
+          };
+          break;
+        }
+        case 5: {
+          section = "gallery";
+          
+          // Upload new files if any
+          let logoData = { url: "", key: "" };
+          const galleryData: { url: string; key: string }[] = [];
+
+          if (formData.logo?.file) {
+            logoData = await uploadFile(formData.logo.file);
+          } else if (formData.logo?.url) {
+            logoData = { url: formData.logo.url, key: formData.logo.key };
+          }
+
+          for (const galleryItem of formData.gallery || []) {
+            if (galleryItem.file) {
+              const uploaded = await uploadFile(galleryItem.file);
+              galleryData.push(uploaded);
+            } else if (galleryItem.url) {
+              galleryData.push({ url: galleryItem.url, key: galleryItem.key });
+            }
+          }
+
+          payload = {
+            heroImage: logoData.url || club?.heroImage || null,
+            logo: logoData.url || club?.logo || null,
+            gallery: galleryData.map((img, index) => ({
+              imageUrl: img.url,
+              imageKey: img.key || null,
+              altText: null,
+              sortOrder: index,
+            })),
+          };
+          break;
+        }
+        default:
+          throw new Error("Invalid step");
+      }
+
       const response = await fetch(`/api/admin/clubs/${clubId}/section`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -98,14 +208,10 @@ export default function AdminClubDetailPage({
 
       const updatedClub = await response.json();
       setClub(updatedClub);
-      showToast("success", "Changes saved successfully");
-      return updatedClub;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to save changes";
-      showToast("error", message);
       throw err;
     }
-  }, [clubId, showToast]);
+  }, [clubId, club, generateSlug, uploadFile]);
 
   const handleDelete = async () => {
     if (!clubId) return;
@@ -126,21 +232,6 @@ export default function AdminClubDetailPage({
       showToast("error", err instanceof Error ? err.message : "Failed to delete club");
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleTogglePublish = async () => {
-    if (!club) return;
-
-    try {
-      await handleSectionUpdate("header", {
-        name: club.name,
-        slug: club.slug,
-        shortDescription: club.shortDescription,
-        isPublic: !club.isPublic,
-      });
-    } catch {
-      // Error already handled in handleSectionUpdate
     }
   };
 
@@ -183,87 +274,37 @@ export default function AdminClubDetailPage({
 
       <header className="rsp-header flex items-center justify-between mb-8">
         <div>
-          <div className="im-club-view-breadcrumb">
-            <IMLink href="/admin/clubs" className="im-club-view-breadcrumb-link">
-              Clubs
-            </IMLink>
-            <span className="im-club-view-breadcrumb-separator">/</span>
-            <span className="im-club-view-breadcrumb-current">{club.name}</span>
+          <h1 className="rsp-title text-3xl font-bold">{club.name}</h1>
+          <div className="flex items-center gap-2 mt-2">
+            <span
+              className={`im-status-badge ${
+                club.isPublic
+                  ? "im-status-badge--published"
+                  : "im-status-badge--unpublished"
+              }`}
+            >
+              {club.isPublic ? "Published" : "Unpublished"}
+            </span>
           </div>
-          <h1 className="rsp-title text-3xl font-bold mt-2">{club.name}</h1>
         </div>
         <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="text-red-500 hover:text-red-700"
+          >
+            Delete Club
+          </Button>
           <NotificationBell />
           <UserRoleIndicator />
         </div>
       </header>
 
       <section className="rsp-content">
-        <div className="flex justify-between items-center mb-6">
-          <IMLink href="/admin/clubs">← Back to Clubs</IMLink>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleTogglePublish}
-            >
-              {club.isPublic ? "Unpublish" : "Publish"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteModalOpen(true)}
-              className="text-red-500 hover:text-red-700"
-            >
-              Delete Club
-            </Button>
-          </div>
-        </div>
-
-        <div className="im-club-view-grid">
-          {/* Header Section */}
-          <Card className="im-club-view-section">
-            <ClubHeaderView
-              club={club}
-              onUpdate={(payload) => handleSectionUpdate("header", payload)}
-            />
-          </Card>
-
-          {/* Contacts Section */}
-          <Card className="im-club-view-section">
-            <ClubContactsView
-              club={club}
-              onUpdate={(payload) => handleSectionUpdate("contacts", payload)}
-            />
-          </Card>
-
-          {/* Business Hours Section */}
-          <Card className="im-club-view-section">
-            <ClubHoursView
-              club={club}
-              onUpdate={(payload) => handleSectionUpdate("hours", payload)}
-            />
-          </Card>
-
-          {/* Courts Quick List */}
-          <Card className="im-club-view-section">
-            <ClubCourtsQuickList club={club} />
-          </Card>
-
-          {/* Gallery Section */}
-          <Card className="im-club-view-section">
-            <ClubGalleryView
-              club={club}
-              onUpdate={(payload) => handleSectionUpdate("gallery", payload)}
-            />
-          </Card>
-
-          {/* Coaches Section */}
-          <Card className="im-club-view-section">
-            <ClubCoachesView
-              club={club}
-              onUpdate={(payload) => handleSectionUpdate("coaches", payload)}
-            />
-          </Card>
-        </div>
+        <ClubEditStepper
+          club={club}
+          onSaveStep={handleSaveStep}
+        />
       </section>
 
       {/* Delete Confirmation Modal */}

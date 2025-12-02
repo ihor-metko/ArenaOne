@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/requireRole";
 
-type Section = "header" | "contacts" | "hours" | "gallery" | "coaches";
+type Section = "header" | "contacts" | "hours" | "gallery" | "coaches" | "courts";
 
 interface HeaderPayload {
   name: string;
@@ -61,9 +61,22 @@ interface CoachesPayload {
   coachIds: string[];
 }
 
+interface CourtData {
+  id?: string;
+  name: string;
+  type?: string | null;
+  surface?: string | null;
+  indoor: boolean;
+  defaultPriceCents: number;
+}
+
+interface CourtsPayload {
+  courts: CourtData[];
+}
+
 interface SectionUpdateRequest {
   section: Section;
-  payload: HeaderPayload | ContactsPayload | HoursPayload | GalleryPayload | CoachesPayload;
+  payload: HeaderPayload | ContactsPayload | HoursPayload | GalleryPayload | CoachesPayload | CourtsPayload;
 }
 
 function validateHours(hours: BusinessHour[]): { valid: boolean; error?: string } {
@@ -134,7 +147,7 @@ export async function PATCH(
       );
     }
 
-    const validSections: Section[] = ["header", "contacts", "hours", "gallery", "coaches"];
+    const validSections: Section[] = ["header", "contacts", "hours", "gallery", "coaches", "courts"];
     if (!validSections.includes(section)) {
       return NextResponse.json(
         { error: `Invalid section. Must be one of: ${validSections.join(", ")}` },
@@ -354,6 +367,83 @@ export async function PATCH(
             await tx.coach.updateMany({
               where: { id: { in: coachesPayload.coachIds } },
               data: { clubId },
+            });
+          }
+
+          return tx.club.findUnique({
+            where: { id: clubId },
+            include: {
+              courts: true,
+              coaches: { include: { user: true } },
+              gallery: { orderBy: { sortOrder: "asc" } },
+              businessHours: { orderBy: { dayOfWeek: "asc" } },
+              specialHours: { orderBy: { date: "asc" } },
+            },
+          });
+        });
+        break;
+      }
+
+      case "courts": {
+        const courtsPayload = payload as CourtsPayload;
+
+        // Generate slug from name
+        const generateSlug = (name: string): string => {
+          return name
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, "")
+            .replace(/[\s_-]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+        };
+
+        updatedClub = await prisma.$transaction(async (tx) => {
+          // Get existing court IDs
+          const existingCourts = await tx.court.findMany({
+            where: { clubId },
+            select: { id: true },
+          });
+          const existingCourtIds = new Set(existingCourts.map((c) => c.id));
+
+          // Process courts from payload
+          const incomingCourtIds = new Set<string>();
+          
+          for (const court of courtsPayload.courts || []) {
+            if (court.id && existingCourtIds.has(court.id)) {
+              // Update existing court
+              incomingCourtIds.add(court.id);
+              await tx.court.update({
+                where: { id: court.id },
+                data: {
+                  name: court.name,
+                  slug: generateSlug(court.name),
+                  type: court.type || null,
+                  surface: court.surface || null,
+                  indoor: court.indoor,
+                  defaultPriceCents: court.defaultPriceCents,
+                },
+              });
+            } else {
+              // Create new court
+              await tx.court.create({
+                data: {
+                  clubId,
+                  name: court.name,
+                  slug: generateSlug(court.name),
+                  type: court.type || null,
+                  surface: court.surface || null,
+                  indoor: court.indoor,
+                  defaultPriceCents: court.defaultPriceCents,
+                },
+              });
+            }
+          }
+
+          // Delete courts that are no longer in the payload
+          const courtsToDelete = [...existingCourtIds].filter((id) => !incomingCourtIds.has(id));
+          if (courtsToDelete.length > 0) {
+            await tx.court.deleteMany({
+              where: { id: { in: courtsToDelete } },
             });
           }
 
