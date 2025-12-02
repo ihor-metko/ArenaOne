@@ -9,3 +9,4 @@ export { Multiselect } from "./Multiselect";
 export type { MultiselectOption } from "./Multiselect";
 export { LanguageSwitcher } from "./LanguageSwitcher";
 export { IMLink } from "./IMLink";
+export { ClubCardSkeleton, ClubCardsGridSkeleton, PersonalizedSectionSkeleton } from "./LoadingSkeleton";
