@@ -2,15 +2,9 @@
 
 import { useCallback } from "react";
 import { Button, Input } from "@/components/ui";
+import type { InlineCourt } from "@/types/admin";
 
-export interface InlineCourt {
-  id: string;
-  name: string;
-  type: string;
-  surface: string;
-  indoor: boolean;
-  defaultPriceCents: number;
-}
+export type { InlineCourt };
 
 export interface CourtsData {
   courts: InlineCourt[];

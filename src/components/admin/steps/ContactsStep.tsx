@@ -79,20 +79,18 @@ export function ContactsStep({
         </div>
       </div>
 
-      {showCoordinates && (
-        <div className="im-stepper-row">
-          <div className="im-stepper-field im-stepper-field--full">
-            <Input
-              label="Country"
-              name="country"
-              value={data.country}
-              onChange={handleInputChange}
-              placeholder="Country"
-              disabled={disabled}
-            />
-          </div>
+      <div className="im-stepper-row">
+        <div className="im-stepper-field im-stepper-field--full">
+          <Input
+            label="Country"
+            name="country"
+            value={data.country}
+            onChange={handleInputChange}
+            placeholder="Country"
+            disabled={disabled}
+          />
         </div>
-      )}
+      </div>
 
       <div className="im-stepper-row im-stepper-row--two">
         <div className="im-stepper-field">

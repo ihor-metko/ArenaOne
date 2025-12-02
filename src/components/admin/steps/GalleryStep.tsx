@@ -2,13 +2,9 @@
 
 import { useCallback, useRef } from "react";
 import { UploadField } from "@/components/admin/UploadField.client";
+import type { UploadedFile } from "@/types/admin";
 
-export interface UploadedFile {
-  url: string;
-  key: string;
-  file?: File;
-  preview?: string;
-}
+export type { UploadedFile };
 
 export interface GalleryData {
   logo: UploadedFile | null;

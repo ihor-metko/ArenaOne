@@ -2,13 +2,9 @@
 
 import { useCallback } from "react";
 import { BusinessHoursField } from "@/components/admin/BusinessHoursField.client";
+import type { BusinessHour } from "@/types/admin";
 
-export interface BusinessHour {
-  dayOfWeek: number;
-  openTime: string | null;
-  closeTime: string | null;
-  isClosed: boolean;
-}
+export type { BusinessHour };
 
 export interface HoursData {
   businessHours: BusinessHour[];
