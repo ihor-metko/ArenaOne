@@ -127,11 +127,6 @@ body {
   opacity: 0.6;
 }
 
-.tm-hero-search .rsp-input:focus {
-  border-color: var(--rsp-primary);
-  box-shadow: 0 0 0 2px var(--rsp-secondary);
-}
-
 .tm-hero-search .rsp-input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
