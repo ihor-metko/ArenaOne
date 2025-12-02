@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { QuickBookingWizard } from "@/components/QuickBookingWizard";
+import { TimelineBookingWizard } from "@/components/TimelineBookingWizard";
 import { RequestTrainingModal } from "../../../../../../archived_features/components/training/RequestTrainingModal";
 import { CourtCard } from "@/components/CourtCard";
 import { CourtSlotsToday } from "@/components/CourtSlotsToday";
@@ -100,6 +101,7 @@ export default function ClubDetailPage({
   const [isRequestTrainingOpen, setIsRequestTrainingOpen] = useState(false);
   const [preselectedSlot, setPreselectedSlot] = useState<Slot | null>(null);
   const [isCourtAvailabilityOpen, setIsCourtAvailabilityOpen] = useState(false);
+  const [isTimelineBookingOpen, setIsTimelineBookingOpen] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{
     date: string;
     hour: number;
@@ -258,23 +260,31 @@ export default function ClubDetailPage({
     setSelectedTimeSlot(null);
   };
 
-  const handleSelectCourtFromTimeline = (
-    courtId: string,
-    date: string,
-    startTime: string,
-    endTime: string
-  ) => {
+  // Handler to start the timeline booking wizard from court availability modal
+  // The callback receives court info but we already have it in selectedTimeSlot
+  const handleStartTimelineBooking = () => {
     if (!isAuthenticated) {
       setIsAuthPromptOpen(true);
       return;
     }
-    const startDateTime = `${date}T${startTime}:00.000Z`;
-    const endDateTime = `${date}T${endTime}:00.000Z`;
-    setPreselectedSlot({ startTime: startDateTime, endTime: endDateTime });
-    setSelectedCourtId(courtId);
+    // Close the court availability modal and open the timeline booking wizard
     setIsCourtAvailabilityOpen(false);
+    setIsTimelineBookingOpen(true);
+  };
+
+  const handleCloseTimelineBooking = () => {
+    setIsTimelineBookingOpen(false);
     setSelectedTimeSlot(null);
-    setIsModalOpen(true);
+  };
+
+  const handleTimelineBookingComplete = () => {
+    // Refresh availability data after successful booking
+    if (club?.courts) {
+      fetchAvailability(club.courts);
+    }
+    setTimelineKey((prev) => prev + 1);
+    setIsTimelineBookingOpen(false);
+    setSelectedTimeSlot(null);
   };
 
   const getSlotsForBookingModal = (courtId: string): Slot[] => {
@@ -760,14 +770,28 @@ export default function ClubDetailPage({
         />
       )}
 
-      {selectedTimeSlot && (
+      {/* Court Availability Modal - Shows available courts for a selected time slot */}
+      {selectedTimeSlot && !isTimelineBookingOpen && (
         <CourtAvailabilityModal
           isOpen={isCourtAvailabilityOpen}
           onClose={handleCloseCourtAvailability}
           date={selectedTimeSlot.date}
           hour={selectedTimeSlot.hour}
           courts={selectedTimeSlot.courts}
-          onSelectCourt={handleSelectCourtFromTimeline}
+          onSelectCourt={() => handleStartTimelineBooking()}
+        />
+      )}
+
+      {/* Timeline Booking Wizard - Step-by-step booking from weekly availability view */}
+      {isAuthenticated && selectedTimeSlot && (
+        <TimelineBookingWizard
+          clubId={club.id}
+          isOpen={isTimelineBookingOpen}
+          onClose={handleCloseTimelineBooking}
+          date={selectedTimeSlot.date}
+          hour={selectedTimeSlot.hour}
+          courts={selectedTimeSlot.courts}
+          onBookingComplete={handleTimelineBookingComplete}
         />
       )}
 

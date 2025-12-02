@@ -617,6 +617,8 @@
     "selectCourt": "Виберіть корт",
     "availableCount": "{count} доступно",
     "courtUnavailable": "Недоступний у цей час",
+    "courtBooked": "Вже заброньовано",
+    "courtPending": "Очікує підтвердження",
     "court": "Корт",
     "total": "Разом",
     "selectPaymentMethod": "Виберіть спосіб оплати",
@@ -627,6 +629,10 @@
     "continue": "Продовжити",
     "bookingConfirmed": "Бронювання підтверджено!",
     "bookingConfirmedMessage": "Ваш корт успішно заброньований."
+  },
+  "timelineBooking": {
+    "title": "Забронювати корт",
+    "selectedSlot": "Вибраний час"
   },
   "breadcrumbs": {
     "home": "Головна",

@@ -617,6 +617,8 @@
     "selectCourt": "Select a court",
     "availableCount": "{count} available",
     "courtUnavailable": "Not available at this time",
+    "courtBooked": "Already booked",
+    "courtPending": "Booking pending",
     "court": "Court",
     "total": "Total",
     "selectPaymentMethod": "Select payment method",
@@ -627,6 +629,10 @@
     "continue": "Continue",
     "bookingConfirmed": "Booking Confirmed!",
     "bookingConfirmedMessage": "Your court has been reserved successfully."
+  },
+  "timelineBooking": {
+    "title": "Book Court",
+    "selectedSlot": "Selected time slot"
   },
   "breadcrumbs": {
     "home": "Home",
