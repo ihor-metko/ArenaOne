@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { BookingModal } from "@/components/booking/BookingModal";
@@ -87,6 +87,7 @@ export default function ClubDetailPage({
 }) {
   const { data: session, status: authStatus } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const t = useTranslations();
   const [club, setClub] = useState<ClubWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -413,7 +414,7 @@ export default function ClubDetailPage({
         {!isAuthenticated && (
           <div className="rsp-club-auth-cta">
             <p className="rsp-club-auth-cta-text">
-              <IMLink href="/auth/sign-in" className="rsp-club-auth-cta-link">
+              <IMLink href={`/auth/sign-in?redirectTo=${encodeURIComponent(pathname)}`} className="rsp-club-auth-cta-link">
                 {t("auth.signInToBook")}
               </IMLink>
             </p>

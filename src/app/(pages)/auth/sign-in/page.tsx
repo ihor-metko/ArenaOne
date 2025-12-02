@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Card, Input, IMLink } from "@/components/ui";
 import { getRoleHomepage } from "@/utils/roleRedirect";
@@ -10,6 +10,7 @@ import type { UserRole } from "@/lib/auth";
 
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status, update: updateSession } = useSession();
   const t = useTranslations();
   const [email, setEmail] = useState("ihor.metko@gmail.com");
@@ -17,6 +18,9 @@ export default function SignInPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+
+  // Get redirectTo from query params
+  const redirectTo = searchParams.get("redirectTo");
 
   // Clear toast after display
   useEffect(() => {
@@ -26,16 +30,17 @@ export default function SignInPage() {
     }
   }, [toast]);
 
-  // Redirect already logged-in users to their role-specific homepage
+  // Redirect already logged-in users to their role-specific homepage or redirectTo
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
-      const redirectPath = getRoleHomepage(session.user.role as UserRole | undefined);
-      router.push(redirectPath);
+      const targetPath = redirectTo || getRoleHomepage(session.user.role as UserRole | undefined);
+      router.push(targetPath);
     }
-  }, [status, session, router]);
+  }, [status, session, router, redirectTo]);
 
   const handleRedirect = useCallback((userName: string | null | undefined, userRole: UserRole | undefined) => {
-    const redirectPath = getRoleHomepage(userRole);
+    // Prefer redirectTo from query params, fallback to role-based homepage
+    const redirectPath = redirectTo || getRoleHomepage(userRole);
 
     // Show welcome toast if user has a name
     if (userName) {
@@ -49,7 +54,7 @@ export default function SignInPage() {
       router.push(redirectPath);
       router.refresh();
     }
-  }, [router, t]);
+  }, [router, t, redirectTo]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,7 +156,7 @@ export default function SignInPage() {
           </div>
           <p className="rsp-text text-center text-sm">
             {t("auth.dontHaveAccount")}{" "}
-            <IMLink href="/auth/sign-up">
+            <IMLink href={redirectTo ? `/auth/sign-up?redirectTo=${encodeURIComponent(redirectTo)}` : "/auth/sign-up"}>
               {t("common.register")}
             </IMLink>
           </p>

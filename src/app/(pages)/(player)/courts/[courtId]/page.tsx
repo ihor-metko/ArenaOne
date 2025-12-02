@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Card, Button, IMLink } from "@/components/ui";
 import { BookingModal } from "@/components/booking/BookingModal";
@@ -78,6 +79,7 @@ export default function CourtDetailPage({
   params: Promise<{ courtId: string }>;
 }) {
   const { data: session, status: authStatus } = useSession();
+  const pathname = usePathname();
   const t = useTranslations();
   const [court, setCourt] = useState<CourtWithClub | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -294,7 +296,7 @@ export default function CourtDetailPage({
       {!isAuthenticated && (
         <div className="tm-auth-cta mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <p className="text-blue-800 dark:text-blue-200 text-sm">
-            <IMLink href="/auth/sign-in" className="font-semibold underline hover:no-underline">
+            <IMLink href={`/auth/sign-in?redirectTo=${encodeURIComponent(pathname)}`} className="font-semibold underline hover:no-underline">
               {t("auth.signInToBook")}
             </IMLink>
           </p>
