@@ -12,6 +12,7 @@ import { CourtSlotsToday } from "@/components/CourtSlotsToday";
 import { WeeklyAvailabilityTimeline } from "@/components/WeeklyAvailabilityTimeline";
 import { CourtAvailabilityModal } from "@/components/CourtAvailabilityModal";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
+import { GalleryModal } from "@/components/GalleryModal";
 import { Button, IMLink } from "@/components/ui";
 import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
@@ -79,6 +80,63 @@ function getTodayDateString(): string {
   return new Date().toISOString().split("T")[0];
 }
 
+// Parse tags from JSON string or comma-separated string
+function parseTags(tags: string | null | undefined): string[] {
+  if (!tags) return [];
+  try {
+    const parsed = JSON.parse(tags);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((tag): tag is string => typeof tag === "string");
+    }
+  } catch {
+    // If not valid JSON, fall through to comma-separated parsing
+  }
+  return tags.split(",").map((t) => t.trim()).filter(Boolean);
+}
+
+// Calculate price range from courts
+function getPriceRange(courts: Court[]): { min: number; max: number } | null {
+  if (courts.length === 0) return null;
+  const prices = courts.map((c) => c.defaultPriceCents);
+  return { min: Math.min(...prices), max: Math.max(...prices) };
+}
+
+// Count courts by type
+function getCourtCounts(courts: Court[]): { indoor: number; outdoor: number } {
+  return courts.reduce(
+    (acc, court) => {
+      if (court.indoor) {
+        acc.indoor++;
+      } else {
+        acc.outdoor++;
+      }
+      return acc;
+    },
+    { indoor: 0, outdoor: 0 }
+  );
+}
+
+// Safely construct Google Maps embed URL with validated coordinates
+function getGoogleMapsEmbedUrl(latitude: number, longitude: number, apiKey: string | undefined): string | null {
+  // Validate latitude and longitude are valid numbers within range
+  if (typeof latitude !== "number" || typeof longitude !== "number") {
+    return null;
+  }
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+    return null;
+  }
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  // Use encodeURIComponent for safety and construct URL with validated coordinates
+  const lat = encodeURIComponent(latitude.toString());
+  const lng = encodeURIComponent(longitude.toString());
+  const key = encodeURIComponent(apiKey || "");
+
+  return `https://www.google.com/maps/embed/v1/place?key=${key}&q=${lat},${lng}&zoom=15`;
+}
+
 export default function ClubDetailPage({
   params,
 }: {
@@ -105,6 +163,8 @@ export default function ClubDetailPage({
   } | null>(null);
   const [timelineKey, setTimelineKey] = useState(0);
   const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   // Get user ID from session, or use a placeholder for unauthenticated users
   const userId = session?.user?.id || "guest";
@@ -285,6 +345,31 @@ export default function ClubDetailPage({
     return getAvailableSlotsForCourt(courtId);
   };
 
+  // Gallery modal handlers
+  const handleGalleryOpen = (index: number) => {
+    setGalleryIndex(index);
+    setIsGalleryOpen(true);
+  };
+
+  const handleGalleryClose = () => {
+    setIsGalleryOpen(false);
+  };
+
+  const handleGalleryNavigate = (index: number) => {
+    setGalleryIndex(index);
+  };
+
+  // Get availability status for quick view
+  const getCourtAvailabilityStatus = (courtId: string): "available" | "limited" | "booked" => {
+    const slots = courtAvailability[courtId] || [];
+    if (slots.length === 0) return "booked";
+
+    const availableSlots = slots.filter((slot) => slot.status === "available");
+    if (availableSlots.length === 0) return "booked";
+    if (availableSlots.length < slots.length / 2) return "limited";
+    return "available";
+  };
+
   // Loading skeleton
   if (isLoading) {
     return (
@@ -326,7 +411,7 @@ export default function ClubDetailPage({
   const priceRange = getPriceRange(club.courts);
   const courtCounts = getCourtCounts(club.courts);
   const hasValidCoordinates = club.latitude !== null && club.longitude !== null && club.latitude !== undefined && club.longitude !== undefined;
-  const mapsEmbedUrl = hasValidCoordinates 
+  const mapsEmbedUrl = hasValidCoordinates
     ? getGoogleMapsEmbedUrl(club.latitude as number, club.longitude as number, process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
     : null;
   const hasMap = mapsEmbedUrl !== null;
@@ -334,9 +419,19 @@ export default function ClubDetailPage({
   // Format location display
   const locationDisplay = [club.city, club.country].filter(Boolean).join(", ") || club.location;
 
+  // Prepare gallery images for modal
+  const galleryImages = (club.gallery || [])
+    .map((image) => {
+      const imageUrl = getSupabaseStorageUrl(image.imageUrl);
+      return isValidImageUrl(imageUrl)
+        ? { url: imageUrl as string, alt: image.altText || `${club.name} gallery image` }
+        : null;
+    })
+    .filter((img): img is { url: string; alt: string } => img !== null);
+
   return (
     <main className="rsp-club-detail-page">
-      {/* Hero Section */}
+      {/* Hero Section with Club Name & Short Description */}
       <section className="rsp-club-hero">
         {hasHeroImage ? (
           <>
@@ -365,6 +460,9 @@ export default function ClubDetailPage({
             />
           )}
           <h1 className="rsp-club-hero-name">{club.name}</h1>
+          {club.shortDescription && (
+            <p className="rsp-club-hero-short-desc">{club.shortDescription}</p>
+          )}
           <p className="rsp-club-hero-location">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
@@ -400,6 +498,7 @@ export default function ClubDetailPage({
           <Button onClick={handleQuickBookingClick} className="rsp-club-action-button" aria-label={t("clubs.quickBooking")}>
             {t("clubs.quickBooking")}
           </Button>
+
           {club.coaches.length > 0 && (
             <Button
               onClick={handleRequestTrainingClick}
@@ -412,30 +511,41 @@ export default function ClubDetailPage({
           )}
         </div>
 
+        {/* Weekly Availability Timeline */}
+        {club.courts.length > 0 && (
+          <section className="rsp-club-timeline-section mt-8">
+            <WeeklyAvailabilityTimeline
+              key={timelineKey}
+              clubId={club.id}
+              onSlotClick={handleTimelineSlotClick}
+            />
+          </section>
+        )}
+
+        {/* Full Club Description Section */}
+        {club.longDescription && (
+          <div className="rsp-club-full-description">
+            <div className="rsp-club-full-description-card">
+              <h2 className="rsp-club-full-description-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14,2 14,8 20,8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <polyline points="10,9 9,9 8,9" />
+                </svg>
+                {t("clubDetail.aboutClub")}
+              </h2>
+              <p className="rsp-club-full-description-text">{club.longDescription}</p>
+            </div>
+          </div>
+        )}
+
         {/* Info Grid */}
         <div className="rsp-club-info-grid">
-          {/* Left Column - Description & Details */}
+          {/* Left Column - Details */}
           <div className="space-y-6">
-            {/* Description Card */}
-            {(club.shortDescription || club.longDescription) && (
-              <div className="rsp-club-info-card">
-                <h2 className="rsp-club-info-card-title">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14,2 14,8 20,8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10,9 9,9 8,9" />
-                  </svg>
-                  {t("clubDetail.about")}
-                </h2>
-                <p className="rsp-club-description-text">
-                  {club.longDescription || club.shortDescription}
-                </p>
-              </div>
-            )}
-
-            {/* Courts Summary */}
+            {/* Courts Summary Card */}
             <div className="rsp-club-info-card">
               <h2 className="rsp-club-info-card-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -445,7 +555,7 @@ export default function ClubDetailPage({
                 </svg>
                 {t("clubDetail.courts")}
               </h2>
-              
+
               {/* Court type badges */}
               <div className="rsp-club-courts-summary">
                 {courtCounts.indoor > 0 && (
@@ -608,17 +718,6 @@ export default function ClubDetailPage({
           </div>
         </div>
 
-        {/* Weekly Availability Timeline */}
-        {club.courts.length > 0 && (
-          <section className="rsp-club-timeline-section mt-8">
-            <WeeklyAvailabilityTimeline
-              key={timelineKey}
-              clubId={club.id}
-              onSlotClick={handleTimelineSlotClick}
-            />
-          </section>
-        )}
-
         {/* Courts Grid Section */}
         <section className="rsp-club-courts-section">
           <div className="rsp-club-courts-header">
@@ -651,24 +750,34 @@ export default function ClubDetailPage({
           </div>
         </section>
 
-        {/* Gallery Section */}
-        {club.gallery && club.gallery.length > 0 && (
+        {/* Gallery Section with Fullscreen Modal */}
+        {galleryImages.length > 0 && (
           <section className="rsp-club-gallery-section">
             <h2 className="rsp-club-gallery-title">{t("clubDetail.gallery")}</h2>
             <div className="rsp-club-gallery-grid">
-              {club.gallery.map((image, index) => {
-                const imageUrl = getSupabaseStorageUrl(image.imageUrl);
-                return isValidImageUrl(imageUrl) ? (
-                  <div key={image.id} className="rsp-club-gallery-item">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imageUrl as string}
-                      alt={image.altText || `${club.name} gallery image ${index + 1}`}
-                      className="rsp-club-gallery-image"
-                    />
-                  </div>
-                ) : null;
-              })}
+              {galleryImages.map((image, index) => (
+                <button
+                  key={index}
+                  className="rsp-club-gallery-item"
+                  onClick={() => handleGalleryOpen(index)}
+                  aria-label={t("clubDetail.viewImage")}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={image.url}
+                    alt={image.alt}
+                    className="rsp-club-gallery-image"
+                  />
+                  <span className="rsp-club-gallery-zoom-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="M21 21l-4.35-4.35" />
+                      <line x1="11" y1="8" x2="11" y2="14" />
+                      <line x1="8" y1="11" x2="14" y2="11" />
+                    </svg>
+                  </span>
+                </button>
+              ))}
             </div>
           </section>
         )}
@@ -726,6 +835,15 @@ export default function ClubDetailPage({
       <AuthPromptModal
         isOpen={isAuthPromptOpen}
         onClose={() => setIsAuthPromptOpen(false)}
+      />
+
+      {/* Gallery Modal */}
+      <GalleryModal
+        isOpen={isGalleryOpen}
+        onClose={handleGalleryClose}
+        images={galleryImages}
+        currentIndex={galleryIndex}
+        onNavigate={handleGalleryNavigate}
       />
     </main>
   );
