@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Card, Input, IMLink } from "@/components/ui";
+import { validateRedirectUrl } from "@/utils/redirectValidation";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -17,8 +18,8 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Get redirectTo from query params
-  const redirectTo = searchParams.get("redirectTo");
+  // Get and validate redirectTo from query params
+  const redirectTo = validateRedirectUrl(searchParams.get("redirectTo"));
 
   const isPasswordValid = password.length >= MIN_PASSWORD_LENGTH;
 

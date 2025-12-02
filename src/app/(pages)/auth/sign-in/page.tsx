@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Card, Input, IMLink } from "@/components/ui";
 import { getRoleHomepage } from "@/utils/roleRedirect";
+import { validateRedirectUrl } from "@/utils/redirectValidation";
 import type { UserRole } from "@/lib/auth";
 
 export default function SignInPage() {
@@ -19,8 +20,8 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // Get redirectTo from query params
-  const redirectTo = searchParams.get("redirectTo");
+  // Get and validate redirectTo from query params
+  const redirectTo = validateRedirectUrl(searchParams.get("redirectTo"));
 
   // Clear toast after display
   useEffect(() => {
