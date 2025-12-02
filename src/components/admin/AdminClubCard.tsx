@@ -70,10 +70,10 @@ export function AdminClubCard({ club, onEdit, onDelete }: AdminClubCardProps) {
             alt={`${club.name} main image`}
             className="im-admin-club-hero-image"
           />
-        ) : hasLogo ? (
+        ) : hasLogo && logoUrl ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
-            src={logoUrl as string}
+            src={logoUrl}
             alt={`${club.name} logo`}
             className="im-admin-club-hero-image im-admin-club-hero-image--logo"
           />

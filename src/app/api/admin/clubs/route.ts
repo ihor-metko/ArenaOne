@@ -34,10 +34,19 @@ export async function GET(request: Request) {
       },
     });
 
-    // Process clubs to add indoor/outdoor counts
+    // Process clubs to add indoor/outdoor counts (single pass)
     const clubsWithCounts = clubs.map((club) => {
-      const indoorCount = club.courts.filter((c) => c.indoor).length;
-      const outdoorCount = club.courts.filter((c) => !c.indoor).length;
+      const { indoorCount, outdoorCount } = club.courts.reduce(
+        (acc, court) => {
+          if (court.indoor) {
+            acc.indoorCount++;
+          } else {
+            acc.outdoorCount++;
+          }
+          return acc;
+        },
+        { indoorCount: 0, outdoorCount: 0 }
+      );
 
       return {
         id: club.id,
