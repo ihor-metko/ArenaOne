@@ -1,0 +1,149 @@
+.im-gallery-view-hero {
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: var(--rsp-card-bg-alt, #f3f4f6);
+}
+
+.im-gallery-view-hero-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.im-gallery-view-placeholder {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rsp-text-secondary, #999);
+  font-style: italic;
+}
+
+.im-gallery-view-thumbnails {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.im-gallery-view-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 0.375rem;
+}
+
+/* Edit mode styles */
+.im-gallery-edit-section {
+  margin-bottom: 1.5rem;
+}
+
+.im-gallery-edit-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.im-gallery-edit-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.im-gallery-edit-hero,
+.im-gallery-edit-logo {
+  position: relative;
+}
+
+.im-gallery-edit-hero-preview {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.im-gallery-edit-hero-preview img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.im-gallery-edit-logo-preview {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.im-gallery-edit-logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.im-gallery-edit-upload-btn {
+  padding: 1rem 2rem;
+  border: 2px dashed var(--rsp-border, #e5e7eb);
+  border-radius: 0.5rem;
+  background-color: var(--rsp-card-bg-alt, #f9fafb);
+  color: var(--rsp-text-secondary, #666);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.im-gallery-edit-upload-btn:hover {
+  border-color: var(--rsp-link, #0066cc);
+  color: var(--rsp-link, #0066cc);
+}
+
+.im-gallery-edit-upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.im-gallery-edit-remove {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--rsp-error, #dc2626);
+}
+
+.im-gallery-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.im-gallery-edit-item {
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: var(--rsp-card-bg-alt, #f3f4f6);
+}
+
+.im-gallery-edit-item img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.im-gallery-edit-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.25rem;
+}
+
+.im-gallery-edit-set-hero {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.hidden {
+  display: none;
+}

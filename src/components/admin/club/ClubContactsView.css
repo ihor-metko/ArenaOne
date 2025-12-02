@@ -1,0 +1,12 @@
+.im-contacts-view-link {
+  color: var(--rsp-link, #0066cc);
+  text-decoration: none;
+}
+
+.im-contacts-view-link:hover {
+  text-decoration: underline;
+}
+
+.im-contacts-view-map {
+  margin-top: 0.5rem;
+}
