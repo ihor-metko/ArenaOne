@@ -197,6 +197,12 @@
   opacity: 0.6;
 }
 
+.im-clubs-empty-suggestion {
+  @apply text-sm mt-2;
+  color: var(--rsp-foreground);
+  opacity: 0.5;
+}
+
 .im-clubs-error {
   @apply text-center py-12;
   color: #ef4444;

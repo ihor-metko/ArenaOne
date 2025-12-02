@@ -177,7 +177,7 @@ export default function ClubsPage() {
             {getEmptyStateMessage(currentParams.q, currentParams.city, currentParams.indoor ?? false, t)}
           </p>
           {(currentParams.q || currentParams.city || currentParams.indoor) && (
-            <p className="im-clubs-empty-suggestion text-sm mt-2" style={{ opacity: 0.6 }}>
+            <p className="im-clubs-empty-suggestion">
               {t("clubs.trySuggestion")}
             </p>
           )}
