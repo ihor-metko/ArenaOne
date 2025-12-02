@@ -5,7 +5,7 @@
 .im-hours-view-row {
   display: flex;
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--rsp-border-light, #f0f0f0);
+  border-bottom: 1px solid var(--rsp-border);
 }
 
 .im-hours-view-row:last-child {
@@ -15,25 +15,27 @@
 .im-hours-view-day {
   width: 100px;
   font-size: 0.875rem;
-  color: var(--rsp-text, #333);
+  color: var(--rsp-foreground);
   font-weight: 500;
 }
 
 .im-hours-view-time {
   font-size: 0.875rem;
-  color: var(--rsp-text-secondary, #666);
+  color: var(--rsp-foreground);
+  opacity: 0.7;
 }
 
 .im-hours-view-special {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--rsp-border, #e5e7eb);
+  border-top: 1px solid var(--rsp-border);
 }
 
 .im-hours-view-special-title {
   font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: var(--rsp-foreground);
 }
 
 .im-hours-view-special-row {
@@ -45,10 +47,12 @@
 
 .im-hours-view-special-date {
   font-weight: 500;
+  color: var(--rsp-foreground);
 }
 
 .im-hours-view-special-reason {
-  color: var(--rsp-text-secondary, #666);
+  color: var(--rsp-foreground);
+  opacity: 0.6;
   font-style: italic;
 }
 
@@ -68,6 +72,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   margin: 0 0 0.5rem 0;
+  color: var(--rsp-foreground);
 }
 
 .im-hours-edit-grid {
@@ -80,15 +85,17 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem;
-  background-color: var(--rsp-card-bg-alt, #f9fafb);
-  border-radius: 0.375rem;
+  padding: 0.625rem;
+  background-color: var(--rsp-background);
+  border: 1px solid var(--rsp-border);
+  border-radius: 0.75rem;
 }
 
 .im-hours-edit-day {
   width: 100px;
   font-size: 0.875rem;
   font-weight: 500;
+  color: var(--rsp-foreground);
 }
 
 .im-hours-edit-times {
@@ -100,15 +107,22 @@
 
 .im-hours-edit-input {
   padding: 0.375rem 0.5rem;
-  border: 1px solid var(--rsp-border, #e5e7eb);
-  border-radius: 0.25rem;
+  border: 1px solid var(--rsp-border);
+  border-radius: 0.375rem;
   font-size: 0.875rem;
-  background-color: var(--rsp-bg, white);
+  background-color: var(--rsp-background);
+  color: var(--rsp-foreground);
+}
+
+.im-hours-edit-input:focus {
+  outline: none;
+  border-color: var(--rsp-primary);
 }
 
 .im-hours-edit-separator {
   font-size: 0.875rem;
-  color: var(--rsp-text-secondary, #666);
+  color: var(--rsp-foreground);
+  opacity: 0.6;
 }
 
 .im-hours-edit-toggle {
@@ -117,11 +131,13 @@
   gap: 0.25rem;
   font-size: 0.875rem;
   cursor: pointer;
+  color: var(--rsp-foreground);
 }
 
 .im-hours-edit-closed-text {
   font-size: 0.875rem;
-  color: var(--rsp-text-secondary, #999);
+  color: var(--rsp-foreground);
+  opacity: 0.5;
   font-style: italic;
 }
 
@@ -137,11 +153,16 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  background-color: var(--rsp-card-bg-alt, #f9fafb);
-  border-radius: 0.375rem;
+  background-color: var(--rsp-background);
+  border: 1px solid var(--rsp-border);
+  border-radius: 0.75rem;
 }
 
 .im-hours-edit-remove-btn {
   padding: 0.25rem 0.5rem;
-  color: var(--rsp-error, #dc2626);
+  color: #ef4444;
+}
+
+.dark .im-hours-edit-remove-btn {
+  color: #f87171;
 }

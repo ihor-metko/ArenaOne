@@ -6,7 +6,7 @@
 
 .im-courts-manage-link {
   font-size: 0.875rem;
-  color: var(--rsp-link, #0066cc);
+  color: var(--rsp-primary);
   text-decoration: none;
 }
 
@@ -24,9 +24,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
-  background-color: var(--rsp-card-bg-alt, #f9fafb);
-  border-radius: 0.375rem;
+  padding: 0.875rem;
+  background-color: var(--rsp-background);
+  border: 1px solid var(--rsp-border);
+  border-radius: 0.75rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.im-courts-quick-item:hover {
+  border-color: var(--rsp-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dark .im-courts-quick-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .im-courts-quick-info {
@@ -38,12 +49,13 @@
 .im-courts-quick-name {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--rsp-text, #333);
+  color: var(--rsp-foreground);
 }
 
 .im-courts-quick-details {
   font-size: 0.75rem;
-  color: var(--rsp-text-secondary, #666);
+  color: var(--rsp-foreground);
+  opacity: 0.6;
 }
 
 .im-courts-quick-item-actions {
@@ -54,20 +66,26 @@
 .im-courts-quick-btn {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.5rem;
+  padding: 0.375rem 0.625rem;
   font-size: 0.75rem;
-  color: var(--rsp-link, #0066cc);
+  color: var(--rsp-primary);
   text-decoration: none;
-  border: 1px solid var(--rsp-border, #e5e7eb);
-  border-radius: 0.25rem;
+  border: 1px solid var(--rsp-border);
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .im-courts-quick-btn:hover {
-  background-color: var(--rsp-card-bg-alt, #f9fafb);
+  background-color: var(--rsp-card-bg);
+  border-color: var(--rsp-primary);
 }
 
 .im-courts-quick-delete-btn {
-  padding: 0.25rem 0.5rem;
+  padding: 0.375rem 0.625rem;
   font-size: 0.75rem;
-  color: var(--rsp-error, #dc2626);
+  color: #ef4444;
+}
+
+.dark .im-courts-quick-delete-btn {
+  color: #f87171;
 }
