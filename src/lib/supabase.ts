@@ -14,10 +14,11 @@ export const STORAGE_BUCKET = "uploads";
 
 /**
  * Allowed MIME types for image uploads.
+ * Note: "image/jpg" is included for browser compatibility, though "image/jpeg" is the standard.
  */
 export const ALLOWED_MIME_TYPES = [
   "image/jpeg",
-  "image/jpg",
+  "image/jpg", // Non-standard but used by some browsers
   "image/png",
   "image/webp",
   "image/avif",
@@ -25,10 +26,11 @@ export const ALLOWED_MIME_TYPES = [
 
 /**
  * Map of MIME types to file extensions.
+ * Note: "image/jpg" maps to "jpg" for browser compatibility.
  */
 export const MIME_TO_EXTENSION: Record<string, string> = {
   "image/jpeg": "jpg",
-  "image/jpg": "jpg",
+  "image/jpg": "jpg", // Non-standard but used by some browsers
   "image/png": "png",
   "image/webp": "webp",
   "image/avif": "avif",
@@ -166,6 +168,15 @@ export async function deleteFromStorage(
 }
 
 /**
+ * Get a user-friendly list of allowed file extensions.
+ */
+function getAllowedExtensionsList(): string {
+  // Get unique extensions from the MIME_TO_EXTENSION map
+  const extensions = [...new Set(Object.values(MIME_TO_EXTENSION))];
+  return extensions.join(", ");
+}
+
+/**
  * Validate a file for upload.
  * 
  * @param mimeType - The MIME type of the file
@@ -177,7 +188,7 @@ export function validateFileForUpload(
   size: number
 ): string | null {
   if (!ALLOWED_MIME_TYPES.includes(mimeType as (typeof ALLOWED_MIME_TYPES)[number])) {
-    return "Invalid file type. Allowed: jpg, png, webp, avif";
+    return `Invalid file type. Allowed: ${getAllowedExtensionsList()}`;
   }
 
   if (size > MAX_FILE_SIZE) {

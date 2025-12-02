@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
     // Generate unique key for the file using validated extension from MIME type
     const extension = getExtensionForMimeType(file.type);
-    // Path inside the bucket: clubs/{uuid}.{ext}
+    // Path inside the bucket: clubs/{uuid}.{ext} (general upload, not club-specific)
     const key = `clubs/${randomUUID()}.${extension}`;
 
     let url: string;
