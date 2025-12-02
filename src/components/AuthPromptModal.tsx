@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Modal, Button } from "@/components/ui";
 
@@ -11,14 +11,24 @@ interface AuthPromptModalProps {
 
 export function AuthPromptModal({ isOpen, onClose }: AuthPromptModalProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const t = useTranslations();
 
+  // Construct the current URL to redirect back to after login
+  const getCurrentUrl = () => {
+    const currentSearchParams = searchParams.toString();
+    return currentSearchParams ? `${pathname}?${currentSearchParams}` : pathname;
+  };
+
   const handleLogin = () => {
-    router.push("/auth/sign-in");
+    const redirectTo = encodeURIComponent(getCurrentUrl());
+    router.push(`/auth/sign-in?redirectTo=${redirectTo}`);
   };
 
   const handleRegister = () => {
-    router.push("/auth/sign-up");
+    const redirectTo = encodeURIComponent(getCurrentUrl());
+    router.push(`/auth/sign-up?redirectTo=${redirectTo}`);
   };
 
   return (

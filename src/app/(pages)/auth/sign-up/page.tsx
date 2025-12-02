@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Card, Input, IMLink } from "@/components/ui";
+import { validateRedirectUrl } from "@/utils/redirectValidation";
 
 const MIN_PASSWORD_LENGTH = 8;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations();
   const [name, setName] = useState("Ihor Metko");
   const [email, setEmail] = useState("ihor.metko@gmail.com");
   const [password, setPassword] = useState("12345678");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Get and validate redirectTo from query params
+  const redirectTo = validateRedirectUrl(searchParams.get("redirectTo"));
 
   const isPasswordValid = password.length >= MIN_PASSWORD_LENGTH;
 
@@ -43,7 +48,11 @@ export default function RegisterPage() {
       if (!response.ok) {
         setError(data.error || t("auth.registrationFailed"));
       } else {
-        router.push("/auth/sign-in");
+        // Preserve redirectTo when redirecting to sign-in after successful registration
+        const signInUrl = redirectTo 
+          ? `/auth/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`
+          : "/auth/sign-in";
+        router.push(signInUrl);
       }
     } catch {
       setError(t("auth.errorOccurred"));
@@ -103,7 +112,7 @@ export default function RegisterPage() {
           </div>
           <p className="rsp-text text-center text-sm">
             {t("auth.alreadyHaveAccount")}{" "}
-            <IMLink href="/auth/sign-in">
+            <IMLink href={redirectTo ? `/auth/sign-in?redirectTo=${encodeURIComponent(redirectTo)}` : "/auth/sign-in"}>
               {t("common.signIn")}
             </IMLink>
           </p>
