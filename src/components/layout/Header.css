@@ -1,318 +1,269 @@
 @reference "tailwindcss";
 
+/**
+ * Header Component Styles
+ * 
+ * Uses im-* class prefix and global CSS variables only.
+ * All colors reference --im-* variables.
+ * 
+ * CSS Variables used:
+ * - --im-surface: Background color for surfaces
+ * - --im-background: Page background color
+ * - --im-foreground: Text color
+ * - --im-primary: Primary/accent color for hover/focus
+ * - --im-border: Border color
+ * - --im-card-bg: Card/dropdown background
+ * - --im-muted: Muted text color
+ * - --im-icon-color: Icon color
+ * 
+ * Header dimensions:
+ * - Desktop: 56px height
+ * - Mobile: 48px height
+ */
+
 /* Header container */
-.rsp-header-container {
+.im-header-container {
   @apply sticky top-0 z-50;
-  background-color: var(--rsp-background);
-  border-bottom: 1px solid var(--rsp-border);
+  background-color: var(--im-surface);
+  border-bottom: 1px solid var(--im-border);
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.rsp-header {
-  @apply flex items-center justify-between px-4 py-3 max-w-7xl mx-auto;
+.im-header {
+  @apply flex items-center justify-between px-4 max-w-7xl mx-auto;
+  height: 56px;
+}
+
+@media (max-width: 768px) {
+  .im-header {
+    height: 48px;
+    @apply px-3;
+  }
 }
 
 /* Header left section */
-.rsp-header-left {
-  @apply flex items-center gap-4;
+.im-header-left {
+  @apply flex items-center gap-6;
 }
 
-.rsp-header-brand {
-  @apply flex items-center gap-2;
-}
-
-.rsp-header-brand a {
+/* Logo / Brand */
+.im-header-brand {
   @apply flex items-center gap-2 text-lg font-bold no-underline;
-  color: var(--rsp-foreground);
+  color: var(--im-foreground);
 }
 
-.rsp-header-brand a:hover {
-  color: var(--rsp-primary);
+.im-header-brand:hover {
+  color: var(--im-primary);
 }
 
-.rsp-header-title {
-  @apply text-lg font-semibold hidden sm:block;
-  color: var(--rsp-foreground);
+.im-header-brand:focus {
+  outline: 2px solid var(--im-primary);
+  outline-offset: 2px;
+}
+
+.im-header-title {
+  @apply text-lg font-semibold;
+  color: var(--im-foreground);
+}
+
+@media (max-width: 640px) {
+  .im-header-title {
+    @apply hidden;
+  }
 }
 
 /* Header navigation */
-.rsp-header-nav {
-  @apply hidden md:flex items-center gap-4;
+.im-header-nav {
+  @apply hidden md:flex items-center gap-1;
 }
 
-.rsp-header-nav-link {
-  @apply px-3 py-2 text-sm font-medium rounded-md transition-colors;
-  color: var(--rsp-foreground);
+.im-header-nav-link {
+  @apply px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 no-underline;
+  color: var(--im-foreground);
 }
 
-.rsp-header-nav-link:hover {
-  background-color: var(--rsp-card-bg);
-  color: var(--rsp-primary);
+.im-header-nav-link:hover {
+  background-color: var(--im-card-bg);
+  color: var(--im-primary);
+}
+
+.im-header-nav-link:hover .im-header-icon {
+  color: var(--im-primary);
+}
+
+.im-header-nav-link:focus {
+  outline: 2px solid var(--im-primary);
+  outline-offset: 2px;
 }
 
 /* Header right section */
-.rsp-header-right {
+.im-header-right {
   @apply flex items-center gap-2;
 }
 
 /* Header controls - language and theme */
-.rsp-header-controls {
+.im-header-controls {
   @apply hidden sm:flex items-center gap-2;
 }
 
-/* Profile area */
-.rsp-header-profile {
-  @apply relative;
+/* Icon styling - outline icons with consistent size */
+.im-header-icon {
+  @apply flex-shrink-0;
+  width: 18px;
+  height: 18px;
+  color: var(--im-icon-color);
 }
 
-.rsp-header-profile-button {
-  @apply flex items-center gap-2 px-3 py-2 rounded-lg transition-colors;
-  background-color: transparent;
-  border: 1px solid var(--rsp-border);
+/* Mobile menu toggle - hamburger */
+.im-header-mobile-toggle {
+  @apply md:hidden p-2 rounded-md transition-colors;
+  background: transparent;
+  border: 1px solid var(--im-border);
   cursor: pointer;
+  color: var(--im-foreground);
 }
 
-.rsp-header-profile-button:hover {
-  background-color: var(--rsp-card-bg);
+.im-header-mobile-toggle:hover {
+  background-color: var(--im-card-bg);
 }
 
-.rsp-header-profile-button:focus {
-  outline: 2px solid var(--rsp-primary);
+.im-header-mobile-toggle:focus {
+  outline: 2px solid var(--im-primary);
   outline-offset: 2px;
 }
 
-.rsp-header-avatar {
-  @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold;
-  background-color: var(--rsp-primary);
-  color: white;
+.im-header-mobile-toggle .im-header-icon {
+  width: 20px;
+  height: 20px;
 }
 
-.rsp-header-user-info {
-  @apply hidden sm:flex flex-col items-start;
+/* Mobile menu - slide-over */
+.im-header-mobile-menu {
+  @apply md:hidden border-t py-4 px-4 space-y-4;
+  background-color: var(--im-surface);
+  border-color: var(--im-border);
 }
 
-.rsp-header-user-name {
-  @apply text-sm font-medium;
-  color: var(--rsp-foreground);
+.im-header-mobile-nav {
+  @apply flex flex-col gap-1;
 }
 
-.rsp-header-user-role {
-  @apply text-xs capitalize;
-  color: var(--rsp-primary);
+.im-header-mobile-nav-link {
+  @apply px-3 py-3 text-sm font-medium rounded-md transition-colors flex items-center gap-3 no-underline;
+  color: var(--im-foreground);
 }
 
-/* Profile dropdown */
-.rsp-header-dropdown {
-  @apply absolute right-0 top-full mt-2 w-56 rounded-lg shadow-lg py-1;
-  background-color: var(--rsp-background);
-  border: 1px solid var(--rsp-border);
-  z-index: 50;
+.im-header-mobile-nav-link:hover {
+  background-color: var(--im-card-bg);
+  color: var(--im-primary);
 }
 
-.rsp-header-dropdown-section {
-  @apply border-b py-1;
-  border-color: var(--rsp-border);
+.im-header-mobile-nav-link:hover .im-header-icon {
+  color: var(--im-primary);
 }
 
-.rsp-header-dropdown-section:last-child {
-  @apply border-b-0;
-}
-
-.rsp-header-dropdown-item {
-  @apply w-full px-4 py-2 text-left text-sm flex items-center gap-2 transition-colors;
-  color: var(--rsp-foreground);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.rsp-header-dropdown-item:hover {
-  background-color: var(--rsp-card-bg);
-}
-
-.rsp-header-dropdown-item:focus {
-  outline: 2px solid var(--rsp-primary);
+.im-header-mobile-nav-link:focus {
+  outline: 2px solid var(--im-primary);
   outline-offset: -2px;
 }
 
-.rsp-header-dropdown-item--danger {
-  color: #ef4444;
+.im-header-mobile-controls {
+  @apply flex items-center gap-2 pt-3 border-t;
+  border-color: var(--im-border);
 }
 
-.rsp-header-dropdown-item--danger:hover {
-  background-color: rgba(239, 68, 68, 0.1);
+/* Mobile auth links */
+.im-header-mobile-auth {
+  @apply flex flex-col gap-2 pt-3 border-t;
+  border-color: var(--im-border);
 }
 
-/* Dropdown user info */
-.rsp-header-dropdown-user-name {
-  @apply text-sm font-medium;
-  color: var(--rsp-foreground);
+.im-header-mobile-auth-link {
+  @apply px-4 py-3 text-sm font-medium rounded-md transition-colors text-center no-underline;
+  color: var(--im-foreground);
+  border: 1px solid var(--im-border);
 }
 
-.rsp-header-dropdown-user-email {
-  @apply text-xs;
-  color: var(--rsp-foreground);
-  opacity: 0.6;
+.im-header-mobile-auth-link:hover {
+  background-color: var(--im-card-bg);
+  color: var(--im-primary);
 }
 
-/* Chevron icon */
-.rsp-header-chevron {
-  @apply w-4 h-4 transition-transform;
-}
-
-.rsp-header-chevron--open {
-  transform: rotate(180deg);
-}
-
-/* Mobile menu toggle */
-.rsp-header-mobile-toggle {
-  @apply md:hidden p-2 rounded-md transition-colors;
-  background: transparent;
-  border: 1px solid var(--rsp-border);
-  cursor: pointer;
-  color: var(--rsp-foreground);
-}
-
-.rsp-header-mobile-toggle:hover {
-  background-color: var(--rsp-card-bg);
-}
-
-.rsp-header-mobile-toggle:focus {
-  outline: 2px solid var(--rsp-primary);
+.im-header-mobile-auth-link:focus {
+  outline: 2px solid var(--im-primary);
   outline-offset: 2px;
 }
 
-/* Mobile menu */
-.rsp-header-mobile-menu {
-  @apply md:hidden border-t py-4 px-4 space-y-4;
-  background-color: var(--rsp-background);
-  border-color: var(--rsp-border);
+.im-header-mobile-auth-link--primary {
+  background-color: var(--im-primary);
+  border-color: var(--im-primary);
+  color: white;
 }
 
-.rsp-header-mobile-nav {
-  @apply flex flex-col gap-2;
-}
-
-.rsp-header-mobile-nav-link {
-  @apply px-3 py-2 text-sm font-medium rounded-md transition-colors;
-  color: var(--rsp-foreground);
-}
-
-.rsp-header-mobile-nav-link:hover {
-  background-color: var(--rsp-card-bg);
-  color: var(--rsp-primary);
-}
-
-.rsp-header-mobile-controls {
-  @apply flex items-center gap-2 pt-2 border-t;
-  border-color: var(--rsp-border);
+.im-header-mobile-auth-link--primary:hover {
+  background-color: var(--im-primary-hover);
+  color: white;
 }
 
 /* Skeleton loading */
-.rsp-header-skeleton {
+.im-header-skeleton {
   @apply animate-pulse flex items-center gap-2;
 }
 
-.rsp-header-skeleton-avatar {
+.im-header-skeleton-avatar {
   @apply w-8 h-8 rounded-full;
-  background-color: var(--rsp-border);
-}
-
-.rsp-header-skeleton-text {
-  @apply h-4 w-24 rounded-sm;
-  background-color: var(--rsp-border);
+  background-color: var(--im-border);
 }
 
 /* Auth links for unauthenticated users */
-.rsp-header-auth-links {
+.im-header-auth-links {
   @apply flex items-center gap-2;
 }
 
-.rsp-header-auth-link {
-  @apply px-3 py-2 text-sm font-medium rounded-md transition-colors;
-  color: var(--rsp-foreground);
+.im-header-auth-link {
+  @apply px-3 py-2 text-sm font-medium rounded-md transition-colors no-underline;
+  color: var(--im-foreground);
 }
 
-.rsp-header-auth-link:hover {
-  color: var(--rsp-primary);
+.im-header-auth-link:hover {
+  color: var(--im-primary);
 }
 
-.rsp-header-auth-link--primary {
-  background-color: var(--rsp-primary);
+.im-header-auth-link:focus {
+  outline: 2px solid var(--im-primary);
+  outline-offset: 2px;
+}
+
+.im-header-auth-link--primary {
+  background-color: var(--im-primary);
   color: white;
 }
 
-.rsp-header-auth-link--primary:hover {
-  background-color: var(--rsp-primary-hover);
+.im-header-auth-link--primary:hover {
+  background-color: var(--im-primary-hover);
   color: white;
-}
-
-/* Role badge colors */
-.rsp-header-role-badge {
-  @apply text-xs px-2 py-0.5 rounded-full font-medium;
-}
-
-.rsp-header-role-badge--admin {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-
-.rsp-header-role-badge--coach {
-  background-color: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
-}
-
-.rsp-header-role-badge--player {
-  background-color: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
 }
 
 /* Search input */
-.rsp-header-search {
+.im-header-search {
   @apply hidden lg:flex items-center;
 }
 
-.rsp-header-search-input {
+.im-header-search-input {
   @apply px-3 py-2 text-sm rounded-lg;
-  background-color: var(--rsp-card-bg);
-  border: 1px solid var(--rsp-border);
-  color: var(--rsp-foreground);
+  background-color: var(--im-card-bg);
+  border: 1px solid var(--im-border);
+  color: var(--im-foreground);
   width: 200px;
   transition: width 0.2s ease, border-color 0.2s ease;
 }
 
-.rsp-header-search-input:focus {
+.im-header-search-input:focus {
   width: 280px;
-  border-color: var(--rsp-primary);
+  border-color: var(--im-primary);
   outline: none;
 }
 
-.rsp-header-search-input::placeholder {
-  color: var(--rsp-foreground);
-  opacity: 0.5;
-}
-
-/* Notification badge */
-.rsp-header-notification-badge {
-  @apply absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center text-xs font-bold rounded-full;
-  background-color: #ef4444;
-  color: white;
-}
-
-/* Icon buttons */
-.rsp-header-icon-button {
-  @apply p-2 rounded-md transition-colors relative;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--rsp-foreground);
-}
-
-.rsp-header-icon-button:hover {
-  background-color: var(--rsp-card-bg);
-}
-
-.rsp-header-icon-button:focus {
-  outline: 2px solid var(--rsp-primary);
-  outline-offset: 2px;
+.im-header-search-input::placeholder {
+  color: var(--im-muted);
 }

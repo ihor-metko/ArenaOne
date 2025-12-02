@@ -1,0 +1,150 @@
+@reference "tailwindcss";
+
+/**
+ * UserMenu Component Styles
+ * 
+ * Uses im-* class prefix and global CSS variables only.
+ * All colors reference --im-* variables.
+ * 
+ * CSS Variables used:
+ * - --im-surface: Background color for surfaces
+ * - --im-foreground: Text color
+ * - --im-primary: Primary/accent color for hover/focus
+ * - --im-border: Border color
+ * - --im-card-bg: Card/dropdown background
+ * - --im-muted: Muted text color
+ * - --im-icon-color: Icon color
+ */
+
+/* User menu container */
+.im-user-menu {
+  @apply relative;
+}
+
+/* Avatar trigger button */
+.im-user-menu-trigger {
+  @apply flex items-center gap-1 p-1.5 rounded-lg transition-colors;
+  background-color: transparent;
+  border: 1px solid var(--im-border);
+  cursor: pointer;
+}
+
+.im-user-menu-trigger:hover {
+  background-color: var(--im-card-bg);
+}
+
+.im-user-menu-trigger:focus {
+  outline: 2px solid var(--im-primary);
+  outline-offset: 2px;
+}
+
+/* Avatar circle */
+.im-user-menu-avatar {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold;
+  background-color: var(--im-primary);
+  color: white;
+}
+
+/* Chevron icon */
+.im-user-menu-chevron {
+  @apply w-4 h-4 transition-transform;
+  color: var(--im-icon-color);
+}
+
+.im-user-menu-chevron--open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown container */
+.im-user-menu-dropdown {
+  @apply absolute right-0 top-full mt-2 w-64 rounded-lg shadow-lg py-2;
+  background-color: var(--im-card-bg);
+  border: 1px solid var(--im-border);
+  z-index: 50;
+}
+
+/* User info header */
+.im-user-menu-header {
+  @apply px-4 py-3;
+}
+
+.im-user-menu-name {
+  @apply text-sm font-medium truncate;
+  color: var(--im-foreground);
+}
+
+.im-user-menu-email {
+  @apply text-xs mt-0.5 truncate;
+  color: var(--im-muted);
+}
+
+/* Admin badge */
+.im-user-menu-admin-badge {
+  @apply inline-flex items-center gap-1 mt-2 px-2 py-0.5 text-xs font-medium rounded-sm;
+  background-color: var(--im-primary);
+  color: white;
+}
+
+.im-user-menu-admin-badge .im-user-menu-icon {
+  @apply w-3 h-3;
+  color: white;
+}
+
+/* Separator */
+.im-user-menu-separator {
+  @apply my-1;
+  height: 1px;
+  background-color: var(--im-border);
+}
+
+/* Menu item */
+.im-user-menu-item {
+  @apply w-full px-4 flex items-center gap-3 transition-colors no-underline;
+  height: 40px;
+  color: var(--im-foreground);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.im-user-menu-item:hover {
+  background-color: var(--im-surface);
+  color: var(--im-primary);
+}
+
+.im-user-menu-item:hover .im-user-menu-icon {
+  color: var(--im-primary);
+}
+
+.im-user-menu-item:focus {
+  outline: 2px solid var(--im-primary);
+  outline-offset: -2px;
+  background-color: var(--im-surface);
+}
+
+.im-user-menu-item span {
+  @apply text-sm;
+}
+
+/* Icon styling */
+.im-user-menu-icon {
+  @apply flex-shrink-0;
+  width: 18px;
+  height: 18px;
+  color: var(--im-icon-color);
+}
+
+/* Logout item - primary action emphasis */
+.im-user-menu-item--logout {
+  color: var(--im-primary);
+  font-weight: 500;
+}
+
+.im-user-menu-item--logout .im-user-menu-icon {
+  color: var(--im-primary);
+}
+
+.im-user-menu-item--logout:hover {
+  background-color: var(--im-surface);
+}

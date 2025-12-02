@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { useSession } from "next-auth/react";
 import Header from "@/components/layout/Header";
 
@@ -24,12 +24,16 @@ jest.mock("next-intl", () => ({
         "common.search": "Search",
         "common.close": "Close",
         "common.actions": "Actions",
+        "common.settings": "Settings",
+        "common.courts": "Courts",
+        "common.events": "Events",
         "playerDashboard.navigation.title": "Quick Navigation",
         "playerDashboard.navigation.profile": "Profile",
         "playerDashboard.navigation.home": "Home",
         "home.dashboard": "Dashboard",
         "home.manageClubs": "Manage Clubs",
         "home.manageCoaches": "Manage Coaches",
+        "home.coaches": "Coaches",
         "home.manageNotifications": "Notifications",
         "training.history.title": "My Training Sessions",
         "clubs.title": "Clubs",
@@ -62,9 +66,6 @@ jest.mock("@/hooks/useCurrentLocale", () => ({
 jest.mock("@/components/ui", () => ({
   DarkModeToggle: () => <button data-testid="dark-mode-toggle">Toggle Theme</button>,
   LanguageSwitcher: () => <button data-testid="language-switcher">Language</button>,
-  IMLink: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
-    <a href={href} className={className} data-testid={`imlink-${href}`}>{children}</a>
-  ),
 }));
 
 // Mock next/link
@@ -112,6 +113,15 @@ describe("Header Component", () => {
       render(<Header />);
       expect(screen.queryByLabelText("Profile")).not.toBeInTheDocument();
     });
+
+    it("renders primary navigation links for all users", () => {
+      render(<Header />);
+      // Primary nav items should be visible to all users
+      expect(screen.getByText("Clubs")).toBeInTheDocument();
+      expect(screen.getByText("Courts")).toBeInTheDocument();
+      expect(screen.getByText("Coaches")).toBeInTheDocument();
+      expect(screen.getByText("Events")).toBeInTheDocument();
+    });
   });
 
   describe("Loading state", () => {
@@ -124,7 +134,7 @@ describe("Header Component", () => {
 
     it("shows skeleton loader when loading", () => {
       render(<Header />);
-      expect(document.querySelector(".rsp-header-skeleton")).toBeInTheDocument();
+      expect(document.querySelector(".im-header-skeleton")).toBeInTheDocument();
     });
   });
 
@@ -143,12 +153,12 @@ describe("Header Component", () => {
       });
     });
 
-    it("renders player-specific navigation links", () => {
+    it("renders primary navigation links", () => {
       render(<Header />);
-      // Check for player navigation links
-      expect(screen.getByTestId("imlink-/dashboard")).toBeInTheDocument();
-      expect(screen.getByTestId("imlink-/trainings")).toBeInTheDocument();
-      expect(screen.getByTestId("imlink-/clubs")).toBeInTheDocument();
+      expect(screen.getByText("Clubs")).toBeInTheDocument();
+      expect(screen.getByText("Courts")).toBeInTheDocument();
+      expect(screen.getByText("Coaches")).toBeInTheDocument();
+      expect(screen.getByText("Events")).toBeInTheDocument();
     });
 
     it("displays user initials in avatar", () => {
@@ -156,9 +166,19 @@ describe("Header Component", () => {
       expect(screen.getByText("JP")).toBeInTheDocument();
     });
 
-    it("shows player role badge", () => {
+    it("does NOT show player role badge in the header", () => {
       render(<Header />);
-      expect(screen.getByText("Player")).toBeInTheDocument();
+      // Per requirements: No role displayed in header for player users
+      // The role should only be shown inside dropdown for admin users
+      const roleTexts = screen.queryAllByText("Player");
+      // Should not have any role text visible in header (only in dropdown when opened)
+      expect(roleTexts.length).toBe(0);
+    });
+
+    it("renders user menu with profile button", () => {
+      render(<Header />);
+      const profileButton = screen.getByRole("button", { name: /actions.*john player/i });
+      expect(profileButton).toBeInTheDocument();
     });
   });
 
@@ -177,11 +197,10 @@ describe("Header Component", () => {
       });
     });
 
-    it("renders coach-specific navigation links", () => {
+    it("renders primary navigation links", () => {
       render(<Header />);
-      expect(screen.getByTestId("imlink-/coach/dashboard")).toBeInTheDocument();
-      expect(screen.getByTestId("imlink-/coach/requests")).toBeInTheDocument();
-      expect(screen.getByTestId("imlink-/coach/availability")).toBeInTheDocument();
+      expect(screen.getByText("Clubs")).toBeInTheDocument();
+      expect(screen.getByText("Courts")).toBeInTheDocument();
     });
 
     it("displays coach initials in avatar", () => {
@@ -189,9 +208,11 @@ describe("Header Component", () => {
       expect(screen.getByText("JC")).toBeInTheDocument();
     });
 
-    it("shows coach role badge", () => {
+    it("does NOT show coach role badge in the header", () => {
       render(<Header />);
-      expect(screen.getByText("Coach")).toBeInTheDocument();
+      // Per requirements: No role displayed in header
+      const roleTexts = screen.queryAllByText("Coach");
+      expect(roleTexts.length).toBe(0);
     });
   });
 
@@ -210,11 +231,10 @@ describe("Header Component", () => {
       });
     });
 
-    it("renders admin-specific navigation links", () => {
+    it("renders primary navigation links", () => {
       render(<Header />);
-      expect(screen.getByTestId("imlink-/admin/clubs")).toBeInTheDocument();
-      expect(screen.getByTestId("imlink-/admin/coaches")).toBeInTheDocument();
-      expect(screen.getByTestId("imlink-/admin/notifications")).toBeInTheDocument();
+      expect(screen.getByText("Clubs")).toBeInTheDocument();
+      expect(screen.getByText("Courts")).toBeInTheDocument();
     });
 
     it("displays admin initials in avatar", () => {
@@ -222,8 +242,11 @@ describe("Header Component", () => {
       expect(screen.getByText("AU")).toBeInTheDocument();
     });
 
-    it("shows admin role badge", () => {
+    it("shows admin badge in dropdown when opened", () => {
       render(<Header />);
+      const profileButton = screen.getByRole("button", { name: /actions.*admin user/i });
+      fireEvent.click(profileButton);
+      // Admin badge should be visible in dropdown
       expect(screen.getByText("Admin")).toBeInTheDocument();
     });
   });
@@ -280,14 +303,84 @@ describe("Header Component", () => {
 
     it("profile button has aria-expanded attribute", () => {
       render(<Header />);
-      const profileButton = screen.getByRole("button", { name: /profile/i });
+      // The profile button uses "Actions - username" pattern for aria-label
+      const profileButton = screen.getByRole("button", { name: /actions.*test user/i });
       expect(profileButton).toHaveAttribute("aria-expanded", "false");
     });
 
     it("mobile menu toggle has aria-expanded attribute", () => {
       render(<Header />);
-      const mobileToggle = screen.getByRole("button", { name: /actions/i });
+      // Find the mobile toggle button specifically (not the user menu button)
+      const mobileToggle = document.querySelector(".im-header-mobile-toggle") as HTMLButtonElement;
       expect(mobileToggle).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("profile button toggles aria-expanded on click", () => {
+      render(<Header />);
+      const profileButton = screen.getByRole("button", { name: /actions.*test user/i });
+      expect(profileButton).toHaveAttribute("aria-expanded", "false");
+      
+      fireEvent.click(profileButton);
+      expect(profileButton).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("dropdown has role=menu and menuitem semantics", () => {
+      render(<Header />);
+      const profileButton = screen.getByRole("button", { name: /actions.*test user/i });
+      fireEvent.click(profileButton);
+      
+      expect(screen.getByRole("menu")).toBeInTheDocument();
+      expect(screen.getAllByRole("menuitem").length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("UserMenu Integration", () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: {
+          user: {
+            id: "user-1",
+            name: "Test User",
+            email: "test@test.com",
+            role: "player",
+          },
+        },
+        status: "authenticated",
+      });
+    });
+
+    it("shows user name and email in dropdown", () => {
+      render(<Header />);
+      const profileButton = screen.getByRole("button", { name: /actions.*test user/i });
+      fireEvent.click(profileButton);
+      
+      expect(screen.getByText("Test User")).toBeInTheDocument();
+      expect(screen.getByText("test@test.com")).toBeInTheDocument();
+    });
+
+    it("shows menu items with outline icons", () => {
+      render(<Header />);
+      const profileButton = screen.getByRole("button", { name: /actions.*test user/i });
+      fireEvent.click(profileButton);
+      
+      // Check menu items are present
+      expect(screen.getByText("Profile")).toBeInTheDocument();
+      expect(screen.getByText("My Training Sessions")).toBeInTheDocument();
+      expect(screen.getByText("Settings")).toBeInTheDocument();
+      expect(screen.getByText("Sign Out")).toBeInTheDocument();
+    });
+
+    it("closes dropdown when clicking outside", () => {
+      render(<Header />);
+      const profileButton = screen.getByRole("button", { name: /actions.*test user/i });
+      fireEvent.click(profileButton);
+      
+      expect(screen.getByRole("menu")).toBeInTheDocument();
+      
+      // Click outside
+      fireEvent.mouseDown(document.body);
+      
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
   });
 });
