@@ -66,16 +66,16 @@ const initialBusinessHours: BusinessHour[] = [
 ];
 
 const initialFormData: StepperFormData = {
-  name: "",
+  name: "Padel Pulse Arena",
   slug: "",
   clubType: "",
-  shortDescription: "",
-  address: "",
-  city: "",
-  postalCode: "",
-  phone: "",
-  email: "",
-  website: "",
+  shortDescription: "Сучасний падел-клуб у центрі міста з професійними кортами і тренерською командою.",
+  address: "вул. Спортивна 12, Київ",
+  city: "Київ",
+  postalCode: "12345",
+  phone: "+380501234567",
+  email: "info@padelpulsearena.ua",
+  website: "https://padelpulsearena.ua",
   businessHours: initialBusinessHours,
   courts: [],
   logo: null,
@@ -92,9 +92,6 @@ const STEPS = [
 
 const CLUB_TYPES = [
   { value: "padel", label: "Padel" },
-  { value: "tennis", label: "Tennis" },
-  { value: "squash", label: "Squash" },
-  { value: "multi", label: "Multi-sport" },
 ];
 
 function generateTempId(): string {
@@ -119,7 +116,7 @@ export function ClubCreationStepper() {
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
         const newErrors = { ...prev };
@@ -325,7 +322,7 @@ export function ClubCreationStepper() {
       }
 
       showToast("success", "Club created successfully!");
-      
+
       // Redirect to the club detail page
       setTimeout(() => {
         router.push(`/admin/clubs/${data.id}`);
@@ -548,7 +545,7 @@ export function ClubCreationStepper() {
                         ✕
                       </button>
                     </div>
-                    
+
                     <div className="im-inline-courts-fields">
                       <div className="im-inline-courts-field">
                         <Input
@@ -559,7 +556,7 @@ export function ClubCreationStepper() {
                           disabled={isSubmitting}
                         />
                       </div>
-                      
+
                       <div className="im-inline-courts-field">
                         <Input
                           label="Type"
@@ -569,7 +566,7 @@ export function ClubCreationStepper() {
                           disabled={isSubmitting}
                         />
                       </div>
-                      
+
                       <div className="im-inline-courts-field">
                         <Input
                           label="Surface"
@@ -579,7 +576,7 @@ export function ClubCreationStepper() {
                           disabled={isSubmitting}
                         />
                       </div>
-                      
+
                       <div className="im-inline-courts-field">
                         <Input
                           label="Default Price (cents)"
@@ -591,7 +588,7 @@ export function ClubCreationStepper() {
                           disabled={isSubmitting}
                         />
                       </div>
-                      
+
                       <div className="im-inline-courts-field im-inline-courts-checkbox-field">
                         <label className="im-inline-courts-checkbox-wrapper">
                           <input
@@ -649,7 +646,7 @@ export function ClubCreationStepper() {
                 <p className="im-stepper-field-hint" style={{ marginBottom: "0.5rem" }}>
                   Add photos of your club facilities
                 </p>
-                
+
                 <div className="im-stepper-gallery-grid">
                   {formData.gallery.map((item, index) => (
                     <div key={index} className="im-stepper-gallery-item">
@@ -719,9 +716,8 @@ export function ClubCreationStepper() {
         {STEPS.map((step, index) => (
           <div key={step.id} className="im-stepper-indicator-step-wrapper" style={{ display: "flex", alignItems: "center" }}>
             <div
-              className={`im-stepper-indicator-step ${
-                currentStep === step.id ? "im-stepper-indicator-step--active" : ""
-              } ${currentStep > step.id ? "im-stepper-indicator-step--completed" : ""}`}
+              className={`im-stepper-indicator-step ${currentStep === step.id ? "im-stepper-indicator-step--active" : ""
+                } ${currentStep > step.id ? "im-stepper-indicator-step--completed" : ""}`}
             >
               <span className="im-stepper-indicator-number">
                 {currentStep > step.id ? "✓" : step.id}
@@ -730,9 +726,8 @@ export function ClubCreationStepper() {
             </div>
             {index < STEPS.length - 1 && (
               <div
-                className={`im-stepper-indicator-line ${
-                  currentStep > step.id ? "im-stepper-indicator-line--completed" : ""
-                }`}
+                className={`im-stepper-indicator-line ${currentStep > step.id ? "im-stepper-indicator-line--completed" : ""
+                  }`}
               />
             )}
           </div>
