@@ -496,6 +496,27 @@
     "pending": "Pending",
     "noAvailableAtTime": "No courts available at this time. Try another slot."
   },
+  "weeklyAvailability": {
+    "title": "Weekly Court Availability",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "dayHour": "Day / Hour",
+    "slotAvailable": "Available",
+    "slotBooked": "Booked",
+    "slotPartial": "Partially occupied",
+    "slotPending": "Pending",
+    "slotBlockedPast": "Unavailable",
+    "slotBlockedPastDay": "This day has already passed",
+    "slotBlockedPastHour": "This time has already passed",
+    "todayLabel": "Today",
+    "tomorrowLabel": "Tomorrow",
+    "loadingAvailability": "Loading availability",
+    "errorTitle": "Unable to load availability",
+    "tryAgain": "Try again",
+    "ariaGridLabel": "Weekly court availability",
+    "ariaSlotLabel": "{dayName} {time}: {available} available, {partial} partially booked, {booked} booked, {pending} pending",
+    "ariaSlotBlockedLabel": "{dayName} {time}: {reason}"
+  },
   "modal": {
     "closeModal": "Close modal",
     "markAsUnavailable": "Mark as Unavailable",

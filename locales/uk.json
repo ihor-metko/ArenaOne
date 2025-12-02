@@ -496,6 +496,27 @@
     "pending": "Очікує підтвердження",
     "noAvailableAtTime": "Немає доступних кортів у цей час. Спробуйте інший слот."
   },
+  "weeklyAvailability": {
+    "title": "Тижнева доступність кортів",
+    "previousWeek": "Попередній тиждень",
+    "nextWeek": "Наступний тиждень",
+    "dayHour": "День / Година",
+    "slotAvailable": "Доступний",
+    "slotBooked": "Заброньований",
+    "slotPartial": "Частково зайнятий",
+    "slotPending": "Очікує",
+    "slotBlockedPast": "Недоступний",
+    "slotBlockedPastDay": "Цей день вже минув",
+    "slotBlockedPastHour": "Цей час вже минув",
+    "todayLabel": "Сьогодні",
+    "tomorrowLabel": "Завтра",
+    "loadingAvailability": "Завантаження доступності",
+    "errorTitle": "Не вдалося завантажити доступність",
+    "tryAgain": "Спробувати ще",
+    "ariaGridLabel": "Тижнева доступність кортів",
+    "ariaSlotLabel": "{dayName} {time}: {available} доступних, {partial} частково заброньованих, {booked} заброньованих, {pending} очікують",
+    "ariaSlotBlockedLabel": "{dayName} {time}: {reason}"
+  },
   "modal": {
     "closeModal": "Закрити модальне вікно",
     "markAsUnavailable": "Позначити як недоступний",

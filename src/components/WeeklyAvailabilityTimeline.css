@@ -111,6 +111,25 @@
   color: white;
 }
 
+/* Blocked/past state - non-interactive */
+.tm-availability-block--blocked-past {
+  background-color: #9ca3af;
+  color: #6b7280;
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: auto; /* Allow hover for tooltip; click prevention is handled in JavaScript */
+}
+
+.tm-availability-block--blocked-past:hover {
+  opacity: 0.6;
+  ring-color: transparent;
+}
+
+.tm-availability-block--blocked-past:focus {
+  outline: none;
+  ring-color: transparent;
+}
+
 /* Dark theme adjustments */
 .dark .tm-availability-block--available {
   background-color: #16a34a;
@@ -127,6 +146,11 @@
 
 .dark .tm-availability-block--pending {
   background-color: #ea580c;
+}
+
+.dark .tm-availability-block--blocked-past {
+  background-color: #4b5563;
+  color: #9ca3af;
 }
 
 /* Tooltip */
@@ -206,6 +230,15 @@
 
 .tm-legend-dot--pending {
   background-color: #f97316;
+}
+
+.tm-legend-dot--blocked-past {
+  background-color: #9ca3af;
+}
+
+/* Tooltip blocked state */
+.tm-tooltip-blocked {
+  @apply text-[10px] opacity-80;
 }
 
 /* Loading skeleton */
