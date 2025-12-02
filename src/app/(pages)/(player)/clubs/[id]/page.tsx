@@ -15,8 +15,6 @@ import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { GalleryModal } from "@/components/GalleryModal";
 import { Button, IMLink, Breadcrumbs, ImageCarousel } from "@/components/ui";
 import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
-import { formatPrice } from "@/utils/price";
-import { parseTags, getPriceRange, getCourtCounts } from "@/utils/club";
 import type { Court, AvailabilitySlot, AvailabilityResponse, CourtAvailabilityStatus } from "@/types/court";
 import "@/components/ClubDetailPage.css";
 
@@ -341,9 +339,6 @@ export default function ClubDetailPage({
   const logoUrl = getSupabaseStorageUrl(club.logo);
   const hasHeroImage = isValidImageUrl(heroImageUrl);
   const hasLogo = isValidImageUrl(logoUrl);
-  const clubTags = parseTags(club.tags);
-  const priceRange = getPriceRange(club.courts);
-  const courtCounts = getCourtCounts(club.courts);
   const hasValidCoordinates = club.latitude !== null && club.longitude !== null && club.latitude !== undefined && club.longitude !== undefined;
 
   // Format location display
@@ -463,147 +458,171 @@ export default function ClubDetailPage({
           </section>
         )}
 
-        {/* Full Club Description Section */}
-        {club.longDescription && (
-          <div className="rsp-club-full-description">
-            <div className="rsp-club-full-description-card">
-              <h2 className="rsp-club-full-description-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14,2 14,8 20,8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                  <polyline points="10,9 9,9 8,9" />
-                </svg>
-                {t("clubDetail.aboutClub")}
-              </h2>
-              <p className="rsp-club-full-description-text">{club.longDescription}</p>
-            </div>
-          </div>
-        )}
+        {/* Description & Gallery Section - Left of Contacts & Hours */}
+        <section className="im-club-description-gallery">
+          <div className="im-club-description-gallery-grid">
+            {/* Left Column - Description & Gallery */}
+            <div className="im-club-description-gallery-left">
+              {/* Description Card */}
+              {club.longDescription && (
+                <div className="im-club-description-card">
+                  <h2 className="im-club-description-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14,2 14,8 20,8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                      <polyline points="10,9 9,9 8,9" />
+                    </svg>
+                    {t("clubDetail.aboutClub")}
+                  </h2>
+                  <p className="im-club-description-text">{club.longDescription}</p>
+                </div>
+              )}
 
-        {/* Info Grid */}
-        <div className="rsp-club-info-grid">
-          {/* Left Column - Details */}
-          <div className="space-y-6">
-            {/* Map Section */}
-            {hasValidCoordinates && (
-              <div className="rsp-club-info-card">
-                <h2 className="rsp-club-info-card-title">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2 1,6" />
-                    <line x1="8" y1="2" x2="8" y2="18" />
-                    <line x1="16" y1="6" x2="16" y2="22" />
-                  </svg>
-                  {t("clubDetail.location")}
-                </h2>
-                <ClubMap
-                  latitude={club.latitude as number}
-                  longitude={club.longitude as number}
-                  clubName={club.name}
-                />
-                <p className="mt-3 text-sm opacity-70">{club.location}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column - Contact & Hours */}
-          <div className="space-y-6">
-            {/* Contact Info Card */}
-            <div className="rsp-club-info-card">
-              <h2 className="rsp-club-info-card-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
-                {t("clubDetail.contact")}
-              </h2>
-              <div className="rsp-club-contact-list">
-                {club.phone && (
-                  <div className="rsp-club-contact-item">
-                    <svg className="rsp-club-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                    </svg>
-                    <div>
-                      <span className="rsp-club-contact-label">{t("clubDetail.phone")}</span>
-                      <a href={`tel:${club.phone}`} className="rsp-club-contact-value rsp-club-contact-link">{club.phone}</a>
-                    </div>
+              {/* Gallery Card */}
+              {galleryImages.length > 0 && (
+                <div className="im-club-gallery-card" data-testid="club-gallery-block">
+                  <div className="im-club-gallery-card-header">
+                    <h2 className="im-club-gallery-card-title">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21,15 16,10 5,21" />
+                      </svg>
+                      {t("clubDetail.gallery")}
+                    </h2>
                   </div>
-                )}
-                {club.email && (
-                  <div className="rsp-club-contact-item">
-                    <svg className="rsp-club-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                      <polyline points="22,6 12,13 2,6" />
-                    </svg>
-                    <div>
-                      <span className="rsp-club-contact-label">{t("clubDetail.email")}</span>
-                      <a href={`mailto:${club.email}`} className="rsp-club-contact-value rsp-club-contact-link">{club.email}</a>
-                    </div>
+                  <div className="im-club-gallery-card-content">
+                    <ImageCarousel
+                      images={galleryImages}
+                      onImageClick={handleGalleryOpen}
+                      showIndicators={true}
+                      loop={true}
+                    />
                   </div>
-                )}
-                {club.website && (
-                  <div className="rsp-club-contact-item">
-                    <svg className="rsp-club-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="2" y1="12" x2="22" y2="12" />
-                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                    </svg>
-                    <div>
-                      <span className="rsp-club-contact-label">{t("clubDetail.website")}</span>
-                      <a
-                        href={club.website.startsWith("http") ? club.website : `https://${club.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rsp-club-contact-value rsp-club-contact-link"
-                      >
-                        {club.website.replace(/^https?:\/\//, "")}
-                      </a>
-                    </div>
-                  </div>
-                )}
-                {club.location && (
-                  <div className="rsp-club-contact-item">
-                    <svg className="rsp-club-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                      <circle cx="12" cy="10" r="3" />
-                    </svg>
-                    <div>
-                      <span className="rsp-club-contact-label">{t("clubDetail.address")}</span>
-                      <span className="rsp-club-contact-value">{club.location}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
-            {/* Business Hours Card */}
-            {club.businessHours && club.businessHours.length > 0 && (
-              <div className="rsp-club-info-card">
-                <h2 className="rsp-club-info-card-title">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12,6 12,12 16,14" />
+            {/* Right Column - Contact & Hours */}
+            <div className="im-club-contacts-column">
+              {/* Contact Info Card */}
+              <div className="im-club-info-card">
+                <h2 className="im-club-info-card-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                   </svg>
-                  {t("clubDetail.hours")}
+                  {t("clubDetail.contact")}
                 </h2>
-                <div className="rsp-club-hours-list">
-                  {club.businessHours.map((hours) => (
-                    <div key={hours.id} className="rsp-club-hours-row">
-                      <span className="rsp-club-hours-day">{DAY_NAMES[hours.dayOfWeek]}</span>
-                      {hours.isClosed ? (
-                        <span className="rsp-club-hours-closed">{t("clubDetail.closed")}</span>
-                      ) : (
-                        <span className="rsp-club-hours-time">
-                          {hours.openTime} - {hours.closeTime}
-                        </span>
-                      )}
+                <div className="im-club-contact-list">
+                  {club.phone && (
+                    <div className="im-club-contact-item">
+                      <svg className="im-club-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      <div>
+                        <span className="im-club-contact-label">{t("clubDetail.phone")}</span>
+                        <a href={`tel:${club.phone}`} className="im-club-contact-value im-club-contact-link">{club.phone}</a>
+                      </div>
                     </div>
-                  ))}
+                  )}
+                  {club.email && (
+                    <div className="im-club-contact-item">
+                      <svg className="im-club-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                      </svg>
+                      <div>
+                        <span className="im-club-contact-label">{t("clubDetail.email")}</span>
+                        <a href={`mailto:${club.email}`} className="im-club-contact-value im-club-contact-link">{club.email}</a>
+                      </div>
+                    </div>
+                  )}
+                  {club.website && (
+                    <div className="im-club-contact-item">
+                      <svg className="im-club-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="2" y1="12" x2="22" y2="12" />
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                      </svg>
+                      <div>
+                        <span className="im-club-contact-label">{t("clubDetail.website")}</span>
+                        <a
+                          href={club.website.startsWith("http") ? club.website : `https://${club.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="im-club-contact-value im-club-contact-link"
+                        >
+                          {club.website.replace(/^https?:\/\//, "")}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {club.location && (
+                    <div className="im-club-contact-item">
+                      <svg className="im-club-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
+                      <div>
+                        <span className="im-club-contact-label">{t("clubDetail.address")}</span>
+                        <span className="im-club-contact-value">{club.location}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+
+              {/* Business Hours Card */}
+              {club.businessHours && club.businessHours.length > 0 && (
+                <div className="im-club-info-card">
+                  <h2 className="im-club-info-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12,6 12,12 16,14" />
+                    </svg>
+                    {t("clubDetail.hours")}
+                  </h2>
+                  <div className="im-club-hours-list">
+                    {club.businessHours.map((hours) => (
+                      <div key={hours.id} className="im-club-hours-row">
+                        <span className="im-club-hours-day">{DAY_NAMES[hours.dayOfWeek]}</span>
+                        {hours.isClosed ? (
+                          <span className="im-club-hours-closed">{t("clubDetail.closed")}</span>
+                        ) : (
+                          <span className="im-club-hours-time">
+                            {hours.openTime} - {hours.closeTime}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </section>
+
+        {/* Map Section */}
+        {hasValidCoordinates && (
+          <div className="rsp-club-info-card mb-8">
+            <h2 className="rsp-club-info-card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2 1,6" />
+                <line x1="8" y1="2" x2="8" y2="18" />
+                <line x1="16" y1="6" x2="16" y2="22" />
+              </svg>
+              {t("clubDetail.location")}
+            </h2>
+            <ClubMap
+              latitude={club.latitude as number}
+              longitude={club.longitude as number}
+              clubName={club.name}
+            />
+            <p className="mt-3 text-sm opacity-70">{club.location}</p>
+          </div>
+        )}
 
         {/* Courts Grid Section */}
         <section className="rsp-club-courts-section">
@@ -633,19 +652,6 @@ export default function ClubDetailPage({
             )}
           </div>
         </section>
-
-        {/* Gallery Section with Carousel and Fullscreen Modal */}
-        {galleryImages.length > 0 && (
-          <section className="rsp-club-gallery-section">
-            <h2 className="rsp-club-gallery-title">{t("clubDetail.gallery")}</h2>
-            <ImageCarousel
-              images={galleryImages}
-              onImageClick={handleGalleryOpen}
-              showIndicators={true}
-              loop={true}
-            />
-          </section>
-        )}
       </div>
 
       {/* Modals */}
