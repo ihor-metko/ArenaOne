@@ -1,15 +1,19 @@
 @reference "tailwindcss";
 
 /* ===== Club Map Component ===== */
-.rsp-club-map {
+.rsp-club-map-wrapper {
   @apply w-full rounded-xl overflow-hidden;
   height: 200px;
   border: 1px solid var(--rsp-border);
   z-index: 0;
 }
 
+.rsp-club-map {
+  @apply w-full h-full;
+}
+
 @media (min-width: 768px) {
-  .rsp-club-map {
+  .rsp-club-map-wrapper {
     height: 240px;
   }
 }
