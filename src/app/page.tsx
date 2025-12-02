@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import Header from "@/components/layout/Header";
 import { PublicFooter } from "@/components/layout";
 import { Card, IMLink } from "@/components/ui";
 import { PublicSearchBar } from "@/components/PublicSearchBar";
@@ -47,25 +48,26 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="rsp-container min-h-screen">
+    <main className="flex flex-col min-h-screen overflow-auto">
+      <Header />
 
       {/* Hero section with background and search */}
-      <section className="tm-hero relative overflow-hidden bg-linear-to-br from-(--rsp-primary) via-[#0a1040] to-(--rsp-primary)">
+      <section className="tm-hero flex-col relative overflow-hidden bg-linear-to-br from-(--rsp-primary) via-[#0a1040] to-(--rsp-primary)">
         <div className="tm-hero-overlay absolute inset-0 bg-[url('/hero-pattern.svg')]" />
         <div className="tm-hero-bg absolute inset-0 bg-[url('/platform/paddle-club-banner.webp')] bg-cover bg-center bg-no-repeat" />
 
-        <div className="tm-hero-content relative z-10 max-w-4xl mx-auto px-4 py-16 md:py-24 text-center">
+        <div className="tm-hero-content relative z-10 max-w-4xl mx-auto px-4 py-8 md:py-4 text-center">
           <h2 className="tm-hero-headline text-3xl md:text-5xl font-bold text-white mb-4">
             {t("home.heroHeadline")}
           </h2>
           <p className="tm-hero-subheadline text-lg md:text-xl text-gray-300 mb-8">
             {t("home.heroSubheadline")}
           </p>
+        </div>
 
-          {/* Search bar in hero */}
-          <div className="tm-hero-search max-w-2xl mx-auto rounded-lg p-4">
-            <PublicSearchBar navigateOnSearch compact />
-          </div>
+        {/* Search bar in hero */}
+        <div className="tm-hero-search max-w-2xl mx-auto rounded-lg p-4">
+          <PublicSearchBar navigateOnSearch compact />
         </div>
       </section>
 
@@ -190,7 +192,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
       <PublicFooter />
     </main>
   );
