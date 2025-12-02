@@ -246,6 +246,11 @@
   @apply mt-8;
 }
 
+.im-admin-club-gallery-carousel {
+  @apply mt-6;
+  max-width: 100%;
+}
+
 .im-admin-club-gallery-grid {
   @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-6;
 }

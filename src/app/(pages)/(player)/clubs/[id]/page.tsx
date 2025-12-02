@@ -14,7 +14,7 @@ import { WeeklyAvailabilityTimeline } from "@/components/WeeklyAvailabilityTimel
 import { CourtAvailabilityModal } from "@/components/CourtAvailabilityModal";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { GalleryModal } from "@/components/GalleryModal";
-import { Button, IMLink, Breadcrumbs } from "@/components/ui";
+import { Button, IMLink, Breadcrumbs, ImageCarousel } from "@/components/ui";
 import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
 import { parseTags, getPriceRange, getCourtCounts } from "@/utils/club";
@@ -686,35 +686,16 @@ export default function ClubDetailPage({
           </div>
         </section>
 
-        {/* Gallery Section with Fullscreen Modal */}
+        {/* Gallery Section with Carousel and Fullscreen Modal */}
         {galleryImages.length > 0 && (
           <section className="rsp-club-gallery-section">
             <h2 className="rsp-club-gallery-title">{t("clubDetail.gallery")}</h2>
-            <div className="rsp-club-gallery-grid">
-              {galleryImages.map((image, index) => (
-                <button
-                  key={index}
-                  className="rsp-club-gallery-item"
-                  onClick={() => handleGalleryOpen(index)}
-                  aria-label={t("clubDetail.viewImage")}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={image.url}
-                    alt={image.alt}
-                    className="rsp-club-gallery-image"
-                  />
-                  <span className="rsp-club-gallery-zoom-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="M21 21l-4.35-4.35" />
-                      <line x1="11" y1="8" x2="11" y2="14" />
-                      <line x1="8" y1="11" x2="14" y2="11" />
-                    </svg>
-                  </span>
-                </button>
-              ))}
-            </div>
+            <ImageCarousel
+              images={galleryImages}
+              onImageClick={handleGalleryOpen}
+              showIndicators={true}
+              loop={true}
+            />
           </section>
         )}
 

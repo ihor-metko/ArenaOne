@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, Card, Modal, IMLink, Breadcrumbs } from "@/components/ui";
+import { Button, Card, Modal, IMLink, Breadcrumbs, ImageCarousel } from "@/components/ui";
 import { NotificationBell } from "@/components/admin/NotificationBell";
 import { ClubHeaderView } from "@/components/admin/club/ClubHeaderView";
 import { ClubContactsView } from "@/components/admin/club/ClubContactsView";
@@ -13,6 +13,7 @@ import { ClubCourtsQuickList } from "@/components/admin/club/ClubCourtsQuickList
 import { ClubGalleryView } from "@/components/admin/club/ClubGalleryView";
 import { ClubCoachesView } from "@/components/admin/club/ClubCoachesView";
 import { WeeklyAvailabilityTimeline } from "@/components/WeeklyAvailabilityTimeline";
+import { GalleryModal } from "@/components/GalleryModal";
 import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
 import { parseTags, getPriceRange, getCourtCounts, getGoogleMapsEmbedUrl } from "@/utils/club";
@@ -34,7 +35,8 @@ export default function AdminClubDetailPage({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   useEffect(() => {
     params.then((resolvedParams) => {
@@ -201,6 +203,30 @@ export default function AdminClubDetailPage({
 
   // Format location display
   const locationDisplay = [club.city, club.country].filter(Boolean).join(", ") || club.location;
+
+  // Prepare gallery images for carousel and modal
+  const galleryImages = (club.gallery || [])
+    .map((image) => {
+      const imageUrl = getSupabaseStorageUrl(image.imageUrl);
+      return isValidImageUrl(imageUrl)
+        ? { url: imageUrl as string, alt: image.altText || `${club.name} gallery image` }
+        : null;
+    })
+    .filter((img): img is { url: string; alt: string } => img !== null);
+
+  // Gallery modal handlers
+  const handleGalleryOpen = (index: number) => {
+    setGalleryIndex(index);
+    setIsGalleryOpen(true);
+  };
+
+  const handleGalleryClose = () => {
+    setIsGalleryOpen(false);
+  };
+
+  const handleGalleryNavigate = (index: number) => {
+    setGalleryIndex(index);
+  };
 
   return (
     <main className="im-admin-club-detail-page">
@@ -433,42 +459,15 @@ export default function AdminClubDetailPage({
             />
           </Card>
 
-          {/* Gallery Grid with Fullscreen View */}
-          {club.gallery && club.gallery.length > 0 && (
-            <div className="im-admin-club-gallery-grid">
-              {club.gallery.map((image, index) => {
-                const imageUrl = getSupabaseStorageUrl(image.imageUrl);
-                return isValidImageUrl(imageUrl) ? (
-                  <div
-                    key={image.id}
-                    className="im-admin-club-gallery-item"
-                    onClick={() => setFullscreenImage(imageUrl as string)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        setFullscreenImage(imageUrl as string);
-                      }
-                    }}
-                    aria-label={`View ${image.altText || `Gallery image ${index + 1}`} fullscreen`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imageUrl as string}
-                      alt={image.altText || `${club.name} gallery image ${index + 1}`}
-                      className="im-admin-club-gallery-image"
-                    />
-                    <div className="im-admin-club-gallery-overlay">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="15,3 21,3 21,9" />
-                        <polyline points="9,21 3,21 3,15" />
-                        <line x1="21" y1="3" x2="14" y2="10" />
-                        <line x1="3" y1="21" x2="10" y2="14" />
-                      </svg>
-                    </div>
-                  </div>
-                ) : null;
-              })}
+          {/* Gallery Carousel with Modal */}
+          {galleryImages.length > 0 && (
+            <div className="im-admin-club-gallery-carousel">
+              <ImageCarousel
+                images={galleryImages}
+                onImageClick={handleGalleryOpen}
+                showIndicators={true}
+                loop={true}
+              />
             </div>
           )}
         </section>
@@ -504,31 +503,14 @@ export default function AdminClubDetailPage({
         </div>
       </Modal>
 
-      {/* Fullscreen Image Modal */}
-      {fullscreenImage && (
-        <div
-          className="im-admin-club-fullscreen-overlay"
-          onClick={() => setFullscreenImage(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Fullscreen image viewer"
-        >
-          <button
-            className="im-admin-club-fullscreen-close"
-            onClick={() => setFullscreenImage(null)}
-            aria-label="Close fullscreen view"
-          >
-            ✕
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={fullscreenImage}
-            alt="Fullscreen gallery view"
-            className="im-admin-club-fullscreen-image"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
+      {/* Gallery Modal */}
+      <GalleryModal
+        isOpen={isGalleryOpen}
+        onClose={handleGalleryClose}
+        images={galleryImages}
+        currentIndex={galleryIndex}
+        onNavigate={handleGalleryNavigate}
+      />
     </main>
   );
 }
