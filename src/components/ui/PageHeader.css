@@ -4,12 +4,7 @@
 :root {
   --im-page-header-bg: transparent;
   --im-page-header-text: var(--rsp-foreground);
-  --im-page-header-text-muted: #6b7280;
   --im-page-header-border: var(--rsp-border);
-}
-
-.dark {
-  --im-page-header-text-muted: #9CA3AF;
 }
 
 /* PageHeader container */
@@ -32,8 +27,11 @@
 
 /* Description/subtitle styling */
 .im-description {
-  @apply text-sm md:text-base mt-1;
-  color: var(--im-page-header-text-muted);
+  @apply text-sm md:text-base mt-1 text-gray-500;
+}
+
+.dark .im-description {
+  @apply text-gray-400;
 }
 
 /* Actions container */

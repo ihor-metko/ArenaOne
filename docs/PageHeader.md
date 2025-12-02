@@ -162,14 +162,11 @@ The component uses these CSS variables for theming:
 :root {
   --im-page-header-bg: transparent;
   --im-page-header-text: var(--rsp-foreground);
-  --im-page-header-text-muted: #6b7280;
   --im-page-header-border: var(--rsp-border);
 }
-
-.dark {
-  --im-page-header-text-muted: #9CA3AF;
-}
 ```
+
+The description uses Tailwind's `text-gray-500` (light mode) and `text-gray-400` (dark mode) for muted text styling, consistent with other components in the codebase.
 
 ## Responsive Behavior
 
