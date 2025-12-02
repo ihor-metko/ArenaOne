@@ -440,7 +440,7 @@ describe("Admin Club Section API", () => {
         );
 
         const response = await PATCH(request, { params: mockParams });
-        const data = await response.json();
+        await response.json();
 
         expect(response.status).toBe(200);
         expect(prisma.$transaction).toHaveBeenCalled();
@@ -487,7 +487,7 @@ describe("Admin Club Section API", () => {
         );
 
         const response = await PATCH(request, { params: mockParams });
-        const data = await response.json();
+        await response.json();
 
         expect(response.status).toBe(200);
         expect(prisma.$transaction).toHaveBeenCalled();
@@ -528,7 +528,7 @@ describe("Admin Club Section API", () => {
         );
 
         const response = await PATCH(request, { params: mockParams });
-        const data = await response.json();
+        await response.json();
 
         expect(response.status).toBe(200);
         expect(prisma.$transaction).toHaveBeenCalled();
