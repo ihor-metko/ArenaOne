@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button, Card, Modal, IMLink } from "@/components/ui";
-import { UserRoleIndicator } from "@/components/UserRoleIndicator";
 import { NotificationBell } from "@/components/admin/NotificationBell";
 import { ClubHeaderView } from "@/components/admin/club/ClubHeaderView";
 import { ClubContactsView } from "@/components/admin/club/ClubContactsView";
@@ -193,7 +192,7 @@ export default function AdminClubDetailPage({
   const priceRange = getPriceRange(club.courts);
   const courtCounts = getCourtCounts(club.courts);
   const hasValidCoordinates = club.latitude != null && club.longitude != null;
-  const mapsEmbedUrl = hasValidCoordinates 
+  const mapsEmbedUrl = hasValidCoordinates
     ? getGoogleMapsEmbedUrl(club.latitude as number, club.longitude as number, process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
     : null;
   const hasMap = mapsEmbedUrl !== null;
@@ -254,11 +253,10 @@ export default function AdminClubDetailPage({
           </p>
           {/* Status badge */}
           <span
-            className={`im-admin-club-status-badge ${
-              club.isPublic
-                ? "im-admin-club-status-badge--published"
-                : "im-admin-club-status-badge--unpublished"
-            }`}
+            className={`im-admin-club-status-badge ${club.isPublic
+              ? "im-admin-club-status-badge--published"
+              : "im-admin-club-status-badge--unpublished"
+              }`}
           >
             {club.isPublic ? "Published" : "Unpublished"}
           </span>
@@ -266,7 +264,6 @@ export default function AdminClubDetailPage({
         {/* Admin controls on hero */}
         <div className="im-admin-club-hero-controls">
           <NotificationBell />
-          <UserRoleIndicator />
         </div>
       </section>
 
@@ -318,7 +315,7 @@ export default function AdminClubDetailPage({
             {/* Courts Summary with Edit */}
             <Card className="im-admin-club-info-card">
               <ClubCourtsQuickList club={club} />
-              
+
               {/* Court type badges */}
               <div className="im-admin-club-courts-summary">
                 {courtCounts.indoor > 0 && (
@@ -421,7 +418,7 @@ export default function AdminClubDetailPage({
               onUpdate={(payload) => handleSectionUpdate("gallery", payload)}
             />
           </Card>
-          
+
           {/* Gallery Grid with Fullscreen View */}
           {club.gallery && club.gallery.length > 0 && (
             <div className="im-admin-club-gallery-grid">
