@@ -9,7 +9,6 @@ import { BookingModal } from "@/components/booking/BookingModal";
 import { QuickBookingWizard } from "@/components/QuickBookingWizard";
 import { RequestTrainingModal } from "../../../../../../archived_features/components/training/RequestTrainingModal";
 import { CourtCard } from "@/components/CourtCard";
-import { CourtSlotsToday } from "@/components/CourtSlotsToday";
 import { WeeklyAvailabilityTimeline } from "@/components/WeeklyAvailabilityTimeline";
 import { CourtAvailabilityModal } from "@/components/CourtAvailabilityModal";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
@@ -673,13 +672,10 @@ export default function ClubDetailPage({
                   onViewSchedule={handleViewSchedule}
                   isBookDisabled={!isAuthenticated}
                   bookDisabledTooltip={t("auth.signInToBookTooltip")}
-                  todaySlots={
-                    <CourtSlotsToday
-                      slots={courtAvailability[court.id] || []}
-                      isLoading={availabilityLoading}
-                      maxSlots={6}
-                    />
-                  }
+                  availabilitySlots={courtAvailability[court.id] || []}
+                  isLoadingAvailability={availabilityLoading}
+                  maxVisibleSlots={6}
+                  showLegend={true}
                 />
               ))
             )}
