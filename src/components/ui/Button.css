@@ -12,7 +12,7 @@
 }
 
 .rsp-button:focus {
-  --tw-ring-color: var(--rsp-secondary);
+  box-shadow: none;
 }
 
 .rsp-button:disabled {
