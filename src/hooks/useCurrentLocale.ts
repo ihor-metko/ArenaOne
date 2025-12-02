@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { defaultLocale, type Locale, locales } from "@/i18n/config";
+import { LOCALE_CHANGE_EVENT } from "@/i18n/client";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -21,6 +22,18 @@ export function useCurrentLocale(): Locale {
     if (cookieLocale && locales.includes(cookieLocale as Locale)) {
       setLocale(cookieLocale as Locale);
     }
+
+    const handleLocaleChange = (event: Event) => {
+      const customEvent = event as CustomEvent<Locale>;
+      if (customEvent.detail && locales.includes(customEvent.detail)) {
+        setLocale(customEvent.detail);
+      }
+    };
+
+    window.addEventListener(LOCALE_CHANGE_EVENT, handleLocaleChange);
+    return () => {
+      window.removeEventListener(LOCALE_CHANGE_EVENT, handleLocaleChange);
+    };
   }, []);
 
   return locale;
