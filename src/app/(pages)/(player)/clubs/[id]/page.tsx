@@ -114,6 +114,27 @@ function getCourtCounts(courts: Court[]): { indoor: number; outdoor: number } {
   );
 }
 
+// Safely construct Google Maps embed URL with validated coordinates
+function getGoogleMapsEmbedUrl(latitude: number, longitude: number, apiKey: string | undefined): string | null {
+  // Validate latitude and longitude are valid numbers within range
+  if (typeof latitude !== "number" || typeof longitude !== "number") {
+    return null;
+  }
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+    return null;
+  }
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+  
+  // Use encodeURIComponent for safety and construct URL with validated coordinates
+  const lat = encodeURIComponent(latitude.toString());
+  const lng = encodeURIComponent(longitude.toString());
+  const key = encodeURIComponent(apiKey || "");
+  
+  return `https://www.google.com/maps/embed/v1/place?key=${key}&q=${lat},${lng}&zoom=15`;
+}
+
 export default function ClubDetailPage({
   params,
 }: {
@@ -360,7 +381,11 @@ export default function ClubDetailPage({
   const clubTags = parseTags(club.tags);
   const priceRange = getPriceRange(club.courts);
   const courtCounts = getCourtCounts(club.courts);
-  const hasMap = club.latitude !== null && club.longitude !== null && club.latitude !== undefined && club.longitude !== undefined;
+  const hasValidCoordinates = club.latitude !== null && club.longitude !== null && club.latitude !== undefined && club.longitude !== undefined;
+  const mapsEmbedUrl = hasValidCoordinates 
+    ? getGoogleMapsEmbedUrl(club.latitude as number, club.longitude as number, process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
+    : null;
+  const hasMap = mapsEmbedUrl !== null;
 
   // Format location display
   const locationDisplay = [club.city, club.country].filter(Boolean).join(", ") || club.location;
@@ -533,7 +558,7 @@ export default function ClubDetailPage({
                     style={{ border: 0 }}
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}&q=${club.latitude},${club.longitude}&zoom=15`}
+                    src={mapsEmbedUrl as string}
                   />
                 </div>
                 <p className="mt-3 text-sm opacity-70">{club.location}</p>
