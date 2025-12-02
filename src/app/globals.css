@@ -116,20 +116,9 @@ body {
 }
 
 /* Hero search inputs - clear visibility in both themes */
-.tm-hero-search .rsp-input {
-  background-color: var(--rsp-background);
-  color: var(--rsp-foreground);
-  border: 1px solid var(--rsp-border);
-}
-
 .tm-hero-search .rsp-input::placeholder {
   color: var(--rsp-foreground);
   opacity: 0.6;
-}
-
-.tm-hero-search .rsp-input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Hero search button */
@@ -137,20 +126,6 @@ body {
   @apply whitespace-nowrap;
   background-color: var(--rsp-primary);
   color: var(--rsp-accent);
-}
-
-.tm-hero-search .rsp-button:hover {
-  background-color: var(--rsp-primary-hover);
-}
-
-.tm-hero-search .rsp-button:focus {
-  outline: 2px solid var(--rsp-secondary);
-  outline-offset: 2px;
-}
-
-.tm-hero-search .rsp-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Hero search outline button */
