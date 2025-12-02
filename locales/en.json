@@ -153,7 +153,8 @@
     "website": "Website",
     "address": "Address",
     "closed": "Closed",
-    "limited": "Limited"
+    "limited": "Limited",
+    "viewImage": "View image"
   },
   "admin": {
     "clubs": {

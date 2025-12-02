@@ -792,7 +792,7 @@ export default function ClubDetailPage({
                   key={index}
                   className="rsp-club-gallery-item"
                   onClick={() => handleGalleryOpen(index)}
-                  aria-label={`View ${image.alt}`}
+                  aria-label={t("clubDetail.viewImage")}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img

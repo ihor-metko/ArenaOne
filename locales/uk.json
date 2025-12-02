@@ -153,7 +153,8 @@
     "website": "Сайт",
     "address": "Адреса",
     "closed": "Зачинено",
-    "limited": "Обмежено"
+    "limited": "Обмежено",
+    "viewImage": "Переглянути зображення"
   },
   "admin": {
     "clubs": {
