@@ -146,6 +146,16 @@ describe("PublicClubCard", () => {
       expect(img).toBeInTheDocument();
       expect(img).toHaveAttribute("src", "/uploads/clubs/hero.jpg");
     });
+
+    it("rejects relative paths with path traversal sequences", () => {
+      const clubWithTraversalPath = {
+        ...baseClub,
+        heroImage: "/../etc/passwd",
+      };
+      render(<PublicClubCard club={clubWithTraversalPath} />);
+      // Should show placeholder instead of the dangerous path
+      expect(screen.getByText("T")).toBeInTheDocument();
+    });
   });
 
   describe("Short Description", () => {

@@ -26,10 +26,14 @@ export interface PublicClubCardProps {
 function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   // Support relative paths (e.g., /uploads/clubs/...)
+  // Block path traversal sequences for security
   if (url.startsWith("/")) {
+    if (url.includes("..")) {
+      return false;
+    }
     return true;
   }
-  // Support absolute URLs (http/https)
+  // Fallback: support absolute URLs (http/https)
   try {
     const parsed = new URL(url);
     return parsed.protocol === "https:" || parsed.protocol === "http:";
