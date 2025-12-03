@@ -32,7 +32,8 @@
 }
 
 .im-public-footer-grid {
-  @apply grid gap-8 md:grid-cols-3 lg:grid-cols-4;
+  @apply grid gap-8 md:grid-cols-3;
+  grid-template-columns: 50% repeat(3, 1fr);
 }
 
 .im-public-footer-section {
