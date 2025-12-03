@@ -61,7 +61,8 @@ interface HalfHourSlotAvailability {
   overallStatus: "available" | "partial" | "booked" | "pending";
 }
 
-interface Booking30Min {
+// Booking representation for 30-min slot response (internal API type)
+interface BookingForResponse {
   courtId: string;
   start: string;
   end: string;
@@ -73,7 +74,7 @@ interface DayAvailability30Min {
   dayOfWeek: number;
   dayName: string;
   slots: HalfHourSlotAvailability[];
-  bookingsByCourt: Record<string, Booking30Min[]>;
+  bookingsByCourt: Record<string, BookingForResponse[]>;
 }
 
 interface WeeklyAvailability30MinResponse {
@@ -413,7 +414,7 @@ function build30MinResponse(
     const dayName = getDayName(date);
 
     const slots: HalfHourSlotAvailability[] = [];
-    const bookingsByCourt: Record<string, Booking30Min[]> = {};
+    const bookingsByCourt: Record<string, BookingForResponse[]> = {};
 
     // Initialize bookingsByCourt for all courts
     for (const court of club.courts) {
