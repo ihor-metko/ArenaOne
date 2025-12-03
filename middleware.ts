@@ -4,7 +4,9 @@ import { ROLE_HOMEPAGES } from "@/utils/roleRedirect";
 import type { UserRole } from "@/lib/auth";
 
 /**
- * Admin roles that should be redirected from the landing page
+ * Admin roles that should be redirected from the landing page.
+ * This array is designed for extensibility if additional admin-level roles
+ * (e.g., club_manager, super_admin) are added in the future.
  */
 const ADMIN_ROLES: UserRole[] = ["admin"];
 

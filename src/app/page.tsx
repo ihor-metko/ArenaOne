@@ -20,7 +20,7 @@ import { ROLE_HOMEPAGES } from "@/utils/roleRedirect";
  * Server Components: HomeHero, PopularClubsSection,
  *                    LandingHowItWorks, LandingClubsCoaches, LandingTestimonials
  * Client Components: Header, PersonalizedSectionWrapper, PublicFooter
- * 
+ *
  * Admin users are redirected to admin dashboard (server-side fallback for middleware)
  */
 export default async function Home() {
