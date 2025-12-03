@@ -37,7 +37,9 @@ export default auth((req) => {
 
     // Check if user has admin role
     if (userRole && ADMIN_ROLES.includes(userRole)) {
-      const adminHomepage = ROLE_HOMEPAGES[userRole] || ROLE_HOMEPAGES.super_admin;
+      // All admin roles should have a defined homepage in ROLE_HOMEPAGES
+      // The null coalescing uses super_admin as fallback for safety
+      const adminHomepage = ROLE_HOMEPAGES[userRole] ?? "/admin/clubs";
       const redirectUrl = new URL(adminHomepage, req.url);
       return NextResponse.redirect(redirectUrl);
     }
