@@ -169,17 +169,17 @@ async function main(): Promise<void> {
     try {
       const input = await promptForInput(rl);
 
-      // Check if email is already registered
+      // If force mode, delete existing root admin first (before email check)
+      if (forceMode && rootAdminExists) {
+        await deleteExistingRootAdmins(prisma);
+        console.log("\n✓ Existing root admin removed.");
+      }
+
+      // Check if email is already registered (after potential deletion)
       const emailExists = await checkEmailExists(prisma, input.email);
       if (emailExists) {
         console.log("\n❌ Error: This email is already registered.");
         process.exit(1);
-      }
-
-      // If force mode, delete existing root admin first
-      if (forceMode && rootAdminExists) {
-        await deleteExistingRootAdmins(prisma);
-        console.log("\n✓ Existing root admin removed.");
       }
 
       // Create the root admin

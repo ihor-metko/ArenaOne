@@ -287,5 +287,27 @@ describe("Root Admin Module", () => {
       expect(result.success).toBe(true);
       expect(prisma.user.deleteMany).not.toHaveBeenCalled();
     });
+
+    it("should allow replacing root admin with same email using force flag", async () => {
+      // Setup: existing root admin with the same email we want to use
+      (prisma.user.findFirst as jest.Mock).mockResolvedValue({
+        id: "existing-root-admin",
+        email: validInput.email,
+        role: ROOT_ADMIN_ROLE,
+      });
+      (prisma.user.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
+      // After deletion, findUnique should return null (email no longer exists)
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const result = await executeCreateRootAdmin(prisma as never, validInput, {
+        force: true,
+      });
+
+      expect(result.success).toBe(true);
+      expect(prisma.user.deleteMany).toHaveBeenCalledWith({
+        where: { role: ROOT_ADMIN_ROLE },
+      });
+      expect(prisma.user.create).toHaveBeenCalled();
+    });
   });
 });

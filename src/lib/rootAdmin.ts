@@ -49,8 +49,9 @@ export async function checkEmailExists(
   prisma: PrismaClient,
   email: string
 ): Promise<boolean> {
+  const normalizedEmail = email.toLowerCase();
   const existingUser = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizedEmail },
   });
   return existingUser !== null;
 }
@@ -60,11 +61,12 @@ export async function createRootAdmin(
   input: RootAdminInput
 ): Promise<{ id: string; email: string; name: string }> {
   const hashedPassword = await hash(input.password, 12);
+  const normalizedEmail = input.email.toLowerCase();
 
   const user = await prisma.user.create({
     data: {
       name: input.name,
-      email: input.email,
+      email: normalizedEmail,
       password: hashedPassword,
       role: ROOT_ADMIN_ROLE,
     },
@@ -73,7 +75,7 @@ export async function createRootAdmin(
   return {
     id: user.id,
     email: user.email,
-    name: user.name ?? "",
+    name: input.name, // Use validated input name instead of potentially null user.name
   };
 }
 
@@ -124,15 +126,15 @@ export async function executeCreateRootAdmin(
     };
   }
 
-  // Check if email is already registered
+  // If force mode, delete existing root admin first (before email check)
+  if (force && rootAdminExists) {
+    await deleteExistingRootAdmins(prisma);
+  }
+
+  // Check if email is already registered (after potential deletion)
   const emailExists = await checkEmailExists(prisma, input.email);
   if (emailExists) {
     return { success: false, message: "This email is already registered." };
-  }
-
-  // If force mode, delete existing root admin first
-  if (force && rootAdminExists) {
-    await deleteExistingRootAdmins(prisma);
   }
 
   // Create the root admin
