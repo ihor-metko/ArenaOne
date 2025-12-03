@@ -12,9 +12,9 @@ const ADMIN_ROLES: UserRole[] = ["root_admin", "super_admin", "admin"];
 
 /**
  * Middleware to redirect admin users from the landing page to admin dashboard
- * 
+ *
  * - Unauthenticated users: See public landing page
- * - Players/coaches: See player landing page  
+ * - Players/coaches: See player landing page
  * - Admin users (root_admin, super_admin, admin): Redirected to /admin/clubs
  */
 export default auth((req) => {
