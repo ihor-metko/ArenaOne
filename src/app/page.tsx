@@ -24,10 +24,10 @@ import { ROLE_HOMEPAGES } from "@/utils/roleRedirect";
  * Admin users are redirected to admin dashboard (server-side fallback for middleware)
  */
 export default async function Home() {
-  // Server-side fallback: redirect admin users to admin dashboard
+  // Server-side fallback: redirect super_admin users to admin dashboard
   const session = await auth();
-  if (session?.user?.role === "admin") {
-    redirect(ROLE_HOMEPAGES.admin);
+  if (session?.user?.role === "super_admin") {
+    redirect(ROLE_HOMEPAGES.super_admin);
   }
   return (
     <main className="flex flex-col min-h-screen overflow-auto">
