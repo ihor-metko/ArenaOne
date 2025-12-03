@@ -323,7 +323,7 @@ export default function AdminCoachesPage() {
                 { value: "", label: "All Roles" },
                 { value: "player", label: "Player" },
                 { value: "coach", label: "Coach" },
-                { value: "super_admin", label: "Admin" },
+                { value: "super_admin", label: "Super Admin" },
               ]}
               value={roleFilter}
               onChange={(value) => setRoleFilter(value)}
