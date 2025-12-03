@@ -385,6 +385,7 @@
       "selectAtLeastOneClub": "Будь ласка, виберіть хоча б один клуб",
       "roles": {
         "super_admin": "Суперадмін",
+        "admin": "Адмін",
         "coach": "Тренер",
         "player": "Гравець"
       }

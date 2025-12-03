@@ -18,7 +18,7 @@ export function UserRoleIndicator() {
 
   const roleLabels: Record<UserRole, string> = {
     [Roles.SuperAdmin]: t("admin.coaches.roles.super_admin"),
-    [Roles.Admin]: t("admin.coaches.roles.super_admin"),
+    [Roles.Admin]: t("admin.coaches.roles.admin"),
     [Roles.Coach]: t("admin.coaches.roles.coach"),
     [Roles.Player]: t("admin.coaches.roles.player"),
   };

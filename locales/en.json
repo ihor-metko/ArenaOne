@@ -385,6 +385,7 @@
       "selectAtLeastOneClub": "Please select at least one club",
       "roles": {
         "super_admin": "Super Admin",
+        "admin": "Admin",
         "coach": "Coach",
         "player": "Player"
       }
