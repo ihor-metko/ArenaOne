@@ -1,0 +1,178 @@
+@reference "tailwindcss";
+
+/* ===== Root Admin Dashboard Page Layout ===== */
+.im-root-dashboard-page {
+  @apply p-8 max-w-7xl mx-auto;
+  background-color: var(--rsp-background);
+  color: var(--rsp-foreground);
+}
+
+/* ===== Statistics Grid ===== */
+.im-stats-grid {
+  @apply grid gap-6 mb-8;
+  grid-template-columns: repeat(1, 1fr);
+}
+
+@media (min-width: 640px) {
+  .im-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .im-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ===== Statistics Card ===== */
+.im-stat-card {
+  @apply flex items-center gap-4 p-6 rounded-xl;
+  background-color: var(--rsp-card-bg);
+  border: 1px solid var(--rsp-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.im-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.dark .im-stat-card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Card Icon Container */
+.im-stat-card-icon {
+  @apply flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-xl;
+  transition: background-color 0.2s ease;
+}
+
+.im-stat-icon {
+  @apply w-7 h-7;
+  color: currentColor;
+}
+
+/* Card Content */
+.im-stat-card-content {
+  @apply flex flex-col;
+}
+
+.im-stat-card-value {
+  @apply text-3xl font-bold leading-tight;
+  color: var(--rsp-foreground);
+}
+
+.im-stat-card-title {
+  @apply text-sm mt-1;
+  color: var(--im-muted);
+}
+
+/* ===== Color Variants ===== */
+
+/* Clubs Card - Primary/Teal */
+.im-stat-card--clubs .im-stat-card-icon {
+  background-color: rgba(26, 188, 156, 0.15);
+  color: #1abc9c;
+}
+
+.dark .im-stat-card--clubs .im-stat-card-icon {
+  background-color: rgba(26, 188, 156, 0.25);
+  color: #2ecc71;
+}
+
+/* Users Card - Blue */
+.im-stat-card--users .im-stat-card-icon {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.dark .im-stat-card--users .im-stat-card-icon {
+  background-color: rgba(59, 130, 246, 0.25);
+  color: #60a5fa;
+}
+
+/* Bookings Card - Purple */
+.im-stat-card--bookings .im-stat-card-icon {
+  background-color: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+}
+
+.dark .im-stat-card--bookings .im-stat-card-icon {
+  background-color: rgba(139, 92, 246, 0.25);
+  color: #a78bfa;
+}
+
+/* ===== Dashboard Section ===== */
+.im-dashboard-section {
+  @apply mt-8 p-6 rounded-xl;
+  background-color: var(--rsp-card-bg);
+  border: 1px solid var(--rsp-border);
+}
+
+.im-dashboard-section-title {
+  @apply text-xl font-semibold mb-2;
+  color: var(--rsp-foreground);
+}
+
+.im-dashboard-section-description {
+  @apply text-sm;
+  color: var(--im-muted);
+}
+
+/* ===== Loading State ===== */
+.im-root-dashboard-loading {
+  @apply flex items-center justify-center py-12;
+}
+
+.im-root-dashboard-loading-spinner {
+  @apply w-8 h-8 border-4 rounded-full animate-spin;
+  border-color: var(--rsp-border);
+  border-top-color: var(--rsp-primary);
+}
+
+.im-root-dashboard-loading-text {
+  @apply ml-3 text-gray-500;
+}
+
+.dark .im-root-dashboard-loading-text {
+  @apply text-gray-400;
+}
+
+/* ===== Error State ===== */
+.im-root-dashboard-error {
+  @apply p-4 rounded-lg text-center;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.dark .im-root-dashboard-error {
+  background-color: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 767px) {
+  .im-root-dashboard-page {
+    @apply p-4;
+  }
+
+  .im-stat-card {
+    @apply p-4;
+  }
+
+  .im-stat-card-icon {
+    @apply w-12 h-12;
+  }
+
+  .im-stat-icon {
+    @apply w-6 h-6;
+  }
+
+  .im-stat-card-value {
+    @apply text-2xl;
+  }
+}

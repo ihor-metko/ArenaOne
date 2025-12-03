@@ -695,5 +695,17 @@
     "courts": "Courts",
     "dashboard": "Dashboard",
     "navigation": "Breadcrumb navigation"
+  },
+  "rootAdmin": {
+    "dashboard": {
+      "title": "Root Admin Dashboard",
+      "subtitle": "Platform-wide statistics and overview",
+      "totalClubs": "Total Clubs",
+      "totalUsers": "Registered Users",
+      "activeBookings": "Active Bookings",
+      "platformOverview": "Platform Overview",
+      "platformOverviewDescription": "This dashboard provides a high-level view of the entire platform. More detailed analytics and management features will be added in future updates.",
+      "failedToLoad": "Failed to load dashboard statistics. Please try again later."
+    }
   }
 }

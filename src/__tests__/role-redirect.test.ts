@@ -7,6 +7,10 @@ import { Roles, type UserRole } from "@/constants/roles";
 
 describe("Role Redirect Utilities", () => {
   describe("ROLE_HOMEPAGES", () => {
+    it("should have correct homepage for root_admin", () => {
+      expect(ROLE_HOMEPAGES[Roles.RootAdmin]).toBe("/admin/dashboard");
+    });
+
     it("should have correct homepage for super_admin", () => {
       expect(ROLE_HOMEPAGES[Roles.SuperAdmin]).toBe("/admin/clubs");
     });
@@ -21,6 +25,10 @@ describe("Role Redirect Utilities", () => {
   });
 
   describe("getRoleHomepage", () => {
+    it("should return root_admin homepage for root_admin role", () => {
+      expect(getRoleHomepage(Roles.RootAdmin)).toBe("/admin/dashboard");
+    });
+
     it("should return super_admin homepage for super_admin role", () => {
       expect(getRoleHomepage(Roles.SuperAdmin)).toBe("/admin/clubs");
     });
@@ -55,7 +63,7 @@ describe("Role Redirect Utilities", () => {
 
   describe("Role-based redirect behavior", () => {
     it("should handle all valid roles correctly", () => {
-      const roles: UserRole[] = [Roles.SuperAdmin, Roles.Coach, Roles.Player];
+      const roles: UserRole[] = [Roles.RootAdmin, Roles.SuperAdmin, Roles.Coach, Roles.Player];
       
       roles.forEach((role) => {
         const redirectPath = getRoleHomepage(role);
@@ -65,6 +73,7 @@ describe("Role Redirect Utilities", () => {
 
     it("should always return a valid path", () => {
       const testCases: (UserRole | undefined)[] = [
+        Roles.RootAdmin,
         Roles.SuperAdmin,
         Roles.Coach, 
         Roles.Player,
