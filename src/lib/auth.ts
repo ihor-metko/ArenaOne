@@ -3,19 +3,11 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { validateRole } from "@/constants/roles";
 
-export type UserRole = "player" | "coach" | "super_admin";
-
-const VALID_ROLES: UserRole[] = ["player", "coach", "super_admin"];
-const DEFAULT_ROLE: UserRole = "player";
-
-function isValidRole(role: unknown): role is UserRole {
-  return typeof role === "string" && VALID_ROLES.includes(role as UserRole);
-}
-
-function validateRole(role: unknown): UserRole {
-  return isValidRole(role) ? role : DEFAULT_ROLE;
-}
+// Re-export types and utilities from constants/roles for backward compatibility
+export type { UserRole } from "@/constants/roles";
+export { Roles, VALID_ROLES, DEFAULT_ROLE, isValidRole, validateRole } from "@/constants/roles";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
