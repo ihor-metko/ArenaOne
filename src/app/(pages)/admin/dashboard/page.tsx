@@ -96,7 +96,7 @@ function StatCard({ title, value, icon, colorClass }: StatCardProps) {
 
 /**
  * Root Admin Dashboard Page
- * 
+ *
  * Displays platform-wide statistics for root administrators.
  * Access restricted to users with root_admin role only.
  */
@@ -175,17 +175,6 @@ export default function RootDashboardPage() {
       />
 
       <section className="rsp-content">
-        {/* Breadcrumbs */}
-        <Breadcrumbs
-          items={[
-            { label: t("breadcrumbs.home"), href: "/" },
-            { label: t("breadcrumbs.admin"), href: "/admin/dashboard" },
-            { label: t("breadcrumbs.dashboard") },
-          ]}
-          className="mb-6"
-          ariaLabel={t("breadcrumbs.navigation")}
-        />
-
         {/* Statistics Grid */}
         <div className="im-stats-grid">
           <StatCard
