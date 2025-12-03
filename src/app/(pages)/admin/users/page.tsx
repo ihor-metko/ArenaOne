@@ -584,7 +584,7 @@ export default function UserManagementPage() {
             placeholder={t("userManagement.selectClubs")}
           />
           {formData.role === Roles.Admin && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="im-form-note">
               {t("userManagement.adminSingleClubNote")}
             </p>
           )}
@@ -642,7 +642,7 @@ export default function UserManagementPage() {
             placeholder={t("userManagement.selectClubs")}
           />
           {formData.role === Roles.Admin && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="im-form-note">
               {t("userManagement.adminSingleClubNote")}
             </p>
           )}
@@ -663,17 +663,17 @@ export default function UserManagementPage() {
         onClose={handleCloseDeleteModal}
         title={t("userManagement.deleteUser", { name: "" })}
       >
-        <p className="mb-4">
+        <p className="im-delete-confirm-message">
           {t("userManagement.deleteConfirm", { name: deletingUser?.name || deletingUser?.email || "" })}
         </p>
-        <div className="flex justify-end gap-2">
+        <div className="im-modal-actions">
           <Button variant="outline" onClick={handleCloseDeleteModal}>
             {t("common.cancel")}
           </Button>
           <Button
             onClick={handleDelete}
             disabled={submitting}
-            className="bg-red-500 hover:bg-red-600"
+            className="im-button--danger"
           >
             {submitting ? t("common.processing") : t("common.delete")}
           </Button>

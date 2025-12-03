@@ -217,6 +217,41 @@
   color: #f87171;
 }
 
+/* ===== Form Note ===== */
+.im-form-note {
+  @apply text-sm;
+  color: var(--im-muted);
+}
+
+/* ===== Modal Actions ===== */
+.im-modal-actions {
+  @apply flex justify-end gap-2;
+}
+
+/* ===== Delete Confirmation Modal ===== */
+.im-delete-confirm-message {
+  @apply mb-4;
+  color: var(--rsp-foreground);
+}
+
+/* ===== Danger Button ===== */
+.im-button--danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.im-button--danger:hover {
+  background-color: #dc2626;
+}
+
+.dark .im-button--danger {
+  background-color: #dc2626;
+}
+
+.dark .im-button--danger:hover {
+  background-color: #b91c1c;
+}
+
 /* ===== Responsive Adjustments ===== */
 @media (max-width: 767px) {
   .im-user-management-page {
