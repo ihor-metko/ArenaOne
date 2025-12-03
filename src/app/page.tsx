@@ -5,8 +5,6 @@ import { ClubCardsGridSkeleton, PersonalizedSectionSkeleton } from "@/components
 import {
   HomeHero,
   PopularClubsSection,
-  WhyChooseUsSection,
-  QuickLinksSection,
   PersonalizedSectionWrapper,
   LandingHowItWorks,
   LandingClubsCoaches,
@@ -15,10 +13,10 @@ import {
 
 /**
  * Home page - Server Component with client islands for interactivity
- * 
- * Server Components: HomeHero, PopularClubsSection, WhyChooseUsSection, 
+ *
+ * Server Components: HomeHero, PopularClubsSection,
  *                    LandingHowItWorks, LandingClubsCoaches, LandingTestimonials
- * Client Components: Header, QuickLinksSection, PersonalizedSectionWrapper, PublicFooter
+ * Client Components: Header, PersonalizedSectionWrapper, PublicFooter
  */
 export default async function Home() {
   return (
@@ -45,9 +43,6 @@ export default async function Home() {
         <PopularClubsSection />
       </Suspense>
 
-      {/* Why choose us section - Server Component */}
-      <WhyChooseUsSection />
-
       {/* Section 4: How It Works - Server Component */}
       <LandingHowItWorks />
 
@@ -56,9 +51,6 @@ export default async function Home() {
 
       {/* Section 6: Testimonials - Server Component */}
       <LandingTestimonials />
-
-      {/* Quick links section - Client Component */}
-      <QuickLinksSection />
 
       <PublicFooter />
     </main>
