@@ -237,7 +237,7 @@ export default function PlayerDashboardPage() {
 
   // Initial data fetch
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.role === "player") {
+    if (status === "authenticated" && session?.user?.role === Roles.Player) {
       fetchClubs();
       fetchUpcomingBookings();
       fetchCoaches();
@@ -323,7 +323,7 @@ export default function PlayerDashboardPage() {
   }
 
   // Guard check
-  if (!session?.user || session.user.role !== "player") {
+  if (!session?.user || session.user.role !== Roles.Player) {
     return null;
   }
 
