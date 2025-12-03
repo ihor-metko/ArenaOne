@@ -386,6 +386,7 @@
       "roles": {
         "rootAdmin": "Root Admin",
         "admin": "Admin",
+        "super_admin": "Super Admin",
         "coach": "Coach",
         "player": "Player"
       }
