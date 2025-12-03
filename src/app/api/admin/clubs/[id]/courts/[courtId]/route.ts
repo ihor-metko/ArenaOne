@@ -131,19 +131,25 @@ export async function PATCH(
         where: { slug },
       });
       if (existingSlugCourt && existingSlugCourt.id !== courtId) {
-        // Generate a slug suggestion
+        // Generate a slug suggestion using a single query
         const baseSlug = slug.replace(/-\d+$/, "");
-        let suggestion = `${baseSlug}-1`;
+        const existingSlugs = await prisma.court.findMany({
+          where: {
+            slug: {
+              startsWith: baseSlug,
+            },
+          },
+          select: { slug: true },
+        });
+        
+        const slugSet = new Set(existingSlugs.map(c => c.slug));
         let counter = 1;
-        while (true) {
-          const existingSuggestion = await prisma.court.findUnique({
-            where: { slug: suggestion },
-          });
-          if (!existingSuggestion) break;
+        let suggestion = `${baseSlug}-1`;
+        while (slugSet.has(suggestion) && counter <= 100) {
           counter++;
           suggestion = `${baseSlug}-${counter}`;
-          if (counter > 100) break; // Safety limit
         }
+        
         return NextResponse.json(
           {
             error: "A court with this slug already exists",

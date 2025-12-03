@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, IMLink } from "@/components/ui";
+import { IMLink } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import type { CourtDetail, CourtPriceRule } from "./types";
 import "./CourtPricingBlock.css";
@@ -116,15 +116,12 @@ export function CourtPricingBlock({ court, clubId }: CourtPricingBlockProps) {
             <p className="im-pricing-empty-text">
               No custom pricing rules defined. The default price will apply to all time slots.
             </p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                window.location.href = `/admin/clubs/${clubId}/courts/${court.id}/price-rules`;
-              }}
+            <IMLink
+              href={`/admin/clubs/${clubId}/courts/${court.id}/price-rules`}
               className="im-pricing-add-btn"
             >
               + Add Pricing Rule
-            </Button>
+            </IMLink>
           </div>
         )}
       </div>

@@ -165,7 +165,7 @@ export default function CourtDetailPage({
           <div className="im-court-detail-error">
             {error}
           </div>
-          <div className="mt-4 text-center">
+          <div className="im-court-detail-error-back">
             <IMLink href={`/admin/clubs/${clubId}/courts`}>← Back to Courts</IMLink>
           </div>
         </div>

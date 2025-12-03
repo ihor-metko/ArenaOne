@@ -128,6 +128,11 @@
   border-radius: 0.5rem;
 }
 
+.im-court-detail-error-back {
+  margin-top: 1rem;
+  text-align: center;
+}
+
 /* Toast */
 .im-toast {
   position: fixed;

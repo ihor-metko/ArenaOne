@@ -10,6 +10,7 @@ jest.mock("@/lib/prisma", () => ({
   prisma: {
     court: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     },
@@ -181,8 +182,9 @@ describe("Admin Court Detail API", () => {
     it("should handle slug conflict with suggestion", async () => {
       (prisma.court.findUnique as jest.Mock)
         .mockResolvedValueOnce(mockCourt) // Court lookup
-        .mockResolvedValueOnce({ id: "other-court", slug: "existing-slug" }) // Slug check
-        .mockResolvedValueOnce(null); // Suggestion check
+        .mockResolvedValueOnce({ id: "other-court", slug: "existing-slug" }); // Slug check
+      
+      (prisma.court.findMany as jest.Mock).mockResolvedValueOnce([]); // Find similar slugs
 
       const request = createRequest("PATCH", { slug: "existing-slug" });
       const response = await PATCH(request, {
