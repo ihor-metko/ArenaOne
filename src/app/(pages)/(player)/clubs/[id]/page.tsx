@@ -681,10 +681,11 @@ export default function ClubDetailPage({
         />
       )}
 
-      {selectedTimeSlot && (
+      {selectedTimeSlot && club && (
         <CourtAvailabilityModal
           isOpen={isCourtAvailabilityOpen}
           onClose={handleCloseCourtAvailability}
+          clubId={club.id}
           date={selectedTimeSlot.date}
           hour={selectedTimeSlot.hour}
           courts={selectedTimeSlot.courts}

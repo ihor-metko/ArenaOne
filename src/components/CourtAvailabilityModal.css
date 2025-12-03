@@ -17,6 +17,10 @@
   @apply text-sm opacity-70;
 }
 
+.tm-court-duration-selector {
+  @apply mb-4;
+}
+
 .tm-court-availability-list {
   @apply flex flex-col gap-3;
 }
@@ -111,6 +115,32 @@
 
 .tm-court-availability-empty-text {
   @apply text-sm opacity-70;
+}
+
+.tm-court-availability-loading {
+  @apply text-center py-6 opacity-70;
+}
+
+.tm-court-availability-error {
+  @apply text-center py-6 text-red-600;
+}
+
+.tm-court-alternatives {
+  @apply mt-4 pt-4 border-t border-gray-200 dark:border-gray-700;
+}
+
+.tm-court-alternatives-list {
+  @apply text-center;
+}
+
+.tm-court-alternatives-times {
+  @apply flex gap-2 justify-center mt-2;
+}
+
+.tm-court-alternative-time {
+  @apply text-sm px-3 py-1 rounded-full;
+  background-color: var(--rsp-primary);
+  color: white;
 }
 
 /* Dark theme adjustments */

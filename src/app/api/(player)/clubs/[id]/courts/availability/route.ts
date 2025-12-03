@@ -46,6 +46,48 @@ interface WeeklyAvailabilityResponse {
   }>;
 }
 
+// 30-minute slot types
+interface HalfHourSlotAvailability {
+  slotStart: string; // HH:MM format
+  slotEnd: string;   // HH:MM format
+  courts: CourtAvailabilityStatus[];
+  summary: {
+    available: number;
+    booked: number;
+    partial: number;
+    pending: number;
+    total: number;
+  };
+  overallStatus: "available" | "partial" | "booked" | "pending";
+}
+
+interface Booking30Min {
+  courtId: string;
+  start: string;
+  end: string;
+  status: string;
+}
+
+interface DayAvailability30Min {
+  date: string;
+  dayOfWeek: number;
+  dayName: string;
+  slots: HalfHourSlotAvailability[];
+  bookingsByCourt: Record<string, Booking30Min[]>;
+}
+
+interface WeeklyAvailability30MinResponse {
+  weekStart: string;
+  weekEnd: string;
+  days: DayAvailability30Min[];
+  courts: Array<{
+    id: string;
+    name: string;
+    type: string | null;
+    indoor: boolean;
+  }>;
+}
+
 // Helper to get day name using native Date API
 function getDayName(date: Date): string {
   return date.toLocaleDateString("en-US", { weekday: "long" });
@@ -69,9 +111,11 @@ export async function GET(
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
-    // Get week start from query params, default to this week's Monday
+    // Get query params
     const url = new URL(request.url);
     const weekStartParam = url.searchParams.get("weekStart");
+    const granularityParam = url.searchParams.get("granularity");
+    const use30MinSlots = granularityParam === "30";
 
     let weekStart: Date;
     if (weekStartParam) {
@@ -134,6 +178,7 @@ export async function GET(
         courtId: true,
         start: true,
         end: true,
+        status: true,
       },
     });
 
@@ -149,10 +194,21 @@ export async function GET(
         courtId: true,
         start: true,
         end: true,
+        status: true,
       },
     });
 
-    // Build availability for each day
+    // Use 30-minute slot granularity if requested
+    if (use30MinSlots) {
+      return build30MinResponse(
+        weekDates,
+        club,
+        confirmedBookings,
+        pendingBookings
+      );
+    }
+
+    // Default: Build hourly availability for each day
     const days: DayAvailability[] = [];
 
     for (const dateStr of weekDates) {
@@ -286,4 +342,206 @@ export async function GET(
       { status: 500 }
     );
   }
+}
+
+// Helper to format time as HH:MM
+function formatTimeHHMM(hour: number, minute: number): string {
+  return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+}
+
+// Helper to get court availability status for a 30-min slot
+function getCourtStatus30Min(
+  slotStart: Date,
+  slotEnd: Date,
+  courtPendingBookings: Array<{ start: Date; end: Date }>,
+  courtConfirmedBookings: Array<{ start: Date; end: Date }>
+): "available" | "booked" | "partial" | "pending" {
+  let status: "available" | "booked" | "partial" | "pending" = "available";
+
+  // Check pending bookings first
+  for (const booking of courtPendingBookings) {
+    if (booking.start < slotEnd && booking.end > slotStart) {
+      // Any overlap with pending = pending
+      status = "pending";
+      break;
+    }
+  }
+
+  // If not pending, check confirmed bookings
+  if (status === "available") {
+    for (const booking of courtConfirmedBookings) {
+      if (booking.start < slotEnd && booking.end > slotStart) {
+        // For 30-min slots, any overlap = booked (since we want to know if slot is fully free)
+        status = "booked";
+        break;
+      }
+    }
+  }
+
+  return status;
+}
+
+// Build 30-minute slot availability response
+function build30MinResponse(
+  weekDates: string[],
+  club: {
+    courts: Array<{
+      id: string;
+      name: string;
+      type: string | null;
+      indoor: boolean;
+    }>;
+  },
+  confirmedBookings: Array<{
+    courtId: string;
+    start: Date;
+    end: Date;
+    status: string;
+  }>,
+  pendingBookings: Array<{
+    courtId: string;
+    start: Date;
+    end: Date;
+    status: string;
+  }>
+) {
+  const days: DayAvailability30Min[] = [];
+
+  for (const dateStr of weekDates) {
+    const date = new Date(dateStr);
+    const dayOfWeek = date.getDay();
+    const dayName = getDayName(date);
+
+    const slots: HalfHourSlotAvailability[] = [];
+    const bookingsByCourt: Record<string, Booking30Min[]> = {};
+
+    // Initialize bookingsByCourt for all courts
+    for (const court of club.courts) {
+      bookingsByCourt[court.id] = [];
+    }
+
+    // Add confirmed and pending bookings for this day to bookingsByCourt
+    const dayStart = new Date(`${dateStr}T00:00:00.000Z`);
+    const dayEnd = new Date(`${dateStr}T23:59:59.999Z`);
+
+    for (const booking of confirmedBookings) {
+      const bookingStart = new Date(booking.start);
+      if (bookingStart >= dayStart && bookingStart <= dayEnd) {
+        bookingsByCourt[booking.courtId].push({
+          courtId: booking.courtId,
+          start: booking.start.toISOString(),
+          end: booking.end.toISOString(),
+          status: booking.status,
+        });
+      }
+    }
+
+    for (const booking of pendingBookings) {
+      const bookingStart = new Date(booking.start);
+      if (bookingStart >= dayStart && bookingStart <= dayEnd) {
+        bookingsByCourt[booking.courtId].push({
+          courtId: booking.courtId,
+          start: booking.start.toISOString(),
+          end: booking.end.toISOString(),
+          status: booking.status,
+        });
+      }
+    }
+
+    // Generate 30-minute slots for business hours
+    for (let hour = BUSINESS_START_HOUR; hour < BUSINESS_END_HOUR; hour++) {
+      for (const minute of [0, 30]) {
+        const slotStartStr = formatTimeHHMM(hour, minute);
+        const slotEndHour = minute === 30 ? hour + 1 : hour;
+        const slotEndMinute = minute === 30 ? 0 : 30;
+        const slotEndStr = formatTimeHHMM(slotEndHour, slotEndMinute);
+
+        const slotStart = new Date(`${dateStr}T${slotStartStr}:00.000Z`);
+        const slotEnd = new Date(`${dateStr}T${slotEndStr}:00.000Z`);
+
+        const courts: CourtAvailabilityStatus[] = [];
+        let availableCount = 0;
+        let bookedCount = 0;
+        let partialCount = 0;
+        let pendingCount = 0;
+
+        for (const court of club.courts) {
+          const courtPendingBookings = pendingBookings
+            .filter((b) => b.courtId === court.id)
+            .map((b) => ({ start: new Date(b.start), end: new Date(b.end) }));
+          const courtConfirmedBookings = confirmedBookings
+            .filter((b) => b.courtId === court.id)
+            .map((b) => ({ start: new Date(b.start), end: new Date(b.end) }));
+
+          const status = getCourtStatus30Min(
+            slotStart,
+            slotEnd,
+            courtPendingBookings,
+            courtConfirmedBookings
+          );
+
+          courts.push({
+            courtId: court.id,
+            courtName: court.name,
+            courtType: court.type,
+            indoor: court.indoor,
+            status,
+          });
+
+          if (status === "available") availableCount++;
+          else if (status === "booked") bookedCount++;
+          else if (status === "pending") pendingCount++;
+          else partialCount++;
+        }
+
+        // Determine overall status for this slot
+        let overallStatus: "available" | "partial" | "booked" | "pending";
+        if (availableCount === club.courts.length) {
+          overallStatus = "available";
+        } else if (bookedCount === club.courts.length) {
+          overallStatus = "booked";
+        } else if (pendingCount === club.courts.length) {
+          overallStatus = "pending";
+        } else {
+          overallStatus = "partial";
+        }
+
+        slots.push({
+          slotStart: slotStartStr,
+          slotEnd: slotEndStr,
+          courts,
+          summary: {
+            available: availableCount,
+            booked: bookedCount,
+            partial: partialCount,
+            pending: pendingCount,
+            total: club.courts.length,
+          },
+          overallStatus,
+        });
+      }
+    }
+
+    days.push({
+      date: dateStr,
+      dayOfWeek,
+      dayName,
+      slots,
+      bookingsByCourt,
+    });
+  }
+
+  const response: WeeklyAvailability30MinResponse = {
+    weekStart: weekDates[0],
+    weekEnd: weekDates[6],
+    days,
+    courts: club.courts.map((c) => ({
+      id: c.id,
+      name: c.name,
+      type: c.type,
+      indoor: c.indoor,
+    })),
+  };
+
+  return NextResponse.json(response);
 }

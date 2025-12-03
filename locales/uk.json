@@ -507,7 +507,12 @@
     "noCourtsFound": "Корти для цього клубу не знайдені.",
     "partiallyBooked": "Частково заброньований",
     "pending": "Очікує підтвердження",
-    "noAvailableAtTime": "Немає доступних кортів у цей час. Спробуйте інший слот."
+    "noAvailableAtTime": "Немає доступних кортів у цей час. Спробуйте інший слот.",
+    "noAvailabilityData": "Немає даних про доступність",
+    "showMoreSlots": "Показати більше слотів",
+    "moreSlots": "ще",
+    "noAvailableForDuration": "Немає доступних кортів на {duration} хвилин у цей час.",
+    "tryAlternativeTimes": "Спробуйте ці альтернативні часи:"
   },
   "weeklyAvailability": {
     "title": "Тижнева доступність кортів",

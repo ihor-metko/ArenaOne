@@ -510,7 +510,9 @@
     "noAvailableAtTime": "No courts available at this time. Try another slot.",
     "noAvailabilityData": "No availability data",
     "showMoreSlots": "Show more time slots",
-    "moreSlots": "more"
+    "moreSlots": "more",
+    "noAvailableForDuration": "No courts available for {duration} minutes at this time.",
+    "tryAlternativeTimes": "Try these alternative times:"
   },
   "weeklyAvailability": {
     "title": "Weekly Court Availability",
