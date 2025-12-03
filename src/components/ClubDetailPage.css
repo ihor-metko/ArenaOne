@@ -525,3 +525,177 @@
 .rsp-club-training-section {
   @apply mt-6;
 }
+
+/* ===== Description & Gallery Section (im-* classes) ===== */
+.im-club-description-gallery {
+  @apply mb-8;
+}
+
+.im-club-description-gallery-grid {
+  @apply grid gap-6;
+}
+
+/* On mobile: gallery stacks above contacts using flexbox for ordering */
+@media (max-width: 1023px) {
+  .im-club-description-gallery-grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .im-club-description-gallery-left {
+    order: 1;
+  }
+
+  .im-club-contacts-column {
+    order: 2;
+  }
+}
+
+/* On desktop: description/gallery on left, contacts on right */
+@media (min-width: 1024px) {
+  .im-club-description-gallery-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* Left column (description + gallery) */
+.im-club-description-gallery-left {
+  @apply space-y-6;
+}
+
+/* Description card */
+.im-club-description-card {
+  @apply rounded-xl p-5 md:p-6;
+  background-color: var(--im-card-bg);
+  border: 1px solid var(--im-border);
+}
+
+.im-club-description-card-title {
+  @apply text-lg font-semibold mb-3 flex items-center gap-2;
+  color: var(--im-foreground);
+}
+
+.im-club-description-card-title svg {
+  @apply w-5 h-5;
+  color: var(--im-primary);
+  opacity: 0.8;
+}
+
+.im-club-description-text {
+  @apply text-sm md:text-base leading-relaxed whitespace-pre-line;
+  color: var(--im-foreground);
+  opacity: 0.85;
+}
+
+/* Gallery card container */
+.im-club-gallery-card {
+  @apply rounded-xl overflow-hidden;
+  background-color: var(--im-card-bg);
+  border: 1px solid var(--im-border);
+}
+
+.im-club-gallery-card-header {
+  @apply p-4 pb-0;
+}
+
+.im-club-gallery-card-title {
+  @apply text-lg font-semibold flex items-center gap-2;
+  color: var(--im-foreground);
+}
+
+.im-club-gallery-card-title svg {
+  @apply w-5 h-5;
+  color: var(--im-primary);
+  opacity: 0.8;
+}
+
+.im-club-gallery-card-content {
+  @apply p-4;
+}
+
+/* Right column (contacts and hours) */
+.im-club-contacts-column {
+  @apply space-y-6;
+}
+
+/* Info card using im-* variables */
+.im-club-info-card {
+  @apply rounded-xl p-5 md:p-6;
+  background-color: var(--im-card-bg);
+  border: 1px solid var(--im-border);
+}
+
+.im-club-info-card-title {
+  @apply text-lg font-semibold mb-4 flex items-center gap-2;
+  color: var(--im-foreground);
+}
+
+.im-club-info-card-title svg {
+  @apply w-5 h-5;
+  color: var(--im-primary);
+  opacity: 0.8;
+}
+
+/* Contact list using im-* variables */
+.im-club-contact-list {
+  @apply space-y-3;
+}
+
+.im-club-contact-item {
+  @apply flex items-start gap-3;
+}
+
+.im-club-contact-icon {
+  @apply w-5 h-5 flex-shrink-0 mt-0.5;
+  color: var(--im-primary);
+}
+
+.im-club-contact-label {
+  @apply text-xs uppercase tracking-wide font-medium block;
+  color: var(--im-foreground);
+  opacity: 0.6;
+}
+
+.im-club-contact-value {
+  @apply text-sm;
+  color: var(--im-foreground);
+}
+
+.im-club-contact-link {
+  color: var(--im-primary);
+  @apply hover:underline transition-colors;
+}
+
+.im-club-contact-link:hover {
+  color: var(--im-primary-hover);
+}
+
+/* Business hours using im-* variables */
+.im-club-hours-list {
+  @apply space-y-2;
+}
+
+.im-club-hours-row {
+  @apply flex justify-between items-center py-1.5 border-b;
+  border-color: var(--im-border);
+}
+
+.im-club-hours-row:last-child {
+  @apply border-b-0;
+}
+
+.im-club-hours-day {
+  @apply text-sm font-medium;
+  color: var(--im-foreground);
+}
+
+.im-club-hours-time {
+  @apply text-sm;
+  color: var(--im-foreground);
+  opacity: 0.8;
+}
+
+.im-club-hours-closed {
+  @apply text-sm italic;
+  color: var(--im-muted);
+}

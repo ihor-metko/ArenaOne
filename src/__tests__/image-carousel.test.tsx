@@ -202,7 +202,7 @@ describe("ImageCarousel Component", () => {
       render(<ImageCarousel images={mockImages} />);
       
       // Focus on the carousel region
-      const region = screen.getByRole("region");
+      screen.getByRole("region");
       
       // Simulate arrow key press
       fireEvent.keyDown(document, { key: "ArrowRight" });
