@@ -8,15 +8,14 @@ import type { UserRole } from "@/lib/auth";
  * This array is designed for extensibility if additional admin-level roles
  * (e.g., club_manager) are added in the future.
  */
-const ADMIN_ROLES: UserRole[] = ["super_admin", "root_admin"];
+const ADMIN_ROLES: UserRole[] = ["root_admin", "super_admin", "admin"];
 
 /**
- * Middleware to redirect admin users from the landing page to their dashboard
- * 
+ * Middleware to redirect admin users from the landing page to admin dashboard
+ *
  * - Unauthenticated users: See public landing page
- * - Players/coaches: See player landing page  
- * - Super admin users: Redirected to /admin/clubs
- * - Root admin users: Redirected to /admin/dashboard
+ * - Players/coaches: See player landing page
+ * - Admin users (root_admin, super_admin, admin): Redirected to /admin/clubs
  */
 export default auth((req) => {
   try {
@@ -36,14 +35,13 @@ export default auth((req) => {
 
     const userRole = session.user.role;
 
-    // Check if user has an admin role and the role has a defined homepage
+    // Check if user has admin role
     if (userRole && ADMIN_ROLES.includes(userRole)) {
-      const adminHomepage = ROLE_HOMEPAGES[userRole];
-      // Only redirect if homepage is defined for this role
-      if (adminHomepage) {
-        const redirectUrl = new URL(adminHomepage, req.url);
-        return NextResponse.redirect(redirectUrl);
-      }
+      // All admin roles should have a defined homepage in ROLE_HOMEPAGES
+      // The null coalescing uses super_admin as fallback for safety
+      const adminHomepage = ROLE_HOMEPAGES[userRole] ?? "/admin/clubs";
+      const redirectUrl = new URL(adminHomepage, req.url);
+      return NextResponse.redirect(redirectUrl);
     }
 
     // Non-admin authenticated users see the landing page
