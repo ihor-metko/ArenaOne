@@ -190,26 +190,23 @@ export default function CourtDetailPage({
       )}
 
       <div className="im-court-detail-container">
-        {/* Breadcrumbs */}
-        <Breadcrumbs
-          items={[
-            { label: "Admin", href: "/admin/clubs" },
-            { label: "Clubs", href: "/admin/clubs" },
-            { label: court.club?.name || "Club", href: `/admin/clubs/${clubId}` },
-            { label: "Courts", href: `/admin/clubs/${clubId}/courts` },
-            { label: court.name },
-          ]}
-          className="im-court-detail-breadcrumbs"
-          ariaLabel="Court navigation"
-        />
-
         {/* Toolbar */}
         <div className="im-court-detail-toolbar">
           <div className="im-court-detail-toolbar-left">
-            <IMLink href={`/admin/clubs/${clubId}/courts`} className="im-court-detail-back">
-              ← Back to Courts
-            </IMLink>
+            {/* Breadcrumbs */}
+            <Breadcrumbs
+              items={[
+                { label: "Admin", href: "/admin/clubs" },
+                { label: "Clubs", href: "/admin/clubs" },
+                { label: court.club?.name || "Club", href: `/admin/clubs/${clubId}` },
+                { label: "Courts", href: `/admin/clubs/${clubId}/courts` },
+                { label: court.name },
+              ]}
+              className="im-court-detail-breadcrumbs !mb-0"
+              ariaLabel="Court navigation"
+            />
           </div>
+
           <div className="im-court-detail-toolbar-right">
             <Button
               variant="outline"
