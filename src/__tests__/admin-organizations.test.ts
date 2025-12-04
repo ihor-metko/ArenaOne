@@ -15,6 +15,8 @@ jest.mock("@/lib/prisma", () => ({
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      count: jest.fn(),
+      updateMany: jest.fn(),
     },
     user: {
       findUnique: jest.fn(),
@@ -295,13 +297,14 @@ describe("Admin Organizations API", () => {
         email: "test@example.com",
       });
 
-      (prisma.membership.findFirst as jest.Mock).mockResolvedValue(null);
       (prisma.membership.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.membership.count as jest.Mock).mockResolvedValue(0);
       (prisma.membership.create as jest.Mock).mockResolvedValue({
         id: "membership-1",
         userId: "user-1",
         organizationId: "org-1",
         role: "ORGANIZATION_ADMIN",
+        isPrimaryOwner: true,
       });
 
       const request = new Request("http://localhost:3000/api/admin/organizations/assign-admin", {
@@ -318,7 +321,7 @@ describe("Admin Organizations API", () => {
       expect(data.message).toBe("SuperAdmin assigned successfully");
     });
 
-    it("should return 409 when user is already admin of another org", async () => {
+    it("should return 409 when user is already admin of this org", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "admin-123", isRoot: true },
       });
@@ -334,11 +337,11 @@ describe("Admin Organizations API", () => {
         email: "test@example.com",
       });
 
-      (prisma.membership.findFirst as jest.Mock).mockResolvedValue({
+      (prisma.membership.findUnique as jest.Mock).mockResolvedValue({
         id: "membership-1",
         userId: "user-1",
-        organizationId: "org-2",
-        organization: { name: "Other Org" },
+        organizationId: "org-1",
+        role: "ORGANIZATION_ADMIN",
       });
 
       const request = new Request("http://localhost:3000/api/admin/organizations/assign-admin", {
@@ -379,13 +382,14 @@ describe("Admin Organizations API", () => {
         email: "newadmin@test.com",
       });
 
-      (prisma.membership.findFirst as jest.Mock).mockResolvedValue(null);
       (prisma.membership.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.membership.count as jest.Mock).mockResolvedValue(0);
       (prisma.membership.create as jest.Mock).mockResolvedValue({
         id: "membership-1",
         userId: "new-user-id",
         organizationId: "org-1",
         role: "ORGANIZATION_ADMIN",
+        isPrimaryOwner: true,
       });
 
       const request = new Request("http://localhost:3000/api/admin/organizations/assign-admin", {
