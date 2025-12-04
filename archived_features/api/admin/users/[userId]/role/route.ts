@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/requireRole";
 
+/**
+ * @deprecated This API is archived and will be removed. 
+ * User roles are now context-specific via Membership and ClubMembership tables.
+ * Use isRoot on User model to identify root admins.
+ */
+
 const VALID_ROLES = ["player", "coach"] as const;
 type ValidRole = (typeof VALID_ROLES)[number];
 
@@ -42,10 +48,10 @@ export async function POST(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Prevent modifying admin role
-    if (existingUser.role === "super_admin") {
+    // Prevent modifying root admin (replaced role check with isRoot check)
+    if (existingUser.isRoot) {
       return NextResponse.json(
-        { error: "Cannot modify admin role" },
+        { error: "Cannot modify root admin" },
         { status: 403 }
       );
     }
@@ -75,17 +81,9 @@ export async function POST(
 
     // Use a transaction to ensure atomicity
     const result = await prisma.$transaction(async (tx) => {
-      // Update user role
-      const updatedUser = await tx.user.update({
-        where: { id: userId },
-        data: { role },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          createdAt: true,
-        },
+      // Get existing coach records for this user
+      const existingCoaches = await tx.coach.findMany({
+        where: { userId },
       });
 
       let coaches: Array<{
@@ -99,11 +97,6 @@ export async function POST(
 
       // If assigning coach role, create/update Coach records for each club
       if (role === "coach") {
-        // Get existing coach records for this user
-        const existingCoaches = await tx.coach.findMany({
-          where: { userId },
-        });
-
         const existingClubIds = existingCoaches
           .filter((c) => c.clubId !== null)
           .map((c) => c.clubId as string);
@@ -170,14 +163,9 @@ export async function POST(
         });
       }
 
-      // If changing from coach to player, delete Coach records
-      if (role === "player" && existingUser.role === "coach") {
-        // Find all coach records for this user to get their IDs
-        const userCoaches = await tx.coach.findMany({
-          where: { userId },
-          select: { id: true },
-        });
-        const coachIds = userCoaches.map((c) => c.id);
+      // If changing to player, delete Coach records
+      if (role === "player" && existingCoaches.length > 0) {
+        const coachIds = existingCoaches.map((c) => c.id);
 
         // Delete all coach availability records first (due to foreign key constraint)
         if (coachIds.length > 0) {
@@ -194,7 +182,19 @@ export async function POST(
         });
       }
 
-      return { user: updatedUser, coaches };
+      // Get updated user info
+      const updatedUser = await tx.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isRoot: true,
+          createdAt: true,
+        },
+      });
+
+      return { user: updatedUser, coaches, role };
     });
 
     return NextResponse.json(result);

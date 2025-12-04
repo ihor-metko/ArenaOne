@@ -1,19 +1,87 @@
 /**
- * Centralized Roles enum for the application.
- * All role checks, assignments, and comparisons should use these enum values
- * to ensure type safety and consistency across the platform.
+ * Centralized Roles and permissions for the application.
+ * 
+ * The new permission model:
+ * - Root Admin (isRoot=true on User) has global access to everything
+ * - Membership roles (ORGANIZATION_ADMIN, MEMBER) define admin rights per organization
+ * - ClubMembership roles (CLUB_ADMIN, MEMBER) define admin rights per club
+ * - Regular users have no Membership record unless they are admins
  *
  * @example
- * import { Roles } from "@/constants/roles";
+ * import { MembershipRole, ClubMembershipRole } from "@/constants/roles";
  *
- * // Role checks
- * if (user.role === Roles.SuperAdmin) { ... }
+ * // Organization membership check
+ * if (membership.role === MembershipRole.ORGANIZATION_ADMIN) { ... }
  *
- * // Role assignments
- * const newUser = { role: Roles.Player };
- *
- * // API route authorization
- * await requireRole(request, [Roles.SuperAdmin, Roles.Admin]);
+ * // Club membership check  
+ * if (clubMembership.role === ClubMembershipRole.CLUB_ADMIN) { ... }
+ */
+
+/**
+ * Membership roles for Organization access
+ */
+export enum MembershipRole {
+  ORGANIZATION_ADMIN = "ORGANIZATION_ADMIN",
+  MEMBER = "MEMBER",
+}
+
+/**
+ * Club membership roles for Club access
+ */
+export enum ClubMembershipRole {
+  CLUB_ADMIN = "CLUB_ADMIN",
+  MEMBER = "MEMBER",
+}
+
+/**
+ * Type representing valid membership roles
+ */
+export type MembershipRoleType = `${MembershipRole}`;
+
+/**
+ * Type representing valid club membership roles
+ */
+export type ClubMembershipRoleType = `${ClubMembershipRole}`;
+
+/**
+ * Array of all valid membership roles.
+ * Useful for validation and iteration.
+ */
+export const VALID_MEMBERSHIP_ROLES: MembershipRoleType[] = Object.values(MembershipRole);
+
+/**
+ * Array of all valid club membership roles.
+ * Useful for validation and iteration.
+ */
+export const VALID_CLUB_MEMBERSHIP_ROLES: ClubMembershipRoleType[] = Object.values(ClubMembershipRole);
+
+/**
+ * Type guard to check if a value is a valid membership role.
+ * @param role - The value to check
+ * @returns true if the value is a valid MembershipRole
+ */
+export function isValidMembershipRole(role: unknown): role is MembershipRoleType {
+  return typeof role === "string" && VALID_MEMBERSHIP_ROLES.includes(role as MembershipRoleType);
+}
+
+/**
+ * Type guard to check if a value is a valid club membership role.
+ * @param role - The value to check
+ * @returns true if the value is a valid ClubMembershipRole
+ */
+export function isValidClubMembershipRole(role: unknown): role is ClubMembershipRoleType {
+  return typeof role === "string" && VALID_CLUB_MEMBERSHIP_ROLES.includes(role as ClubMembershipRoleType);
+}
+
+// ============================================================================
+// DEPRECATED: Legacy role system - kept for backward compatibility during migration
+// These will be removed in a future version once all code is migrated to the new
+// context-specific role system (Membership and ClubMembership)
+// ============================================================================
+
+/**
+ * @deprecated Use isRoot on User model for root admin checks, 
+ * MembershipRole for organization roles, and ClubMembershipRole for club roles.
  */
 export enum Roles {
   RootAdmin = "root_admin",
@@ -24,50 +92,41 @@ export enum Roles {
 }
 
 /**
- * Type representing valid user roles in the system.
- * Derived from the Roles enum values.
+ * @deprecated Use MembershipRoleType or ClubMembershipRoleType instead
  */
 export type UserRole = `${Roles}`;
 
 /**
- * Array of all valid user roles.
- * Useful for validation and iteration.
+ * @deprecated Legacy roles array
  */
 export const VALID_ROLES: UserRole[] = Object.values(Roles);
 
 /**
- * The default role assigned to new users.
+ * @deprecated No longer applicable - roles are context-specific
  */
 export const DEFAULT_ROLE: UserRole = Roles.Player;
 
 /**
- * Array of admin roles that have access to admin functionality.
- * Includes root_admin, super_admin, and admin roles.
+ * @deprecated Use isRoot on User model for admin checks
  */
 export const ADMIN_ROLES: UserRole[] = [Roles.RootAdmin, Roles.SuperAdmin, Roles.Admin];
 
 /**
- * Type guard to check if a role is an admin role.
- * @param role - The role to check
- * @returns true if the role is an admin role
+ * @deprecated Use isRoot on User model for admin checks
  */
 export function isAdminRole(role: unknown): boolean {
   return typeof role === "string" && ADMIN_ROLES.includes(role as UserRole);
 }
 
 /**
- * Type guard to check if a value is a valid user role.
- * @param role - The value to check
- * @returns true if the value is a valid UserRole
+ * @deprecated Legacy role validation
  */
 export function isValidRole(role: unknown): role is UserRole {
   return typeof role === "string" && VALID_ROLES.includes(role as UserRole);
 }
 
 /**
- * Validates and returns a role, defaulting to Player if invalid.
- * @param role - The role to validate
- * @returns A valid UserRole
+ * @deprecated Legacy role validation
  */
 export function validateRole(role: unknown): UserRole {
   return isValidRole(role) ? role : DEFAULT_ROLE;

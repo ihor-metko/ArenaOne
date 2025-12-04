@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { Roles } from "@/constants/roles";
 
-const DEFAULT_USER_ROLE = Roles.Player;
 const MIN_PASSWORD_LENGTH = 8;
 
 function isValidEmail(email: string): boolean {
@@ -53,12 +51,14 @@ export async function POST(request: Request) {
 
     const hashedPassword = await hash(password, 12);
 
+    // New users are regular platform users (not root admins)
+    // They can create bookings without Membership/ClubMembership records
     const user = await prisma.user.create({
       data: {
         email,
         name: name?.trim() || null,
         password: hashedPassword,
-        role: DEFAULT_USER_ROLE,
+        isRoot: false,
       },
     });
 

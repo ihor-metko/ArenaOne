@@ -18,6 +18,16 @@ jest.mock("@/lib/prisma", () => ({
     court: {
       createMany: jest.fn(),
     },
+    membership: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+    },
+    organization: {
+      create: jest.fn(),
+    },
+    clubMembership: {
+      create: jest.fn(),
+    },
     $transaction: jest.fn(),
   },
 }));
@@ -184,7 +194,34 @@ describe("Admin Create Club API", () => {
         createdAt: new Date().toISOString(),
       };
 
-      (prisma.$transaction as jest.Mock).mockResolvedValue(newClub);
+      // Mock $transaction to call the callback with a mock tx object
+      (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+        const txMock = {
+          membership: {
+            findFirst: jest.fn().mockResolvedValue(null),
+            create: jest.fn(),
+          },
+          organization: {
+            create: jest.fn().mockResolvedValue({ id: "org-123", name: "Test Club Organization", slug: "org-test-club" }),
+          },
+          club: {
+            create: jest.fn().mockResolvedValue(newClub),
+          },
+          clubMembership: {
+            create: jest.fn(),
+          },
+          clubBusinessHours: {
+            createMany: jest.fn(),
+          },
+          clubGallery: {
+            createMany: jest.fn(),
+          },
+          court: {
+            createMany: jest.fn(),
+          },
+        };
+        return callback(txMock);
+      });
 
       const request = new Request("http://localhost:3000/api/admin/clubs/new", {
         method: "POST",
@@ -222,7 +259,34 @@ describe("Admin Create Club API", () => {
         createdAt: new Date().toISOString(),
       };
 
-      (prisma.$transaction as jest.Mock).mockResolvedValue(newClub);
+      // Mock $transaction to call the callback with a mock tx object
+      (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+        const txMock = {
+          membership: {
+            findFirst: jest.fn().mockResolvedValue(null),
+            create: jest.fn(),
+          },
+          organization: {
+            create: jest.fn().mockResolvedValue({ id: "org-123", name: "Test Club Organization", slug: "org-test-club" }),
+          },
+          club: {
+            create: jest.fn().mockResolvedValue(newClub),
+          },
+          clubMembership: {
+            create: jest.fn(),
+          },
+          clubBusinessHours: {
+            createMany: jest.fn(),
+          },
+          clubGallery: {
+            createMany: jest.fn(),
+          },
+          court: {
+            createMany: jest.fn(),
+          },
+        };
+        return callback(txMock);
+      });
 
       const request = new Request("http://localhost:3000/api/admin/clubs/new", {
         method: "POST",
@@ -258,7 +322,34 @@ describe("Admin Create Club API", () => {
         createdAt: new Date().toISOString(),
       };
 
-      (prisma.$transaction as jest.Mock).mockResolvedValue(newClub);
+      // Mock $transaction to call the callback with a mock tx object
+      (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+        const txMock = {
+          membership: {
+            findFirst: jest.fn().mockResolvedValue(null),
+            create: jest.fn(),
+          },
+          organization: {
+            create: jest.fn().mockResolvedValue({ id: "org-123", name: "Test Club Organization", slug: "org-test-club" }),
+          },
+          club: {
+            create: jest.fn().mockResolvedValue(newClub),
+          },
+          clubMembership: {
+            create: jest.fn(),
+          },
+          clubBusinessHours: {
+            createMany: jest.fn(),
+          },
+          clubGallery: {
+            createMany: jest.fn(),
+          },
+          court: {
+            createMany: jest.fn(),
+          },
+        };
+        return callback(txMock);
+      });
 
       const request = new Request("http://localhost:3000/api/admin/clubs/new", {
         method: "POST",
@@ -292,7 +383,34 @@ describe("Admin Create Club API", () => {
         createdAt: new Date().toISOString(),
       };
 
-      (prisma.$transaction as jest.Mock).mockResolvedValue(newClub);
+      // Mock $transaction to call the callback with a mock tx object
+      (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+        const txMock = {
+          membership: {
+            findFirst: jest.fn().mockResolvedValue(null),
+            create: jest.fn(),
+          },
+          organization: {
+            create: jest.fn().mockResolvedValue({ id: "org-123", name: "My Test Club! Organization", slug: "org-my-test-club" }),
+          },
+          club: {
+            create: jest.fn().mockResolvedValue(newClub),
+          },
+          clubMembership: {
+            create: jest.fn(),
+          },
+          clubBusinessHours: {
+            createMany: jest.fn(),
+          },
+          clubGallery: {
+            createMany: jest.fn(),
+          },
+          court: {
+            createMany: jest.fn(),
+          },
+        };
+        return callback(txMock);
+      });
 
       const request = new Request("http://localhost:3000/api/admin/clubs/new", {
         method: "POST",

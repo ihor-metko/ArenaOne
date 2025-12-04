@@ -12,6 +12,17 @@ jest.mock("@/lib/prisma", () => ({
       update: jest.fn(),
       delete: jest.fn(),
     },
+    membership: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+    },
+    organization: {
+      create: jest.fn(),
+    },
+    clubMembership: {
+      create: jest.fn(),
+    },
+    $transaction: jest.fn(),
   },
 }));
 
@@ -187,13 +198,33 @@ describe("Admin Clubs API", () => {
         id: "club-new",
         name: "New Club",
         location: "New Location",
+        organizationId: "org-123",
+        createdById: "admin-123",
         contactInfo: "newclub@test.com",
         openingHours: "8am-9pm",
         logo: "https://example.com/newlogo.png",
         createdAt: new Date().toISOString(),
       };
 
-      (prisma.club.create as jest.Mock).mockResolvedValue(newClub);
+      // Mock $transaction to return the created club
+      (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+        const txMock = {
+          membership: {
+            findFirst: jest.fn().mockResolvedValue(null),
+            create: jest.fn(),
+          },
+          organization: {
+            create: jest.fn().mockResolvedValue({ id: "org-123", name: "New Club Organization", slug: "org-new-club" }),
+          },
+          club: {
+            create: jest.fn().mockResolvedValue(newClub),
+          },
+          clubMembership: {
+            create: jest.fn(),
+          },
+        };
+        return callback(txMock);
+      });
 
       const request = new Request("http://localhost:3000/api/admin/clubs", {
         method: "POST",

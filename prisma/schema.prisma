@@ -6,24 +6,40 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
+// Role enums for context-specific roles
+enum MembershipRole {
+  ORGANIZATION_ADMIN
+  MEMBER
+}
+
+enum ClubMembershipRole {
+  CLUB_ADMIN
+  MEMBER
+}
+
 model User {
-  id            String    @id @default(uuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          String    @default("player")
-  createdAt     DateTime  @default(now())
-  accounts      Account[]
-  sessions      Session[]
-  coaches       Coach[]
-  bookings      Booking[]
+  id                   String           @id @default(uuid())
+  name                 String?
+  email                String           @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+  isRoot               Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @default(now()) @updatedAt
+  accounts             Account[]
+  sessions             Session[]
+  coaches              Coach[]
+  bookings             Booking[]
+  memberships          Membership[]
+  clubMemberships      ClubMembership[]
+  createdOrganizations Organization[]   @relation("OrganizationCreatedBy")
+  createdClubs         Club[]           @relation("ClubCreatedBy")
 }
 
 model Account {
@@ -60,12 +76,42 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model Organization {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  createdById String
+  createdBy   User         @relation("OrganizationCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
+  memberships Membership[]
+  clubs       Club[]
+}
+
+model Membership {
+  id             String         @id @default(uuid())
+  userId         String
+  organizationId String
+  role           MembershipRole
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now()) @updatedAt
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
+}
+
 model Club {
-  id               String        @id @default(uuid())
+  id               String              @id @default(uuid())
   name             String
-  slug             String?       @unique
+  slug             String?             @unique
+  organizationId   String
+  createdById      String
   shortDescription String?
-  longDescription  String?       @db.Text
+  longDescription  String?             @db.Text
   location         String
   city             String?
   country          String?
@@ -74,23 +120,28 @@ model Club {
   phone            String?
   email            String?
   website          String?
-  socialLinks      String?       @db.Text  // JSON string for social links
+  socialLinks      String?             @db.Text // JSON string for social links
   contactInfo      String?
   openingHours     String?
   logo             String?
   heroImage        String?
-  defaultCurrency  String?       @default("USD")
-  timezone         String?       @default("UTC")
-  isPublic         Boolean       @default(true)
-  tags             String?       // JSON array of tags
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @default(now()) @updatedAt
+  defaultCurrency  String?             @default("USD")
+  timezone         String?             @default("UTC")
+  isPublic         Boolean             @default(true)
+  tags             String? // JSON array of tags
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @default(now()) @updatedAt
+  organization     Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy        User                @relation("ClubCreatedBy", fields: [createdById], references: [id])
   courts           Court[]
   coaches          Coach[]
   pricingRules     PricingRule[]
   gallery          ClubGallery[]
   businessHours    ClubBusinessHours[]
   specialHours     ClubSpecialHours[]
+  clubMemberships  ClubMembership[]
+
+  @@index([organizationId])
 }
 
 model ClubGallery {
@@ -109,9 +160,9 @@ model ClubGallery {
 model ClubBusinessHours {
   id        String   @id @default(uuid())
   clubId    String
-  dayOfWeek Int      // 0=Sunday, 1=Monday, ..., 6=Saturday
-  openTime  String?  // "HH:mm" format, null if closed
-  closeTime String?  // "HH:mm" format, null if closed
+  dayOfWeek Int // 0=Sunday, 1=Monday, ..., 6=Saturday
+  openTime  String? // "HH:mm" format, null if closed
+  closeTime String? // "HH:mm" format, null if closed
   isClosed  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -125,10 +176,10 @@ model ClubSpecialHours {
   id        String   @id @default(uuid())
   clubId    String
   date      DateTime @db.Date
-  openTime  String?  // "HH:mm" format, null if closed
-  closeTime String?  // "HH:mm" format, null if closed
+  openTime  String? // "HH:mm" format, null if closed
+  closeTime String? // "HH:mm" format, null if closed
   isClosed  Boolean  @default(false)
-  reason    String?  // e.g., "Holiday", "Maintenance"
+  reason    String? // e.g., "Holiday", "Maintenance"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
@@ -137,17 +188,33 @@ model ClubSpecialHours {
   @@index([clubId])
 }
 
+model ClubMembership {
+  id        String             @id @default(uuid())
+  userId    String
+  clubId    String
+  role      ClubMembershipRole
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @default(now()) @updatedAt
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club      Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clubId])
+  @@index([userId, clubId])
+  @@index([userId])
+  @@index([clubId])
+}
+
 model Court {
-  id                String        @id @default(uuid())
+  id                String   @id @default(uuid())
   clubId            String
   name              String
-  slug              String?       @unique
+  slug              String?  @unique
   type              String?
   surface           String?
-  indoor            Boolean       @default(false)
-  defaultPriceCents Int           @default(0)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  indoor            Boolean  @default(false)
+  defaultPriceCents Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   club            Club             @relation(fields: [clubId], references: [id])
   bookings        Booking[]
@@ -158,10 +225,10 @@ model Court {
 model CourtPriceRule {
   id         String    @id @default(uuid())
   courtId    String
-  dayOfWeek  Int?      // 0=Sunday .. 6=Saturday OR null = applies to all days
+  dayOfWeek  Int? // 0=Sunday .. 6=Saturday OR null = applies to all days
   date       DateTime? @db.Date // optional exact date override (mutually exclusive with dayOfWeek)
-  startTime  String    // "09:00" format
-  endTime    String    // "12:00" format
+  startTime  String // "09:00" format
+  endTime    String // "12:00" format
   priceCents Int
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -199,10 +266,10 @@ model CoachWeeklyAvailability {
   id        String   @id @default(uuid())
   coach     Coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
   coachId   String
-  dayOfWeek Int      // 0=Sunday, 1=Monday, ..., 6=Saturday
-  startTime String   // "HH:mm" format
-  endTime   String   // "HH:mm" format
-  note      String?  // Optional label or note
+  dayOfWeek Int // 0=Sunday, 1=Monday, ..., 6=Saturday
+  startTime String // "HH:mm" format
+  endTime   String // "HH:mm" format
+  note      String? // Optional label or note
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -211,15 +278,15 @@ model CoachWeeklyAvailability {
 }
 
 model CoachTimeOff {
-  id        String    @id @default(uuid())
-  coach     Coach     @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  coach     Coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
   coachId   String
-  date      DateTime  @db.Date
-  startTime String?   // "HH:mm" format, optional for full-day off
-  endTime   String?   // "HH:mm" format, optional for full-day off
-  reason    String?   // Optional comment
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  date      DateTime @db.Date
+  startTime String? // "HH:mm" format, optional for full-day off
+  endTime   String? // "HH:mm" format, optional for full-day off
+  reason    String? // Optional comment
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([coachId])
   @@index([coachId, date])
@@ -269,10 +336,10 @@ model TrainingRequest {
   trainerId String
   playerId  String
   clubId    String
-  courtId   String?  // Reserved court for the training session
-  bookingId String?  // Associated booking ID
+  courtId   String? // Reserved court for the training session
+  bookingId String? // Associated booking ID
   date      DateTime @db.Date
-  time      String   // "HH:MM" format
+  time      String // "HH:MM" format
   comment   String?
   status    String   @default("pending") // "pending", "confirmed", "rejected", "cancelled"
   createdAt DateTime @default(now())
@@ -286,17 +353,17 @@ model TrainingRequest {
 }
 
 model AdminNotification {
-  id                String   @id @default(uuid())
-  type              String   // "REQUESTED", "ACCEPTED", "DECLINED", "CANCELED"
+  id                String    @id @default(uuid())
+  type              String // "REQUESTED", "ACCEPTED", "DECLINED", "CANCELED"
   playerId          String
   coachId           String
   trainingRequestId String?
   bookingId         String?
-  sessionDate       DateTime? @db.Date  // Optional metadata: date of session
-  sessionTime       String?             // Optional metadata: time of session
-  courtInfo         String?             // Optional metadata: court info
-  read              Boolean  @default(false)
-  createdAt         DateTime @default(now())
+  sessionDate       DateTime? @db.Date // Optional metadata: date of session
+  sessionTime       String? // Optional metadata: time of session
+  courtInfo         String? // Optional metadata: court info
+  read              Boolean   @default(false)
+  createdAt         DateTime  @default(now())
 
   @@index([read])
   @@index([createdAt])

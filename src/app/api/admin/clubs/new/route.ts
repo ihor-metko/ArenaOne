@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/requireRole";
 import { ADMIN_ROLES } from "@/constants/roles";
+import { MembershipRole, ClubMembershipRole } from "@prisma/client";
 
 interface BusinessHourInput {
   dayOfWeek: number;
@@ -26,6 +27,7 @@ interface GalleryInput {
 interface CreateClubRequest {
   name: string;
   slug?: string;
+  organizationId?: string;
   shortDescription: string;
   longDescription?: string;
   location: string;
@@ -106,11 +108,52 @@ export async function POST(request: Request) {
 
     // Create club with related records in a transaction
     const club = await prisma.$transaction(async (tx) => {
+      // If no organizationId is provided, get or create a default organization for this user
+      let organizationId = body.organizationId;
+      
+      if (!organizationId) {
+        // Check if user has any organization membership as admin
+        const existingMembership = await tx.membership.findFirst({
+          where: {
+            userId: authResult.userId,
+            role: MembershipRole.ORGANIZATION_ADMIN,
+          },
+          select: { organizationId: true },
+        });
+
+        if (existingMembership) {
+          organizationId = existingMembership.organizationId;
+        } else {
+          // Create a default organization for this user
+          const orgSlug = `org-${generateSlug(body.name)}-${Date.now()}`;
+          const newOrg = await tx.organization.create({
+            data: {
+              name: `${body.name.trim()} Organization`,
+              slug: orgSlug,
+              createdById: authResult.userId,
+            },
+          });
+          
+          // Make the user an organization admin
+          await tx.membership.create({
+            data: {
+              userId: authResult.userId,
+              organizationId: newOrg.id,
+              role: MembershipRole.ORGANIZATION_ADMIN,
+            },
+          });
+          
+          organizationId = newOrg.id;
+        }
+      }
+
       // Create the club
       const newClub = await tx.club.create({
         data: {
           name: body.name.trim(),
           slug,
+          organizationId,
+          createdById: authResult.userId,
           shortDescription: body.shortDescription.trim(),
           longDescription: body.longDescription?.trim() || null,
           location: body.location.trim(),
@@ -128,6 +171,15 @@ export async function POST(request: Request) {
           tags: body.tags || null,
           heroImage: body.heroImage || null,
           logo: body.logo || null,
+        },
+      });
+
+      // Make the creator a club admin
+      await tx.clubMembership.create({
+        data: {
+          userId: authResult.userId,
+          clubId: newClub.id,
+          role: ClubMembershipRole.CLUB_ADMIN,
         },
       });
 

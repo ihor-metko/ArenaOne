@@ -16,7 +16,6 @@ jest.mock("@/lib/prisma", () => ({
 }));
 
 import {
-  ROOT_ADMIN_ROLE,
   MIN_PASSWORD_LENGTH,
   isValidEmail,
   isValidPassword,
@@ -35,10 +34,6 @@ describe("Root Admin Module", () => {
   });
 
   describe("Constants", () => {
-    it("should have correct ROOT_ADMIN_ROLE value", () => {
-      expect(ROOT_ADMIN_ROLE).toBe("root_admin");
-    });
-
     it("should have correct MIN_PASSWORD_LENGTH value", () => {
       expect(MIN_PASSWORD_LENGTH).toBe(8);
     });
@@ -92,14 +87,14 @@ describe("Root Admin Module", () => {
     it("should return true when root admin exists", async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue({
         id: "root-admin-id",
-        role: "root_admin",
+        isRoot: true,
       });
 
       const result = await checkExistingRootAdmin(prisma as never);
 
       expect(result).toBe(true);
       expect(prisma.user.findFirst).toHaveBeenCalledWith({
-        where: { role: ROOT_ADMIN_ROLE },
+        where: { isRoot: true },
       });
     });
 
@@ -137,7 +132,7 @@ describe("Root Admin Module", () => {
   });
 
   describe("createRootAdmin", () => {
-    it("should create root admin with hashed password", async () => {
+    it("should create root admin with hashed password and isRoot=true", async () => {
       const input = {
         name: "Root Admin",
         email: "root@example.com",
@@ -149,7 +144,7 @@ describe("Root Admin Module", () => {
         email: data.email,
         name: data.name,
         password: data.password,
-        role: data.role,
+        isRoot: data.isRoot,
       }));
 
       const result = await createRootAdmin(prisma as never, input);
@@ -158,9 +153,9 @@ describe("Root Admin Module", () => {
       expect(result.email).toBe(input.email);
       expect(result.name).toBe(input.name);
 
-      // Verify password was hashed
+      // Verify password was hashed and isRoot is true
       const createCall = (prisma.user.create as jest.Mock).mock.calls[0][0];
-      expect(createCall.data.role).toBe(ROOT_ADMIN_ROLE);
+      expect(createCall.data.isRoot).toBe(true);
       const hashedPassword = createCall.data.password;
       const isPasswordHashed = await compare(input.password, hashedPassword);
       expect(isPasswordHashed).toBe(true);
@@ -175,7 +170,7 @@ describe("Root Admin Module", () => {
 
       expect(result).toBe(1);
       expect(prisma.user.deleteMany).toHaveBeenCalledWith({
-        where: { role: ROOT_ADMIN_ROLE },
+        where: { isRoot: true },
       });
     });
   });
@@ -195,7 +190,7 @@ describe("Root Admin Module", () => {
         email: data.email,
         name: data.name,
         password: data.password,
-        role: data.role,
+        isRoot: data.isRoot,
       }));
     });
 
@@ -232,7 +227,7 @@ describe("Root Admin Module", () => {
     it("should fail if root admin already exists without force flag", async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue({
         id: "existing-root-admin",
-        role: ROOT_ADMIN_ROLE,
+        isRoot: true,
       });
 
       const result = await executeCreateRootAdmin(prisma as never, validInput);
@@ -264,7 +259,7 @@ describe("Root Admin Module", () => {
     it("should replace existing root admin with force flag", async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue({
         id: "existing-root-admin",
-        role: ROOT_ADMIN_ROLE,
+        isRoot: true,
       });
       (prisma.user.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
 
@@ -274,7 +269,7 @@ describe("Root Admin Module", () => {
 
       expect(result.success).toBe(true);
       expect(prisma.user.deleteMany).toHaveBeenCalledWith({
-        where: { role: ROOT_ADMIN_ROLE },
+        where: { isRoot: true },
       });
       expect(prisma.user.create).toHaveBeenCalled();
     });
@@ -293,7 +288,7 @@ describe("Root Admin Module", () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue({
         id: "existing-root-admin",
         email: validInput.email,
-        role: ROOT_ADMIN_ROLE,
+        isRoot: true,
       });
       (prisma.user.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
       // After deletion, findUnique should return null (email no longer exists)
@@ -305,7 +300,7 @@ describe("Root Admin Module", () => {
 
       expect(result.success).toBe(true);
       expect(prisma.user.deleteMany).toHaveBeenCalledWith({
-        where: { role: ROOT_ADMIN_ROLE },
+        where: { isRoot: true },
       });
       expect(prisma.user.create).toHaveBeenCalled();
     });

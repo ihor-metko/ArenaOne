@@ -3,9 +3,15 @@ import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/requireRole";
 
+/**
+ * @deprecated This API is archived and will be removed. 
+ * User roles are now context-specific via Membership and ClubMembership tables.
+ * Use isRoot on User model to identify root admins.
+ */
+
 interface UserWhereClause {
   OR?: { name?: { contains: string; mode: "insensitive" }; email?: { contains: string; mode: "insensitive" } }[];
-  role?: string;
+  isRoot?: boolean;
 }
 
 export async function GET(request: Request) {
@@ -29,8 +35,11 @@ export async function GET(request: Request) {
       ];
     }
 
-    if (role && ["player", "coach", "super_admin"].includes(role)) {
-      whereClause.role = role;
+    // Map old role filter to new isRoot filter for backward compatibility
+    if (role === "super_admin" || role === "root_admin") {
+      whereClause.isRoot = true;
+    } else if (role === "player" || role === "coach") {
+      whereClause.isRoot = false;
     }
 
     const users = await prisma.user.findMany({
@@ -40,12 +49,18 @@ export async function GET(request: Request) {
         id: true,
         name: true,
         email: true,
-        role: true,
+        isRoot: true,
         createdAt: true,
       },
     });
 
-    return NextResponse.json(users);
+    // Transform response to include legacy role field for backward compatibility
+    const usersWithRole = users.map(user => ({
+      ...user,
+      role: user.isRoot ? "root_admin" : "player",
+    }));
+
+    return NextResponse.json(usersWithRole);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error fetching users:", error);
@@ -90,27 +105,33 @@ export async function POST(request: Request) {
     // Hash the password
     const hashedPassword = await hash(password, 12);
 
-    // Create the user with coach role
+    // Create the user (not a root admin by default)
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        role: "coach",
+        isRoot: false,
       },
       select: {
         id: true,
         name: true,
         email: true,
-        role: true,
+        isRoot: true,
         createdAt: true,
       },
     });
 
-    return NextResponse.json(user, { status: 201 });
+    // Add legacy role field for backward compatibility
+    const userWithRole = {
+      ...user,
+      role: "player",
+    };
+
+    return NextResponse.json(userWithRole, { status: 201 });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error creating coach:", error);
+      console.error("Error creating user:", error);
     }
     return NextResponse.json(
       { error: "Internal server error" },
