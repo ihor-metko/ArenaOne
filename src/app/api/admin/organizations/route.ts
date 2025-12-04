@@ -145,12 +145,20 @@ export async function POST(request: Request) {
 
 /**
  * Generate a URL-friendly slug from a name
+ * Falls back to a random string if the name contains only special characters
  */
 function generateSlug(name: string): string {
-  return name
+  const slug = name
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, "")
     .replace(/[\s_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
+  
+  // If slug is empty, generate a fallback using timestamp
+  if (!slug) {
+    return `org-${Date.now()}`;
+  }
+  
+  return slug;
 }

@@ -119,15 +119,12 @@ export async function POST(request: Request) {
         role: "ORGANIZATION_ADMIN",
         organizationId: { not: organizationId },
       },
-      include: {
-        organization: true,
-      },
     });
 
     if (existingAdminMembership) {
       return NextResponse.json(
         {
-          error: `User is already a SuperAdmin of organization: ${existingAdminMembership.organization.name}`,
+          error: "User is already a SuperAdmin of another organization",
         },
         { status: 409 }
       );
