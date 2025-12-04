@@ -109,13 +109,14 @@ export async function POST(request: Request) {
         },
       });
 
+      // Cannot remove primary owner if there are other admins - must transfer ownership first
       if (adminCount > 1) {
         return NextResponse.json(
           { error: "Cannot remove the primary owner. Transfer ownership first." },
           { status: 400 }
         );
       }
-      // If only one admin (the owner), we can remove them
+      // If only one admin remains (the owner), they can be removed
     }
 
     // Delete the membership

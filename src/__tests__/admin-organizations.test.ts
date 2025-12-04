@@ -39,6 +39,8 @@ jest.mock("@/lib/auth", () => ({
 
 import { GET, POST } from "@/app/api/admin/organizations/route";
 import { POST as AssignAdmin } from "@/app/api/admin/organizations/assign-admin/route";
+import { PATCH as SetOwner } from "@/app/api/admin/organizations/set-owner/route";
+import { POST as RemoveAdmin } from "@/app/api/admin/organizations/remove-admin/route";
 import { GET as GetUsers } from "@/app/api/admin/users/route";
 import { prisma } from "@/lib/prisma";
 
@@ -585,6 +587,154 @@ describe("Admin Organizations API", () => {
           }),
         })
       );
+    });
+  });
+
+  describe("PATCH /api/admin/organizations/set-owner", () => {
+    it("should return 401 when not authenticated", async () => {
+      mockAuth.mockResolvedValue(null);
+
+      const request = new Request("http://localhost:3000/api/admin/organizations/set-owner", {
+        method: "PATCH",
+        body: JSON.stringify({ organizationId: "org-1", userId: "user-1" }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await SetOwner(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.error).toBe("Unauthorized");
+    });
+
+    it("should return 400 when organizationId is missing", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      const request = new Request("http://localhost:3000/api/admin/organizations/set-owner", {
+        method: "PATCH",
+        body: JSON.stringify({ userId: "user-1" }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await SetOwner(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Organization ID is required");
+    });
+
+    it("should return 400 when userId is missing", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      const request = new Request("http://localhost:3000/api/admin/organizations/set-owner", {
+        method: "PATCH",
+        body: JSON.stringify({ organizationId: "org-1" }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await SetOwner(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("User ID is required");
+    });
+
+    it("should return 404 when organization not found", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      (prisma.organization.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const request = new Request("http://localhost:3000/api/admin/organizations/set-owner", {
+        method: "PATCH",
+        body: JSON.stringify({ organizationId: "non-existent", userId: "user-1" }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await SetOwner(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(404);
+      expect(data.error).toBe("Organization not found");
+    });
+  });
+
+  describe("POST /api/admin/organizations/remove-admin", () => {
+    it("should return 401 when not authenticated", async () => {
+      mockAuth.mockResolvedValue(null);
+
+      const request = new Request("http://localhost:3000/api/admin/organizations/remove-admin", {
+        method: "POST",
+        body: JSON.stringify({ organizationId: "org-1", userId: "user-1" }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await RemoveAdmin(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.error).toBe("Unauthorized");
+    });
+
+    it("should return 400 when organizationId is missing", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      const request = new Request("http://localhost:3000/api/admin/organizations/remove-admin", {
+        method: "POST",
+        body: JSON.stringify({ userId: "user-1" }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await RemoveAdmin(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Organization ID is required");
+    });
+
+    it("should return 400 when userId is missing", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      const request = new Request("http://localhost:3000/api/admin/organizations/remove-admin", {
+        method: "POST",
+        body: JSON.stringify({ organizationId: "org-1" }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await RemoveAdmin(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("User ID is required");
+    });
+
+    it("should return 404 when organization not found", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      (prisma.organization.findUnique as jest.Mock).mockResolvedValue(null);
+
+      const request = new Request("http://localhost:3000/api/admin/organizations/remove-admin", {
+        method: "POST",
+        body: JSON.stringify({ organizationId: "non-existent", userId: "user-1" }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await RemoveAdmin(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(404);
+      expect(data.error).toBe("Organization not found");
     });
   });
 });

@@ -319,15 +319,16 @@ export default function AdminOrganizationsPage() {
     }
   };
 
-  // Update managingOrg when organizations change
+  // Update managingOrg when organizations change (use managingOrg.id to avoid infinite loop)
+  const managingOrgId = managingOrg?.id;
   useEffect(() => {
-    if (managingOrg) {
-      const updatedOrg = organizations.find(o => o.id === managingOrg.id);
+    if (managingOrgId) {
+      const updatedOrg = organizations.find(o => o.id === managingOrgId);
       if (updatedOrg) {
         setManagingOrg(updatedOrg);
       }
     }
-  }, [organizations, managingOrg]);
+  }, [organizations, managingOrgId]);
 
   if (status === "loading" || loading) {
     return (
@@ -544,12 +545,11 @@ export default function AdminOrganizationsPage() {
                     const isAlreadyAdminOfThisOrg = selectedOrg?.superAdmins?.some(
                       (admin) => admin.id === user.id
                     );
-                    const isDisabled = isAlreadyAdminOfThisOrg;
                     
                     return (
                       <label
                         key={user.id}
-                        className={`im-user-option ${isDisabled ? "im-user-option--disabled" : ""} ${selectedUserId === user.id ? "im-user-option--selected" : ""}`}
+                        className={`im-user-option ${isAlreadyAdminOfThisOrg ? "im-user-option--disabled" : ""} ${selectedUserId === user.id ? "im-user-option--selected" : ""}`}
                       >
                         <input
                           type="radio"
@@ -557,7 +557,7 @@ export default function AdminOrganizationsPage() {
                           value={user.id}
                           checked={selectedUserId === user.id}
                           onChange={(e) => setSelectedUserId(e.target.value)}
-                          disabled={isDisabled}
+                          disabled={isAlreadyAdminOfThisOrg}
                         />
                         <span className="im-user-info">
                           <span className="im-user-name">{user.name || user.email}</span>

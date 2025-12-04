@@ -18,7 +18,8 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { organizationId, userId, createNew, name, email, password, setAsPrimaryOwner } = body;
+    const { organizationId, userId, createNew, name, email, password } = body;
+    const setAsPrimaryOwner = body.setAsPrimaryOwner === true;
 
     if (!organizationId) {
       return NextResponse.json(
