@@ -194,6 +194,26 @@ interface NavItem {
   children?: NavItem[];
 }
 
+function OrganizationsIcon() {
+  return (
+    <svg
+      className="im-sidebar-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
 /**
  * Get navigation items for root admins
  * All items are visible to root admins
@@ -213,6 +233,14 @@ function getNavItems(): NavItem[] {
       href: "/admin/dashboard",
       labelKey: "sidebar.statistics",
       icon: <StatsIcon />,
+      rootOnly: true,
+    },
+    // Organizations - Root Admin only
+    {
+      id: "organizations",
+      href: "/admin/organizations",
+      labelKey: "sidebar.organizations",
+      icon: <OrganizationsIcon />,
       rootOnly: true,
     },
     // Clubs Management
