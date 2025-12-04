@@ -56,9 +56,6 @@ export default function AdminNotificationsPage() {
 
         <AdminNotificationsPanel pollInterval={30000} />
       </section>
-
-      {/* Dashboard Footer */}
-      <DashboardFooter />
     </main>
   );
 }

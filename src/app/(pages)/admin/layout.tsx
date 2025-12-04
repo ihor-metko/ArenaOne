@@ -21,7 +21,7 @@ export default function AdminLayout({
       <AdminSidebar hasHeader={true} />
 
       {/* Main content area with sidebar offset on large screens */}
-      <div className="flex-1 overflow-auto flex flex-col lg:ml-60">
+      <div className="flex-1 overflow-auto flex flex-col w-full lg:pl-60">
         {children}
 
         <DashboardFooter />

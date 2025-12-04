@@ -230,7 +230,7 @@ function getNavItems(): NavItem[] {
     // Platform Statistics - Root Admin only
     {
       id: "statistics",
-      href: "/admin/dashboard",
+      href: "/admin/statistics",
       labelKey: "sidebar.statistics",
       icon: <StatsIcon />,
       rootOnly: true,
@@ -302,21 +302,21 @@ function getRoleInfo(adminStatus: AdminStatusResponse | null, t: ReturnType<type
       className: "im-sidebar-role im-sidebar-role--root",
     };
   }
-  
+
   if (adminStatus.adminType === "organization_admin") {
     return {
       label: t("sidebar.roleSuperAdmin"),
       className: "im-sidebar-role im-sidebar-role--super",
     };
   }
-  
+
   if (adminStatus.adminType === "club_admin") {
     return {
       label: t("sidebar.roleAdmin"),
       className: "im-sidebar-role im-sidebar-role--admin",
     };
   }
-  
+
   return null;
 }
 
@@ -359,7 +359,7 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
   useEffect(() => {
     const fetchAdminStatus = async () => {
       if (status === "loading") return;
-      
+
       if (!session?.user) {
         setAdminStatus(null);
         setIsLoadingAdminStatus(false);
@@ -508,9 +508,8 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
       <aside
         ref={sidebarRef}
         id="admin-sidebar"
-        className={`im-sidebar ${hasHeader ? "im-sidebar--with-header" : ""} ${
-          isMobileOpen ? "im-sidebar--open" : ""
-        }`}
+        className={`im-sidebar ${hasHeader ? "im-sidebar--with-header" : ""} ${isMobileOpen ? "im-sidebar--open" : ""
+          }`}
         role="navigation"
         aria-label={t("sidebar.navigation")}
         onKeyDown={handleKeyDown}
@@ -556,9 +555,8 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
                           <li key={child.id} className="im-sidebar-nav-item" role="none">
                             <Link
                               href={child.href || "#"}
-                              className={`im-sidebar-nav-link ${
-                                isActive(child.href) ? "im-sidebar-nav-link--active" : ""
-                              }`}
+                              className={`im-sidebar-nav-link ${isActive(child.href) ? "im-sidebar-nav-link--active" : ""
+                                }`}
                               role="menuitem"
                               aria-current={isActive(child.href) ? "page" : undefined}
                               onClick={() => setIsMobileOpen(false)}
@@ -575,9 +573,8 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
                   // Regular link
                   <Link
                     href={item.href || "#"}
-                    className={`im-sidebar-nav-link ${
-                      isActive(item.href) ? "im-sidebar-nav-link--active" : ""
-                    }`}
+                    className={`im-sidebar-nav-link ${isActive(item.href) ? "im-sidebar-nav-link--active" : ""
+                      }`}
                     role="menuitem"
                     aria-current={isActive(item.href) ? "page" : undefined}
                     onClick={() => setIsMobileOpen(false)}
