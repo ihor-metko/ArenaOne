@@ -10,17 +10,26 @@ jest.mock("@/lib/prisma", () => ({
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
     },
-    coach: {
-      findFirst: jest.fn(),
+    membership: {
       findMany: jest.fn(),
-      create: jest.fn(),
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
       deleteMany: jest.fn(),
     },
-    coachAvailability: {
+    clubMembership: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
       deleteMany: jest.fn(),
+    },
+    organization: {
+      findUnique: jest.fn(),
     },
     club: {
+      findUnique: jest.fn(),
       findMany: jest.fn(),
     },
     $transaction: jest.fn(),
@@ -33,13 +42,9 @@ jest.mock("@/lib/auth", () => ({
   auth: () => mockAuth(),
 }));
 
-// Mock bcryptjs
-jest.mock("bcryptjs", () => ({
-  hash: jest.fn().mockResolvedValue("hashed_password"),
-}));
-
-import { GET, POST } from "../../archived_features/api/admin/users/route";
-import { POST as updateRole } from "../../archived_features/api/admin/users/[userId]/role/route";
+import { GET as GetUsersList } from "@/app/api/admin/users/list/route";
+import { GET as GetUserDetail, PATCH as UpdateUser, DELETE as DeleteUser } from "@/app/api/admin/users/[userId]/route";
+import { PATCH as UpdateUserRole } from "@/app/api/admin/users/[userId]/role/route";
 import { prisma } from "@/lib/prisma";
 
 describe("Admin Users API", () => {
@@ -47,38 +52,38 @@ describe("Admin Users API", () => {
     jest.clearAllMocks();
   });
 
-  describe("GET /api/admin/users", () => {
+  describe("GET /api/admin/users/list", () => {
     it("should return 401 when not authenticated", async () => {
       mockAuth.mockResolvedValue(null);
 
-      const request = new Request("http://localhost:3000/api/admin/users", {
+      const request = new Request("http://localhost:3000/api/admin/users/list", {
         method: "GET",
       });
 
-      const response = await GET(request);
+      const response = await GetUsersList(request);
       const data = await response.json();
 
       expect(response.status).toBe(401);
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 403 when user is not admin", async () => {
+    it("should return 403 when user is not root admin", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "user-123", isRoot: false },
       });
 
-      const request = new Request("http://localhost:3000/api/admin/users", {
+      const request = new Request("http://localhost:3000/api/admin/users/list", {
         method: "GET",
       });
 
-      const response = await GET(request);
+      const response = await GetUsersList(request);
       const data = await response.json();
 
       expect(response.status).toBe(403);
       expect(data.error).toBe("Forbidden");
     });
 
-    it("should return all users for admin", async () => {
+    it("should return paginated users for root admin", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "admin-123", isRoot: true },
       });
@@ -89,29 +94,28 @@ describe("Admin Users API", () => {
           name: "Player One",
           email: "player@test.com",
           isRoot: false,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: "user-2",
-          name: "Coach One",
-          email: "coach@test.com",
-          isRoot: false,
-          createdAt: new Date().toISOString(),
+          blocked: false,
+          createdAt: new Date(),
+          lastLoginAt: new Date(),
+          memberships: [],
+          clubMemberships: [],
+          bookings: [],
         },
       ];
 
+      (prisma.user.count as jest.Mock).mockResolvedValue(1);
       (prisma.user.findMany as jest.Mock).mockResolvedValue(mockUsers);
 
-      const request = new Request("http://localhost:3000/api/admin/users", {
+      const request = new Request("http://localhost:3000/api/admin/users/list", {
         method: "GET",
       });
 
-      const response = await GET(request);
+      const response = await GetUsersList(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toHaveLength(2);
-      expect(data[0].name).toBe("Player One");
+      expect(data.users).toHaveLength(1);
+      expect(data.pagination.totalCount).toBe(1);
     });
 
     it("should filter users by search query", async () => {
@@ -119,22 +123,27 @@ describe("Admin Users API", () => {
         user: { id: "admin-123", isRoot: true },
       });
 
+      (prisma.user.count as jest.Mock).mockResolvedValue(0);
       (prisma.user.findMany as jest.Mock).mockResolvedValue([]);
 
       const request = new Request(
-        "http://localhost:3000/api/admin/users?search=test",
+        "http://localhost:3000/api/admin/users/list?search=test",
         { method: "GET" }
       );
 
-      await GET(request);
+      await GetUsersList(request);
 
       expect(prisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            OR: [
-              { name: { contains: "test", mode: "insensitive" } },
-              { email: { contains: "test", mode: "insensitive" } },
-            ],
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: [
+                  { name: { contains: "test", mode: "insensitive" } },
+                  { email: { contains: "test", mode: "insensitive" } },
+                ],
+              }),
+            ]),
           }),
         })
       );
@@ -145,19 +154,24 @@ describe("Admin Users API", () => {
         user: { id: "admin-123", isRoot: true },
       });
 
+      (prisma.user.count as jest.Mock).mockResolvedValue(0);
       (prisma.user.findMany as jest.Mock).mockResolvedValue([]);
 
       const request = new Request(
-        "http://localhost:3000/api/admin/users?role=coach",
+        "http://localhost:3000/api/admin/users/list?role=root_admin",
         { method: "GET" }
       );
 
-      await GET(request);
+      await GetUsersList(request);
 
       expect(prisma.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            isRoot: false,
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                isRoot: true,
+              }),
+            ]),
           }),
         })
       );
@@ -168,15 +182,15 @@ describe("Admin Users API", () => {
         user: { id: "admin-123", isRoot: true },
       });
 
-      (prisma.user.findMany as jest.Mock).mockRejectedValue(
+      (prisma.user.count as jest.Mock).mockRejectedValue(
         new Error("Database error")
       );
 
-      const request = new Request("http://localhost:3000/api/admin/users", {
+      const request = new Request("http://localhost:3000/api/admin/users/list", {
         method: "GET",
       });
 
-      const response = await GET(request);
+      const response = await GetUsersList(request);
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -184,143 +198,213 @@ describe("Admin Users API", () => {
     });
   });
 
-  describe("POST /api/admin/users", () => {
+  describe("GET /api/admin/users/[userId]", () => {
     it("should return 401 when not authenticated", async () => {
       mockAuth.mockResolvedValue(null);
 
-      const request = new Request("http://localhost:3000/api/admin/users", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "New Coach",
-          email: "newcoach@test.com",
-          password: "password123",
-        }),
-        headers: { "Content-Type": "application/json" },
+      const request = new Request("http://localhost:3000/api/admin/users/user-123", {
+        method: "GET",
       });
 
-      const response = await POST(request);
+      const response = await GetUserDetail(request, {
+        params: Promise.resolve({ userId: "user-123" }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 403 when user is not admin", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
-
-      const request = new Request("http://localhost:3000/api/admin/users", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "New Coach",
-          email: "newcoach@test.com",
-          password: "password123",
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const response = await POST(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(403);
-      expect(data.error).toBe("Forbidden");
-    });
-
-    it("should create a new coach for admin", async () => {
+    it("should return user details for root admin", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "admin-123", isRoot: true },
       });
 
-      const newUser = {
-        id: "new-coach-id",
-        name: "New Coach",
-        email: "newcoach@test.com",
+      const mockUser = {
+        id: "user-123",
+        name: "Test User",
+        email: "test@example.com",
         isRoot: false,
-        createdAt: new Date().toISOString(),
+        blocked: false,
+        createdAt: new Date(),
+        lastLoginAt: new Date(),
+        emailVerified: null,
+        image: null,
+        memberships: [],
+        clubMemberships: [],
+        bookings: [],
+        coaches: [],
       };
 
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+
+      const request = new Request("http://localhost:3000/api/admin/users/user-123", {
+        method: "GET",
+      });
+
+      const response = await GetUserDetail(request, {
+        params: Promise.resolve({ userId: "user-123" }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.email).toBe("test@example.com");
+      expect(data.role).toBe("user");
+    });
+
+    it("should return 404 when user not found", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.user.create as jest.Mock).mockResolvedValue(newUser);
 
-      const request = new Request("http://localhost:3000/api/admin/users", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "New Coach",
-          email: "newcoach@test.com",
-          password: "password123",
-        }),
-        headers: { "Content-Type": "application/json" },
+      const request = new Request("http://localhost:3000/api/admin/users/nonexistent", {
+        method: "GET",
       });
 
-      const response = await POST(request);
+      const response = await GetUserDetail(request, {
+        params: Promise.resolve({ userId: "nonexistent" }),
+      });
       const data = await response.json();
 
-      expect(response.status).toBe(201);
-      expect(data.name).toBe("New Coach");
-      expect(data.role).toBe("coach");
-    });
-
-    it("should return 400 when email already exists", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "admin-123", isRoot: true },
-      });
-
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        id: "existing-user",
-        email: "existing@test.com",
-      });
-
-      const request = new Request("http://localhost:3000/api/admin/users", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "New Coach",
-          email: "existing@test.com",
-          password: "password123",
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const response = await POST(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(data.error).toBe("A user with this email already exists");
-    });
-
-    it("should return 400 when required fields are missing", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "admin-123", isRoot: true },
-      });
-
-      const request = new Request("http://localhost:3000/api/admin/users", {
-        method: "POST",
-        body: JSON.stringify({ name: "Coach Only" }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const response = await POST(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(data.error).toBe("Name, email, and password are required");
+      expect(response.status).toBe(404);
+      expect(data.error).toBe("User not found");
     });
   });
 
-  describe("POST /api/admin/users/[userId]/role", () => {
+  describe("PATCH /api/admin/users/[userId]", () => {
+    it("should block a user", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      const existingUser = {
+        id: "user-123",
+        isRoot: false,
+      };
+
+      const updatedUser = {
+        id: "user-123",
+        name: "Test User",
+        email: "test@example.com",
+        blocked: true,
+      };
+
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
+      (prisma.user.update as jest.Mock).mockResolvedValue(updatedUser);
+
+      const request = new Request("http://localhost:3000/api/admin/users/user-123", {
+        method: "PATCH",
+        body: JSON.stringify({ blocked: true }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await UpdateUser(request, {
+        params: Promise.resolve({ userId: "user-123" }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.blocked).toBe(true);
+    });
+
+    it("should return 403 when trying to block root admin", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      const rootAdminUser = {
+        id: "root-user",
+        isRoot: true,
+      };
+
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(rootAdminUser);
+
+      const request = new Request("http://localhost:3000/api/admin/users/root-user", {
+        method: "PATCH",
+        body: JSON.stringify({ blocked: true }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await UpdateUser(request, {
+        params: Promise.resolve({ userId: "root-user" }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Cannot block root admin");
+    });
+  });
+
+  describe("DELETE /api/admin/users/[userId]", () => {
+    it("should delete a user", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      const existingUser = {
+        id: "user-123",
+        isRoot: false,
+        email: "test@example.com",
+      };
+
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
+      (prisma.user.delete as jest.Mock).mockResolvedValue(existingUser);
+
+      const request = new Request("http://localhost:3000/api/admin/users/user-123", {
+        method: "DELETE",
+      });
+
+      const response = await DeleteUser(request, {
+        params: Promise.resolve({ userId: "user-123" }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+    });
+
+    it("should return 403 when trying to delete root admin", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      const rootAdminUser = {
+        id: "root-user",
+        isRoot: true,
+      };
+
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(rootAdminUser);
+
+      const request = new Request("http://localhost:3000/api/admin/users/root-user", {
+        method: "DELETE",
+      });
+
+      const response = await DeleteUser(request, {
+        params: Promise.resolve({ userId: "root-user" }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Cannot delete root admin");
+    });
+  });
+
+  describe("PATCH /api/admin/users/[userId]/role", () => {
     it("should return 401 when not authenticated", async () => {
       mockAuth.mockResolvedValue(null);
 
       const request = new Request(
         "http://localhost:3000/api/admin/users/user-123/role",
         {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false }),
+          method: "PATCH",
+          body: JSON.stringify({ role: "user" }),
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      const response = await updateRole(request, {
+      const response = await UpdateUserRole(request, {
         params: Promise.resolve({ userId: "user-123" }),
       });
       const data = await response.json();
@@ -329,7 +413,7 @@ describe("Admin Users API", () => {
       expect(data.error).toBe("Unauthorized");
     });
 
-    it("should return 403 when user is not admin", async () => {
+    it("should return 403 when user is not root admin", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "user-123", isRoot: false },
       });
@@ -337,13 +421,13 @@ describe("Admin Users API", () => {
       const request = new Request(
         "http://localhost:3000/api/admin/users/user-123/role",
         {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false }),
+          method: "PATCH",
+          body: JSON.stringify({ role: "user" }),
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      const response = await updateRole(request, {
+      const response = await UpdateUserRole(request, {
         params: Promise.resolve({ userId: "user-123" }),
       });
       const data = await response.json();
@@ -352,288 +436,98 @@ describe("Admin Users API", () => {
       expect(data.error).toBe("Forbidden");
     });
 
-    it("should update user role to coach", async () => {
+    it("should update user role to organization admin", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "admin-123", isRoot: true },
       });
 
       const existingUser = {
         id: "user-123",
-        name: "Player",
-        email: "player@test.com",
+        name: "Test User",
+        email: "test@example.com",
         isRoot: false,
+      };
+
+      const mockOrganization = {
+        id: "org-123",
+        name: "Test Org",
       };
 
       const updatedUser = {
         id: "user-123",
-        name: "Player",
-        email: "player@test.com",
+        name: "Test User",
+        email: "test@example.com",
         isRoot: false,
-        createdAt: new Date().toISOString(),
+        memberships: [{ role: "ORGANIZATION_ADMIN", organization: mockOrganization }],
+        clubMemberships: [],
       };
 
-      const newCoach = {
-        id: "coach-123",
-        userId: "user-123",
-        clubId: "club-123",
-        bio: null,
-        phone: null,
-        createdAt: new Date(),
-      };
-
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
-      (prisma.club.findMany as jest.Mock).mockResolvedValue([{ id: "club-123" }]);
-
-      // Mock the transaction to execute the callback with mocked tx object
-      (prisma.$transaction as jest.Mock).mockImplementation(async (fn) => {
-        const tx = {
-          user: {
-            update: jest.fn().mockResolvedValue(updatedUser),
-          },
-          coach: {
-            findMany: jest.fn().mockResolvedValue([]),
-            create: jest.fn().mockResolvedValue(newCoach),
-          },
-          coachAvailability: {
-            deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
-          },
-        };
-        // First call to findMany returns existing coaches (empty)
-        // Second call returns the newly created coaches
-        tx.coach.findMany
-          .mockResolvedValueOnce([])
-          .mockResolvedValueOnce([newCoach]);
-        return fn(tx);
-      });
+      (prisma.user.findUnique as jest.Mock)
+        .mockResolvedValueOnce(existingUser)
+        .mockResolvedValueOnce(updatedUser);
+      (prisma.organization.findUnique as jest.Mock).mockResolvedValue(mockOrganization);
+      (prisma.membership.upsert as jest.Mock).mockResolvedValue({});
 
       const request = new Request(
         "http://localhost:3000/api/admin/users/user-123/role",
         {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false, clubIds: ["club-123"] }),
+          method: "PATCH",
+          body: JSON.stringify({ role: "organization_admin", organizationId: "org-123" }),
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      const response = await updateRole(request, {
+      const response = await UpdateUserRole(request, {
         params: Promise.resolve({ userId: "user-123" }),
       });
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.user.role).toBe("coach");
-      expect(data.coaches).toHaveLength(1);
-      expect(data.coaches[0].userId).toBe("user-123");
+      expect(data.role).toBe("organization_admin");
     });
 
-    it("should update user role to coach and create coach with optional fields", async () => {
+    it("should demote user to regular user", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "admin-123", isRoot: true },
       });
 
       const existingUser = {
         id: "user-123",
-        name: "Player",
-        email: "player@test.com",
+        name: "Test User",
+        email: "test@example.com",
         isRoot: false,
       };
 
       const updatedUser = {
         id: "user-123",
-        name: "Player",
-        email: "player@test.com",
+        name: "Test User",
+        email: "test@example.com",
         isRoot: false,
-        createdAt: new Date().toISOString(),
+        memberships: [],
+        clubMemberships: [],
       };
 
-      const newCoach = {
-        id: "coach-123",
-        userId: "user-123",
-        clubId: "club-123",
-        bio: "Professional tennis coach",
-        phone: "123-456-7890",
-        createdAt: new Date(),
-      };
-
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
-      (prisma.club.findMany as jest.Mock).mockResolvedValue([{ id: "club-123" }]);
-
-      (prisma.$transaction as jest.Mock).mockImplementation(async (fn) => {
-        const tx = {
-          user: {
-            update: jest.fn().mockResolvedValue(updatedUser),
-          },
-          coach: {
-            findMany: jest.fn()
-              .mockResolvedValueOnce([])
-              .mockResolvedValueOnce([newCoach]),
-            create: jest.fn().mockResolvedValue(newCoach),
-          },
-          coachAvailability: {
-            deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
-          },
-        };
-        return fn(tx);
-      });
+      (prisma.user.findUnique as jest.Mock)
+        .mockResolvedValueOnce(existingUser)
+        .mockResolvedValueOnce(updatedUser);
+      (prisma.$transaction as jest.Mock).mockResolvedValue([{}, {}]);
 
       const request = new Request(
         "http://localhost:3000/api/admin/users/user-123/role",
         {
-          method: "POST",
-          body: JSON.stringify({
-            isRoot: false,
-            clubIds: ["club-123"],
-            bio: "Professional tennis coach",
-            phone: "123-456-7890"
-          }),
+          method: "PATCH",
+          body: JSON.stringify({ role: "user" }),
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      const response = await updateRole(request, {
+      const response = await UpdateUserRole(request, {
         params: Promise.resolve({ userId: "user-123" }),
       });
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.user.role).toBe("coach");
-      expect(data.coaches).toHaveLength(1);
-    });
-
-    it("should not create duplicate coach record when already exists for same club", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "admin-123", isRoot: true },
-      });
-
-      const existingUser = {
-        id: "user-123",
-        name: "Player",
-        email: "player@test.com",
-        isRoot: false,
-      };
-
-      const updatedUser = {
-        id: "user-123",
-        name: "Player",
-        email: "player@test.com",
-        isRoot: false,
-        createdAt: new Date().toISOString(),
-      };
-
-      const existingCoach = {
-        id: "coach-123",
-        userId: "user-123",
-        clubId: "club-123",
-        bio: null,
-        phone: null,
-        createdAt: new Date(),
-      };
-
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
-      (prisma.club.findMany as jest.Mock).mockResolvedValue([{ id: "club-123" }]);
-
-      const mockCoachCreate = jest.fn();
-      (prisma.$transaction as jest.Mock).mockImplementation(async (fn) => {
-        const tx = {
-          user: {
-            update: jest.fn().mockResolvedValue(updatedUser),
-          },
-          coach: {
-            findMany: jest.fn()
-              .mockResolvedValueOnce([existingCoach])
-              .mockResolvedValueOnce([existingCoach]),
-            create: mockCoachCreate,
-          },
-          coachAvailability: {
-            deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
-          },
-        };
-        return fn(tx);
-      });
-
-      const request = new Request(
-        "http://localhost:3000/api/admin/users/user-123/role",
-        {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false, clubIds: ["club-123"] }),
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      const response = await updateRole(request, {
-        params: Promise.resolve({ userId: "user-123" }),
-      });
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.user.role).toBe("coach");
-      expect(data.coaches).toHaveLength(1);
-      expect(data.coaches[0].id).toBe("coach-123");
-      expect(data.coaches[0].clubId).toBe("club-123");
-      expect(mockCoachCreate).not.toHaveBeenCalled();
-    });
-
-    it("should update user role to player (remove coach)", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "admin-123", isRoot: true },
-      });
-
-      const existingUser = {
-        id: "user-123",
-        name: "Coach",
-        email: "coach@test.com",
-        isRoot: false,
-      };
-
-      const updatedUser = {
-        id: "user-123",
-        name: "Coach",
-        email: "coach@test.com",
-        isRoot: false,
-        createdAt: new Date().toISOString(),
-      };
-
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
-
-      const mockCoachFindMany = jest.fn().mockResolvedValue([{ id: "coach-123" }]);
-      const mockCoachAvailabilityDeleteMany = jest.fn().mockResolvedValue({ count: 0 });
-      const mockCoachDeleteMany = jest.fn().mockResolvedValue({ count: 1 });
-
-      (prisma.$transaction as jest.Mock).mockImplementation(async (fn) => {
-        const tx = {
-          user: {
-            update: jest.fn().mockResolvedValue(updatedUser),
-          },
-          coachAvailability: {
-            deleteMany: mockCoachAvailabilityDeleteMany,
-          },
-          coach: {
-            findMany: mockCoachFindMany,
-            deleteMany: mockCoachDeleteMany,
-          },
-        };
-        return fn(tx);
-      });
-
-      const request = new Request(
-        "http://localhost:3000/api/admin/users/user-123/role",
-        {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false }),
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      const response = await updateRole(request, {
-        params: Promise.resolve({ userId: "user-123" }),
-      });
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.user.role).toBe("player");
-      expect(data.coaches).toEqual([]);
-      expect(mockCoachAvailabilityDeleteMany).toHaveBeenCalled();
-      expect(mockCoachDeleteMany).toHaveBeenCalled();
+      expect(data.role).toBe("user");
     });
 
     it("should return 404 when user not found", async () => {
@@ -646,13 +540,13 @@ describe("Admin Users API", () => {
       const request = new Request(
         "http://localhost:3000/api/admin/users/nonexistent/role",
         {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false }),
+          method: "PATCH",
+          body: JSON.stringify({ role: "user" }),
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      const response = await updateRole(request, {
+      const response = await UpdateUserRole(request, {
         params: Promise.resolve({ userId: "nonexistent" }),
       });
       const data = await response.json();
@@ -661,36 +555,36 @@ describe("Admin Users API", () => {
       expect(data.error).toBe("User not found");
     });
 
-    it("should return 403 when trying to modify admin role", async () => {
+    it("should return 403 when trying to modify root admin role", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "admin-123", isRoot: true },
       });
 
-      const adminUser = {
-        id: "admin-user",
-        name: "Admin",
-        email: "admin@test.com",
+      const rootAdminUser = {
+        id: "root-user",
+        name: "Root Admin",
+        email: "root@test.com",
         isRoot: true,
       };
 
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(adminUser);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(rootAdminUser);
 
       const request = new Request(
-        "http://localhost:3000/api/admin/users/admin-user/role",
+        "http://localhost:3000/api/admin/users/root-user/role",
         {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false }),
+          method: "PATCH",
+          body: JSON.stringify({ role: "user" }),
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      const response = await updateRole(request, {
-        params: Promise.resolve({ userId: "admin-user" }),
+      const response = await UpdateUserRole(request, {
+        params: Promise.resolve({ userId: "root-user" }),
       });
       const data = await response.json();
 
       expect(response.status).toBe(403);
-      expect(data.error).toBe("Cannot modify admin role");
+      expect(data.error).toBe("Cannot modify root admin role");
     });
 
     it("should return 400 for invalid role", async () => {
@@ -701,30 +595,28 @@ describe("Admin Users API", () => {
       const request = new Request(
         "http://localhost:3000/api/admin/users/user-123/role",
         {
-          method: "POST",
-          body: JSON.stringify({ role: "invalid" }),
+          method: "PATCH",
+          body: JSON.stringify({ role: "invalid_role" }),
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      const response = await updateRole(request, {
+      const response = await UpdateUserRole(request, {
         params: Promise.resolve({ userId: "user-123" }),
       });
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Invalid role. Must be 'player' or 'coach'");
+      expect(data.error).toContain("Invalid role");
     });
 
-    it("should return 400 when assigning coach role without clubIds", async () => {
+    it("should return 400 when organization_admin role without organizationId", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "admin-123", isRoot: true },
       });
 
       const existingUser = {
         id: "user-123",
-        name: "Player",
-        email: "player@test.com",
         isRoot: false,
       };
 
@@ -733,84 +625,19 @@ describe("Admin Users API", () => {
       const request = new Request(
         "http://localhost:3000/api/admin/users/user-123/role",
         {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false }),
+          method: "PATCH",
+          body: JSON.stringify({ role: "organization_admin" }),
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      const response = await updateRole(request, {
+      const response = await UpdateUserRole(request, {
         params: Promise.resolve({ userId: "user-123" }),
       });
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("At least one club must be selected when assigning coach role");
-    });
-
-    it("should return 400 when assigning coach role with empty clubIds array", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "admin-123", isRoot: true },
-      });
-
-      const existingUser = {
-        id: "user-123",
-        name: "Player",
-        email: "player@test.com",
-        isRoot: false,
-      };
-
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
-
-      const request = new Request(
-        "http://localhost:3000/api/admin/users/user-123/role",
-        {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false, clubIds: [] }),
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      const response = await updateRole(request, {
-        params: Promise.resolve({ userId: "user-123" }),
-      });
-      const data = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(data.error).toBe("At least one club must be selected when assigning coach role");
-    });
-
-    it("should return 400 when selected clubs do not exist", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "admin-123", isRoot: true },
-      });
-
-      const existingUser = {
-        id: "user-123",
-        name: "Player",
-        email: "player@test.com",
-        isRoot: false,
-      };
-
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(existingUser);
-      (prisma.club.findMany as jest.Mock).mockResolvedValue([]); // No clubs found
-
-      const request = new Request(
-        "http://localhost:3000/api/admin/users/user-123/role",
-        {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false, clubIds: ["nonexistent-club"] }),
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      const response = await updateRole(request, {
-        params: Promise.resolve({ userId: "user-123" }),
-      });
-      const data = await response.json();
-
-      expect(response.status).toBe(400);
-      expect(data.error).toBe("One or more selected clubs do not exist");
+      expect(data.error).toContain("Organization ID is required");
     });
 
     it("should return 500 for database errors", async () => {
@@ -825,13 +652,13 @@ describe("Admin Users API", () => {
       const request = new Request(
         "http://localhost:3000/api/admin/users/user-123/role",
         {
-          method: "POST",
-          body: JSON.stringify({ isRoot: false }),
+          method: "PATCH",
+          body: JSON.stringify({ role: "user" }),
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      const response = await updateRole(request, {
+      const response = await UpdateUserRole(request, {
         params: Promise.resolve({ userId: "user-123" }),
       });
       const data = await response.json();
