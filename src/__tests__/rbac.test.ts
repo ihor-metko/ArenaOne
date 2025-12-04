@@ -11,10 +11,12 @@ jest.mock("@/lib/prisma", () => ({
     membership: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
+      findFirst: jest.fn(),
     },
     clubMembership: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
+      findFirst: jest.fn(),
     },
   },
 }));
@@ -671,6 +673,60 @@ describe("requireRole universal role-based access control", () => {
           clubId: true,
         },
       });
+    });
+  });
+
+  describe("checkIsAdmin", () => {
+    it("should return isAdmin true for root admin (fast path, no DB query)", async () => {
+      const { checkIsAdmin } = await import("@/lib/requireRole");
+      
+      const result = await checkIsAdmin("admin-123", true);
+
+      expect(result.isAdmin).toBe(true);
+      expect(result.adminType).toBe("root_admin");
+      // Should not query database for root admins
+      expect(mockMembershipFindMany).not.toHaveBeenCalled();
+      expect(mockClubMembershipFindMany).not.toHaveBeenCalled();
+    });
+
+    it("should return isAdmin true for organization admin", async () => {
+      // Mock findFirst for organization admin check
+      (prisma.membership.findFirst as jest.Mock).mockResolvedValue({ id: "membership-1" });
+      
+      const { checkIsAdmin } = await import("@/lib/requireRole");
+      
+      const result = await checkIsAdmin("org-admin-123", false);
+
+      expect(result.isAdmin).toBe(true);
+      expect(result.adminType).toBe("organization_admin");
+    });
+
+    it("should return isAdmin true for club admin", async () => {
+      // No org admin membership
+      (prisma.membership.findFirst as jest.Mock).mockResolvedValue(null);
+      // Has club admin membership
+      (prisma.clubMembership.findFirst as jest.Mock).mockResolvedValue({ id: "club-membership-1" });
+      
+      const { checkIsAdmin } = await import("@/lib/requireRole");
+      
+      const result = await checkIsAdmin("club-admin-123", false);
+
+      expect(result.isAdmin).toBe(true);
+      expect(result.adminType).toBe("club_admin");
+    });
+
+    it("should return isAdmin false for non-admin users", async () => {
+      // No org admin membership
+      (prisma.membership.findFirst as jest.Mock).mockResolvedValue(null);
+      // No club admin membership
+      (prisma.clubMembership.findFirst as jest.Mock).mockResolvedValue(null);
+      
+      const { checkIsAdmin } = await import("@/lib/requireRole");
+      
+      const result = await checkIsAdmin("regular-user-123", false);
+
+      expect(result.isAdmin).toBe(false);
+      expect(result.adminType).toBeUndefined();
     });
   });
 });

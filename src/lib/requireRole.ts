@@ -538,3 +538,86 @@ export async function requireAnyAdmin(
     ),
   };
 }
+
+/**
+ * Result type for isAdmin check.
+ */
+export interface IsAdminResult {
+  isAdmin: boolean;
+  adminType?: AdminType;
+}
+
+/**
+ * Check if a user is any type of admin.
+ * 
+ * This is a lightweight helper function for use in middleware to determine
+ * if a user should be redirected from public pages to admin areas.
+ * 
+ * Checks in order (fast-path first):
+ * 1. Root Admin: isRoot = true (from session, no DB query)
+ * 2. Organization Admin: Has ORGANIZATION_ADMIN role in any Membership (LIMIT 1 query)
+ * 3. Club Admin: Has CLUB_ADMIN role in any ClubMembership (LIMIT 1 query)
+ * 
+ * @param userId - The user ID to check
+ * @param isRoot - Whether the user is a root admin (from session)
+ * @returns Promise resolving to admin status
+ * 
+ * @example
+ * const { isAdmin, adminType } = await checkIsAdmin(userId, isRoot);
+ * if (isAdmin) {
+ *   // Redirect to admin dashboard
+ * }
+ */
+export async function checkIsAdmin(
+  userId: string,
+  isRoot: boolean
+): Promise<IsAdminResult> {
+  // Fast path: root admin (no DB query needed)
+  if (isRoot) {
+    return {
+      isAdmin: true,
+      adminType: "root_admin",
+    };
+  }
+
+  // Check if user is an organization admin (LIMIT 1 for efficiency)
+  const organizationMembership = await prisma.membership.findFirst({
+    where: {
+      userId,
+      role: MembershipRole.ORGANIZATION_ADMIN,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (organizationMembership) {
+    return {
+      isAdmin: true,
+      adminType: "organization_admin",
+    };
+  }
+
+  // Check if user is a club admin (LIMIT 1 for efficiency)
+  const clubMembership = await prisma.clubMembership.findFirst({
+    where: {
+      userId,
+      role: ClubMembershipRole.CLUB_ADMIN,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (clubMembership) {
+    return {
+      isAdmin: true,
+      adminType: "club_admin",
+    };
+  }
+
+  // User is not an admin
+  return {
+    isAdmin: false,
+  };
+}

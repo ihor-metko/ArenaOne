@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
-import { getRoleHomepage } from "@/utils/roleRedirect";
+import { checkIsAdmin } from "@/lib/requireRole";
 
 interface AuthRequest extends NextRequest {
   auth: {
@@ -14,13 +14,15 @@ interface AuthRequest extends NextRequest {
 }
 
 /**
- * Middleware to redirect root admin users from the landing page to admin dashboard
+ * Middleware to redirect admin users from the landing page to admin dashboard
  *
  * - Unauthenticated users: See public landing page
- * - Regular users: See public landing page
+ * - Regular users (no admin roles): See public landing page
  * - Root admin users (isRoot=true): Redirected to /admin/dashboard
+ * - Organization admins: Redirected to /admin/dashboard
+ * - Club admins: Redirected to /admin/dashboard
  */
-export default auth((req: AuthRequest) => {
+export default auth(async (req: AuthRequest) => {
   try {
     const { pathname } = req.nextUrl;
 
@@ -36,16 +38,18 @@ export default auth((req: AuthRequest) => {
       return NextResponse.next();
     }
 
-    const isRoot = session.user.isRoot;
+    const userId = session.user.id;
+    const isRoot = session.user.isRoot ?? false;
 
-    // Check if user is root admin
-    if (isRoot) {
-      const adminHomepage = getRoleHomepage(isRoot);
-      const redirectUrl = new URL(adminHomepage, req.url);
+    // Check if user is any type of admin
+    const { isAdmin } = await checkIsAdmin(userId, isRoot);
+
+    if (isAdmin) {
+      const redirectUrl = new URL("/admin/dashboard", req.url);
       return NextResponse.redirect(redirectUrl);
     }
 
-    // Non-root authenticated users see the landing page
+    // Non-admin authenticated users see the landing page
     return NextResponse.next();
   } catch (error) {
     // On error, default to allowing access (don't block public access)
