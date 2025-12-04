@@ -111,7 +111,8 @@ export function useAdminGuard(): UseAdminGuardResult {
         if (response.ok) {
           const data = await response.json();
           setAdminType(data.adminType);
-          if (!data.isAdmin) {
+          // Redirect non-admins immediately
+          if (data.adminType === null) {
             router.push("/clubs");
           }
         } else if (response.status === 401) {

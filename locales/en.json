@@ -699,6 +699,8 @@
   "rootAdmin": {
     "dashboard": {
       "title": "Root Admin Dashboard",
+      "orgAdminTitle": "Organization Admin Dashboard",
+      "clubAdminTitle": "Club Admin Dashboard",
       "subtitle": "Platform-wide statistics and overview",
       "totalClubs": "Total Clubs",
       "totalUsers": "Registered Users",
@@ -724,6 +726,8 @@
     "notifications": "Notifications",
     "settings": "Global Settings",
     "roleRootAdmin": "Root Admin",
+    "roleOrgAdmin": "Organization Admin",
+    "roleClubAdmin": "Club Admin",
     "roleSuperAdmin": "Super Admin",
     "roleAdmin": "Admin"
   }

@@ -169,9 +169,9 @@ export default function AdminDashboardPage() {
       case "root":
         return t("rootAdmin.dashboard.title");
       case "organization":
-        return t("rootAdmin.dashboard.orgAdminTitle", { fallback: t("rootAdmin.dashboard.title") });
+        return t("rootAdmin.dashboard.orgAdminTitle");
       case "club":
-        return t("rootAdmin.dashboard.clubAdminTitle", { fallback: t("rootAdmin.dashboard.title") });
+        return t("rootAdmin.dashboard.clubAdminTitle");
       default:
         return t("rootAdmin.dashboard.title");
     }

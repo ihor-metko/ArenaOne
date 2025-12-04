@@ -696,6 +696,8 @@
   "rootAdmin": {
     "dashboard": {
       "title": "Панель адміністратора",
+      "orgAdminTitle": "Панель адміністратора організації",
+      "clubAdminTitle": "Панель адміністратора клубу",
       "subtitle": "Статистика та огляд платформи",
       "totalClubs": "Всього клубів",
       "totalUsers": "Зареєстровані користувачі",
@@ -721,6 +723,8 @@
     "notifications": "Сповіщення",
     "settings": "Глобальні налаштування",
     "roleRootAdmin": "Головний адмін",
+    "roleOrgAdmin": "Адмін організації",
+    "roleClubAdmin": "Адмін клубу",
     "roleSuperAdmin": "Супер адмін",
     "roleAdmin": "Адміністратор"
   }

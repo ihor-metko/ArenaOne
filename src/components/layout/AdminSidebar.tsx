@@ -272,12 +272,12 @@ function getRoleInfo(adminType: AdminType, t: ReturnType<typeof useTranslations>
       };
     case "organization":
       return {
-        label: t("sidebar.roleOrgAdmin", { fallback: "Organization Admin" }),
+        label: t("sidebar.roleOrgAdmin"),
         className: "im-sidebar-role im-sidebar-role--org",
       };
     case "club":
       return {
-        label: t("sidebar.roleClubAdmin", { fallback: "Club Admin" }),
+        label: t("sidebar.roleClubAdmin"),
         className: "im-sidebar-role im-sidebar-role--club",
       };
     default:
