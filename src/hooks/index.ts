@@ -1,2 +1,2 @@
-export { useRootAdminGuard, useAuthGuard } from "./useRoleGuard";
+export { useRootAdminGuard, useAuthGuard, useAdminGuard } from "./useRoleGuard";
 export { useAdminNotifications } from "./useAdminNotifications";

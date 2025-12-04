@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageHeader } from "@/components/ui";
+import { useAdminGuard } from "@/hooks";
 import type { PlatformStatistics } from "@/types/admin";
 import "./RootDashboard.css";
 
@@ -94,15 +93,14 @@ function StatCard({ title, value, icon, colorClass }: StatCardProps) {
 }
 
 /**
- * Root Admin Dashboard Page
+ * Admin Dashboard Page
  *
- * Displays platform-wide statistics for root administrators.
- * Access restricted to users with root_admin role only.
+ * Displays platform-wide statistics for administrators.
+ * Access is granted to root admins, organization admins, and club admins.
  */
-export default function RootDashboardPage() {
+export default function AdminDashboardPage() {
   const t = useTranslations();
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { isLoading: isAuthLoading, isAuthorized, adminType } = useAdminGuard();
   const [statistics, setStatistics] = useState<PlatformStatistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -110,10 +108,10 @@ export default function RootDashboardPage() {
   const fetchStatistics = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/root-dashboard");
+      const response = await fetch("/api/admin/dashboard");
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
-          router.push("/auth/sign-in");
+          // Auth guard will handle redirect
           return;
         }
         throw new Error("Failed to fetch statistics");
@@ -126,20 +124,15 @@ export default function RootDashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [router, t]);
+  }, [t]);
 
   useEffect(() => {
-    if (status === "loading") return;
-
-    if (!session?.user || !session.user.isRoot) {
-      router.push("/auth/sign-in");
-      return;
-    }
+    if (isAuthLoading || !isAuthorized) return;
 
     fetchStatistics();
-  }, [session, status, router, fetchStatistics]);
+  }, [isAuthLoading, isAuthorized, fetchStatistics]);
 
-  if (status === "loading" || loading) {
+  if (isAuthLoading || loading) {
     return (
       <main className="im-root-dashboard-page">
         <div className="im-root-dashboard-loading">
@@ -148,6 +141,10 @@ export default function RootDashboardPage() {
         </div>
       </main>
     );
+  }
+
+  if (!isAuthorized) {
+    return null; // Auth guard will handle redirect
   }
 
   if (error) {
@@ -166,10 +163,24 @@ export default function RootDashboardPage() {
     );
   }
 
+  // Show role-appropriate dashboard title
+  const getDashboardTitle = () => {
+    switch (adminType) {
+      case "root":
+        return t("rootAdmin.dashboard.title");
+      case "organization":
+        return t("rootAdmin.dashboard.orgAdminTitle", { fallback: t("rootAdmin.dashboard.title") });
+      case "club":
+        return t("rootAdmin.dashboard.clubAdminTitle", { fallback: t("rootAdmin.dashboard.title") });
+      default:
+        return t("rootAdmin.dashboard.title");
+    }
+  };
+
   return (
     <main className="im-root-dashboard-page">
       <PageHeader
-        title={t("rootAdmin.dashboard.title")}
+        title={getDashboardTitle()}
         description={t("rootAdmin.dashboard.subtitle")}
       />
 

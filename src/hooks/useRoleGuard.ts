@@ -2,11 +2,18 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import type { AdminType } from "@/lib/requireRole";
 
 interface UseRoleGuardResult {
   isLoading: boolean;
   isAuthorized: boolean;
+}
+
+interface UseAdminGuardResult {
+  isLoading: boolean;
+  isAuthorized: boolean;
+  adminType: AdminType;
 }
 
 /**
@@ -64,5 +71,70 @@ export function useAuthGuard(): UseRoleGuardResult {
   return {
     isLoading,
     isAuthorized,
+  };
+}
+
+/**
+ * Hook to guard routes that require any admin access.
+ * Checks for root admin, organization admin, or club admin roles.
+ * Redirects unauthenticated users to sign-in and non-admins to /clubs.
+ */
+export function useAdminGuard(): UseAdminGuardResult {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [adminType, setAdminType] = useState<AdminType>(null);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
+
+  const isSessionLoading = status === "loading";
+  const isAuthenticated = status === "authenticated";
+
+  useEffect(() => {
+    if (isSessionLoading) return;
+
+    if (!isAuthenticated) {
+      router.push("/auth/sign-in");
+      setIsCheckingAdmin(false);
+      return;
+    }
+
+    // If user is root admin, we already know they're authorized
+    if (session?.user?.isRoot) {
+      setAdminType("root");
+      setIsCheckingAdmin(false);
+      return;
+    }
+
+    // Check for organization/club admin via API
+    const checkAdminAccess = async () => {
+      try {
+        const response = await fetch("/api/admin/check-access");
+        if (response.ok) {
+          const data = await response.json();
+          setAdminType(data.adminType);
+          if (!data.isAdmin) {
+            router.push("/clubs");
+          }
+        } else if (response.status === 401) {
+          router.push("/auth/sign-in");
+        } else {
+          router.push("/clubs");
+        }
+      } catch {
+        router.push("/clubs");
+      } finally {
+        setIsCheckingAdmin(false);
+      }
+    };
+
+    checkAdminAccess();
+  }, [isSessionLoading, isAuthenticated, session?.user?.isRoot, router]);
+
+  const isLoading = isSessionLoading || isCheckingAdmin;
+  const isAuthorized = isAuthenticated && adminType !== null;
+
+  return {
+    isLoading,
+    isAuthorized,
+    adminType,
   };
 }

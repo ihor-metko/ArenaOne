@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import type { AdminType } from "@/lib/requireRole";
 import "./AdminSidebar.css";
 
 /**
@@ -260,16 +261,28 @@ function filterNavByRoot(items: NavItem[], isRoot: boolean): NavItem[] {
 }
 
 /**
- * Get role display info for root admins
+ * Get role display info based on admin type
  */
-function getRoleInfo(isRoot: boolean, t: ReturnType<typeof useTranslations>) {
-  if (isRoot) {
-    return {
-      label: t("sidebar.roleRootAdmin"),
-      className: "im-sidebar-role im-sidebar-role--root",
-    };
+function getRoleInfo(adminType: AdminType, t: ReturnType<typeof useTranslations>) {
+  switch (adminType) {
+    case "root":
+      return {
+        label: t("sidebar.roleRootAdmin"),
+        className: "im-sidebar-role im-sidebar-role--root",
+      };
+    case "organization":
+      return {
+        label: t("sidebar.roleOrgAdmin", { fallback: "Organization Admin" }),
+        className: "im-sidebar-role im-sidebar-role--org",
+      };
+    case "club":
+      return {
+        label: t("sidebar.roleClubAdmin", { fallback: "Club Admin" }),
+        className: "im-sidebar-role im-sidebar-role--club",
+      };
+    default:
+      return null;
   }
-  return null;
 }
 
 export interface AdminSidebarProps {
@@ -285,8 +298,8 @@ export interface AdminSidebarProps {
  *
  * Roles:
  * - Root Admin: Full platform access, manage super admins, global settings
- * - Super Admin: Manage clubs they own, manage regular admins
- * - Admin: Manage assigned club, bookings, club statistics
+ * - Organization Admin: Manage clubs they own, manage regular admins
+ * - Club Admin: Manage assigned club, bookings, club statistics
  *
  * ACCESSIBILITY:
  * - Keyboard navigation with Tab, Enter, Escape
@@ -295,15 +308,50 @@ export interface AdminSidebarProps {
  * - Focus visible states
  */
 export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
   const t = useTranslations();
   const sidebarRef = useRef<HTMLElement>(null);
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [adminType, setAdminType] = useState<AdminType>(null);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
 
   const isRoot = session?.user?.isRoot ?? false;
+
+  // Check admin type via API for non-root users
+  useEffect(() => {
+    if (status === "loading") return;
+    
+    if (!session?.user) {
+      setIsCheckingAdmin(false);
+      return;
+    }
+
+    if (isRoot) {
+      setAdminType("root");
+      setIsCheckingAdmin(false);
+      return;
+    }
+
+    // Check for organization/club admin via API
+    const checkAdminAccess = async () => {
+      try {
+        const response = await fetch("/api/admin/check-access");
+        if (response.ok) {
+          const data = await response.json();
+          setAdminType(data.adminType);
+        }
+      } catch {
+        // Silently fail - sidebar won't render for non-admins
+      } finally {
+        setIsCheckingAdmin(false);
+      }
+    };
+
+    checkAdminAccess();
+  }, [status, session?.user, isRoot]);
 
   // Get filtered navigation items based on isRoot status
   const navItems = useMemo(() => {
@@ -379,10 +427,10 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
     [t]
   );
 
-  const roleInfo = getRoleInfo(isRoot, t);
+  const roleInfo = getRoleInfo(adminType, t);
 
-  // Don't render for non-root users
-  if (!isRoot) {
+  // Don't render while checking admin status or for non-admins
+  if (isCheckingAdmin || !adminType) {
     return null;
   }
 
