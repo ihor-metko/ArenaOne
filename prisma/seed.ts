@@ -10,7 +10,7 @@ async function main() {
       name: "Admin User",
       email: "admin@test.com",
       password: await hash("password123", 12),
-      isRoot: true,
+      isRoot: false,
     },
   });
 
