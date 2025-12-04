@@ -1,14 +1,13 @@
 ---
-name: Default Task
+name: Copilotʼs task
 about: Template for standard tasks (use for Copilot tasks)
 title: "[TASK]"
 labels: task
 assignees: ""
 ---
 
-## Опис
-Опишіть задачу...
+## Description
+Describe the task...
 
-## Правила
-- Дотримуватися `.github/copilot-settings.md`
-- Використовувати requireRole middleware
+## Rules
+- Always follow `.github/copilot-settings.md`
