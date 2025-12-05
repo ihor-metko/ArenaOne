@@ -1,49 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { MembershipRole, ClubMembershipRole } from "@/constants/roles";
-
-/**
- * Check if the current user has permission to manage club admins for the organization.
- * Returns the user info if authorized, otherwise returns an error response.
- */
-async function checkClubAdminManagementPermission(organizationId: string) {
-  const session = await auth();
-
-  if (!session?.user) {
-    return {
-      authorized: false,
-      response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-    };
-  }
-
-  const userId = session.user.id;
-  const isRoot = session.user.isRoot ?? false;
-
-  // Root admins can manage club admins for any organization
-  if (isRoot) {
-    return { authorized: true, userId, isRoot: true };
-  }
-
-  // Check if user is an Organization Admin for this organization
-  const membership = await prisma.membership.findUnique({
-    where: {
-      userId_organizationId: {
-        userId,
-        organizationId,
-      },
-    },
-  });
-
-  if (!membership || membership.role !== MembershipRole.ORGANIZATION_ADMIN) {
-    return {
-      authorized: false,
-      response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
-    };
-  }
-
-  return { authorized: true, userId, isRoot: false };
-}
+import { requireClubAdminManagement } from "@/lib/requireRole";
+import { ClubMembershipRole } from "@/constants/roles";
 
 /**
  * PUT /api/orgs/[orgId]/club-admins/[clubAdminId]
@@ -57,7 +15,7 @@ export async function PUT(
   try {
     const { orgId, clubAdminId } = await params;
 
-    const authResult = await checkClubAdminManagementPermission(orgId);
+    const authResult = await requireClubAdminManagement(orgId);
     if (!authResult.authorized) {
       return authResult.response;
     }
@@ -198,7 +156,7 @@ export async function DELETE(
   try {
     const { orgId, clubAdminId } = await params;
 
-    const authResult = await checkClubAdminManagementPermission(orgId);
+    const authResult = await requireClubAdminManagement(orgId);
     if (!authResult.authorized) {
       return authResult.response;
     }

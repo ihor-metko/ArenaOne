@@ -41,6 +41,12 @@ interface Club {
   name: string;
 }
 
+interface ClubApiResponse {
+  id: string;
+  name: string;
+  organization?: { id: string };
+}
+
 interface ClubAdmin {
   id: string;
   userId: string;
@@ -583,12 +589,10 @@ export default function AdminOrganizationsPage() {
       if (!response.ok) {
         throw new Error("Failed to fetch clubs");
       }
-      const data = await response.json();
+      const data: ClubApiResponse[] = await response.json();
       // Filter to only clubs in this organization
-      const orgClubsList = data.filter((club: { organization?: { id: string } }) => 
-        club.organization?.id === orgId
-      );
-      setOrgClubs(orgClubsList.map((club: { id: string; name: string }) => ({
+      const orgClubsList = data.filter((club) => club.organization?.id === orgId);
+      setOrgClubs(orgClubsList.map((club) => ({
         id: club.id,
         name: club.name,
       })));

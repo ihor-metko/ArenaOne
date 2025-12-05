@@ -1,49 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { MembershipRole, ClubMembershipRole } from "@/constants/roles";
-
-/**
- * Check if the current user has permission to manage club admins for the organization.
- * Returns the user info if authorized, otherwise returns an error response.
- */
-async function checkClubAdminManagementPermission(organizationId: string) {
-  const session = await auth();
-
-  if (!session?.user) {
-    return {
-      authorized: false,
-      response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-    };
-  }
-
-  const userId = session.user.id;
-  const isRoot = session.user.isRoot ?? false;
-
-  // Root admins can manage club admins for any organization
-  if (isRoot) {
-    return { authorized: true, userId, isRoot: true };
-  }
-
-  // Check if user is an Organization Admin for this organization
-  const membership = await prisma.membership.findUnique({
-    where: {
-      userId_organizationId: {
-        userId,
-        organizationId,
-      },
-    },
-  });
-
-  if (!membership || membership.role !== MembershipRole.ORGANIZATION_ADMIN) {
-    return {
-      authorized: false,
-      response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
-    };
-  }
-
-  return { authorized: true, userId, isRoot: false };
-}
+import { requireClubAdminManagement, isValidEmail } from "@/lib/requireRole";
+import { ClubMembershipRole } from "@/constants/roles";
 
 /**
  * GET /api/orgs/[orgId]/club-admins
@@ -56,7 +14,7 @@ export async function GET(
   try {
     const { orgId } = await params;
 
-    const authResult = await checkClubAdminManagementPermission(orgId);
+    const authResult = await requireClubAdminManagement(orgId);
     if (!authResult.authorized) {
       return authResult.response;
     }
@@ -78,6 +36,11 @@ export async function GET(
       where: { organizationId: orgId },
       select: { id: true },
     });
+
+    // Early return if no clubs exist - no need to query club memberships
+    if (clubs.length === 0) {
+      return NextResponse.json([]);
+    }
 
     const clubIds = clubs.map((c) => c.id);
 
@@ -140,7 +103,7 @@ export async function POST(
   try {
     const { orgId } = await params;
 
-    const authResult = await checkClubAdminManagementPermission(orgId);
+    const authResult = await requireClubAdminManagement(orgId);
     if (!authResult.authorized) {
       return authResult.response;
     }
@@ -201,8 +164,7 @@ export async function POST(
       const emailLower = email.toLowerCase().trim();
 
       // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(emailLower)) {
+      if (!isValidEmail(emailLower)) {
         return NextResponse.json(
           { error: "Invalid email format" },
           { status: 400 }
