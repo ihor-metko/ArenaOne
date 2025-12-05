@@ -347,9 +347,18 @@ function filterNavByRoot(items: NavItem[], isRoot: boolean, isClubAdmin: boolean
 }
 
 /**
+ * Role display info interface
+ */
+interface RoleInfo {
+  label: string;
+  className: string;
+  tooltip?: string;
+}
+
+/**
  * Get role display info for admins
  */
-function getRoleInfo(adminStatus: AdminStatusResponse | null, t: ReturnType<typeof useTranslations>) {
+function getRoleInfo(adminStatus: AdminStatusResponse | null, t: ReturnType<typeof useTranslations>): RoleInfo | null {
   if (!adminStatus?.isAdmin) {
     return null;
   }
