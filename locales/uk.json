@@ -955,5 +955,16 @@
     "assign": "Призначити",
     "removeConfirm": "Ви впевнені, що хочете видалити {name} як адміна клубу {club}?",
     "cannotUndoRemoval": "Цю дію неможливо скасувати."
+  },
+  "unifiedDashboard": {
+    "organizationTitle": "Панель організації",
+    "clubTitle": "Панель клубу",
+    "failedToLoad": "Не вдалося завантажити панель. Спробуйте пізніше.",
+    "managementLinks": "Сторінки керування",
+    "courts": "Корти",
+    "bookingsToday": "Бронювань сьогодні",
+    "manageClub": "Керувати клубом",
+    "manageCourts": "Керувати кортами",
+    "viewBookings": "Переглянути бронювання"
   }
 }
