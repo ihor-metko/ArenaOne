@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import type { AdminStatusResponse } from "@/app/api/me/admin-status/route";
+import { useSidebarCollapsed } from "@/hooks";
 import "./AdminSidebar.css";
 
 /**
@@ -161,6 +162,23 @@ function CloseIcon() {
     >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+function CollapseIcon({ isCollapsed }: { isCollapsed: boolean }) {
+  return (
+    <svg
+      className={`im-sidebar-collapse-icon ${isCollapsed ? "im-sidebar-collapse-icon--collapsed" : ""}`}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points={isCollapsed ? "9 18 15 12 9 6" : "15 18 9 12 15 6"} />
     </svg>
   );
 }
@@ -351,6 +369,8 @@ function getRoleInfo(adminStatus: AdminStatusResponse | null, t: ReturnType<type
 export interface AdminSidebarProps {
   /** Whether sidebar has a header offset */
   hasHeader?: boolean;
+  /** Callback when collapsed state changes */
+  onCollapsedChange?: (isCollapsed: boolean) => void;
 }
 
 /**
@@ -358,6 +378,7 @@ export interface AdminSidebarProps {
  *
  * Role-based sidebar navigation for admin dashboards.
  * Renders navigation items dynamically based on user role.
+ * Supports collapsible mode on desktop for maximizing content area.
  *
  * Roles:
  * - Root Admin: Full platform access, manage super admins, global settings
@@ -366,11 +387,12 @@ export interface AdminSidebarProps {
  *
  * ACCESSIBILITY:
  * - Keyboard navigation with Tab, Enter, Escape
- * - aria-expanded for expandable sections
+ * - aria-expanded for expandable/collapsible sections
  * - role="navigation" for the sidebar
  * - Focus visible states
+ * - Proper aria-labels for collapse toggle
  */
-export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
+export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: AdminSidebarProps) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const t = useTranslations();
@@ -381,7 +403,17 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
   const [adminStatus, setAdminStatus] = useState<AdminStatusResponse | null>(null);
   const [isLoadingAdminStatus, setIsLoadingAdminStatus] = useState(true);
 
+  // Use hook for sidebar collapsed state with localStorage persistence
+  const { isCollapsed, toggleCollapsed } = useSidebarCollapsed();
+
   const isRoot = session?.user?.isRoot ?? false;
+
+  // Notify parent when collapsed state changes
+  useEffect(() => {
+    if (onCollapsedChange) {
+      onCollapsedChange(isCollapsed);
+    }
+  }, [isCollapsed, onCollapsedChange]);
 
   // Fetch admin status when session is available
   useEffect(() => {
@@ -510,6 +542,14 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
     return null;
   }
 
+  // Build class list for sidebar
+  const sidebarClasses = [
+    "im-sidebar",
+    hasHeader ? "im-sidebar--with-header" : "",
+    isMobileOpen ? "im-sidebar--open" : "",
+    isCollapsed ? "im-sidebar--collapsed" : "",
+  ].filter(Boolean).join(" ");
+
   return (
     <>
       {/* Mobile toggle button */}
@@ -536,8 +576,7 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
       <aside
         ref={sidebarRef}
         id="admin-sidebar"
-        className={`im-sidebar ${hasHeader ? "im-sidebar--with-header" : ""} ${isMobileOpen ? "im-sidebar--open" : ""
-          }`}
+        className={sidebarClasses}
         role="navigation"
         aria-label={t("sidebar.navigation")}
         onKeyDown={handleKeyDown}
@@ -547,12 +586,14 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
           <div className="im-sidebar-logo" aria-hidden="true">
             A
           </div>
-          <div>
-            <div className="im-sidebar-title">{t("sidebar.title")}</div>
-            {roleInfo && (
-              <span className={roleInfo.className}>{roleInfo.label}</span>
-            )}
-          </div>
+          {!isCollapsed && (
+            <div>
+              <div className="im-sidebar-title">{t("sidebar.title")}</div>
+              {roleInfo && (
+                <span className={roleInfo.className}>{roleInfo.label}</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
@@ -568,12 +609,13 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
                       onClick={() => toggleSection(item.id)}
                       aria-expanded={expandedSections[item.id] || false}
                       aria-controls={`nav-section-${item.id}`}
+                      title={isCollapsed ? getLabel(item.labelKey) : undefined}
                     >
                       {item.icon}
-                      <span>{getLabel(item.labelKey)}</span>
-                      <ChevronDownIcon isOpen={expandedSections[item.id] || false} />
+                      {!isCollapsed && <span>{getLabel(item.labelKey)}</span>}
+                      {!isCollapsed && <ChevronDownIcon isOpen={expandedSections[item.id] || false} />}
                     </button>
-                    {expandedSections[item.id] && (
+                    {expandedSections[item.id] && !isCollapsed && (
                       <ul
                         id={`nav-section-${item.id}`}
                         className="im-sidebar-nav-list im-sidebar-nav-nested"
@@ -606,9 +648,10 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
                     role="menuitem"
                     aria-current={isActive(item.href) ? "page" : undefined}
                     onClick={() => setIsMobileOpen(false)}
+                    title={isCollapsed ? getLabel(item.labelKey) : undefined}
                   >
                     {item.icon}
-                    <span>{getLabel(item.labelKey)}</span>
+                    {!isCollapsed && <span>{getLabel(item.labelKey)}</span>}
                   </Link>
                 )}
               </li>
@@ -616,9 +659,21 @@ export default function AdminSidebar({ hasHeader = true }: AdminSidebarProps) {
           </ul>
         </nav>
 
-        {/* Footer */}
+        {/* Footer with collapse toggle */}
         <div className="im-sidebar-footer">
-          <p className="im-sidebar-version">v0.1.0</p>
+          {/* Desktop collapse toggle button */}
+          <button
+            className="im-sidebar-collapse-btn"
+            onClick={toggleCollapsed}
+            aria-expanded={!isCollapsed}
+            aria-controls="admin-sidebar"
+            aria-label={isCollapsed ? t("sidebar.expand") : t("sidebar.collapse")}
+            title={isCollapsed ? t("sidebar.expand") : t("sidebar.collapse")}
+          >
+            <CollapseIcon isCollapsed={isCollapsed} />
+            {!isCollapsed && <span>{t("sidebar.collapse")}</span>}
+          </button>
+          {!isCollapsed && <p className="im-sidebar-version">v0.1.0</p>}
         </div>
       </aside>
     </>

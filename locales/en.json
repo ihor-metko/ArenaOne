@@ -750,7 +750,9 @@
     "settings": "Global Settings",
     "roleRootAdmin": "Root Admin",
     "roleSuperAdmin": "Super Admin",
-    "roleAdmin": "Admin"
+    "roleAdmin": "Admin",
+    "collapse": "Collapse",
+    "expand": "Expand"
   },
   "organizations": {
     "title": "Organizations",

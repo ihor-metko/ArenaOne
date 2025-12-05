@@ -39,6 +39,8 @@ jest.mock("next-intl", () => ({
         "sidebar.roleRootAdmin": "Root Admin",
         "sidebar.roleSuperAdmin": "Super Admin",
         "sidebar.roleAdmin": "Admin",
+        "sidebar.collapse": "Collapse",
+        "sidebar.expand": "Expand",
       };
       return translations[key] || key;
     };
@@ -54,6 +56,19 @@ jest.mock("next/link", () => {
   MockLink.displayName = "MockLink";
   return MockLink;
 });
+
+// Mock useSidebarCollapsed hook
+const mockToggleCollapsed = jest.fn();
+const mockSetIsCollapsed = jest.fn();
+
+jest.mock("@/hooks", () => ({
+  useSidebarCollapsed: () => ({
+    isCollapsed: false,
+    toggleCollapsed: mockToggleCollapsed,
+    setIsCollapsed: mockSetIsCollapsed,
+    isHydrated: true,
+  }),
+}));
 
 const mockUseSession = useSession as jest.Mock;
 const mockUsePathname = usePathname as jest.Mock;
@@ -470,6 +485,69 @@ describe("AdminSidebar Component", () => {
       await waitFor(() => {
         const clubsLink = screen.getByRole("menuitem", { name: /clubs/i });
         expect(clubsLink).toHaveClass("im-sidebar-nav-link--active");
+      });
+    });
+  });
+
+  describe("Collapsible behavior", () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: {
+          user: {
+            id: "admin-1",
+            name: "Root Admin",
+            email: "root@test.com",
+            isRoot: true,
+          },
+        },
+        status: "authenticated",
+      });
+      mockToggleCollapsed.mockClear();
+    });
+
+    it("renders collapse toggle button for desktop", async () => {
+      render(<AdminSidebar />);
+      await waitFor(() => {
+        const collapseBtn = document.querySelector(".im-sidebar-collapse-btn");
+        expect(collapseBtn).toBeInTheDocument();
+      });
+    });
+
+    it("collapse toggle button has correct aria-expanded attribute", async () => {
+      render(<AdminSidebar />);
+      await waitFor(() => {
+        const collapseBtn = document.querySelector(".im-sidebar-collapse-btn") as HTMLButtonElement;
+        expect(collapseBtn).toHaveAttribute("aria-expanded", "true");
+      });
+    });
+
+    it("collapse toggle button has correct aria-label", async () => {
+      render(<AdminSidebar />);
+      await waitFor(() => {
+        const collapseBtn = document.querySelector(".im-sidebar-collapse-btn") as HTMLButtonElement;
+        expect(collapseBtn).toHaveAttribute("aria-label", "Collapse");
+      });
+    });
+
+    it("calls toggleCollapsed when collapse button is clicked", async () => {
+      render(<AdminSidebar />);
+      
+      await waitFor(() => {
+        const collapseBtn = document.querySelector(".im-sidebar-collapse-btn");
+        expect(collapseBtn).toBeInTheDocument();
+      });
+
+      const collapseBtn = document.querySelector(".im-sidebar-collapse-btn") as HTMLButtonElement;
+      fireEvent.click(collapseBtn);
+      expect(mockToggleCollapsed).toHaveBeenCalledTimes(1);
+    });
+
+    it("calls onCollapsedChange callback when provided", async () => {
+      const onCollapsedChange = jest.fn();
+      render(<AdminSidebar onCollapsedChange={onCollapsedChange} />);
+      
+      await waitFor(() => {
+        expect(onCollapsedChange).toHaveBeenCalledWith(false);
       });
     });
   });

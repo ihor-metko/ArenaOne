@@ -747,7 +747,9 @@
     "settings": "Глобальні налаштування",
     "roleRootAdmin": "Головний адмін",
     "roleSuperAdmin": "Супер адмін",
-    "roleAdmin": "Адміністратор"
+    "roleAdmin": "Адміністратор",
+    "collapse": "Згорнути",
+    "expand": "Розгорнути"
   },
   "organizations": {
     "title": "Організації",
