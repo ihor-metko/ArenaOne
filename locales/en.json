@@ -760,6 +760,7 @@
     "selectClubDescription": "Choose the club where the booking will be made",
     "selectClubPlaceholder": "Choose a club...",
     "noClubsAvailable": "No clubs available",
+    "noClubsAvailableHint": "Please ensure you have clubs assigned or create a club first.",
     "selectUser": "Select User",
     "selectUserDescription": "Choose the user for this booking or create a new user",
     "selectUserPlaceholder": "Choose a user...",

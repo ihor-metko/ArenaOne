@@ -149,6 +149,24 @@
   color: var(--color-text-secondary);
 }
 
+.rsp-admin-wizard-empty-icon {
+  color: var(--color-text-tertiary);
+  opacity: 0.5;
+}
+
+.rsp-admin-wizard-empty-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.rsp-admin-wizard-empty-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
 .rsp-admin-wizard-empty-hint {
   font-size: var(--font-size-sm);
   color: var(--color-text-tertiary);

@@ -535,6 +535,7 @@ export function AdminQuickBookingWizard({
         availableCourts: [],
       }));
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 

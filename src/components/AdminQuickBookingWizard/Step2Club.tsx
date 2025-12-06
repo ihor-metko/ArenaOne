@@ -51,7 +51,23 @@ export function Step2Club({
           </div>
         ) : clubs.length === 0 ? (
           <div className="rsp-admin-wizard-empty">
-            <p>{t("adminWizard.noClubsAvailable")}</p>
+            <svg
+              className="rsp-admin-wizard-empty-icon"
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="3" y1="9" x2="21" y2="9" />
+              <line x1="9" y1="21" x2="9" y2="9" />
+            </svg>
+            <p className="rsp-admin-wizard-empty-title">{t("adminWizard.noClubsAvailable")}</p>
+            <p className="rsp-admin-wizard-empty-description">
+              {t("adminWizard.noClubsAvailableHint")}
+            </p>
           </div>
         ) : (
           <Select
