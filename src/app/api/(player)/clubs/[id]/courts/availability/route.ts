@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  getTodayInTimezone,
+  getDatesFromStart,
+  getWeekMonday,
+} from "@/utils/dateTime";
 
 // Business hours configuration
 const BUSINESS_START_HOUR = 8;
@@ -32,6 +37,7 @@ interface DayAvailability {
   dayOfWeek: number; // 0=Sunday, 1=Monday, etc.
   dayName: string;
   hours: HourSlotAvailability[];
+  isToday?: boolean;
 }
 
 interface WeeklyAvailabilityResponse {
@@ -44,21 +50,12 @@ interface WeeklyAvailabilityResponse {
     type: string | null;
     indoor: boolean;
   }>;
+  mode?: "rolling" | "calendar";
 }
 
 // Helper to get day name using native Date API
 function getDayName(date: Date): string {
   return date.toLocaleDateString("en-US", { weekday: "long" });
-}
-
-function getWeekDates(startDate: Date): string[] {
-  const dates: string[] = [];
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(startDate);
-    date.setDate(date.getDate() + i);
-    dates.push(date.toISOString().split("T")[0]);
-  }
-  return dates;
 }
 
 export async function GET(
@@ -69,30 +66,50 @@ export async function GET(
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
-    // Get week start from query params, default to this week's Monday
     const url = new URL(request.url);
-    const weekStartParam = url.searchParams.get("weekStart");
+    
+    // Support both new 'start' param and legacy 'weekStart' for backward compatibility
+    const startParam = url.searchParams.get("start") || url.searchParams.get("weekStart");
+    const daysParam = url.searchParams.get("days");
+    const modeParam = url.searchParams.get("mode") as "rolling" | "calendar" | null;
+    
+    // Default number of days
+    let numDays = 7;
+    if (daysParam) {
+      const parsed = parseInt(daysParam, 10);
+      if (!isNaN(parsed) && parsed >= 1 && parsed <= 31) {
+        numDays = parsed;
+      }
+    }
 
-    let weekStart: Date;
-    if (weekStartParam) {
-      weekStart = new Date(weekStartParam);
-      if (isNaN(weekStart.getTime())) {
+    let startDate: Date;
+    const today = getTodayInTimezone();
+    
+    if (startParam) {
+      startDate = new Date(startParam);
+      if (isNaN(startDate.getTime())) {
         return NextResponse.json(
-          { error: "Invalid weekStart format. Use YYYY-MM-DD" },
+          { error: "Invalid start format. Use YYYY-MM-DD" },
           { status: 400 }
         );
       }
     } else {
-      // Default to this week's Monday
-      const today = new Date();
-      const dayOfWeek = today.getDay();
-      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-      weekStart = new Date(today);
-      weekStart.setDate(today.getDate() + mondayOffset);
+      // Default behavior based on mode:
+      // - rolling (default): start from today
+      // - calendar: start from this week's Monday
+      if (modeParam === "calendar") {
+        startDate = getWeekMonday(today);
+      } else {
+        // Default to rolling mode: start from today
+        startDate = today;
+      }
     }
 
     // Set to start of day
-    weekStart.setHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0);
+    
+    // Format today's date for comparison
+    const todayStr = today.toISOString().split("T")[0];
 
     // Check if club exists and get its courts
     const club = await prisma.club.findUnique({
@@ -114,20 +131,20 @@ export async function GET(
       return NextResponse.json({ error: "Club not found" }, { status: 404 });
     }
 
-    // Get week dates
-    const weekDates = getWeekDates(weekStart);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
+    // Get dates for the requested period
+    const datesToShow = getDatesFromStart(startDate, numDays);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + numDays - 1);
 
-    // Get all confirmed bookings for the week
-    const weekStartUtc = new Date(`${weekDates[0]}T00:00:00.000Z`);
-    const weekEndUtc = new Date(`${weekDates[6]}T23:59:59.999Z`);
+    // Get all confirmed bookings for the period
+    const periodStartUtc = new Date(`${datesToShow[0]}T00:00:00.000Z`);
+    const periodEndUtc = new Date(`${datesToShow[datesToShow.length - 1]}T23:59:59.999Z`);
 
     const confirmedBookings = await prisma.booking.findMany({
       where: {
         courtId: { in: club.courts.map((c) => c.id) },
-        start: { gte: weekStartUtc },
-        end: { lte: weekEndUtc },
+        start: { gte: periodStartUtc },
+        end: { lte: periodEndUtc },
         status: { in: ["reserved", "paid"] },
       },
       select: {
@@ -137,12 +154,12 @@ export async function GET(
       },
     });
 
-    // Get all pending bookings for the week
+    // Get all pending bookings for the period
     const pendingBookings = await prisma.booking.findMany({
       where: {
         courtId: { in: club.courts.map((c) => c.id) },
-        start: { gte: weekStartUtc },
-        end: { lte: weekEndUtc },
+        start: { gte: periodStartUtc },
+        end: { lte: periodEndUtc },
         status: "pending",
       },
       select: {
@@ -155,10 +172,11 @@ export async function GET(
     // Build availability for each day
     const days: DayAvailability[] = [];
 
-    for (const dateStr of weekDates) {
+    for (const dateStr of datesToShow) {
       const date = new Date(dateStr);
       const dayOfWeek = date.getDay();
       const dayName = getDayName(date);
+      const isToday = dateStr === todayStr;
 
       const hours: HourSlotAvailability[] = [];
 
@@ -261,12 +279,13 @@ export async function GET(
         dayOfWeek,
         dayName,
         hours,
+        isToday,
       });
     }
 
     const response: WeeklyAvailabilityResponse = {
-      weekStart: weekDates[0],
-      weekEnd: weekDates[6],
+      weekStart: datesToShow[0],
+      weekEnd: datesToShow[datesToShow.length - 1],
       days,
       courts: club.courts.map((c) => ({
         id: c.id,
@@ -274,6 +293,7 @@ export async function GET(
         type: c.type,
         indoor: c.indoor,
       })),
+      mode: modeParam || "rolling",
     };
 
     return NextResponse.json(response);
