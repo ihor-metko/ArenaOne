@@ -111,6 +111,9 @@ export async function GET(request: Request): Promise<NextResponse<DashboardGraph
         gte: startDate,
         lte: endDate,
       },
+      status: {
+        in: ["pending", "paid", "reserved", "confirmed"],
+      },
     };
 
     const usersWhere: Prisma.UserWhereInput = {
