@@ -33,6 +33,8 @@ export function AdminQuickBookingWizard({
   onBookingComplete,
   predefinedData,
   adminType,
+  // managedIds is used in the initial state but not directly in the component
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   managedIds,
 }: AdminQuickBookingWizardProps) {
   const t = useTranslations();
@@ -510,7 +512,8 @@ export function AdminQuickBookingWizard({
       }));
       setIsCreatingUser(false);
     }
-  }, [state.stepUser, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.stepUser.newUserName, state.stepUser.newUserEmail, t]);
 
   const handleDateTimeChange = useCallback(
     (data: Partial<typeof state.stepDateTime>) => {
@@ -535,16 +538,9 @@ export function AdminQuickBookingWizard({
     }));
   }, []);
 
-  const handleNotesChange = useCallback((notes: string) => {
-    setState((prev) => ({
-      ...prev,
-      stepConfirmation: { notes },
-    }));
-  }, []);
-
   // Submit booking
   const handleSubmit = useCallback(async () => {
-    const { stepUser, stepCourt, stepDateTime, stepConfirmation } = state;
+    const { stepUser, stepCourt, stepDateTime } = state;
 
     if (!stepUser.selectedUser || !stepCourt.selectedCourt) {
       return;
@@ -567,7 +563,6 @@ export function AdminQuickBookingWizard({
           courtId: stepCourt.selectedCourt.id,
           startTime: startDateTime,
           endTime: endDateTime,
-          notes: stepConfirmation.notes || null,
           clubId: state.stepClub.selectedClubId,
         }),
       });
@@ -819,9 +814,6 @@ export function AdminQuickBookingWizard({
               user={state.stepUser.selectedUser}
               dateTime={state.stepDateTime}
               court={state.stepCourt.selectedCourt}
-              confirmation={state.stepConfirmation}
-              onNotesChange={handleNotesChange}
-              isSubmitting={state.isSubmitting}
               submitError={state.submitError}
               isComplete={state.isComplete}
               bookingId={state.bookingId}

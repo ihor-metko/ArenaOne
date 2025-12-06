@@ -21,8 +21,8 @@ export async function POST(request: Request) {
       courtId,
       startTime,
       endTime,
-      notes,
       clubId, // Optional: for validation
+      // Notes field removed - not in Booking schema
     } = body;
 
     // Validate required fields
@@ -194,7 +194,6 @@ export async function POST(request: Request) {
         end,
         price: priceCents,
         status: "reserved", // Admin bookings are automatically reserved
-        notes: notes || null,
       },
       include: {
         court: {

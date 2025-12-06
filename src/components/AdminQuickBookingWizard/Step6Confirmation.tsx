@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Input } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import {
   formatDateDisplay,
@@ -14,7 +13,6 @@ import type {
   WizardUser,
   WizardCourt,
   WizardStepDateTime,
-  WizardStepConfirmation,
 } from "./types";
 
 interface Step6ConfirmationProps {
@@ -23,9 +21,6 @@ interface Step6ConfirmationProps {
   user: WizardUser | null;
   dateTime: WizardStepDateTime;
   court: WizardCourt | null;
-  confirmation: WizardStepConfirmation;
-  onNotesChange: (notes: string) => void;
-  isSubmitting: boolean;
   submitError: string | null;
   isComplete: boolean;
   bookingId: string | null;
@@ -38,9 +33,6 @@ export function Step6Confirmation({
   user,
   dateTime,
   court,
-  confirmation,
-  onNotesChange,
-  isSubmitting,
   submitError,
   isComplete,
   bookingId,
@@ -190,22 +182,6 @@ export function Step6Confirmation({
               {formatPrice(totalPrice)}
             </span>
           </div>
-        </div>
-
-        {/* Notes field */}
-        <div className="rsp-admin-wizard-notes">
-          <Input
-            id="booking-notes"
-            label={t("adminWizard.bookingNotes")}
-            type="text"
-            value={confirmation.notes}
-            onChange={(e) => onNotesChange(e.target.value)}
-            placeholder={t("adminWizard.bookingNotesPlaceholder")}
-            disabled={isSubmitting}
-          />
-          <p className="rsp-admin-wizard-notes-hint">
-            {t("adminWizard.bookingNotesHint")}
-          </p>
         </div>
 
         <div className="rsp-admin-wizard-payment-notice">

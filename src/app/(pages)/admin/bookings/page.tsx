@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageHeader, Button, Modal, Select, Input } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
+import { AdminQuickBookingWizard } from "@/components/AdminQuickBookingWizard";
 import type { AdminBookingsListResponse, AdminBookingResponse } from "@/app/api/admin/bookings/route";
 import type { AdminBookingDetailResponse } from "@/app/api/admin/bookings/[id]/route";
 import type { AdminStatusResponse } from "@/app/api/me/admin-status/route";
@@ -92,6 +93,9 @@ export default function AdminBookingsPage() {
 
   // Action states
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // Admin Booking Wizard state
+  const [isBookingWizardOpen, setIsBookingWizardOpen] = useState(false);
 
   // Fetch admin status
   useEffect(() => {
@@ -311,11 +315,29 @@ export default function AdminBookingsPage() {
     return null;
   }
 
+  const handleOpenBookingWizard = () => {
+    setIsBookingWizardOpen(true);
+  };
+
+  const handleCloseBookingWizard = () => {
+    setIsBookingWizardOpen(false);
+  };
+
+  const handleBookingComplete = async () => {
+    // Refresh bookings list
+    await fetchBookings();
+  };
+
   return (
     <main className="im-admin-bookings-page">
       <PageHeader
         title={t("adminBookings.title")}
         description={t("adminBookings.subtitle")}
+        actions={
+          <Button onClick={handleOpenBookingWizard} variant="primary">
+            {t("adminWizard.title")}
+          </Button>
+        }
       />
 
       {/* Filters */}
@@ -622,6 +644,17 @@ export default function AdminBookingsPage() {
           </div>
         ) : null}
       </Modal>
+
+      {/* Admin Booking Wizard */}
+      {adminStatus?.isAdmin && adminStatus.adminType !== "none" && (
+        <AdminQuickBookingWizard
+          isOpen={isBookingWizardOpen}
+          onClose={handleCloseBookingWizard}
+          onBookingComplete={handleBookingComplete}
+          adminType={adminStatus.adminType}
+          managedIds={adminStatus.managedIds}
+        />
+      )}
     </main>
   );
 }

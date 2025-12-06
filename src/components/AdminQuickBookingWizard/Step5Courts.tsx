@@ -59,62 +59,65 @@ export function Step5Courts({
               {courts.map((court) => {
                 const isSelected = court.id === selectedCourtId;
                 return (
-                  <Card
+                  <div
                     key={court.id}
-                    className={`rsp-wizard-court-card ${
-                      isSelected ? "rsp-wizard-court-card--selected" : ""
-                    }`}
-                    onClick={() => onSelectCourt(court)}
+                    className="rsp-wizard-court-card-wrapper"
                   >
-                    <div className="rsp-wizard-court-info" role="listitem">
-                      <div className="rsp-wizard-court-name">{court.name}</div>
-                      <div className="rsp-wizard-court-details">
-                        {court.type && (
-                          <span className="rsp-badge rsp-badge-type">
-                            {court.type}
-                          </span>
-                        )}
-                        {court.surface && (
-                          <span className="rsp-badge rsp-badge-surface">
-                            {court.surface}
-                          </span>
-                        )}
-                        {court.indoor && (
-                          <span className="rsp-badge rsp-badge-indoor">
-                            {t("common.indoor")}
-                          </span>
-                        )}
-                      </div>
-                      <div className="rsp-wizard-court-price">
-                        {court.priceCents !== undefined ? (
-                          <span className="font-semibold">
-                            {formatPrice(court.priceCents)}
-                          </span>
-                        ) : (
-                          <span>
-                            {formatPrice(court.defaultPriceCents)}{" "}
-                            {t("common.perHour")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => onSelectCourt(court)}
-                      className={`rsp-wizard-select-btn ${
-                        isSelected ? "rsp-wizard-select-btn--selected" : ""
-                      }`}
-                      variant={isSelected ? "primary" : "outline"}
-                      aria-label={`${t("wizard.selectCourt")} ${court.name}${
-                        court.priceCents !== undefined
-                          ? ` - ${formatPrice(court.priceCents)}`
-                          : ""
+                    <Card
+                      className={`rsp-wizard-court-card ${
+                        isSelected ? "rsp-wizard-court-card--selected" : ""
                       }`}
                     >
-                      {isSelected
-                        ? t("adminWizard.selected")
-                        : t("wizard.selectCourt")}
-                    </Button>
-                  </Card>
+                      <div className="rsp-wizard-court-info" role="listitem">
+                        <div className="rsp-wizard-court-name">{court.name}</div>
+                        <div className="rsp-wizard-court-details">
+                          {court.type && (
+                            <span className="rsp-badge rsp-badge-type">
+                              {court.type}
+                            </span>
+                          )}
+                          {court.surface && (
+                            <span className="rsp-badge rsp-badge-surface">
+                              {court.surface}
+                            </span>
+                          )}
+                          {court.indoor && (
+                            <span className="rsp-badge rsp-badge-indoor">
+                              {t("common.indoor")}
+                            </span>
+                          )}
+                        </div>
+                        <div className="rsp-wizard-court-price">
+                          {court.priceCents !== undefined ? (
+                            <span className="font-semibold">
+                              {formatPrice(court.priceCents)}
+                            </span>
+                          ) : (
+                            <span>
+                              {formatPrice(court.defaultPriceCents)}{" "}
+                              {t("common.perHour")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => onSelectCourt(court)}
+                        className={`rsp-wizard-select-btn ${
+                          isSelected ? "rsp-wizard-select-btn--selected" : ""
+                        }`}
+                        variant={isSelected ? "primary" : "outline"}
+                        aria-label={`${t("wizard.selectCourt")} ${court.name}${
+                          court.priceCents !== undefined
+                            ? ` - ${formatPrice(court.priceCents)}`
+                            : ""
+                        }`}
+                      >
+                        {isSelected
+                          ? t("adminWizard.selected")
+                          : t("wizard.selectCourt")}
+                      </Button>
+                    </Card>
+                  </div>
                 );
               })}
             </div>
