@@ -98,7 +98,7 @@ export async function POST(request: Request) {
     // Validate all court IDs belong to this club
     const allCourtIds = [
       ...changes.created.map((c) => c.courtId),
-      ...changes.updated.map((c) => c.courtId).filter(Boolean),
+      ...changes.updated.map((c) => c.courtId).filter((id): id is string => Boolean(id)),
     ];
 
     const invalidCourts = allCourtIds.filter((id) => !courtIds.includes(id));
@@ -238,13 +238,18 @@ export async function POST(request: Request) {
 
 /**
  * Check if a time block conflicts with existing bookings
+ * 
+ * @param excludeBlockId - Optional block ID to exclude from conflict check (for updates)
+ * Note: Currently not used but reserved for future enhancement to exclude
+ * the block being updated when checking for conflicts
  */
 async function checkBlockConflicts(
   courtId: string,
   date: string,
   startTime: string,
   endTime: string,
-  excludeBlockId?: string
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _excludeBlockId?: string
 ): Promise<string[]> {
   // Parse date and times
   const blockDate = new Date(date);

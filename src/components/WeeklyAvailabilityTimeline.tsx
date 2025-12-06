@@ -2,8 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Button, Modal, Input } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { isSlotBlocked } from "@/utils/slotBlocking";
+import {
+  AvailabilityBlockModal,
+  type AvailabilityBlockEdit,
+} from "@/components/AvailabilityBlockModal";
 import {
   getTodayInTimezone,
   getTodayStr,
@@ -50,17 +54,6 @@ interface WeeklyAvailabilityTimelineProps {
     courts: CourtAvailabilityStatus[]
   ) => void;
   defaultMode?: AvailabilityMode;
-}
-
-// Types for availability block management
-interface AvailabilityBlockEdit {
-  id?: string; // undefined for new blocks
-  courtId: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  reason?: string;
-  action: "create" | "update" | "delete";
 }
 
 // Business hours configuration
@@ -425,9 +418,26 @@ export function WeeklyAvailabilityTimeline({
     if (blocked) {
       return;
     }
+    
+    // In edit mode, open the block management modal
+    if (isEditMode && data?.canEdit) {
+      setAddModalDate(date);
+      setIsAddModalOpen(true);
+      // Store the hour for the modal - safe to use window here for temporary state
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).__selectedHour = hour;
+      return;
+    }
+    
     if (onSlotClick) {
       onSlotClick(date, hour, courts);
     }
+  };
+
+  const handleBlockModalSave = (blocks: AvailabilityBlockEdit[]) => {
+    // Merge blocks with pending changes
+    setPendingChanges([...pendingChanges, ...blocks]);
+    setIsAddModalOpen(false);
   };
 
   const handleBlockHover = (
@@ -739,6 +749,22 @@ export function WeeklyAvailabilityTimeline({
             locale={locale}
             isBlocked={tooltip.isBlocked}
             blockReason={tooltip.blockReason}
+          />
+        )}
+
+        {/* Availability Block Modal */}
+        {isAddModalOpen && data && (
+          <AvailabilityBlockModal
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            date={addModalDate}
+            hour={
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (window as any).__selectedHour || 8
+            }
+            courts={data.courts}
+            existingBlocks={pendingChanges}
+            onSave={handleBlockModalSave}
           />
         )}
       </div>
