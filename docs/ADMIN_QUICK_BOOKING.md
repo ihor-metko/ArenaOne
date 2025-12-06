@@ -18,9 +18,11 @@ The wizard dynamically adapts its steps based on:
    - Allows RootAdmin to choose which organization the booking belongs to
    - Fetches all organizations from `/api/admin/organizations`
 
-2. **Select Club** (RootAdmin and OrgAdmin, skipped for ClubAdmin or if predefined)
+2. **Select Club** (RootAdmin, OrgAdmin, and ClubAdmin with multiple clubs; skipped if predefined or ClubAdmin has one club)
    - Filtered by selected organization for RootAdmin
    - Shows only managed clubs for OrgAdmin
+   - Shows managed clubs for ClubAdmin with multiple clubs
+   - Auto-selects club if ClubAdmin has only one managed club
    - Fetches clubs from `/api/admin/clubs`
 
 3. **Select/Create User** (All admins, skipped if predefined)
@@ -169,6 +171,32 @@ Comprehensive tests are provided in `src/__tests__/admin-quick-booking-wizard.te
 - User selection and inline creation
 - Date/time and court selection
 - Form validation and error handling
+
+## Recent Fixes (2024)
+
+### Issue: "No clubs available" despite clubs being fetched
+
+**Root Cause**: The `managedIds` prop was not being used by the wizard, causing:
+- Club admins couldn't see their managed clubs
+- Step 2 (club selection) was hidden for all club admins, even those with multiple clubs
+- No automatic club selection for club admins with a single club
+
+**Solution**:
+1. **Proper `managedIds` Usage**: The wizard now uses `managedIds` to initialize and filter clubs
+2. **Auto-Selection**: Club admins with one club have it auto-selected, skipping Step 2
+3. **Multi-Club Support**: Club admins with multiple clubs can now see Step 2 to select from their managed clubs
+4. **Updated Step Visibility**: Step 2 logic now includes `managedIds` in the `shouldShow` function
+5. **Client-Side Filtering**: Added filtering for club_admin to show only their managed clubs
+6. **Improved Empty States**: Added icons and helpful messages when no clubs are available
+7. **Safety Checks**: Added null checks for `managedIds` to prevent runtime errors
+
+**Files Modified**:
+- `src/components/AdminQuickBookingWizard/AdminQuickBookingWizard.tsx`
+- `src/components/AdminQuickBookingWizard/types.ts`
+- `src/components/AdminQuickBookingWizard/Step1Organization.tsx`
+- `src/components/AdminQuickBookingWizard/Step2Club.tsx`
+- `src/components/AdminQuickBookingWizard/AdminQuickBookingWizard.css`
+- `locales/en.json`
 
 ## Future Enhancements
 
