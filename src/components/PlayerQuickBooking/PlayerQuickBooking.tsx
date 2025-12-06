@@ -18,7 +18,6 @@ import {
   getTodayDateString,
   calculateEndTime,
   determineVisibleSteps,
-  BookingStepConfig,
 } from "./types";
 import "./PlayerQuickBooking.css";
 
@@ -359,9 +358,8 @@ export function PlayerQuickBooking({
 
   // Submit booking
   const handleSubmit = useCallback(async () => {
-    const { step0, step1, step2, step3 } = state;
+    const { step1, step2, step3 } = state;
     const court = step2.selectedCourt;
-    const club = step0.selectedClub;
 
     if (!court || !step3.paymentMethod) {
       return;
