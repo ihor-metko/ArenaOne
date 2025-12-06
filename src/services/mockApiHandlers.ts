@@ -24,6 +24,13 @@ import {
 import type { AdminBookingResponse } from "@/app/api/admin/bookings/route";
 
 // ============================================================================
+// Constants
+// ============================================================================
+
+const ACTIVE_BOOKING_STATUSES = ["pending", "paid", "reserved", "confirmed"];
+const MAX_RECENT_BOOKINGS = 1;
+
+// ============================================================================
 // Mock Bookings API
 // ============================================================================
 
@@ -467,10 +474,12 @@ export async function mockGetCourtsForAdmin(params: {
       defaultPriceCents: court.defaultPriceCents,
       createdAt: court.createdAt,
       updatedAt: court.updatedAt,
-      club: {
-        id: club!.id,
-        name: club!.name,
-      },
+      club: club
+        ? {
+            id: club.id,
+            name: club.name,
+          }
+        : { id: "", name: "Unknown Club" },
       organization: organization
         ? {
             id: organization.id,
@@ -516,7 +525,7 @@ export async function mockGetUserById(id: string) {
         club: club ? { id: club.id, name: club.name } : null,
       };
     }),
-    bookings: bookings.slice(0, 1).map((b) => ({
+    bookings: bookings.slice(0, MAX_RECENT_BOOKINGS).map((b) => ({
       createdAt: b.createdAt,
     })),
   };
@@ -613,12 +622,12 @@ export async function mockGetUnifiedDashboard(params: {
     const activeBookings = bookings.filter(
       (b) =>
         b.start >= today &&
-        ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+        ACTIVE_BOOKING_STATUSES.includes(b.status)
     );
     const pastBookings = bookings.filter(
       (b) =>
         b.start < today &&
-        ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+        ACTIVE_BOOKING_STATUSES.includes(b.status)
     );
 
     return {
@@ -629,7 +638,7 @@ export async function mockGetUnifiedDashboard(params: {
         totalClubs: clubs.length,
         totalUsers: users.length,
         activeBookings: bookings.filter((b) =>
-          ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+          ACTIVE_BOOKING_STATUSES.includes(b.status)
         ).length,
         activeBookingsCount: activeBookings.length,
         pastBookingsCount: pastBookings.length,
@@ -656,12 +665,12 @@ export async function mockGetUnifiedDashboard(params: {
         const activeBookings = orgBookings.filter(
           (b) =>
             b.start >= today &&
-            ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+            ACTIVE_BOOKING_STATUSES.includes(b.status)
         ).length;
         const pastBookings = orgBookings.filter(
           (b) =>
             b.start < today &&
-            ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+            ACTIVE_BOOKING_STATUSES.includes(b.status)
         ).length;
         const clubAdminsCount = clubMemberships.filter(
           (m) => m.role === "CLUB_ADMIN" && orgClubIds.includes(m.clubId)
@@ -708,12 +717,12 @@ export async function mockGetUnifiedDashboard(params: {
         const activeBookings = clubBookings.filter(
           (b) =>
             b.start >= today &&
-            ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+            ACTIVE_BOOKING_STATUSES.includes(b.status)
         ).length;
         const pastBookings = clubBookings.filter(
           (b) =>
             b.start < today &&
-            ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+            ACTIVE_BOOKING_STATUSES.includes(b.status)
         ).length;
 
         return {
