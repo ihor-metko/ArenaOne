@@ -938,7 +938,53 @@
     "deleteWarning": "This action cannot be undone!",
     "deleteConfirmMessage": "Are you sure you want to delete {name}? All their data will be permanently removed.",
     "userDeleted": "User deleted successfully",
-    "failedToDeleteUser": "Failed to delete user"
+    "failedToDeleteUser": "Failed to delete user",
+    "roles": {
+      "rootAdmin": "Root Admin",
+      "organizationAdmin": "Organization Admin",
+      "clubAdmin": "Club Admin",
+      "user": "User",
+      "member": "Member"
+    }
+  },
+  "userDetail": {
+    "breadcrumb": "User Details",
+    "forbidden": "You do not have permission to view this user",
+    "notFound": "User not found",
+    "failedToLoad": "Failed to load user details",
+    "errorTitle": "Error Loading User",
+    "backToUsers": "Back to Users",
+    "viewingAs": "Viewing as",
+    "userBlocked": "User has been blocked",
+    "userUnblocked": "User has been unblocked",
+    "failedToBlock": "Failed to block user",
+    "failedToUnblock": "Failed to unblock user",
+    "emailMismatch": "Email does not match. Please type the user's email to confirm.",
+    "noBookings": "No bookings found",
+    "stats": {
+      "totalBookings": "Total Bookings",
+      "lastLogin": "Last Login",
+      "memberSince": "Member Since",
+      "bookingsInOrg": "Bookings in Org",
+      "lastBookingInOrg": "Last Booking in Org",
+      "lastBookingInClub": "Last Booking in Club"
+    },
+    "sections": {
+      "recentBookings": "Recent Bookings",
+      "organizations": "Organizations",
+      "clubs": "Clubs",
+      "auditLog": "Audit Log"
+    },
+    "blockModal": {
+      "title": "Block User",
+      "message": "Are you sure you want to block {name}? They will no longer be able to access the platform.",
+      "confirmLabel": "Type user's email to confirm",
+      "confirmHint": "Enter \"{email}\" to confirm this action"
+    },
+    "unblockModal": {
+      "title": "Unblock User",
+      "message": "Are you sure you want to unblock {name}? They will regain access to the platform."
+    }
   },
   "orgDashboard": {
     "title": "Organization Dashboard",
