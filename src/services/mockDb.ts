@@ -491,6 +491,11 @@ export function findBookingById(id: string): Booking | undefined {
   return mockBookings.find((b) => b.id === id);
 }
 
+// Helper to generate unique IDs
+function generateMockId(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+}
+
 export function createMockBooking(data: {
   courtId: string;
   userId: string;
@@ -501,7 +506,7 @@ export function createMockBooking(data: {
   coachId?: string | null;
 }): Booking {
   const booking: Booking = {
-    id: `booking-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: generateMockId("booking"),
     courtId: data.courtId,
     userId: data.userId,
     coachId: data.coachId || null,
@@ -536,7 +541,7 @@ export function createMockUser(data: {
   isRoot?: boolean;
 }): User {
   const user: User = {
-    id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: generateMockId("user"),
     name: data.name,
     email: data.email,
     emailVerified: new Date(),
@@ -559,7 +564,7 @@ export function createMockClub(data: {
   createdById: string;
 }): Club {
   const club: Club = {
-    id: `club-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: generateMockId("club"),
     name: data.name,
     slug: data.name.toLowerCase().replace(/\s+/g, "-"),
     organizationId: data.organizationId || null,
@@ -595,7 +600,7 @@ export function createMockOrganization(data: {
   createdById: string;
 }): Organization {
   const org: Organization = {
-    id: `org-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: generateMockId("org"),
     name: data.name,
     slug: data.name.toLowerCase().replace(/\s+/g, "-"),
     contactEmail: null,
