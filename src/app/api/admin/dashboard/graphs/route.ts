@@ -43,7 +43,16 @@ function generateDateLabels(startDate: Date, endDate: Date): string[] {
  */
 function formatDateLabel(dateStr: string, timeRange: TimeRange): string {
   // Parse date string safely (dateStr is in YYYY-MM-DD format)
-  const [year, month, day] = dateStr.split('-').map(Number);
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) {
+    return dateStr; // Return as-is if format is invalid
+  }
+  
+  const [year, month, day] = parts.map(Number);
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    return dateStr; // Return as-is if any part is not a number
+  }
+  
   const date = new Date(year, month - 1, day);
   
   if (timeRange === "week") {
@@ -193,9 +202,8 @@ export async function GET(request: Request): Promise<NextResponse<DashboardGraph
     // Count bookings by date
     bookings.forEach(booking => {
       const dateStr = booking.createdAt.toISOString().split('T')[0];
-      if (bookingCountsByDate.has(dateStr)) {
-        bookingCountsByDate.set(dateStr, bookingCountsByDate.get(dateStr)! + 1);
-      }
+      const currentCount = bookingCountsByDate.get(dateStr) || 0;
+      bookingCountsByDate.set(dateStr, currentCount + 1);
     });
 
     // Fetch active users (users who logged in during the period)
@@ -208,12 +216,10 @@ export async function GET(request: Request): Promise<NextResponse<DashboardGraph
 
     // Count active users by date
     activeUsers.forEach(user => {
-      if (user.lastLoginAt) {
-        const dateStr = user.lastLoginAt.toISOString().split('T')[0];
-        if (activeUserCountsByDate.has(dateStr)) {
-          activeUserCountsByDate.set(dateStr, activeUserCountsByDate.get(dateStr)! + 1);
-        }
-      }
+      // lastLoginAt is guaranteed to be non-null due to query filter
+      const dateStr = user.lastLoginAt!.toISOString().split('T')[0];
+      const currentCount = activeUserCountsByDate.get(dateStr) || 0;
+      activeUserCountsByDate.set(dateStr, currentCount + 1);
     });
 
     // Build response data

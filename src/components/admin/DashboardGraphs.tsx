@@ -18,9 +18,17 @@ import type { DashboardGraphsResponse, TimeRange } from "@/types/graphs";
 import "./DashboardGraphs.css";
 
 export interface DashboardGraphsProps {
-  /** Whether the component is in loading state */
+  /** 
+   * External loading state (optional).
+   * Use this when you want to control loading from a parent component.
+   * If not provided, the component manages its own loading state.
+   */
   loading?: boolean;
-  /** Error message if any */
+  /** 
+   * External error message (optional).
+   * Use this when you want to display errors from a parent component.
+   * If not provided, the component manages its own error state.
+   */
   error?: string;
 }
 
