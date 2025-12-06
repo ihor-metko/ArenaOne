@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
+import { Prisma } from "@prisma/client";
 import type { DashboardGraphsResponse, TimeRange, BookingTrendDataPoint, ActiveUsersDataPoint } from "@/types/graphs";
 
 /**
@@ -41,7 +42,9 @@ function generateDateLabels(startDate: Date, endDate: Date): string[] {
  * Helper function to format date label for display
  */
 function formatDateLabel(dateStr: string, timeRange: TimeRange): string {
-  const date = new Date(dateStr + 'T00:00:00');
+  // Parse date string safely (dateStr is in YYYY-MM-DD format)
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
   
   if (timeRange === "week") {
     // Show day name for week view (Mon, Tue, etc.)
@@ -94,16 +97,14 @@ export async function GET(request: Request): Promise<NextResponse<DashboardGraph
     });
 
     // Build where clause based on admin type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bookingsWhere: any = {
+    const bookingsWhere: Prisma.BookingWhereInput = {
       createdAt: {
         gte: startDate,
         lte: endDate,
       },
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const usersWhere: any = {
+    const usersWhere: Prisma.UserWhereInput = {
       lastLoginAt: {
         gte: startDate,
         lte: endDate,
