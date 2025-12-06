@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Input, Card, Modal, IMLink, PageHeader } from "@/components/ui";
 import { CourtForm, CourtFormData } from "@/components/admin/CourtForm";
-import { formatPrice } from "@/utils/price";
+import { CourtCard } from "@/components/CourtCard";
 import type { AdminStatusResponse, AdminType } from "@/app/api/me/admin-status/route";
 
 interface Court {
@@ -338,120 +338,101 @@ export default function AdminCourtsPage() {
           </div>
         )}
 
-        <Card>
-          <div className="rsp-courts-table overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr
-                  className="border-b"
-                  style={{ borderColor: "var(--rsp-border)" }}
-                >
-                  <th className="py-3 px-4 font-semibold">{t("common.name")}</th>
-                  <th className="py-3 px-4 font-semibold hidden md:table-cell">
-                    {t("admin.courts.clubLabel")}
-                  </th>
-                  {showOrganizationFilter && (
-                    <th className="py-3 px-4 font-semibold hidden lg:table-cell">
-                      {t("sidebar.organizations")}
-                    </th>
+        {filteredCourts.length === 0 ? (
+          <Card>
+            <div className="py-8 text-center text-gray-500">
+              {courts.length === 0
+                ? t("admin.courts.noResults")
+                : t("admin.courts.noResultsMatch")}
+            </div>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCourts.map((court) => (
+              <div key={court.id} className="flex flex-col">
+                <CourtCard
+                  court={{
+                    id: court.id,
+                    name: court.name,
+                    slug: court.slug,
+                    type: court.type,
+                    surface: court.surface,
+                    indoor: court.indoor,
+                    defaultPriceCents: court.defaultPriceCents,
+                    imageUrl: null,
+                  }}
+                  showBookButton={false}
+                  showViewSchedule={false}
+                  showLegend={false}
+                  showAvailabilitySummary={false}
+                  showDetailedAvailability={false}
+                />
+                
+                {/* Organization and Club Info */}
+                <Card className="mt-3 p-4">
+                  {showOrganizationFilter && court.organization && (
+                    <div className="mb-2 text-sm">
+                      <span className="font-medium" style={{ color: "var(--im-muted)" }}>
+                        {t("sidebar.organizations")}:{" "}
+                      </span>
+                      <span>{court.organization.name}</span>
+                    </div>
                   )}
-                  <th className="py-3 px-4 font-semibold hidden md:table-cell">
-                    {t("admin.courts.type")}
-                  </th>
-                  <th className="py-3 px-4 font-semibold hidden md:table-cell">
-                    {t("admin.courts.surface")}
-                  </th>
-                  <th className="py-3 px-4 font-semibold hidden sm:table-cell">
-                    {t("admin.courts.indoor")}
-                  </th>
-                  <th className="py-3 px-4 font-semibold hidden sm:table-cell">
-                    {t("common.price")}
-                  </th>
-                  <th className="py-3 px-4 font-semibold text-right">
-                    {t("common.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCourts.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={showOrganizationFilter ? 8 : 7}
-                      className="py-8 text-center text-gray-500"
+                  <div className="mb-3 text-sm">
+                    <span className="font-medium" style={{ color: "var(--im-muted)" }}>
+                      {t("admin.courts.clubLabel")}:{" "}
+                    </span>
+                    <IMLink href={`/admin/clubs/${court.club.id}`}>
+                      {court.club.name}
+                    </IMLink>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-wrap gap-2">
+                    <IMLink
+                      href={`/admin/clubs/${court.club.id}/courts/${court.id}`}
+                      className="flex-1"
                     >
-                      {courts.length === 0
-                        ? t("admin.courts.noResults")
-                        : t("admin.courts.noResultsMatch")}
-                    </td>
-                  </tr>
-                ) : (
-                  filteredCourts.map((court) => (
-                    <tr
-                      key={court.id}
-                      className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      style={{ borderColor: "var(--rsp-border)" }}
+                      <Button variant="outline" className="w-full">
+                        {t("common.viewDetails")}
+                      </Button>
+                    </IMLink>
+                    <IMLink
+                      href={`/admin/clubs/${court.club.id}/courts/${court.id}/price-rules`}
+                      className="flex-1"
                     >
-                      <td className="py-3 px-4">
-                        <span className="font-medium">{court.name}</span>
-                      </td>
-                      <td className="py-3 px-4 hidden md:table-cell">
-                        <IMLink href={`/admin/clubs/${court.club.id}`}>
-                          {court.club.name}
-                        </IMLink>
-                      </td>
-                      {showOrganizationFilter && (
-                        <td className="py-3 px-4 hidden lg:table-cell">
-                          {court.organization?.name || "-"}
-                        </td>
+                      <Button variant="outline" className="w-full">
+                        {t("admin.courts.pricing")}
+                      </Button>
+                    </IMLink>
+                  </div>
+                  {(canEdit(adminStatus?.adminType) || canDelete(adminStatus?.adminType)) && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {canEdit(adminStatus?.adminType) && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleOpenEditModal(court)}
+                          className="flex-1"
+                        >
+                          {t("common.edit")}
+                        </Button>
                       )}
-                      <td className="py-3 px-4 hidden md:table-cell">
-                        {court.type || "-"}
-                      </td>
-                      <td className="py-3 px-4 hidden md:table-cell">
-                        {court.surface || "-"}
-                      </td>
-                      <td className="py-3 px-4 hidden sm:table-cell">
-                        {court.indoor
-                          ? t("admin.courts.indoor")
-                          : t("admin.courts.outdoor")}
-                      </td>
-                      <td className="py-3 px-4 hidden sm:table-cell">
-                        {formatPrice(court.defaultPriceCents)}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <IMLink
-                            href={`/admin/clubs/${court.club.id}/courts/${court.id}/price-rules`}
-                            className="inline-flex items-center justify-center px-4 py-2 border rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
-                          >
-                            {t("admin.courts.pricing")}
-                          </IMLink>
-                          {canEdit(adminStatus?.adminType) && (
-                            <Button
-                              variant="outline"
-                              onClick={() => handleOpenEditModal(court)}
-                            >
-                              {t("common.edit")}
-                            </Button>
-                          )}
-                          {canDelete(adminStatus?.adminType) && (
-                            <Button
-                              variant="outline"
-                              onClick={() => handleOpenDeleteModal(court)}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              {t("common.delete")}
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                      {canDelete(adminStatus?.adminType) && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleOpenDeleteModal(court)}
+                          className="text-red-500 hover:text-red-700 flex-1"
+                        >
+                          {t("common.delete")}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </Card>
+              </div>
+            ))}
           </div>
-        </Card>
+        )}
 
         {/* Navigation link to create courts via club */}
         {canCreate(adminStatus?.adminType) && (
