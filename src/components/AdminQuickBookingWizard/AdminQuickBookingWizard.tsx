@@ -148,6 +148,8 @@ export function AdminQuickBookingWizard({
         bookingId: null,
       });
     }
+    // Only reset when modal closes/opens. adminType and predefinedData are extracted
+    // into individual primitive values above and used in the reset logic.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
@@ -252,12 +254,12 @@ export function AdminQuickBookingWizard({
           (club: {
             id: string;
             name: string;
-            organizationId?: string;
+            organizationId: string;
             organization?: { name: string };
           }) => ({
             id: club.id,
             name: club.name,
-            organizationId: club.organizationId || "",
+            organizationId: club.organizationId,
             organizationName: club.organization?.name,
           })
         );
