@@ -76,3 +76,55 @@ export interface WeeklyAvailabilityResponse {
     indoor: boolean;
   }>;
 }
+
+// 30-minute slot types for variable booking durations
+export interface SlotSummary {
+  slotStart: string; // ISO datetime e.g. 2025-12-03T14:00:00Z
+  availableCount: number; // number of courts free in this 30-min slot
+  totalCount: number; // total courts in club/filter
+}
+
+export interface Booking {
+  courtId: string;
+  start: string;
+  end: string;
+  status: "confirmed" | "pending" | "reserved" | "paid";
+}
+
+export interface HalfHourSlotAvailability {
+  slotStart: string; // ISO datetime or HH:MM format
+  slotEnd: string;   // ISO datetime or HH:MM format
+  courts: CourtAvailabilityStatus[];
+  summary: {
+    available: number;
+    booked: number;
+    partial: number;
+    pending: number;
+    total: number;
+  };
+  overallStatus: "available" | "partial" | "booked" | "pending";
+}
+
+export interface DayAvailability30Min {
+  date: string;
+  dayOfWeek: number;
+  dayName: string;
+  slots: HalfHourSlotAvailability[];
+  bookingsByCourt?: Record<string, Booking[]>;
+}
+
+export interface WeeklyAvailability30MinResponse {
+  weekStart: string;
+  weekEnd: string;
+  days: DayAvailability30Min[];
+  courts: Array<{
+    id: string;
+    name: string;
+    type: string | null;
+    indoor: boolean;
+  }>;
+}
+
+// Duration options for bookings (in minutes)
+export const BOOKING_DURATION_OPTIONS = [30, 60, 90, 120] as const;
+export type BookingDuration = typeof BOOKING_DURATION_OPTIONS[number];

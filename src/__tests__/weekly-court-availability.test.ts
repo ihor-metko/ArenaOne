@@ -365,4 +365,168 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
     expect(slot14pm.summary.available).toBe(1);
     expect(slot14pm.overallStatus).toBe("partial");
   });
+
+  // Tests for 30-minute granularity
+  describe("30-minute slot granularity (granularity=30)", () => {
+    const createRequest30Min = (id: string, weekStart?: string) => {
+      const url = weekStart
+        ? `http://localhost:3000/api/clubs/${id}/courts/availability?weekStart=${weekStart}&granularity=30`
+        : `http://localhost:3000/api/clubs/${id}/courts/availability?granularity=30`;
+      return new Request(url, { method: "GET" });
+    };
+
+    it("should return 30-minute slots when granularity=30", async () => {
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+      (prisma.booking.findMany as jest.Mock)
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([]);
+
+      const request = createRequest30Min("club-123", "2024-01-15");
+      const response = await GET(request, {
+        params: Promise.resolve({ id: "club-123" }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.weekStart).toBe("2024-01-15");
+      expect(data.weekEnd).toBe("2024-01-21");
+      expect(data.days).toHaveLength(7);
+      expect(data.courts).toHaveLength(2);
+
+      // Check first day structure has slots instead of hours
+      const firstDay = data.days[0];
+      expect(firstDay.date).toBe("2024-01-15");
+      expect(firstDay.slots).toBeDefined();
+      // 14 hours (8-22) * 2 slots per hour = 28 slots
+      expect(firstDay.slots.length).toBe(28);
+
+      // Check slot structure
+      const firstSlot = firstDay.slots[0];
+      expect(firstSlot.slotStart).toBe("08:00");
+      expect(firstSlot.slotEnd).toBe("08:30");
+      expect(firstSlot.courts).toHaveLength(2);
+      expect(firstSlot.summary.available).toBe(2);
+      expect(firstSlot.summary.total).toBe(2);
+      expect(firstSlot.overallStatus).toBe("available");
+    });
+
+    it("should include bookingsByCourt in 30-min response", async () => {
+      const mockConfirmedBookings = [
+        {
+          courtId: "court-1",
+          start: new Date("2024-01-15T10:00:00.000Z"),
+          end: new Date("2024-01-15T11:00:00.000Z"),
+          status: "reserved",
+        },
+      ];
+
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+      (prisma.booking.findMany as jest.Mock)
+        .mockResolvedValueOnce(mockConfirmedBookings)
+        .mockResolvedValueOnce([]);
+
+      const request = createRequest30Min("club-123", "2024-01-15");
+      const response = await GET(request, {
+        params: Promise.resolve({ id: "club-123" }),
+      });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+
+      const monday = data.days.find((d: { date: string }) => d.date === "2024-01-15");
+      expect(monday.bookingsByCourt).toBeDefined();
+      expect(monday.bookingsByCourt["court-1"]).toHaveLength(1);
+      expect(monday.bookingsByCourt["court-1"][0].status).toBe("reserved");
+    });
+
+    it("should mark 30-min slots as booked when overlapping with bookings", async () => {
+      const mockConfirmedBookings = [
+        {
+          courtId: "court-1",
+          start: new Date("2024-01-15T10:00:00.000Z"),
+          end: new Date("2024-01-15T11:00:00.000Z"),
+          status: "reserved",
+        },
+      ];
+
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+      (prisma.booking.findMany as jest.Mock)
+        .mockResolvedValueOnce(mockConfirmedBookings)
+        .mockResolvedValueOnce([]);
+
+      const request = createRequest30Min("club-123", "2024-01-15");
+      const response = await GET(request, {
+        params: Promise.resolve({ id: "club-123" }),
+      });
+      const data = await response.json();
+
+      const monday = data.days.find((d: { date: string }) => d.date === "2024-01-15");
+      
+      // Find 10:00 slot
+      const slot10_00 = monday.slots.find(
+        (s: { slotStart: string }) => s.slotStart === "10:00"
+      );
+      // Find 10:30 slot
+      const slot10_30 = monday.slots.find(
+        (s: { slotStart: string }) => s.slotStart === "10:30"
+      );
+
+      // Both slots should have court-1 as booked
+      const court1_10_00 = slot10_00.courts.find(
+        (c: { courtId: string }) => c.courtId === "court-1"
+      );
+      const court1_10_30 = slot10_30.courts.find(
+        (c: { courtId: string }) => c.courtId === "court-1"
+      );
+
+      expect(court1_10_00.status).toBe("booked");
+      expect(court1_10_30.status).toBe("booked");
+      expect(slot10_00.summary.available).toBe(1);
+      expect(slot10_00.summary.booked).toBe(1);
+      expect(slot10_00.overallStatus).toBe("partial");
+    });
+
+    it("should correctly identify available 30-min slots after booking ends", async () => {
+      const mockConfirmedBookings = [
+        {
+          courtId: "court-1",
+          start: new Date("2024-01-15T10:00:00.000Z"),
+          end: new Date("2024-01-15T10:30:00.000Z"),
+          status: "reserved",
+        },
+      ];
+
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+      (prisma.booking.findMany as jest.Mock)
+        .mockResolvedValueOnce(mockConfirmedBookings)
+        .mockResolvedValueOnce([]);
+
+      const request = createRequest30Min("club-123", "2024-01-15");
+      const response = await GET(request, {
+        params: Promise.resolve({ id: "club-123" }),
+      });
+      const data = await response.json();
+
+      const monday = data.days.find((d: { date: string }) => d.date === "2024-01-15");
+      
+      // 10:00-10:30 slot should be booked for court-1
+      const slot10_00 = monday.slots.find(
+        (s: { slotStart: string }) => s.slotStart === "10:00"
+      );
+      // 10:30-11:00 slot should be available for court-1
+      const slot10_30 = monday.slots.find(
+        (s: { slotStart: string }) => s.slotStart === "10:30"
+      );
+
+      const court1_10_00 = slot10_00.courts.find(
+        (c: { courtId: string }) => c.courtId === "court-1"
+      );
+      const court1_10_30 = slot10_30.courts.find(
+        (c: { courtId: string }) => c.courtId === "court-1"
+      );
+
+      expect(court1_10_00.status).toBe("booked");
+      expect(court1_10_30.status).toBe("available");
+    });
+  });
 });
