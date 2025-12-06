@@ -12,6 +12,7 @@ export function MockModeWarning() {
   useEffect(() => {
     // Only show in development mode
     if (process.env.NODE_ENV !== "production") {
+      console.log("MockModeWarning: Checking mock mode status...", process.env.USE_MOCK_DATA);
       setIsMockMode(process.env.USE_MOCK_DATA === "true");
     }
   }, []);
@@ -24,10 +25,6 @@ export function MockModeWarning() {
     <div
       className="im-warning-banner"
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
         backgroundColor: "#ff9800",
         color: "#000",
         padding: "8px 16px",
