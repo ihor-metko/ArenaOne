@@ -57,7 +57,9 @@
     "carouselSlides": "Слайди каруселі",
     "slide": "Слайд",
     "slideOf": "Слайд {current} з {total}",
-    "clearFilters": "Очистити фільтри"
+    "clearFilters": "Очистити фільтри",
+    "allStatuses": "Всі статуси",
+    "view": "Переглянути"
   },
   "home": {
     "title": "Падел Клуб MVP",

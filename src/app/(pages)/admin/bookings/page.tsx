@@ -78,7 +78,6 @@ export default function AdminBookingsPage() {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [userSearch, setUserSearch] = useState("");
   const [page, setPage] = useState(1);
   const perPage = 20;
 
@@ -186,7 +185,6 @@ export default function AdminBookingsPage() {
       if (selectedStatus) params.set("status", selectedStatus);
       if (dateFrom) params.set("dateFrom", dateFrom);
       if (dateTo) params.set("dateTo", dateTo);
-      if (userSearch) params.set("userId", userSearch);
 
       const response = await fetch(`/api/admin/bookings?${params.toString()}`);
 
@@ -209,7 +207,7 @@ export default function AdminBookingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [adminStatus, page, selectedOrg, selectedClub, selectedStatus, dateFrom, dateTo, userSearch, router, t]);
+  }, [adminStatus, page, selectedOrg, selectedClub, selectedStatus, dateFrom, dateTo, router, t]);
 
   // Fetch bookings when filters change
   useEffect(() => {
@@ -221,7 +219,7 @@ export default function AdminBookingsPage() {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [selectedOrg, selectedClub, selectedStatus, dateFrom, dateTo, userSearch]);
+  }, [selectedOrg, selectedClub, selectedStatus, dateFrom, dateTo]);
 
   // Clear filters
   const handleClearFilters = () => {
@@ -230,7 +228,6 @@ export default function AdminBookingsPage() {
     setSelectedStatus("");
     setDateFrom("");
     setDateTo("");
-    setUserSearch("");
     setPage(1);
   };
 

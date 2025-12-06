@@ -123,20 +123,18 @@ export async function GET(
       whereClause.court = courtWhere;
     }
 
+    // Build date filter
+    const startFilter: Prisma.DateTimeFilter = {};
     if (dateFrom) {
-      whereClause.start = {
-        ...whereClause.start as Prisma.DateTimeFilter,
-        gte: new Date(dateFrom),
-      };
+      startFilter.gte = new Date(dateFrom);
     }
-
     if (dateTo) {
       const dateToEnd = new Date(dateTo);
       dateToEnd.setHours(23, 59, 59, 999);
-      whereClause.start = {
-        ...whereClause.start as Prisma.DateTimeFilter,
-        lte: dateToEnd,
-      };
+      startFilter.lte = dateToEnd;
+    }
+    if (Object.keys(startFilter).length > 0) {
+      whereClause.start = startFilter;
     }
 
     if (status) {

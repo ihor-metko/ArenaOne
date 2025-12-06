@@ -57,7 +57,9 @@
     "carouselSlides": "Carousel slides",
     "slide": "Slide",
     "slideOf": "Slide {current} of {total}",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "allStatuses": "All Statuses",
+    "view": "View"
   },
   "home": {
     "title": "Padel Club",
