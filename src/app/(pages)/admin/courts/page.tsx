@@ -424,7 +424,7 @@ export default function AdminCourtsPage() {
                             href={`/admin/clubs/${court.club.id}/courts/${court.id}/price-rules`}
                             className="inline-flex items-center justify-center px-4 py-2 border rounded-md text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
                           >
-                            Pricing
+                            {t("admin.courts.pricing")}
                           </IMLink>
                           {canEdit(adminStatus?.adminType) && (
                             <Button

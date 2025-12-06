@@ -433,6 +433,7 @@
       "surface": "Surface",
       "type": "Type",
       "price": "Price",
+      "pricing": "Pricing",
       "status": "Status",
       "indoor": "Indoor",
       "outdoor": "Outdoor",
