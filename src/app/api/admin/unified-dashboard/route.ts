@@ -106,11 +106,14 @@ export async function GET(
             },
           },
         }),
-        // Past bookings: before today
+        // Past bookings: before today (completed bookings only)
         prisma.booking.count({
           where: {
             start: {
               lt: today,
+            },
+            status: {
+              in: ["pending", "paid"],
             },
           },
         }),
@@ -176,11 +179,12 @@ export async function GET(
                 status: { in: ["pending", "paid"] },
               },
             }),
-            // Past bookings: before today
+            // Past bookings: before today (completed bookings only)
             prisma.booking.count({
               where: {
                 court: { club: { organizationId: orgId } },
                 start: { lt: today },
+                status: { in: ["pending", "paid"] },
               },
             }),
           ]);
@@ -248,11 +252,12 @@ export async function GET(
                   status: { in: ["pending", "paid"] },
                 },
               }),
-              // Past bookings: before today
+              // Past bookings: before today (completed bookings only)
               prisma.booking.count({
                 where: {
                   court: { clubId },
                   start: { lt: today },
+                  status: { in: ["pending", "paid"] },
                 },
               }),
             ]);
