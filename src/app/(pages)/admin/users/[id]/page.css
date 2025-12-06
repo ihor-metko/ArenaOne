@@ -1,0 +1,439 @@
+@reference "tailwindcss";
+
+/* ===== User Detail Page Layout ===== */
+.im-user-detail-page {
+  @apply p-6 md:p-8 max-w-6xl mx-auto;
+  background-color: var(--rsp-background);
+  color: var(--rsp-foreground);
+}
+
+/* ===== Loading State ===== */
+.im-user-detail-loading {
+  @apply flex flex-col items-center justify-center min-h-[400px] gap-4;
+}
+
+.im-loading-spinner {
+  @apply w-10 h-10 border-4 rounded-full animate-spin;
+  border-color: var(--rsp-border);
+  border-top-color: var(--rsp-primary);
+}
+
+/* ===== Toast (reused from users page) ===== */
+.im-toast {
+  @apply fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg;
+  animation: im-toast-slide-in 0.3s ease-out;
+}
+
+@keyframes im-toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.im-toast--success {
+  background-color: #10b981;
+  color: white;
+}
+
+.im-toast--error {
+  background-color: #ef4444;
+  color: white;
+}
+
+.im-toast-icon {
+  @apply flex items-center justify-center w-6 h-6 rounded-full text-sm font-bold;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.im-toast-message {
+  @apply text-sm font-medium;
+}
+
+.im-toast-close {
+  @apply ml-2 p-1 rounded-lg opacity-80 hover:opacity-100 transition-opacity;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.im-toast-close svg {
+  @apply w-4 h-4;
+}
+
+/* ===== Error Card ===== */
+.im-error-card {
+  @apply text-center py-12;
+}
+
+.im-error-content {
+  @apply flex flex-col items-center gap-4;
+}
+
+.im-error-content svg {
+  @apply w-16 h-16;
+  color: #ef4444;
+}
+
+.im-error-content h2 {
+  @apply text-xl font-semibold;
+  color: var(--rsp-foreground);
+}
+
+.im-error-content p {
+  color: var(--im-muted);
+}
+
+/* ===== View Context Banner ===== */
+.im-view-context-banner {
+  @apply flex items-center gap-2 px-4 py-3 mb-6 rounded-xl;
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.dark .im-view-context-banner {
+  background-color: rgba(59, 130, 246, 0.15);
+}
+
+.im-view-context-label {
+  @apply text-sm font-medium;
+  color: var(--rsp-foreground);
+}
+
+.im-view-context-banner .im-badge svg {
+  @apply w-3.5 h-3.5;
+}
+
+/* ===== User Header Card ===== */
+.im-user-header-card {
+  @apply mb-6;
+}
+
+.im-user-header {
+  @apply flex flex-col md:flex-row items-start md:items-center gap-6;
+}
+
+.im-user-header-avatar {
+  @apply flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-full text-2xl font-bold;
+  background-color: var(--rsp-primary);
+  color: white;
+}
+
+.im-user-header-info {
+  @apply flex-1;
+}
+
+.im-user-header-name-row {
+  @apply flex flex-wrap items-center gap-3 mb-2;
+}
+
+.im-user-header-name {
+  @apply text-2xl font-bold;
+  color: var(--rsp-foreground);
+}
+
+.im-user-header-email {
+  @apply flex items-center gap-2 text-sm mb-2;
+  color: var(--im-muted);
+}
+
+.im-user-header-email svg {
+  @apply w-4 h-4;
+}
+
+.im-user-header-role {
+  @apply mt-2;
+}
+
+.im-user-header-role .im-badge svg {
+  @apply w-4 h-4;
+}
+
+.im-user-header-actions {
+  @apply flex flex-wrap gap-2 mt-4 md:mt-0;
+}
+
+.im-user-header-actions .rsp-button svg {
+  @apply w-4 h-4;
+}
+
+/* ===== Status Dot ===== */
+.im-status-dot {
+  @apply inline-block w-2 h-2 rounded-full mr-1.5;
+}
+
+.im-status-dot--active {
+  background-color: #10b981;
+}
+
+.im-status-dot--blocked {
+  background-color: #ef4444;
+}
+
+/* ===== Stats Grid ===== */
+.im-stats-grid {
+  @apply grid gap-4 mb-6;
+  grid-template-columns: repeat(1, 1fr);
+}
+
+@media (min-width: 640px) {
+  .im-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .im-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.im-stat-card {
+  @apply flex items-center gap-4;
+}
+
+.im-stat-icon {
+  @apply flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl;
+}
+
+.im-stat-icon svg {
+  @apply w-6 h-6;
+}
+
+.im-stat-icon--bookings {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.im-stat-icon--login {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.im-stat-icon--created {
+  background-color: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+}
+
+.im-stat-content {
+  @apply flex flex-col;
+}
+
+.im-stat-value {
+  @apply text-lg font-bold;
+  color: var(--rsp-foreground);
+}
+
+.im-stat-label {
+  @apply text-xs uppercase tracking-wider;
+  color: var(--im-muted);
+}
+
+/* ===== Detail Grid ===== */
+.im-detail-grid {
+  @apply grid gap-6 mb-6;
+  grid-template-columns: repeat(1, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .im-detail-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.im-detail-card {
+  @apply p-0;
+}
+
+.im-detail-card--full {
+  grid-column: 1 / -1;
+}
+
+.im-detail-card-title {
+  @apply flex items-center gap-2 text-sm font-semibold uppercase tracking-wider px-4 py-3;
+  color: var(--im-muted);
+  border-bottom: 1px solid var(--rsp-border);
+}
+
+.im-detail-card-title svg {
+  @apply w-4 h-4;
+}
+
+/* ===== Bookings List ===== */
+.im-bookings-list {
+  @apply p-4 space-y-2;
+}
+
+.im-booking-item {
+  @apply flex items-center justify-between p-3 rounded-lg transition-colors;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark .im-booking-item {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.im-booking-item:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.dark .im-booking-item:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.im-booking-info {
+  @apply flex flex-col;
+}
+
+.im-booking-venue {
+  @apply text-sm font-medium;
+  color: var(--rsp-foreground);
+}
+
+.im-booking-date {
+  @apply text-xs;
+  color: var(--im-muted);
+}
+
+.im-empty-list {
+  @apply text-center py-6 text-sm;
+  color: var(--im-muted);
+}
+
+/* ===== Details List ===== */
+.im-details-list {
+  @apply p-4 space-y-2;
+}
+
+.im-details-list-item {
+  @apply flex items-center justify-between p-2 rounded-lg;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark .im-details-list-item {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.im-details-list-item .im-link {
+  @apply text-sm font-medium transition-colors;
+  color: var(--rsp-primary);
+  text-decoration: none;
+}
+
+.im-details-list-item .im-link:hover {
+  text-decoration: underline;
+}
+
+/* ===== Audit List ===== */
+.im-audit-list {
+  @apply p-4 space-y-2;
+}
+
+.im-audit-item {
+  @apply flex items-center justify-between p-3 rounded-lg;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark .im-audit-item {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.im-audit-action {
+  @apply flex items-center gap-2;
+}
+
+.im-audit-date {
+  @apply text-xs;
+  color: var(--im-muted);
+}
+
+/* ===== Back Button ===== */
+.im-back-button-container {
+  @apply mt-8;
+}
+
+.im-back-button-container .rsp-button svg {
+  @apply w-4 h-4;
+}
+
+/* ===== Modal Styles ===== */
+.im-modal-content {
+  @apply max-h-[80vh] overflow-y-auto;
+}
+
+.im-modal-footer {
+  @apply flex justify-end gap-3 mt-6 pt-4;
+  border-top: 1px solid var(--rsp-border);
+}
+
+.im-confirm-modal {
+  @apply text-center;
+}
+
+.im-confirm-icon {
+  @apply mx-auto mb-4 flex items-center justify-center w-16 h-16 rounded-full;
+}
+
+.im-confirm-icon svg {
+  @apply w-8 h-8;
+}
+
+.im-confirm-icon--warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.im-confirm-icon--success {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.im-confirm-message {
+  @apply text-sm mb-6;
+  color: var(--im-muted);
+}
+
+.im-confirm-input {
+  @apply text-left mb-6;
+}
+
+.im-confirm-input-label {
+  @apply block text-sm font-medium mb-2;
+  color: var(--rsp-foreground);
+}
+
+.im-confirm-input-hint {
+  @apply text-xs mt-2;
+  color: var(--im-muted);
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 768px) {
+  .im-user-detail-page {
+    @apply p-4;
+  }
+
+  .im-user-header {
+    @apply flex-col items-start;
+  }
+
+  .im-user-header-avatar {
+    @apply w-16 h-16 text-xl;
+  }
+
+  .im-user-header-name {
+    @apply text-xl;
+  }
+
+  .im-user-header-actions {
+    @apply w-full;
+  }
+
+  .im-user-header-actions .rsp-button {
+    @apply flex-1;
+  }
+}
