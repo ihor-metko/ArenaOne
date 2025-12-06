@@ -397,25 +397,37 @@ export default function AdminCourtsPage() {
                         {t("common.viewDetails")}
                       </Button>
                     </IMLink>
-                    {canEdit(adminStatus?.adminType) && (
-                      <Button
-                        variant="outline"
-                        onClick={() => handleOpenEditModal(court)}
-                        className="flex-1"
-                      >
-                        {t("common.edit")}
+                    <IMLink
+                      href={`/admin/clubs/${court.club.id}/courts/${court.id}/price-rules`}
+                      className="flex-1"
+                    >
+                      <Button variant="outline" className="w-full">
+                        {t("admin.courts.pricing")}
                       </Button>
-                    )}
-                    {canDelete(adminStatus?.adminType) && (
-                      <Button
-                        variant="outline"
-                        onClick={() => handleOpenDeleteModal(court)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        {t("common.delete")}
-                      </Button>
-                    )}
+                    </IMLink>
                   </div>
+                  {(canEdit(adminStatus?.adminType) || canDelete(adminStatus?.adminType)) && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {canEdit(adminStatus?.adminType) && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleOpenEditModal(court)}
+                          className="flex-1"
+                        >
+                          {t("common.edit")}
+                        </Button>
+                      )}
+                      {canDelete(adminStatus?.adminType) && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleOpenDeleteModal(court)}
+                          className="text-red-500 hover:text-red-700 flex-1"
+                        >
+                          {t("common.delete")}
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </Card>
               </div>
             ))}

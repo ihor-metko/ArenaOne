@@ -87,16 +87,31 @@ jest.mock("@/components/CourtCard", () => ({
 
 // Mock UI components
 jest.mock("@/components/ui", () => ({
-  Button: ({ children, onClick, variant, className }: any) => (
+  Button: ({ children, onClick, variant, className }: { 
+    children: React.ReactNode; 
+    onClick?: () => void; 
+    variant?: string; 
+    className?: string;
+  }) => (
     <button onClick={onClick} data-variant={variant} className={className}>{children}</button>
   ),
-  Input: ({ value, onChange, placeholder }: any) => (
+  Input: ({ value, onChange, placeholder }: { 
+    value: string; 
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; 
+    placeholder?: string;
+  }) => (
     <input value={value} onChange={onChange} placeholder={placeholder} />
   ),
-  Card: ({ children, className }: any) => <div className={className}>{children}</div>,
-  Modal: ({ isOpen, children }: any) => isOpen ? <div>{children}</div> : null,
-  IMLink: ({ href, children, className }: any) => <a href={href} className={className}>{children}</a>,
-  PageHeader: ({ title, description }: any) => (
+  Card: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div className={className}>{children}</div>
+  ),
+  Modal: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) => (
+    isOpen ? <div>{children}</div> : null
+  ),
+  IMLink: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
+    <a href={href} className={className}>{children}</a>
+  ),
+  PageHeader: ({ title, description }: { title: string; description?: string }) => (
     <div>
       <h1>{title}</h1>
       <p>{description}</p>
@@ -106,7 +121,7 @@ jest.mock("@/components/ui", () => ({
 
 // Mock CourtForm
 jest.mock("@/components/admin/CourtForm", () => ({
-  CourtForm: ({ onSubmit, onCancel }: any) => (
+  CourtForm: ({ onSubmit, onCancel }: { onSubmit: () => void; onCancel: () => void }) => (
     <div>
       <button onClick={onSubmit}>Submit</button>
       <button onClick={onCancel}>Cancel</button>
@@ -162,14 +177,20 @@ describe("AdminCourtsPage", () => {
     jest.clearAllMocks();
     mockUseRouter.mockReturnValue({
       push: jest.fn(),
-    } as any);
+      back: jest.fn(),
+      forward: jest.fn(),
+      refresh: jest.fn(),
+      replace: jest.fn(),
+      prefetch: jest.fn(),
+    } as ReturnType<typeof useRouter>);
   });
 
   it("should render CourtCard components for each court", async () => {
     mockUseSession.mockReturnValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1" }, expires: "" },
       status: "authenticated",
-    } as any);
+      update: jest.fn(),
+    } as ReturnType<typeof useSession>);
 
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
@@ -198,9 +219,10 @@ describe("AdminCourtsPage", () => {
 
   it("should display organization and club information for each court", async () => {
     mockUseSession.mockReturnValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1" }, expires: "" },
       status: "authenticated",
-    } as any);
+      update: jest.fn(),
+    } as ReturnType<typeof useSession>);
 
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
@@ -235,9 +257,10 @@ describe("AdminCourtsPage", () => {
 
   it("should display view details button for each court", async () => {
     mockUseSession.mockReturnValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1" }, expires: "" },
       status: "authenticated",
-    } as any);
+      update: jest.fn(),
+    } as ReturnType<typeof useSession>);
 
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
@@ -264,9 +287,10 @@ describe("AdminCourtsPage", () => {
 
   it("should display courts in a grid layout", async () => {
     mockUseSession.mockReturnValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1" }, expires: "" },
       status: "authenticated",
-    } as any);
+      update: jest.fn(),
+    } as ReturnType<typeof useSession>);
 
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
@@ -294,9 +318,10 @@ describe("AdminCourtsPage", () => {
 
   it("should show empty state when no courts are found", async () => {
     mockUseSession.mockReturnValue({
-      data: { user: { id: "user-1" } },
+      data: { user: { id: "user-1" }, expires: "" },
       status: "authenticated",
-    } as any);
+      update: jest.fn(),
+    } as ReturnType<typeof useSession>);
 
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
