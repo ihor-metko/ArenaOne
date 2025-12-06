@@ -81,6 +81,12 @@ export async function GET(
         adminType,
         managedIds,
       });
+      if (!mockResult) {
+        return NextResponse.json(
+          { error: "Internal server error" },
+          { status: 500 }
+        );
+      }
       return NextResponse.json(mockResult);
     }
     if (adminType === "root_admin") {

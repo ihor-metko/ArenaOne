@@ -192,6 +192,8 @@ export async function mockGetBookingById(id: string) {
       ? {
           id: court.id,
           name: court.name,
+          type: court.type,
+          surface: court.surface,
           clubId: court.clubId,
           club: club
             ? {
@@ -204,6 +206,7 @@ export async function mockGetBookingById(id: string) {
         }
       : null,
     coach: null,
+    payments: [],
   };
 }
 
@@ -676,7 +679,7 @@ export async function mockGetUnifiedDashboard(params: {
           pastBookings,
         };
       })
-      .filter(Boolean);
+      .filter((stat): stat is NonNullable<typeof stat> => stat !== null);
 
     return {
       adminType,
@@ -725,7 +728,7 @@ export async function mockGetUnifiedDashboard(params: {
           pastBookings,
         };
       })
-      .filter(Boolean);
+      .filter((stat): stat is NonNullable<typeof stat> => stat !== null);
 
     return {
       adminType,

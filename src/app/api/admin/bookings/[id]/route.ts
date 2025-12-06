@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
+// TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+import { isMockMode } from "@/services/mockDb";
+import { mockGetBookingById } from "@/services/mockApiHandlers";
 
 /**
  * Booking detail response type
@@ -198,6 +201,60 @@ export async function GET(
   const { id } = await params;
 
   try {
+    // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+    if (isMockMode()) {
+      const mockBooking = await mockGetBookingById(id);
+      if (!mockBooking) {
+        return NextResponse.json(
+          { error: "Booking not found" },
+          { status: 404 }
+        );
+      }
+
+      // Check access permission in mock mode
+      const hasAccess =
+        adminType === "root_admin" ||
+        (adminType === "organization_admin" &&
+          mockBooking.court?.club?.organizationId &&
+          managedIds.includes(mockBooking.court.club.organizationId)) ||
+        (adminType === "club_admin" &&
+          mockBooking.court?.clubId &&
+          managedIds.includes(mockBooking.court.clubId));
+
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: "Booking not found" },
+          { status: 404 }
+        );
+      }
+
+      const response: AdminBookingDetailResponse = {
+        id: mockBooking.id,
+        userId: mockBooking.userId,
+        userName: mockBooking.user?.name ?? null,
+        userEmail: mockBooking.user?.email ?? "",
+        courtId: mockBooking.courtId,
+        courtName: mockBooking.court?.name ?? "",
+        courtType: mockBooking.court?.type ?? null,
+        courtSurface: mockBooking.court?.surface ?? null,
+        clubId: mockBooking.court?.clubId ?? "",
+        clubName: mockBooking.court?.club?.name ?? "",
+        organizationId: mockBooking.court?.club?.organizationId ?? null,
+        organizationName: mockBooking.court?.club?.organization?.name ?? null,
+        start: mockBooking.start.toISOString(),
+        end: mockBooking.end.toISOString(),
+        status: mockBooking.status,
+        price: mockBooking.price,
+        coachId: mockBooking.coachId,
+        coachName: null,
+        paymentId: mockBooking.paymentId,
+        createdAt: mockBooking.createdAt.toISOString(),
+        payments: mockBooking.payments || [],
+      };
+
+      return NextResponse.json(response);
+    }
+
     const { hasAccess, booking } = await checkBookingAccess(id, adminType, managedIds);
 
     if (!hasAccess || !booking) {
