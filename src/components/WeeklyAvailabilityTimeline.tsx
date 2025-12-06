@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Button } from "@/components/ui";
+import { Button, Modal, Input } from "@/components/ui";
 import { isSlotBlocked } from "@/utils/slotBlocking";
 import {
   getTodayInTimezone,
@@ -50,6 +50,17 @@ interface WeeklyAvailabilityTimelineProps {
     courts: CourtAvailabilityStatus[]
   ) => void;
   defaultMode?: AvailabilityMode;
+}
+
+// Types for availability block management
+interface AvailabilityBlockEdit {
+  id?: string; // undefined for new blocks
+  courtId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  reason?: string;
+  action: "create" | "update" | "delete";
 }
 
 // Business hours configuration
@@ -244,11 +255,25 @@ export function WeeklyAvailabilityTimeline({
   const [currentTodayStr, setCurrentTodayStr] = useState<string>(getTodayStr);
   const containerRef = useRef<HTMLDivElement>(null);
   
+  // Admin edit mode state
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [pendingChanges, setPendingChanges] = useState<AvailabilityBlockEdit[]>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [addModalDate, setAddModalDate] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  
   // Get locale from next-intl context for consistent i18n
   const locale = useLocale();
   
   // Compute current time once per render for consistent blocking checks
   const now = useMemo(() => new Date(), []);
+
+  // Toast notification helper
+  const showToast = useCallback((type: "success" | "error", message: string) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 4000);
+  }, []);
 
   const fetchAvailability = useCallback(async () => {
     setIsLoading(true);
@@ -277,6 +302,67 @@ export function WeeklyAvailabilityTimeline({
   useEffect(() => {
     fetchAvailability();
   }, [fetchAvailability]);
+
+  // Save changes handler
+  const handleSaveChanges = useCallback(async () => {
+    if (pendingChanges.length === 0) return;
+
+    setIsSaving(true);
+    try {
+      const created = pendingChanges.filter((c) => c.action === "create" && !c.id);
+      const updated = pendingChanges.filter((c) => c.action === "update" && c.id);
+      const deleted = pendingChanges.filter((c) => c.action === "delete" && c.id).map((c) => c.id!);
+
+      const response = await fetch("/api/availability/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clubId,
+          changes: {
+            created: created.map((c) => ({
+              courtId: c.courtId,
+              date: c.date,
+              startTime: c.startTime,
+              endTime: c.endTime,
+              reason: c.reason,
+            })),
+            updated: updated.map((c) => ({
+              id: c.id!,
+              courtId: c.courtId,
+              date: c.date,
+              startTime: c.startTime,
+              endTime: c.endTime,
+              reason: c.reason,
+            })),
+            deleted,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 409) {
+          // Conflict with bookings
+          showToast("error", `Cannot save: ${errorData.error}. Some slots conflict with existing bookings.`);
+        } else {
+          throw new Error(errorData.error || "Failed to save changes");
+        }
+        return;
+      }
+
+      showToast("success", "Changes saved successfully");
+      setPendingChanges([]);
+      setIsEditMode(false);
+      
+      // Refetch availability data
+      await fetchAvailability();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to save changes";
+      showToast("error", message);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [clubId, pendingChanges, showToast, fetchAvailability]);
 
   // Auto-update: check if date has changed
   const checkAndUpdateDate = useCallback(() => {
@@ -408,6 +494,28 @@ export function WeeklyAvailabilityTimeline({
         <div className="tm-weekly-timeline-header">
           <h3 className="tm-weekly-timeline-title">{t("title")}</h3>
           <div className="tm-weekly-timeline-controls">
+            {/* Edit mode toggle - only show if user has edit permission */}
+            {data.canEdit && (
+              <Button
+                variant={isEditMode ? "primary" : "outline"}
+                size="small"
+                onClick={() => {
+                  if (isEditMode && pendingChanges.length > 0) {
+                    // Ask for confirmation if there are pending changes
+                    if (confirm("You have unsaved changes. Discard them?")) {
+                      setIsEditMode(false);
+                      setPendingChanges([]);
+                    }
+                  } else {
+                    setIsEditMode(!isEditMode);
+                    setPendingChanges([]);
+                  }
+                }}
+                className="tm-edit-mode-btn"
+              >
+                {isEditMode ? "Exit Edit Mode" : "Edit Availability"}
+              </Button>
+            )}
             {/* Mode toggle */}
             <div className="tm-weekly-mode-toggle" role="radiogroup" aria-label={t("modeLabel")}>
               <button
@@ -453,6 +561,52 @@ export function WeeklyAvailabilityTimeline({
             </div>
           </div>
         </div>
+
+        {/* Toast notification */}
+        {toast && (
+          <div
+            className={`tm-toast ${toast.type === "success" ? "tm-toast--success" : "tm-toast--error"}`}
+            role="alert"
+          >
+            {toast.message}
+          </div>
+        )}
+
+        {/* Edit mode action bar */}
+        {isEditMode && (
+          <div className="tm-edit-action-bar">
+            <div className="tm-edit-action-info">
+              {pendingChanges.length > 0 ? (
+                <span>{pendingChanges.length} pending change{pendingChanges.length > 1 ? "s" : ""}</span>
+              ) : (
+                <span>No changes yet</span>
+              )}
+            </div>
+            <div className="tm-edit-action-buttons">
+              <Button
+                variant="outline"
+                size="small"
+                onClick={() => {
+                  if (pendingChanges.length > 0 && !confirm("Discard all changes?")) {
+                    return;
+                  }
+                  setIsEditMode(false);
+                  setPendingChanges([]);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="small"
+                onClick={handleSaveChanges}
+                disabled={pendingChanges.length === 0 || isSaving}
+              >
+                {isSaving ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="tm-weekly-grid" role="grid" aria-label={t("ariaGridLabel")}>
           {/* Header row */}
