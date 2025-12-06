@@ -64,6 +64,50 @@
   --im-availability-blocked-bg: #9ca3af;
   --im-availability-blocked-text: #6b7280;
   --im-availability-error: #ef4444;
+
+  /* Design system variables for wizard components */
+  --color-primary: var(--im-primary);
+  --color-primary-hover: var(--im-primary-hover);
+  --color-primary-bg: #dcfce7;
+  --color-text: var(--im-foreground);
+  --color-text-on-primary: #ffffff;
+  --color-text-secondary: var(--im-muted);
+  --color-text-tertiary: #9ca3af;
+  --color-border: var(--im-border);
+  --color-surface: var(--im-surface);
+  --color-surface-elevated: var(--im-card-bg);
+  --color-success: #22c55e;
+  --color-success-bg: #dcfce7;
+  --color-error: #ef4444;
+  --color-error-bg: #fee2e2;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fef3c7;
+  --color-info: #3b82f6;
+  --color-info-bg: #dbeafe;
+  
+  /* Spacing system */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  
+  /* Font sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  
+  /* Border radius */
+  --border-radius: 0.5rem;
+  --border-radius-sm: 0.25rem;
+  
+  /* Shadows */
+  --shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-focus: 0 0 0 3px rgba(26, 188, 156, 0.1);
 }
 
 .dark {
@@ -101,6 +145,30 @@
   --im-availability-blocked-bg: #4b5563;
   --im-availability-blocked-text: #9ca3af;
   --im-availability-error: #ef4444;
+
+  /* Design system variables for wizard components (dark theme) */
+  --color-primary: var(--im-primary);
+  --color-primary-hover: var(--im-primary-hover);
+  --color-primary-bg: #1e1b4b;
+  --color-text: var(--im-foreground);
+  --color-text-on-primary: #ffffff;
+  --color-text-secondary: var(--im-muted);
+  --color-text-tertiary: #6b7280;
+  --color-border: var(--im-border);
+  --color-surface: var(--im-surface);
+  --color-surface-elevated: var(--im-card-bg);
+  --color-success: #22c55e;
+  --color-success-bg: #14532d;
+  --color-error: #ef4444;
+  --color-error-bg: #7f1d1d;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #78350f;
+  --color-info: #3b82f6;
+  --color-info-bg: #1e3a8a;
+  
+  /* Shadows (dark theme) */
+  --shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-focus: 0 0 0 3px rgba(108, 99, 255, 0.2);
 }
 
 html,
