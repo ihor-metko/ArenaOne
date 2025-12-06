@@ -136,18 +136,18 @@ export async function PUT(
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
-    const body = await request.json();
-    const { name, location, contactInfo, openingHours, logo } = body;
-
-    if (!name || !location) {
-      return NextResponse.json(
-        { error: "Name and location are required" },
-        { status: 400 }
-      );
-    }
-
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
     if (isMockMode()) {
+      const body = await request.json();
+      const { name, location, contactInfo, openingHours, logo } = body;
+      
+      if (!name || !location) {
+        return NextResponse.json(
+          { error: "Name and location are required" },
+          { status: 400 }
+        );
+      }
+      
       const updatedClub = await mockUpdateClub(clubId, {
         name,
         location,
@@ -158,6 +158,16 @@ export async function PUT(
         return NextResponse.json({ error: "Club not found" }, { status: 404 });
       }
       return NextResponse.json(updatedClub);
+    }
+
+    const body = await request.json();
+    const { name, location, contactInfo, openingHours, logo } = body;
+
+    if (!name || !location) {
+      return NextResponse.json(
+        { error: "Name and location are required" },
+        { status: 400 }
+      );
     }
 
     // Check access permission for organization admins

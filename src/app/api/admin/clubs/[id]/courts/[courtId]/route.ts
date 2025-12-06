@@ -90,11 +90,11 @@ export async function PATCH(
     const resolvedParams = await params;
     const { id: clubId, courtId } = resolvedParams;
 
-    const body = await request.json();
-    const { name, slug, type, surface, indoor, defaultPriceCents } = body;
-
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
     if (isMockMode()) {
+      const body = await request.json();
+      const { name, slug, type, surface, indoor, defaultPriceCents } = body;
+      
       // Basic validation
       if (name !== undefined && (typeof name !== "string" || name.trim() === "")) {
         return NextResponse.json(
@@ -117,6 +117,9 @@ export async function PATCH(
         club: { id: updatedCourt.clubId, name: "Mock Club", businessHours: [] },
       });
     }
+
+    const body = await request.json();
+    const { name, slug, type, surface, indoor, defaultPriceCents } = body;
 
     // Check if court exists and belongs to the club
     const existingCourt = await prisma.court.findUnique({

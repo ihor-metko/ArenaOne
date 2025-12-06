@@ -483,6 +483,7 @@ export async function mockDeleteCourt(id: string): Promise<boolean> {
   const index = courts.findIndex((c) => c.id === id);
   if (index === -1) return false;
   
+  // Note: Direct array mutation is intentional for mock mode - data is ephemeral and resets on server restart
   courts.splice(index, 1);
   return true;
 }
@@ -660,6 +661,7 @@ export async function mockDeleteClub(id: string): Promise<boolean> {
   const index = clubs.findIndex((c) => c.id === id);
   if (index === -1) return false;
   
+  // Note: Direct array mutation is intentional for mock mode - data is ephemeral and resets on server restart
   clubs.splice(index, 1);
   return true;
 }
@@ -730,6 +732,7 @@ export async function mockDeleteOrganization(id: string): Promise<boolean> {
   const index = orgs.findIndex((o) => o.id === id);
   if (index === -1) return false;
   
+  // Note: Direct array mutation is intentional for mock mode - data is ephemeral and resets on server restart
   orgs.splice(index, 1);
   return true;
 }
@@ -851,6 +854,7 @@ export async function mockRemoveOrgAdmin(organizationId: string, userId: string)
     (m) => m.organizationId === organizationId && m.userId === userId
   );
   
+  // Note: Direct array mutation is intentional for mock mode - data is ephemeral and resets on server restart
   if (index !== -1) {
     memberships.splice(index, 1);
   }
