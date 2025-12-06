@@ -73,7 +73,7 @@ export async function GET(
     const totalUsers = await prisma.user.count({
       where: {
         id: {
-          notIn: excludedIds.length > 0 ? excludedIds : undefined,
+          notIn: excludedIds,
         },
       },
     });
@@ -90,7 +90,7 @@ export async function GET(
           gte: thirtyDaysAgo,
         },
         id: {
-          notIn: excludedIds.length > 0 ? excludedIds : undefined,
+          notIn: excludedIds,
         },
       },
       select: {
@@ -102,6 +102,13 @@ export async function GET(
     });
 
     // Build trend array for the last 30 days
+    // Group users by date for efficient lookup
+    const usersByDate = new Map<string, number>();
+    recentUsers.forEach((user) => {
+      const dateStr = new Date(user.createdAt).toISOString().split("T")[0];
+      usersByDate.set(dateStr, (usersByDate.get(dateStr) || 0) + 1);
+    });
+
     const trend: TrendDataPoint[] = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -109,17 +116,11 @@ export async function GET(
     for (let i = 29; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      const nextDate = new Date(date);
-      nextDate.setDate(nextDate.getDate() + 1);
-
-      const count = recentUsers.filter((user) => {
-        const userDate = new Date(user.createdAt);
-        return userDate >= date && userDate < nextDate;
-      }).length;
+      const dateStr = date.toISOString().split("T")[0]; // Format as YYYY-MM-DD
 
       trend.push({
-        date: date.toISOString().split("T")[0], // Format as YYYY-MM-DD
-        count,
+        date: dateStr,
+        count: usersByDate.get(dateStr) || 0,
       });
     }
 
