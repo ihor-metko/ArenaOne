@@ -43,7 +43,7 @@ export function AdminQuickBookingWizard({
       return predefinedData.clubId;
     }
     // Auto-select club if club_admin has only one managed club
-    if (adminType === "club_admin" && managedIds.length === 1) {
+    if (adminType === "club_admin" && managedIds && managedIds.length === 1) {
       return managedIds[0];
     }
     return null;
@@ -245,7 +245,7 @@ export function AdminQuickBookingWizard({
           clubs = clubs.filter(
             (c) => c.organizationId === state.stepOrganization.selectedOrganizationId
           );
-        } else if (adminType === "club_admin" && managedIds.length > 0) {
+        } else if (adminType === "club_admin" && managedIds && managedIds.length > 0) {
           // Filter by managed clubs for club_admin (when they have multiple clubs)
           clubs = clubs.filter((c) => managedIds.includes(c.id));
         }
@@ -535,6 +535,7 @@ export function AdminQuickBookingWizard({
         availableCourts: [],
       }));
     },
+    // No dependencies needed - uses setState updater function
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
