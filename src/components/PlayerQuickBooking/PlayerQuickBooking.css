@@ -51,7 +51,7 @@
 .rsp-wizard-step--completed .rsp-wizard-step-circle {
   background-color: var(--color-success);
   border-color: var(--color-success);
-  color: white;
+  color: var(--color-text-on-primary);
 }
 
 .rsp-wizard-step-label {
@@ -127,7 +127,7 @@
 
 .rsp-club-card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-hover, 0 2px 8px rgba(0, 0, 0, 0.1));
 }
 
 .rsp-club-card--selected {
@@ -162,7 +162,7 @@
   height: 24px;
   border-radius: 50%;
   background-color: var(--color-success);
-  color: white;
+  color: var(--color-text-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -534,7 +534,7 @@
 
 .rsp-wizard-court-card:hover:not(.rsp-wizard-court-card--disabled) {
   border-color: var(--color-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-hover, 0 2px 8px rgba(0, 0, 0, 0.1));
 }
 
 .rsp-wizard-court-card--selected {
@@ -564,7 +564,7 @@
   height: 24px;
   border-radius: 50%;
   background-color: var(--color-success);
-  color: white;
+  color: var(--color-text-on-primary);
   display: flex;
   align-items: center;
   justify-content: center;

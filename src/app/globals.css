@@ -104,6 +104,10 @@
   /* Border radius */
   --border-radius: 0.5rem;
   --border-radius-sm: 0.25rem;
+  
+  /* Shadows */
+  --shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-focus: 0 0 0 3px rgba(26, 188, 156, 0.1);
 }
 
 .dark {
@@ -161,6 +165,10 @@
   --color-warning-bg: #78350f;
   --color-info: #3b82f6;
   --color-info-bg: #1e3a8a;
+  
+  /* Shadows (dark theme) */
+  --shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-focus: 0 0 0 3px rgba(108, 99, 255, 0.2);
 }
 
 html,
