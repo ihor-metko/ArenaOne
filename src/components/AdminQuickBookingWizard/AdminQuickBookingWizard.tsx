@@ -168,10 +168,9 @@ export function AdminQuickBookingWizard({
 
       try {
         await fetchOrganizations();
-        const orgs: WizardOrganization[] = organizations.map(toOrganizationOption);
+        // Don't access organizations here - let separate useEffect handle it
         setState((prev) => ({
           ...prev,
-          availableOrganizations: orgs,
           isLoadingOrganizations: false,
         }));
       } catch {
@@ -184,7 +183,18 @@ export function AdminQuickBookingWizard({
     };
 
     loadOrganizations();
-  }, [isOpen, state.currentStep, adminType, predefinedData, fetchOrganizations, organizations, orgError, t]);
+  }, [isOpen, state.currentStep, adminType, predefinedData, fetchOrganizations, orgError, t]);
+
+  // Update availableOrganizations when store organizations change
+  useEffect(() => {
+    if (organizations.length > 0 && isOpen && state.currentStep === 1) {
+      const orgs: WizardOrganization[] = organizations.map(toOrganizationOption);
+      setState((prev) => ({
+        ...prev,
+        availableOrganizations: orgs,
+      }));
+    }
+  }, [organizations, isOpen, state.currentStep]);
 
   // Fetch clubs (Step 2)
   useEffect(() => {

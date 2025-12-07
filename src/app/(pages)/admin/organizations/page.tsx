@@ -502,6 +502,12 @@ export default function AdminOrganizationsPage() {
   const handleDeleteOrganization = async () => {
     if (!deletingOrg) return;
 
+    // Validate before attempting delete
+    if ((deletingOrg.clubCount || 0) > 0) {
+      setDeleteError(t("organizations.deleteWithClubs", { count: deletingOrg.clubCount || 0 }));
+      return;
+    }
+
     setDeleteError("");
     setDeleting(true);
 
@@ -512,12 +518,7 @@ export default function AdminOrganizationsPage() {
       handleCloseDeleteModal();
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Failed to delete organization";
-      // Check if error mentions club count
-      if ((deletingOrg.clubCount || 0) > 0) {
-        setDeleteError(t("organizations.deleteWithClubs", { count: deletingOrg.clubCount || 0 }));
-      } else {
-        setDeleteError(errorMsg);
-      }
+      setDeleteError(errorMsg);
     } finally {
       setDeleting(false);
     }

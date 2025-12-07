@@ -101,7 +101,6 @@ export function ClubCreationStepper() {
   const isLoadingOrgs = useOrganizationStore((state) => state.loading);
   const fetchOrganizations = useOrganizationStore((state) => state.fetchOrganizations);
   const fetchOrganizationById = useOrganizationStore((state) => state.fetchOrganizationById);
-  const currentOrg = useOrganizationStore((state) => state.currentOrg);
 
   const showToast = useCallback((type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -122,12 +121,13 @@ export function ClubCreationStepper() {
             const orgId = data.managedIds[0];
             try {
               await fetchOrganizationById(orgId);
-              // Use the org from store
-              if (currentOrg && currentOrg.id === orgId) {
+              // Access currentOrg from the store directly after fetch
+              const storeCurrentOrg = useOrganizationStore.getState().currentOrg;
+              if (storeCurrentOrg && storeCurrentOrg.id === orgId) {
                 const userOrg: OrganizationOption = {
-                  id: currentOrg.id,
-                  name: currentOrg.name,
-                  slug: currentOrg.slug,
+                  id: storeCurrentOrg.id,
+                  name: storeCurrentOrg.name,
+                  slug: storeCurrentOrg.slug,
                 };
                 setPrefilledOrg(userOrg);
                 setFormData(prev => ({ ...prev, organizationId: userOrg.id }));
@@ -144,7 +144,7 @@ export function ClubCreationStepper() {
     };
 
     fetchAdminStatus();
-  }, [fetchOrganizationById, currentOrg]);
+  }, [fetchOrganizationById]);
 
   // Search organizations for root admin (use store fetch with filtering)
   const handleOrgSearch = useCallback(async (query: string) => {

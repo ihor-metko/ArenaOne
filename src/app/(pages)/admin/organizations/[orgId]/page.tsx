@@ -180,14 +180,27 @@ export default function OrganizationDetailPage() {
       setOrg(data);
       setError("");
       
-      // Also update the store's currentOrg for consistency
-      await fetchOrganizationById(orgId);
+      // Update the store's currentOrg with the fetched data (avoid redundant API call)
+      // The API returns full org details, we just need basic info for the store
+      const basicOrgInfo = {
+        id: data.id,
+        name: data.name,
+        slug: data.slug,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+        archivedAt: data.archivedAt,
+        contactEmail: data.contactEmail,
+        contactPhone: data.contactPhone,
+        website: data.website,
+        address: data.address,
+      };
+      useOrganizationStore.getState().setCurrentOrg(basicOrgInfo);
     } catch {
       setError(t("orgDetail.failedToLoad"));
     } finally {
       setLoading(false);
     }
-  }, [orgId, router, t, fetchOrganizationById]);
+  }, [orgId, router, t]);
 
   const fetchUsersPreview = useCallback(async () => {
     try {
