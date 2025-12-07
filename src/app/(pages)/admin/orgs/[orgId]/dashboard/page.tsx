@@ -96,7 +96,6 @@ export default function OrgDashboardPage() {
   const orgId = params.orgId as string;
 
   // Use Zustand store for organization state
-  const fetchOrganizationById = useOrganizationStore((state) => state.fetchOrganizationById);
   const setCurrentOrg = useOrganizationStore((state) => state.setCurrentOrg);
 
   const [dashboardData, setDashboardData] = useState<OrgDashboardResponse | null>(null);
@@ -127,7 +126,13 @@ export default function OrgDashboardPage() {
       setDashboardData(data);
       
       // Update store's currentOrg when dashboard loads successfully
-      setCurrentOrg(data.org);
+      // Note: OrgDashboardOrg only has id, name, slug so we set a minimal Organization
+      setCurrentOrg({
+        id: data.org.id,
+        name: data.org.name,
+        slug: data.org.slug,
+        createdAt: new Date().toISOString(), // Placeholder since we don't have the real createdAt
+      });
     } catch (err) {
       // Log error in development for debugging
       if (process.env.NODE_ENV === "development") {

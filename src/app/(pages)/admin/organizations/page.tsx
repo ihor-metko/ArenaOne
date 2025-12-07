@@ -11,12 +11,6 @@ import type { Organization } from "@/types/organization";
 import "@/components/admin/AdminOrganizationCard.css";
 import "./page.css";
 
-interface OrganizationUser {
-  id: string;
-  name: string | null;
-  email: string;
-}
-
 interface User {
   id: string;
   name: string | null;
@@ -181,7 +175,7 @@ export default function AdminOrganizationsPage() {
           comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           break;
         case "clubCount":
-          comparison = a.clubCount - b.clubCount;
+          comparison = (a.clubCount || 0) - (b.clubCount || 0);
           break;
         case "adminCount":
           comparison = (a.superAdmins?.length || 0) - (b.superAdmins?.length || 0);
@@ -1271,9 +1265,9 @@ export default function AdminOrganizationsPage() {
           <p className="im-delete-confirm-text">
             {t("organizations.deleteConfirm", { name: deletingOrg?.name ?? "" })}
           </p>
-          {deletingOrg && deletingOrg.clubCount > 0 && (
+          {deletingOrg && (deletingOrg.clubCount || 0) > 0 && (
             <div className="rsp-warning bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-400 dark:border-yellow-600 text-yellow-700 dark:text-yellow-400 px-4 py-3 rounded-sm">
-              {t("organizations.deleteWithClubs", { count: deletingOrg.clubCount })}
+              {t("organizations.deleteWithClubs", { count: deletingOrg.clubCount || 0 })}
             </div>
           )}
           <div className="flex justify-end gap-2 mt-4">

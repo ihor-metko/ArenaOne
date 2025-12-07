@@ -147,7 +147,7 @@ export function ClubCreationStepper() {
   }, [currentOrg, adminStatus?.adminType]);
 
   // Search organizations for root admin (use store with filtering)
-  const handleOrgSearch = useCallback(async (query: string) => {
+  const handleOrgSearch = useCallback(async () => {
     if (adminStatus?.adminType !== "root_admin") return;
     
     // Organizations are auto-fetched by the selector
