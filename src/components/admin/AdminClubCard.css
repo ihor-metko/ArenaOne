@@ -18,11 +18,6 @@
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
 }
 
-.im-admin-club-card:focus-within {
-  outline: 2px solid var(--rsp-primary);
-  outline-offset: 2px;
-}
-
 /* Card Image Section */
 .im-admin-club-card-image {
   @apply relative w-full overflow-hidden;
