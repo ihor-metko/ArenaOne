@@ -56,14 +56,14 @@ export default function AdminOrganizationsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Use Zustand store for organizations
-  const organizations = useOrganizationStore((state) => state.organizations);
+  // Use Zustand store for organizations with auto-fetch
+  const organizations = useOrganizationStore((state) => state.getOrganizationsWithAutoFetch());
   const loading = useOrganizationStore((state) => state.loading);
   const storeError = useOrganizationStore((state) => state.error);
-  const fetchOrganizations = useOrganizationStore((state) => state.fetchOrganizations);
   const createOrganization = useOrganizationStore((state) => state.createOrganization);
   const updateOrganization = useOrganizationStore((state) => state.updateOrganization);
   const deleteOrganization = useOrganizationStore((state) => state.deleteOrganization);
+  const refetch = useOrganizationStore((state) => state.refetch);
 
   // Local error state for specific operations
   const [error, setError] = useState("");
@@ -227,7 +227,7 @@ export default function AdminOrganizationsPage() {
 
   const loadOrganizations = useCallback(async () => {
     try {
-      await fetchOrganizations();
+      await refetch();
       setError("");
     } catch (err) {
       // Error is already set in the store, but we handle routing here
@@ -238,7 +238,7 @@ export default function AdminOrganizationsPage() {
         setError(t("organizations.failedToLoad"));
       }
     }
-  }, [fetchOrganizations, router, t]);
+  }, [refetch, router, t]);
 
   const fetchUsers = useCallback(async (query: string = "") => {
     try {
@@ -260,8 +260,12 @@ export default function AdminOrganizationsPage() {
       return;
     }
 
-    loadOrganizations();
-  }, [session, status, router, loadOrganizations]);
+    // No need to manually fetch - auto-fetch selector will handle it
+    // Only check for auth errors if present
+    if (storeError && (storeError.includes("401") || storeError.includes("403"))) {
+      router.push("/auth/sign-in");
+    }
+  }, [session, status, router, storeError]);
 
   // Debounced user search
   useEffect(() => {
