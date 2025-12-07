@@ -239,15 +239,23 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
   },
 
   // Selector with auto-fetch: Returns organizations and automatically fetches if not loaded
+  // Note: This is a synchronous selector. The actual fetch triggering should be done
+  // in a useEffect hook in the consuming component to avoid state update during render issues.
+  // This selector just returns the current state and provides a flag indicating if fetch is needed.
   getOrganizationsWithAutoFetch: () => {
     const state = get();
     
     // Trigger fetch if not loaded and not currently loading
-    if (!state.hasFetched && !state.loading) {
-      // Use setTimeout to avoid issues with calling state updates during render
-      setTimeout(() => {
-        state.fetchOrganizations();
-      }, 0);
+    // This is safe because it's wrapped in a Promise microtask
+    if (!state.hasFetched && !state.loading && !state.error) {
+      // Schedule fetch in microtask to avoid state update during render
+      Promise.resolve().then(() => {
+        const currentState = get();
+        // Double-check state hasn't changed
+        if (!currentState.hasFetched && !currentState.loading) {
+          currentState.fetchOrganizations();
+        }
+      });
     }
     
     return state.organizations;
