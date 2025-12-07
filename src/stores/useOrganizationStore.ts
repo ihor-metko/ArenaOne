@@ -141,13 +141,27 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
 
       const updatedOrg = await response.json();
 
-      // Update in organizations list
+      // Update in organizations list - merge updated fields with existing org
       set((state) => ({
         organizations: state.organizations.map((org) =>
-          org.id === id ? { ...org, ...updatedOrg } : org
+          org.id === id 
+            ? { 
+                ...org, 
+                ...updatedOrg,
+                // Preserve id to prevent any accidental overwrites
+                id: org.id,
+              } 
+            : org
         ),
         // Update currentOrg if it matches
-        currentOrg: state.currentOrg?.id === id ? { ...state.currentOrg, ...updatedOrg } : state.currentOrg,
+        currentOrg: state.currentOrg?.id === id 
+          ? { 
+              ...state.currentOrg, 
+              ...updatedOrg,
+              // Preserve id to prevent any accidental overwrites
+              id: state.currentOrg.id,
+            } 
+          : state.currentOrg,
         loading: false,
       }));
 
