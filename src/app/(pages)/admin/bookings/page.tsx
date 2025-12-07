@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageHeader, Button, Modal, Select, Input } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
+import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { AdminQuickBookingWizard } from "@/components/AdminQuickBookingWizard";
 import type { AdminBookingsListResponse, AdminBookingResponse } from "@/app/api/admin/bookings/route";
 import type { AdminBookingDetailResponse } from "@/app/api/admin/bookings/[id]/route";
@@ -83,6 +84,8 @@ export default function AdminBookingsPage() {
   const perPage = 20;
 
   // Filter options
+  const storeOrganizations = useOrganizationStore((state) => state.organizations);
+  const fetchOrganizations = useOrganizationStore((state) => state.fetchOrganizations);
   const [organizations, setOrganizations] = useState<FilterOption[]>([]);
   const [clubs, setClubs] = useState<FilterOption[]>([]);
 
@@ -143,16 +146,13 @@ export default function AdminBookingsPage() {
       if (!adminStatus?.isAdmin) return;
 
       try {
-        // Fetch organizations (for root admin)
+        // Fetch organizations from store (for root admin)
         if (adminStatus.adminType === "root_admin") {
-          const orgResponse = await fetch("/api/admin/organizations");
-          if (orgResponse.ok) {
-            const orgs = await orgResponse.json();
-            setOrganizations(orgs.map((org: { id: string; name: string }) => ({
-              value: org.id,
-              label: org.name,
-            })));
-          }
+          await fetchOrganizations();
+          setOrganizations(storeOrganizations.map((org) => ({
+            value: org.id,
+            label: org.name,
+          })));
         }
 
         // Fetch clubs
@@ -170,7 +170,7 @@ export default function AdminBookingsPage() {
     };
 
     fetchFilterOptions();
-  }, [adminStatus]);
+  }, [adminStatus, fetchOrganizations, storeOrganizations]);
 
   // Fetch bookings
   const fetchBookings = useCallback(async () => {
