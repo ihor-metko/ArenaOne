@@ -34,9 +34,10 @@ export async function GET(
         }));
       
       // Mock empty arrays for data we don't have in mockDb
-      const coaches: never[] = [];
-      const businessHours: never[] = [];
-      const gallery: never[] = [];
+      // TODO: Add these to mockDb when needed for testing
+      const coaches: Array<{ id: string; name: string }> = [];
+      const businessHours: Array<unknown> = [];
+      const gallery: Array<unknown> = [];
       
       return NextResponse.json({
         id: club.id,
