@@ -132,7 +132,7 @@ export function useListController<TFilters = Record<string, unknown>>({
       page: defaultPage,
       pageSize: defaultPageSize,
     };
-  }, [entityKey, defaultFilters, defaultSortBy, defaultSortOrder, defaultPage, defaultPageSize, enablePersistence, storageKey]);
+  }, [storageKey, entityKey, defaultFilters, defaultSortBy, defaultSortOrder, defaultPage, defaultPageSize, enablePersistence]);
 
   // State - initialize directly from getInitialState
   const [state, setState] = useState<ListState<TFilters>>(() => getInitialState());
@@ -215,16 +215,14 @@ export function useListController<TFilters = Record<string, unknown>>({
   }, [updateState, defaultFilters]);
 
   const reset = useCallback(() => {
-    const newState = {
+    updateState(() => ({
       filters: defaultFilters,
       sortBy: defaultSortBy,
       sortOrder: defaultSortOrder,
       page: defaultPage,
       pageSize: defaultPageSize,
-    };
-    setState(newState);
-    saveToStorage(newState);
-  }, [defaultFilters, defaultSortBy, defaultSortOrder, defaultPage, defaultPageSize, saveToStorage]);
+    }));
+  }, [defaultFilters, defaultSortBy, defaultSortOrder, defaultPage, defaultPageSize, updateState]);
 
   // Cleanup on unmount
   useEffect(() => {
