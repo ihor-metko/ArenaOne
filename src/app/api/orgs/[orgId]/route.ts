@@ -179,14 +179,42 @@ export async function GET(
       clubName: ca.club.name,
     }));
 
-    // Format activity
-    const formattedActivity = recentActivity.map((log) => ({
-      id: log.id,
-      action: log.action,
-      actorId: log.actorId,
-      detail: log.detail ? JSON.parse(log.detail) : null,
-      createdAt: log.createdAt,
-    }));
+    // Get actor details for the activity logs
+    const actorIds = [...new Set(recentActivity.map((log) => log.actorId))];
+    const actors = await prisma.user.findMany({
+      where: {
+        id: { in: actorIds },
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    const actorMap = new Map(actors.map((a) => [a.id, a]));
+
+    // Format activity with actor information
+    const formattedActivity = recentActivity.map((log) => {
+      const actor = actorMap.get(log.actorId);
+      return {
+        id: log.id,
+        action: log.action,
+        actor: actor
+          ? {
+              id: actor.id,
+              name: actor.name,
+              email: actor.email,
+            }
+          : {
+              id: log.actorId,
+              name: null,
+              email: null,
+            },
+        detail: log.detail ? JSON.parse(log.detail) : null,
+        createdAt: log.createdAt,
+      };
+    });
 
     return NextResponse.json({
       id: organization.id,

@@ -137,6 +137,7 @@ describe("Organization Detail API", () => {
       ]);
       (prisma.auditLog.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.user.findMany as jest.Mock).mockResolvedValue([]);
 
       const request = new Request("http://localhost:3000/api/orgs/org-1");
       const response = await GET(request, { params: Promise.resolve({ orgId: "org-1" }) });
@@ -184,6 +185,7 @@ describe("Organization Detail API", () => {
       (prisma.club.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.auditLog.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.user.findMany as jest.Mock).mockResolvedValue([]);
 
       const request = new Request("http://localhost:3000/api/orgs/org-1");
       const response = await GET(request, { params: Promise.resolve({ orgId: "org-1" }) });
