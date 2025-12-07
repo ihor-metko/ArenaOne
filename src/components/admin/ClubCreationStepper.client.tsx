@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
-import { toOrganizationOptions } from "@/utils/organization";
+import { toOrganizationOptions, toOrganizationOption } from "@/utils/organization";
 import {
   GeneralInfoStep,
   ContactsStep,
@@ -98,6 +98,7 @@ export function ClubCreationStepper() {
   
   // Use Zustand store for organizations
   const organizations = useOrganizationStore((state) => state.organizations);
+  const currentOrg = useOrganizationStore((state) => state.currentOrg);
   const isLoadingOrgs = useOrganizationStore((state) => state.loading);
   const fetchOrganizations = useOrganizationStore((state) => state.fetchOrganizations);
   const fetchOrganizationById = useOrganizationStore((state) => state.fetchOrganizationById);
@@ -121,17 +122,7 @@ export function ClubCreationStepper() {
             const orgId = data.managedIds[0];
             try {
               await fetchOrganizationById(orgId);
-              // Access currentOrg from the store directly after fetch
-              const storeCurrentOrg = useOrganizationStore.getState().currentOrg;
-              if (storeCurrentOrg && storeCurrentOrg.id === orgId) {
-                const userOrg: OrganizationOption = {
-                  id: storeCurrentOrg.id,
-                  name: storeCurrentOrg.name,
-                  slug: storeCurrentOrg.slug,
-                };
-                setPrefilledOrg(userOrg);
-                setFormData(prev => ({ ...prev, organizationId: userOrg.id }));
-              }
+              // Don't access currentOrg here - let separate useEffect handle it
             } catch {
               // If org fetch fails, set organization ID only
               setFormData(prev => ({ ...prev, organizationId: orgId }));
@@ -145,6 +136,15 @@ export function ClubCreationStepper() {
 
     fetchAdminStatus();
   }, [fetchOrganizationById]);
+
+  // Update prefilledOrg when currentOrg changes (for organization admin)
+  useEffect(() => {
+    if (currentOrg && adminStatus?.adminType === "organization_admin") {
+      const userOrg = toOrganizationOption(currentOrg);
+      setPrefilledOrg(userOrg);
+      setFormData(prev => ({ ...prev, organizationId: userOrg.id }));
+    }
+  }, [currentOrg, adminStatus?.adminType]);
 
   // Search organizations for root admin (use store fetch with filtering)
   const handleOrgSearch = useCallback(async (query: string) => {

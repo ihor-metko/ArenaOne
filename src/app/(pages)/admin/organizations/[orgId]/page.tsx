@@ -116,6 +116,7 @@ export default function OrganizationDetailPage() {
   const fetchOrganizationById = useOrganizationStore((state) => state.fetchOrganizationById);
   const updateOrganization = useOrganizationStore((state) => state.updateOrganization);
   const deleteOrganization = useOrganizationStore((state) => state.deleteOrganization);
+  const setCurrentOrg = useOrganizationStore((state) => state.setCurrentOrg);
 
   const [org, setOrg] = useState<OrgDetail | null>(null);
   const [usersPreview, setUsersPreview] = useState<UsersPreviewData | null>(null);
@@ -181,8 +182,8 @@ export default function OrganizationDetailPage() {
       setError("");
       
       // Update the store's currentOrg with the fetched data (avoid redundant API call)
-      // The API returns full org details, we just need basic info for the store
-      const basicOrgInfo = {
+      // The API returns full org details, we extract basic info for the store
+      setCurrentOrg({
         id: data.id,
         name: data.name,
         slug: data.slug,
@@ -193,8 +194,7 @@ export default function OrganizationDetailPage() {
         contactPhone: data.contactPhone,
         website: data.website,
         address: data.address,
-      };
-      useOrganizationStore.getState().setCurrentOrg(basicOrgInfo);
+      });
     } catch {
       setError(t("orgDetail.failedToLoad"));
     } finally {
