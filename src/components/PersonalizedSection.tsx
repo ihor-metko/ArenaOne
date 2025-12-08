@@ -33,12 +33,6 @@ interface HomeData {
   upcomingBookings: UpcomingBooking[];
 }
 
-interface Club {
-  id: string;
-  name: string;
-  location: string;
-}
-
 interface PersonalizedSectionProps {
   userName: string;
 }

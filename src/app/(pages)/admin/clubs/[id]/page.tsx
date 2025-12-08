@@ -19,7 +19,6 @@ import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
 import { parseTags, getPriceRange, getCourtCounts, getGoogleMapsEmbedUrl } from "@/utils/club";
 
-import type { ClubDetail } from "@/types/club";
 import type { AdminStatusResponse } from "@/app/api/me/admin-status/route";
 import "./page.css";
 
@@ -36,9 +35,7 @@ export default function AdminClubDetailPage({
   // Use centralized club store
   const currentClub = useClubStore((state) => state.currentClub);
   const loading = useClubStore((state) => state.loading);
-  const storeError = useClubStore((state) => state.error);
   const fetchClubById = useClubStore((state) => state.fetchClubById);
-  const updateClub = useClubStore((state) => state.updateClub);
   const deleteClub = useClubStore((state) => state.deleteClub);
   
   const [error, setError] = useState("");

@@ -9,6 +9,7 @@ import { UserRoleIndicator } from "@/components/UserRoleIndicator";
 import { QuickBookingModal } from "@/components/QuickBookingModal";
 import { RequestTrainingModal } from "../../../../../archived_features/components/training/RequestTrainingModal";
 import { DarkModeToggle, LanguageSwitcher } from "@/components/ui";
+import { useClubStore } from "@/stores/useClubStore";
 import { useCurrentLocale } from "@/hooks/useCurrentLocale";
 import { formatPrice } from "@/utils/price";
 import "./player-dashboard.css";
@@ -97,10 +98,20 @@ export default function PlayerDashboardPage() {
   const t = useTranslations();
   const currentLocale = useCurrentLocale();
 
-  // State for clubs
-  const [clubs, setClubs] = useState<Club[]>([]);
+  // Use centralized club store
+  const clubsFromStore = useClubStore((state) => state.clubs);
+  const clubsLoading = useClubStore((state) => state.loading);
+  const fetchClubsFromStore = useClubStore((state) => state.fetchClubs);
+  
   const [selectedClubId, setSelectedClubId] = useState<string>("");
-  const [clubsLoading, setClubsLoading] = useState(true);
+  
+  // Map store clubs to local Club type
+  const clubs: Club[] = clubsFromStore.map((club) => ({
+    id: club.id,
+    name: club.name,
+    location: club.location,
+    logo: club.logo,
+  }));
 
   // State for bookings
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
@@ -145,28 +156,19 @@ export default function PlayerDashboardPage() {
     }
   }, [session, status, router]);
 
-  // Fetch clubs
+  // Fetch clubs from store
   const fetchClubs = useCallback(async () => {
     try {
-      const response = await fetch("/api/clubs");
-      if (response.ok) {
-        const data = await response.json();
-        setClubs(data);
-        // Set first club as default if available
-        if (data.length > 0 && !selectedClubId) {
-          setSelectedClubId(data[0].id);
-        }
-      } else {
-        // Non-critical: clubs list will show as empty, user can still navigate
-        console.warn("Failed to fetch clubs:", response.status);
+      await fetchClubsFromStore();
+      // Set first club as default if available
+      if (clubsFromStore.length > 0 && !selectedClubId) {
+        setSelectedClubId(clubsFromStore[0].id);
       }
     } catch (error) {
       // Non-critical: clubs list will show as empty, user can still navigate
       console.warn("Error fetching clubs:", error);
-    } finally {
-      setClubsLoading(false);
     }
-  }, [selectedClubId]);
+  }, [fetchClubsFromStore, clubsFromStore, selectedClubId]);
 
   // Fetch upcoming bookings
   const fetchUpcomingBookings = useCallback(async () => {
