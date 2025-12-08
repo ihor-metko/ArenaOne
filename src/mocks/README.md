@@ -46,7 +46,7 @@ Or remove the line entirely from `.env.local`.
   - Used by: `/admin/orgs/[orgId]/dashboard`
 
 - **`club-detail.ts`** - Mock data for club detail page
-  - Exports: `mockClubDetail`, `mockClubWithNoClubs`, `mockClubWithManyCourts`
+  - Exports: `mockClubDetail`, `mockClubWithNoCourts`, `mockClubWithManyCourts`, `mockUnpublishedClub`
   - Used by: `/admin/clubs/[id]`
 
 - **`user-detail.ts`** - Mock data for user detail page
