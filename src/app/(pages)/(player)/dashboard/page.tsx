@@ -160,15 +160,18 @@ export default function PlayerDashboardPage() {
   const fetchClubs = useCallback(async () => {
     try {
       await fetchClubsFromStore();
-      // Set first club as default if available
-      if (clubsFromStore.length > 0 && !selectedClubId) {
-        setSelectedClubId(clubsFromStore[0].id);
-      }
     } catch (error) {
       // Non-critical: clubs list will show as empty, user can still navigate
       console.warn("Error fetching clubs:", error);
     }
-  }, [fetchClubsFromStore, clubsFromStore, selectedClubId]);
+  }, [fetchClubsFromStore]);
+  
+  // Set first club as default when clubs are loaded
+  useEffect(() => {
+    if (clubs.length > 0 && !selectedClubId) {
+      setSelectedClubId(clubs[0].id);
+    }
+  }, [clubs, selectedClubId]);
 
   // Fetch upcoming bookings
   const fetchUpcomingBookings = useCallback(async () => {
