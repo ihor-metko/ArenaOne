@@ -42,7 +42,7 @@ Or remove the line entirely from `.env.local`.
 ### Location: `src/mocks/admin/`
 
 - **`organization-detail.ts`** - Mock data for organization dashboard page
-  - Exports: `mockOrganizationDetail`
+  - Exports: `mockOrganizationDetail` (default), `mockOrganizationWithNoClubs`, `mockOrganizationWithManyClubs`
   - Used by: `/admin/orgs/[orgId]/dashboard`
 
 - **`club-detail.ts`** - Mock data for club detail page
@@ -50,7 +50,7 @@ Or remove the line entirely from `.env.local`.
   - Used by: `/admin/clubs/[id]`
 
 - **`user-detail.ts`** - Mock data for user detail page
-  - Exports: `mockUserDetail`, `mockUserWithNoBookings`, `mockBlockedUser`
+  - Exports: `mockUserDetail` (default), `mockUserWithNoBookings`, `mockBlockedUser`, `mockOrganizationAdminUser`, `mockClubAdminUser`, `mockRootAdminUser`
   - Used by: `/admin/users/[id]`
 
 - **`booking-detail.ts`** - Mock data for booking detail
