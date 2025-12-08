@@ -50,12 +50,12 @@ describe("ClubCreationStepper", () => {
           }),
         });
       }
-      if (url.includes("/api/admin/organizations/search")) {
+      if (url === "/api/admin/organizations") {
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve([
-            { id: "org-1", name: "Test Organization", slug: "test-org" },
-            { id: "org-2", name: "Another Organization", slug: "another-org" },
+            { id: "org-1", name: "Test Organization", slug: "test-org", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+            { id: "org-2", name: "Another Organization", slug: "another-org", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
           ]),
         });
       }
