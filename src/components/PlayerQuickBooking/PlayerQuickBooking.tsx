@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
+import { useClubStore } from "@/stores/useClubStore";
 import { Step0SelectClub } from "./Step0SelectClub";
 import { Step1DateTime } from "./Step1DateTime";
 import { Step2Courts } from "./Step2Courts";
@@ -33,6 +34,10 @@ export function PlayerQuickBooking({
   preselectedDateTime,
 }: PlayerQuickBookingProps) {
   const t = useTranslations();
+  
+  // Use centralized club store
+  const clubsFromStore = useClubStore((state) => state.clubs);
+  const fetchClubsFromStore = useClubStore((state) => state.fetchClubs);
 
   // Determine visible steps based on preselected data
   const visibleSteps = useMemo(
@@ -187,7 +192,7 @@ export function PlayerQuickBooking({
     }
   }, [isOpen, preselectedCourtId, state.step2.selectedCourt]);
 
-  // Fetch available clubs for step 0
+  // Fetch available clubs for step 0 using store
   const fetchAvailableClubs = useCallback(async () => {
     setState((prev) => ({
       ...prev,
@@ -196,24 +201,8 @@ export function PlayerQuickBooking({
     }));
 
     try {
-      const response = await fetch("/api/clubs");
-      if (!response.ok) {
-        setState((prev) => ({
-          ...prev,
-          isLoadingClubs: false,
-          clubsError: t("auth.errorOccurred"),
-        }));
-        return;
-      }
-
-      const data = await response.json();
-      const clubs: BookingClub[] = data.clubs || [];
-
-      setState((prev) => ({
-        ...prev,
-        availableClubs: clubs,
-        isLoadingClubs: false,
-      }));
+      await fetchClubsFromStore();
+      // Note: The store will be updated, and we'll sync in useEffect below
     } catch {
       setState((prev) => ({
         ...prev,
@@ -221,7 +210,27 @@ export function PlayerQuickBooking({
         clubsError: t("auth.errorOccurred"),
       }));
     }
-  }, [t]);
+  }, [t, fetchClubsFromStore]);
+  
+  // Sync clubs from store to local state
+  useEffect(() => {
+    if (clubsFromStore.length > 0) {
+      const clubs: BookingClub[] = clubsFromStore.map((club) => ({
+        id: club.id,
+        name: club.name,
+        slug: club.slug || "",
+        location: club.location,
+        city: club.city || undefined,
+        heroImage: club.heroImage || undefined,
+      }));
+
+      setState((prev) => ({
+        ...prev,
+        availableClubs: clubs,
+        isLoadingClubs: false,
+      }));
+    }
+  }, [clubsFromStore]);
 
   // Fetch available courts for step 2
   const fetchAvailableCourts = useCallback(async () => {
