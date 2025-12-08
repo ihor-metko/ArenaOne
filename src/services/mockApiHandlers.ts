@@ -604,7 +604,7 @@ export async function mockGetRegisteredUsers() {
   const totalUsers = realUsers.length;
 
   // Generate trend data for the last 30 days
-  // For mock data, we'll create a simple pattern
+  // For mock data, we'll create a simple pattern based on day of month for consistency
   const trend = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -614,8 +614,9 @@ export async function mockGetRegisteredUsers() {
     date.setDate(date.getDate() - i);
     const dateStr = date.toISOString().split("T")[0];
 
-    // Simple mock pattern: random 0-3 registrations per day
-    const count = Math.floor(Math.random() * 4);
+    // Simple mock pattern: deterministic 0-3 registrations per day based on day number
+    // This makes the data consistent across test runs
+    const count = (date.getDate() + i) % 4;
 
     trend.push({
       date: dateStr,
@@ -713,9 +714,8 @@ export async function mockGetDashboardGraphs(params: {
 
   // Format date labels for display
   const formatDateLabel = (dateStr: string): string => {
-    const parts = dateStr.split("-");
-    const [year, month, day] = parts.map(Number);
-    const date = new Date(year, month - 1, day);
+    // ISO date string can be parsed directly
+    const date = new Date(dateStr);
 
     if (timeRange === "week") {
       return date.toLocaleDateString("en-US", { weekday: "short" });

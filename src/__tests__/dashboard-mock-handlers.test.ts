@@ -87,8 +87,9 @@ describe("Dashboard Mock Handlers", () => {
 
       expect(result.organizations).toBeDefined();
       expect(result.organizations!.length).toBe(2);
-      expect(result.organizations!.map(o => o.id)).toContain("org-1");
-      expect(result.organizations!.map(o => o.id)).toContain("org-2");
+      const orgIds = result.organizations!.map(o => o.id);
+      expect(orgIds).toContain("org-1");
+      expect(orgIds).toContain("org-2");
     });
 
     it("should handle multiple clubs for club admin", async () => {
@@ -99,8 +100,9 @@ describe("Dashboard Mock Handlers", () => {
 
       expect(result.clubs).toBeDefined();
       expect(result.clubs!.length).toBe(2);
-      expect(result.clubs!.map(c => c.id)).toContain("club-1");
-      expect(result.clubs!.map(c => c.id)).toContain("club-2");
+      const clubIds = result.clubs!.map(c => c.id);
+      expect(clubIds).toContain("club-1");
+      expect(clubIds).toContain("club-2");
     });
 
     it("should not return archived organizations in count", async () => {
