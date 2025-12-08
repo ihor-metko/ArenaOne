@@ -13,9 +13,6 @@ jest.mock("@/lib/prisma", () => ({
     user: {
       count: jest.fn(),
     },
-    booking: {
-      count: jest.fn(),
-    },
   },
 }));
 
@@ -65,7 +62,6 @@ describe("Root Dashboard API", () => {
       (prisma.organization.count as jest.Mock).mockResolvedValue(3);
       (prisma.club.count as jest.Mock).mockResolvedValue(5);
       (prisma.user.count as jest.Mock).mockResolvedValue(100);
-      (prisma.booking.count as jest.Mock).mockResolvedValue(25);
 
       const response = await GET(mockRequest);
       const data = await response.json();
@@ -75,29 +71,10 @@ describe("Root Dashboard API", () => {
         totalOrganizations: 3,
         totalClubs: 5,
         totalUsers: 100,
-        activeBookings: 25,
       });
     });
 
-    it("should count pending, paid, reserved, and confirmed bookings as active", async () => {
-      (auth as jest.Mock).mockResolvedValue({
-        user: { id: "root-admin-1", isRoot: true },
-      });
-      (prisma.organization.count as jest.Mock).mockResolvedValue(0);
-      (prisma.club.count as jest.Mock).mockResolvedValue(0);
-      (prisma.user.count as jest.Mock).mockResolvedValue(0);
-      (prisma.booking.count as jest.Mock).mockResolvedValue(10);
 
-      await GET(mockRequest);
-
-      expect(prisma.booking.count).toHaveBeenCalledWith({
-        where: {
-          status: {
-            in: ["pending", "paid", "reserved", "confirmed"],
-          },
-        },
-      });
-    });
 
     it("should handle database errors gracefully", async () => {
       (auth as jest.Mock).mockResolvedValue({
@@ -119,7 +96,6 @@ describe("Root Dashboard API", () => {
       (prisma.organization.count as jest.Mock).mockResolvedValue(0);
       (prisma.club.count as jest.Mock).mockResolvedValue(0);
       (prisma.user.count as jest.Mock).mockResolvedValue(0);
-      (prisma.booking.count as jest.Mock).mockResolvedValue(0);
 
       const response = await GET(mockRequest);
       const data = await response.json();
@@ -129,7 +105,6 @@ describe("Root Dashboard API", () => {
         totalOrganizations: 0,
         totalClubs: 0,
         totalUsers: 0,
-        activeBookings: 0,
       });
     });
   });
