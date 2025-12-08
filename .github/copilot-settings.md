@@ -71,11 +71,12 @@ All user state and role checks **must** use the centralized `useUserStore` Zusta
    - Do **not** manually compare roles like `if (user.role === "ROOT_ADMIN")`.
    - Do **not** check `localStorage` for role or login state.
 
-3. **Supported Roles**
+3. **Supported Admin Roles**
    - `ROOT_ADMIN`: Platform root administrator
    - `ORGANIZATION_ADMIN`: Organization administrator
    - `CLUB_ADMIN`: Club administrator
-   - `MEMBER`: Organization or club member (context-dependent)
+   
+   **Note**: Context-specific membership roles (e.g., `MEMBER` in organization or club) are not stored in the client store. These are managed server-side via the `requireRole` helper with appropriate context (organization ID or club ID).
 
 4. **Usage Examples**
 

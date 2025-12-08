@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { MembershipRole, ClubMembershipRole } from "@/constants/roles";
 
 /**
  * User object type for the store
@@ -10,6 +9,25 @@ export interface User {
   name: string | null;
   isRoot: boolean;
 }
+
+/**
+ * Admin type constants
+ */
+export const ADMIN_TYPE = {
+  ROOT: "root_admin",
+  ORGANIZATION: "organization_admin",
+  CLUB: "club_admin",
+  NONE: "none",
+} as const;
+
+/**
+ * Role constants for the store
+ */
+export const USER_ROLE = {
+  ROOT_ADMIN: "ROOT_ADMIN",
+  ORGANIZATION_ADMIN: "ORGANIZATION_ADMIN",
+  CLUB_ADMIN: "CLUB_ADMIN",
+} as const;
 
 /**
  * Admin status response from API
@@ -135,13 +153,16 @@ export const useUserStore = create<UserState>((set, get) => ({
       if (adminStatusResponse.ok) {
         const adminStatus: AdminStatusResponse = await adminStatusResponse.json();
         
-        // Build roles array based on admin status
-        if (adminStatus.adminType === "root_admin") {
-          roles = ["ROOT_ADMIN"];
-        } else if (adminStatus.adminType === "organization_admin") {
-          roles = ["ORGANIZATION_ADMIN"];
-        } else if (adminStatus.adminType === "club_admin") {
-          roles = ["CLUB_ADMIN"];
+        // Map admin type to role
+        const roleMap: Record<string, string> = {
+          [ADMIN_TYPE.ROOT]: USER_ROLE.ROOT_ADMIN,
+          [ADMIN_TYPE.ORGANIZATION]: USER_ROLE.ORGANIZATION_ADMIN,
+          [ADMIN_TYPE.CLUB]: USER_ROLE.CLUB_ADMIN,
+        };
+        
+        const role = roleMap[adminStatus.adminType];
+        if (role) {
+          roles = [role];
         }
       }
 
@@ -177,11 +198,14 @@ export const useUserStore = create<UserState>((set, get) => ({
   /**
    * Check if the current user has a specific role
    * 
-   * Supported roles:
+   * Supported admin roles:
    * - ROOT_ADMIN: Platform root administrator
    * - ORGANIZATION_ADMIN: Organization administrator
    * - CLUB_ADMIN: Club administrator
-   * - MEMBER: Organization or club member (context-dependent)
+   * 
+   * Note: This store only manages admin roles. Context-specific membership roles
+   * (e.g., MEMBER in an organization or club) are handled server-side via the
+   * requireRole helper with appropriate context.
    * 
    * @param role - The role to check
    * @returns true if the user has the role, false otherwise
@@ -223,5 +247,5 @@ export const useHasAnyRole = (roles: string[]) => useUserStore(state => state.ha
  */
 export const useCurrentUser = () => useUserStore(state => state.user);
 
-// Export role enums for convenience
-export { MembershipRole, ClubMembershipRole };
+// Note: For membership role enums (MEMBER, etc.), import directly from @/constants/roles
+// This store only manages admin-level roles
