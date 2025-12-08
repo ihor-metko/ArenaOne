@@ -40,5 +40,4 @@ export interface InlineCourt {
 export interface PlatformStatistics {
   totalOrganizations: number;
   totalClubs: number;
-  totalUsers: number;
 }
