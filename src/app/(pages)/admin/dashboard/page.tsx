@@ -485,12 +485,6 @@ export default function AdminDashboardPage() {
                 icon={<UsersIcon />}
                 colorClass="im-stat-card--users"
               />
-              <StatCard
-                title={t("rootAdmin.dashboard.activeBookings")}
-                value={dashboardData.platformStats.activeBookings}
-                icon={<BookingsIcon />}
-                colorClass="im-stat-card--bookings"
-              />
             </div>
 
             {/* Registered Users Card - Shows filtered, real players only */}
