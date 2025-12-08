@@ -55,12 +55,12 @@ export interface UnifiedDashboardResponse {
 
 /**
  * GET /api/admin/unified-dashboard
- * 
+ *
  * Returns dashboard data appropriate for the current user's admin role.
  * - Root Admin: Platform-wide statistics
  * - Organization Admin: Metrics for all managed organizations
  * - Club Admin: Metrics for all managed clubs
- * 
+ *
  * Access: Any admin role (root, organization admin, or club admin)
  */
 export async function GET(
@@ -92,21 +92,12 @@ export async function GET(
       const [
         totalOrganizations,
         totalClubs,
-        totalUsers,
-        activeBookings,
         activeBookingsCount,
         pastBookingsCount,
       ] = await Promise.all([
         prisma.organization.count(),
         prisma.club.count(),
         prisma.user.count(),
-        prisma.booking.count({
-          where: {
-            status: {
-              in: ["pending", "paid", "reserved", "confirmed"],
-            },
-          },
-        }),
         // Active/Upcoming bookings: today and future
         prisma.booking.count({
           where: {
@@ -137,8 +128,6 @@ export async function GET(
         platformStats: {
           totalOrganizations,
           totalClubs,
-          totalUsers,
-          activeBookings,
           activeBookingsCount,
           pastBookingsCount,
         },
