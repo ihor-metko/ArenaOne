@@ -1,5 +1,8 @@
 "use client";
 
+// DEV ONLY: This page supports mock data when NEXT_PUBLIC_USE_MOCKS=true
+// See src/mocks/README.md for details
+
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -17,6 +20,8 @@ import { GalleryModal } from "@/components/GalleryModal";
 import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
 import { parseTags, getPriceRange, getCourtCounts, getGoogleMapsEmbedUrl } from "@/utils/club";
+import { shouldUseMocks } from "@/mocks";
+import { mockClubDetail } from "@/mocks/admin/club-detail";
 
 import type { ClubDetail } from "@/types/club";
 import type { AdminStatusResponse } from "@/app/api/me/admin-status/route";
@@ -69,6 +74,13 @@ export default function AdminClubDetailPage({
 
   const fetchClub = useCallback(async () => {
     if (!clubId) return;
+
+    // DEV ONLY: Use mock data if enabled
+    if (shouldUseMocks()) {
+      setClub(mockClubDetail);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);

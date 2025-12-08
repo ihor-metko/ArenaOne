@@ -1,5 +1,8 @@
 "use client";
 
+// DEV ONLY: This page supports mock data when NEXT_PUBLIC_USE_MOCKS=true
+// See src/mocks/README.md for details
+
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
@@ -9,6 +12,8 @@ import OrgHeader from "@/components/admin/OrgHeader";
 import KeyMetrics from "@/components/admin/KeyMetrics";
 import { Button } from "@/components/ui";
 import type { OrgDashboardResponse } from "@/app/api/orgs/[orgId]/dashboard/route";
+import { shouldUseMocks } from "@/mocks";
+import { mockOrganizationDetail } from "@/mocks/admin/organization-detail";
 import "./OrgDashboard.css";
 
 /**
@@ -103,6 +108,13 @@ export default function OrgDashboardPage() {
   const [error, setError] = useState("");
 
   const fetchDashboard = useCallback(async () => {
+    // DEV ONLY: Use mock data if enabled
+    if (shouldUseMocks()) {
+      setDashboardData(mockOrganizationDetail);
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`/api/orgs/${orgId}/dashboard`);
       

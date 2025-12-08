@@ -1,11 +1,16 @@
 "use client";
 
+// DEV ONLY: This page supports mock data when NEXT_PUBLIC_USE_MOCKS=true
+// See src/mocks/README.md for details
+
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Button, Modal, Breadcrumbs, Badge, Card, Input } from "@/components/ui";
+import { shouldUseMocks } from "@/mocks";
+import { mockUserDetail } from "@/mocks/admin/user-detail";
 import "./page.css";
 
 /* Icon Components */
@@ -235,6 +240,13 @@ export default function UserDetailPage() {
   };
 
   const fetchUser = useCallback(async () => {
+    // DEV ONLY: Use mock data if enabled
+    if (shouldUseMocks()) {
+      setUser(mockUserDetail);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await fetch(`/api/admin/users/${userId}`);
