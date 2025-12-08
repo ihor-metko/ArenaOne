@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Card, Button, Select, Modal } from "@/components/ui";
@@ -142,9 +142,12 @@ export function PersonalizedSection({ userName }: PersonalizedSectionProps) {
   const [error, setError] = useState<string | null>(null);
 
   // Use centralized club store for quick booking
-  const clubs = useClubStore((state) => state.clubs);
+  const clubsFromStore = useClubStore((state) => state.clubs);
   const clubsLoading = useClubStore((state) => state.loading);
   const fetchClubsFromStore = useClubStore((state) => state.fetchClubs);
+  
+  // Memoize clubs to avoid unnecessary re-renders
+  const clubs = useMemo(() => clubsFromStore, [clubsFromStore]);
 
   // Quick Booking Wizard State
   const [isWizardOpen, setIsWizardOpen] = useState(false);

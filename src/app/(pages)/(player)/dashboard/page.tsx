@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -105,13 +105,13 @@ export default function PlayerDashboardPage() {
   
   const [selectedClubId, setSelectedClubId] = useState<string>("");
   
-  // Map store clubs to local Club type
-  const clubs: Club[] = clubsFromStore.map((club) => ({
+  // Map store clubs to local Club type (memoized to avoid unnecessary re-renders)
+  const clubs: Club[] = useMemo(() => clubsFromStore.map((club) => ({
     id: club.id,
     name: club.name,
     location: club.location,
     logo: club.logo,
-  }));
+  })), [clubsFromStore]);
 
   // State for bookings
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);

@@ -192,6 +192,19 @@ export function PlayerQuickBooking({
     }
   }, [isOpen, preselectedCourtId, state.step2.selectedCourt]);
 
+  // Memoize club mapping to avoid unnecessary re-renders
+  const mappedClubs: BookingClub[] = useMemo(() => 
+    clubsFromStore.map((club) => ({
+      id: club.id,
+      name: club.name,
+      slug: club.slug || "",
+      location: club.location,
+      city: club.city || undefined,
+      heroImage: club.heroImage || undefined,
+    })),
+    [clubsFromStore]
+  );
+  
   // Fetch available clubs for step 0 using store
   const fetchAvailableClubs = useCallback(async () => {
     setState((prev) => ({
@@ -202,7 +215,7 @@ export function PlayerQuickBooking({
 
     try {
       await fetchClubsFromStore();
-      // Note: The store will be updated, and we'll sync in useEffect below
+      // Clubs will be synced via useEffect below
     } catch {
       setState((prev) => ({
         ...prev,
@@ -214,23 +227,14 @@ export function PlayerQuickBooking({
   
   // Sync clubs from store to local state
   useEffect(() => {
-    if (clubsFromStore.length > 0) {
-      const clubs: BookingClub[] = clubsFromStore.map((club) => ({
-        id: club.id,
-        name: club.name,
-        slug: club.slug || "",
-        location: club.location,
-        city: club.city || undefined,
-        heroImage: club.heroImage || undefined,
-      }));
-
+    if (mappedClubs.length > 0) {
       setState((prev) => ({
         ...prev,
-        availableClubs: clubs,
+        availableClubs: mappedClubs,
         isLoadingClubs: false,
       }));
     }
-  }, [clubsFromStore]);
+  }, [mappedClubs]);
 
   // Fetch available courts for step 2
   const fetchAvailableCourts = useCallback(async () => {

@@ -163,14 +163,6 @@ export default function ClubDetailPage({
       try {
         const resolvedParams = await params;
         await fetchClubById(resolvedParams.id);
-        
-        // Fetch availability for all courts if club has them
-        if (currentClub?.courts && currentClub.courts.length > 0) {
-          fetchAvailability(currentClub.courts);
-        } else {
-          setAvailabilityLoading(false);
-        }
-        
         setError(null);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : t("clubs.failedToLoadClub");
@@ -184,7 +176,16 @@ export default function ClubDetailPage({
       }
     }
     fetchClubData();
-  }, [params, fetchClubById, currentClub, fetchAvailability, t]);
+  }, [params, fetchClubById, t]);
+  
+  // Fetch availability when club data is loaded
+  useEffect(() => {
+    if (club?.courts && club.courts.length > 0) {
+      fetchAvailability(club.courts);
+    } else if (club) {
+      setAvailabilityLoading(false);
+    }
+  }, [club, fetchAvailability]);
 
   const handleBookClick = (courtId: string) => {
     if (!isAuthenticated) {
