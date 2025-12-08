@@ -3,9 +3,12 @@
 import { useSession, signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { IMLink } from "@/components/ui";
+import { useUserStore } from "@/stores/useUserStore";
 
 export function UserRoleIndicator() {
   const { data: session, status } = useSession();
+  const clearUser = useUserStore(state => state.clearUser);
+  const hasRole = useUserStore(state => state.hasRole);
   const t = useTranslations();
 
   if (status === "loading") {
@@ -35,9 +38,14 @@ export function UserRoleIndicator() {
     );
   }
 
-  const isRoot = session.user.isRoot;
-  const roleLabel = isRoot ? t("admin.coaches.roles.rootAdmin") : t("admin.coaches.roles.player");
-  const roleBgColor = isRoot ? "bg-purple-600" : "bg-green-500";
+  const isRootAdmin = hasRole("ROOT_ADMIN");
+  const roleLabel = isRootAdmin ? t("admin.coaches.roles.rootAdmin") : t("admin.coaches.roles.player");
+  const roleBgColor = isRootAdmin ? "bg-purple-600" : "bg-green-500";
+
+  const handleSignOut = () => {
+    clearUser();
+    signOut({ callbackUrl: "/auth/sign-in" });
+  };
 
   return (
     <div className="rsp-user-indicator flex items-center gap-4">
@@ -52,7 +60,7 @@ export function UserRoleIndicator() {
         </span>
       </div>
       <button
-        onClick={() => signOut({ callbackUrl: "/auth/sign-in" })}
+        onClick={handleSignOut}
         className="rsp-link text-red-500 hover:underline text-sm"
       >
         {t("common.signOut")}
