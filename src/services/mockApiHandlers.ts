@@ -440,7 +440,7 @@ export async function mockGetCourts(params: {
   });
 
   // Sort courts
-  let sortedCourts = [...courtsWithBookings];
+  const sortedCourts = [...courtsWithBookings];
   if (sortBy === "name") {
     sortedCourts.sort((a, b) => {
       const comparison = a.name.localeCompare(b.name);
