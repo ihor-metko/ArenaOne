@@ -177,9 +177,6 @@ export function AdminQuickBookingWizard({
   }, [isOpen, state.currentStep, adminType, predefinedData, organizations, isLoadingOrgs, orgError]);
 
   // Fetch clubs (Step 2) - using store with inflight guard
-  const clubsFromStore = useClubStore((state) => state.clubs);
-  const loadingClubsFromStore = useClubStore((state) => state.loadingClubs);
-  const clubsErrorFromStore = useClubStore((state) => state.clubsError);
   const fetchClubsIfNeeded = useClubStore((state) => state.fetchClubsIfNeeded);
 
   useEffect(() => {

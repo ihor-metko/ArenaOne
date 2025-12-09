@@ -231,10 +231,10 @@ export const useClubStore = create<ClubState>((set, get) => ({
         const clubIndex = currentClubs.findIndex(c => c.id === id);
         if (clubIndex >= 0) {
           const updatedClubs = [...currentClubs];
+          // Merge updated data while preserving the original id
           updatedClubs[clubIndex] = { 
             ...updatedClubs[clubIndex],
             ...club,
-            id: club.id,
           };
           set({ clubs: updatedClubs });
         }

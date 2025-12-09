@@ -25,11 +25,7 @@ interface Club {
   name: string;
 }
 
-interface ClubApiResponse {
-  id: string;
-  name: string;
-  organization?: { id: string };
-}
+
 
 interface ClubAdmin {
   id: string;
