@@ -647,16 +647,16 @@ export function initializeMockData() {
   ];
 
   // Create mock audit logs for organization activity
-  const now = new Date();
-  const oneDayAgo = new Date(now);
+  const auditNow = new Date();
+  const oneDayAgo = new Date(auditNow);
   oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-  const twoDaysAgo = new Date(now);
+  const twoDaysAgo = new Date(auditNow);
   twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-  const threeDaysAgo = new Date(now);
+  const threeDaysAgo = new Date(auditNow);
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-  const fiveDaysAgo = new Date(now);
+  const fiveDaysAgo = new Date(auditNow);
   fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-  const sevenDaysAgo = new Date(now);
+  const sevenDaysAgo = new Date(auditNow);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   mockAuditLogs = [
