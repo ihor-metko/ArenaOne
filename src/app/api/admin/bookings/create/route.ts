@@ -159,6 +159,17 @@ export async function POST(request: Request) {
           },
         },
       },
+      select: {
+        id: true,
+        sportType: true,
+        defaultPriceCents: true,
+        club: {
+          select: {
+            id: true,
+            organizationId: true,
+          },
+        },
+      },
     });
 
     if (!court) {
@@ -292,6 +303,7 @@ export async function POST(request: Request) {
         start,
         end,
         price: priceCents,
+        sportType: court.sportType || "PADEL",
         status: "reserved", // Admin bookings are automatically reserved
       },
       include: {

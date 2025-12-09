@@ -1,3 +1,5 @@
+import { SportType } from "@/constants/sports";
+
 export interface Court {
   id: string;
   name: string;
@@ -5,6 +7,7 @@ export interface Court {
   type?: string | null;
   surface?: string | null;
   indoor: boolean;
+  sportType?: SportType;
   defaultPriceCents: number;
   imageUrl?: string | null;
   createdAt?: string;
@@ -66,6 +69,7 @@ export interface CreateCourtPayload {
   type?: string | null;
   surface?: string | null;
   indoor?: boolean;
+  sportType?: SportType;
   defaultPriceCents?: number;
 }
 
@@ -78,6 +82,7 @@ export interface UpdateCourtPayload {
   type?: string | null;
   surface?: string | null;
   indoor?: boolean;
+  sportType?: SportType;
   defaultPriceCents?: number;
 }
 

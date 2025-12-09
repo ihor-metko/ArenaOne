@@ -14,6 +14,7 @@ interface CourtInput {
   type: string | null;
   surface: string | null;
   indoor: boolean;
+  sportType?: string;
   defaultPriceCents: number;
 }
 
@@ -41,6 +42,7 @@ interface CreateClubRequest {
   timezone?: string;
   isPublic?: boolean;
   tags?: string | null;
+  supportedSports?: string[];
   heroImage?: string;
   logo?: string;
   gallery?: GalleryInput[];
@@ -167,6 +169,7 @@ export async function POST(request: Request) {
           timezone: body.timezone || "UTC",
           isPublic: body.isPublic ?? true,
           tags: body.tags || null,
+          supportedSports: body.supportedSports || ["PADEL"],
           heroImage: body.heroImage || null,
           logo: body.logo || null,
         },
@@ -206,6 +209,7 @@ export async function POST(request: Request) {
             type: court.type || null,
             surface: court.surface || null,
             indoor: court.indoor,
+            sportType: court.sportType || "PADEL",
             defaultPriceCents: court.defaultPriceCents,
           })),
         });
