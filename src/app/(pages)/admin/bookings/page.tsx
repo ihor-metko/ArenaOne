@@ -9,9 +9,19 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
 import { AdminQuickBookingWizard } from "@/components/AdminQuickBookingWizard";
+import { useListController } from "@/hooks";
 import type { AdminBookingsListResponse, AdminBookingResponse } from "@/app/api/admin/bookings/route";
 import type { AdminBookingDetailResponse } from "@/app/api/admin/bookings/[id]/route";
 import "./AdminBookings.css";
+
+// Define filters interface
+interface BookingFilters {
+  selectedOrg: string;
+  selectedClub: string;
+  selectedStatus: string;
+  dateFrom: string;
+  dateTo: string;
+}
 
 /**
  * Format date to display format
@@ -74,14 +84,26 @@ export default function AdminBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Filters
-  const [selectedOrg, setSelectedOrg] = useState("");
-  const [selectedClub, setSelectedClub] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [page, setPage] = useState(1);
-  const perPage = 20;
+  // Use list controller hook for persistent filters
+  const {
+    filters,
+    setFilter,
+    page,
+    setPage,
+    pageSize,
+    clearFilters,
+  } = useListController<BookingFilters>({
+    entityKey: "bookings",
+    defaultFilters: {
+      selectedOrg: "",
+      selectedClub: "",
+      selectedStatus: "",
+      dateFrom: "",
+      dateTo: "",
+    },
+    defaultPage: 1,
+    defaultPageSize: 20,
+  });
 
   // Filter options
   const storeOrganizations = useOrganizationStore((state) => state.organizations);
@@ -156,13 +178,13 @@ export default function AdminBookingsPage() {
     try {
       const params = new URLSearchParams();
       params.set("page", String(page));
-      params.set("perPage", String(perPage));
+      params.set("perPage", String(pageSize));
 
-      if (selectedOrg) params.set("orgId", selectedOrg);
-      if (selectedClub) params.set("clubId", selectedClub);
-      if (selectedStatus) params.set("status", selectedStatus);
-      if (dateFrom) params.set("dateFrom", dateFrom);
-      if (dateTo) params.set("dateTo", dateTo);
+      if (filters.selectedOrg) params.set("orgId", filters.selectedOrg);
+      if (filters.selectedClub) params.set("clubId", filters.selectedClub);
+      if (filters.selectedStatus) params.set("status", filters.selectedStatus);
+      if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
+      if (filters.dateTo) params.set("dateTo", filters.dateTo);
 
       const response = await fetch(`/api/admin/bookings?${params.toString()}`);
 
@@ -185,7 +207,7 @@ export default function AdminBookingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [adminStatus, page, selectedOrg, selectedClub, selectedStatus, dateFrom, dateTo, router, t]);
+  }, [adminStatus, page, pageSize, filters, router, t]);
 
   // Fetch bookings when filters change
   useEffect(() => {
@@ -194,19 +216,9 @@ export default function AdminBookingsPage() {
     }
   }, [adminStatus, fetchBookings]);
 
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [selectedOrg, selectedClub, selectedStatus, dateFrom, dateTo]);
-
   // Clear filters
   const handleClearFilters = () => {
-    setSelectedOrg("");
-    setSelectedClub("");
-    setSelectedStatus("");
-    setDateFrom("");
-    setDateTo("");
-    setPage(1);
+    clearFilters();
   };
 
   // View booking details
@@ -325,8 +337,8 @@ export default function AdminBookingsPage() {
                 { value: "", label: t("adminBookings.allOrganizations") },
                 ...organizations,
               ]}
-              value={selectedOrg}
-              onChange={setSelectedOrg}
+              value={filters.selectedOrg}
+              onChange={(value) => setFilter("selectedOrg", value)}
               placeholder={t("adminBookings.selectOrganization")}
             />
           </div>
@@ -341,8 +353,8 @@ export default function AdminBookingsPage() {
                 { value: "", label: t("adminBookings.allClubs") },
                 ...clubs,
               ]}
-              value={selectedClub}
-              onChange={setSelectedClub}
+              value={filters.selectedClub}
+              onChange={(value) => setFilter("selectedClub", value)}
               placeholder={t("adminBookings.selectClub")}
             />
           </div>
@@ -354,16 +366,16 @@ export default function AdminBookingsPage() {
           <div className="im-admin-bookings-date-range">
             <Input
               type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              max={dateTo || undefined}
+              value={filters.dateFrom}
+              onChange={(e) => setFilter("dateFrom", e.target.value)}
+              max={filters.dateTo || undefined}
             />
             <span>—</span>
             <Input
               type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              min={dateFrom || undefined}
+              value={filters.dateTo}
+              onChange={(e) => setFilter("dateTo", e.target.value)}
+              min={filters.dateFrom || undefined}
             />
           </div>
         </div>
@@ -373,8 +385,8 @@ export default function AdminBookingsPage() {
           <label>{t("common.status")}</label>
           <Select
             options={statusOptions}
-            value={selectedStatus}
-            onChange={setSelectedStatus}
+            value={filters.selectedStatus}
+            onChange={(value) => setFilter("selectedStatus", value)}
           />
         </div>
 
@@ -478,8 +490,8 @@ export default function AdminBookingsPage() {
             <div className="im-admin-bookings-pagination">
               <span className="im-admin-bookings-pagination-info">
                 {t("adminBookings.showing", {
-                  start: (page - 1) * perPage + 1,
-                  end: Math.min(page * perPage, bookingsData.total),
+                  start: (page - 1) * pageSize + 1,
+                  end: Math.min(page * pageSize, bookingsData.total),
                   total: bookingsData.total,
                 })}
               </span>
@@ -488,7 +500,7 @@ export default function AdminBookingsPage() {
                   variant="outline"
                   size="small"
                   disabled={page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
+                  onClick={() => setPage(page - 1)}
                 >
                   {t("organizations.previous")}
                 </Button>
@@ -496,7 +508,7 @@ export default function AdminBookingsPage() {
                   variant="outline"
                   size="small"
                   disabled={page >= bookingsData.totalPages}
-                  onClick={() => setPage((p) => p + 1)}
+                  onClick={() => setPage(page + 1)}
                 >
                   {t("organizations.next")}
                 </Button>

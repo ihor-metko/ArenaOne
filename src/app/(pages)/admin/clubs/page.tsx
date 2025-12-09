@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Input, IMLink, PageHeader } from "@/components/ui";
 import { AdminClubCard } from "@/components/admin/AdminClubCard";
+import { useListController } from "@/hooks";
 import type { ClubWithCounts } from "@/types/club";
 import { useUserStore } from "@/stores/useUserStore";
 import "@/components/admin/AdminClubCard.css";
@@ -12,14 +13,23 @@ import "@/components/admin/AdminClubCard.css";
 type SortField = "name" | "city" | "createdAt" | "bookingCount";
 type SortDirection = "asc" | "desc";
 
+// Define filters interface
+interface ClubFilters {
+  searchQuery: string;
+  selectedOrganization: string;
+  selectedCity: string;
+  selectedStatus: string;
+}
+
 /**
  * Admin Clubs Page
- * 
+ *
  * Note: This page uses direct API calls instead of useClubStore because it requires
  * server-side filtering, pagination, and sorting with query parameters that are not
  * supported by the basic store implementation. Complex admin pages with server-side
  * features should continue using direct API calls for optimal performance.
  */
+
 export default function AdminClubsPage() {
   const t = useTranslations();
   const router = useRouter();
@@ -32,19 +42,39 @@ export default function AdminClubsPage() {
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   const isLoadingStore = useUserStore((state) => state.isLoading);
 
-  // Filtering state
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedOrganization, setSelectedOrganization] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
+  // Use list controller hook for persistent filters
+  const {
+    filters,
+    setFilter,
+    sortBy: sortByKey,
+    setSortBy: setSortByKey,
+    sortOrder,
+    setSortOrder,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    clearFilters,
+  } = useListController<ClubFilters>({
+    entityKey: "clubs",
+    defaultFilters: {
+      searchQuery: "",
+      selectedOrganization: "",
+      selectedCity: "",
+      selectedStatus: "",
+    },
+    defaultSortBy: "createdAt",
+    defaultSortOrder: "desc",
+    defaultPage: 1,
+    defaultPageSize: 20,
+  });
 
-  // Sorting state
-  const [sortField, setSortField] = useState<SortField>("createdAt");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  // Map sortByKey back to SortField type for backward compatibility
+  const sortField = sortByKey as SortField;
+  const setSortField = (field: SortField) => setSortByKey(field);
+  const sortDirection = sortOrder as SortDirection;
+  const setSortDirection = (direction: SortDirection) => setSortOrder(direction);
 
-  // Pagination state
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
@@ -55,10 +85,10 @@ export default function AdminClubsPage() {
       setLoading(true);
       // Build query parameters
       const params = new URLSearchParams();
-      if (searchQuery) params.append("search", searchQuery);
-      if (selectedCity) params.append("city", selectedCity);
-      if (selectedStatus) params.append("status", selectedStatus);
-      if (selectedOrganization) params.append("organizationId", selectedOrganization);
+      if (filters.searchQuery) params.append("search", filters.searchQuery);
+      if (filters.selectedCity) params.append("city", filters.selectedCity);
+      if (filters.selectedStatus) params.append("status", filters.selectedStatus);
+      if (filters.selectedOrganization) params.append("organizationId", filters.selectedOrganization);
       params.append("sortBy", sortField);
       params.append("sortOrder", sortDirection);
       params.append("page", page.toString());
@@ -84,7 +114,7 @@ export default function AdminClubsPage() {
     } finally {
       setLoading(false);
     }
-  }, [router, t, searchQuery, selectedCity, selectedStatus, selectedOrganization, sortField, sortDirection, page, pageSize]);
+  }, [router, t, filters, sortField, sortDirection, page, pageSize]);
 
   useEffect(() => {
     if (isLoadingStore) return;
@@ -128,13 +158,9 @@ export default function AdminClubsPage() {
   const showOrganizationFilter = adminStatus?.adminType === "root_admin";
 
   const handleClearFilters = () => {
-    setSearchQuery("");
-    setSelectedOrganization("");
-    setSelectedCity("");
-    setSelectedStatus("");
+    clearFilters();
     setSortField("createdAt");
     setSortDirection("desc");
-    setPage(1);
   };
 
   if (isLoadingStore || loading) {
@@ -162,15 +188,15 @@ export default function AdminClubsPage() {
           <div className="im-admin-clubs-actions-left">
             <Input
               placeholder={t("common.search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={filters.searchQuery}
+              onChange={(e) => setFilter("searchQuery", e.target.value)}
               className="im-admin-clubs-search"
             />
 
             {showOrganizationFilter && organizations.length > 0 && (
               <select
-                value={selectedOrganization}
-                onChange={(e) => setSelectedOrganization(e.target.value)}
+                value={filters.selectedOrganization}
+                onChange={(e) => setFilter("selectedOrganization", e.target.value)}
                 className="im-admin-clubs-filter im-native-select"
                 aria-label={t("admin.clubs.filterByOrganization")}
               >
@@ -185,8 +211,8 @@ export default function AdminClubsPage() {
 
             {cities.length > 0 && (
               <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
+                value={filters.selectedCity}
+                onChange={(e) => setFilter("selectedCity", e.target.value)}
                 className="im-admin-clubs-filter im-native-select"
                 aria-label={t("admin.clubs.filterByCity")}
               >
@@ -200,8 +226,8 @@ export default function AdminClubsPage() {
             )}
 
             <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
+              value={filters.selectedStatus}
+              onChange={(e) => setFilter("selectedStatus", e.target.value)}
               className="im-admin-clubs-filter im-native-select"
               aria-label={t("admin.clubs.filterByStatus")}
             >
@@ -229,7 +255,7 @@ export default function AdminClubsPage() {
               <option value="bookingCount-desc">{t("admin.clubs.sortBookings")}</option>
             </select>
 
-            {(searchQuery || selectedOrganization || selectedCity || selectedStatus) && (
+            {(filters.searchQuery || filters.selectedOrganization || filters.selectedCity || filters.selectedStatus) && (
               <Button variant="outline" onClick={handleClearFilters}>
                 {t("common.clearFilters")}
               </Button>
