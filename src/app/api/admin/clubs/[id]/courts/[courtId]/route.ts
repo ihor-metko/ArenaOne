@@ -89,7 +89,7 @@ export async function PATCH(
     const resolvedParams = await params;
     const { id: clubId, courtId } = resolvedParams;
     const body = await request.json();
-    const { name, slug, type, surface, indoor, defaultPriceCents } = body;
+    const { name, slug, type, surface, indoor, sportType, defaultPriceCents } = body;
 
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
     if (isMockMode()) {
@@ -136,6 +136,7 @@ export async function PATCH(
         if (type !== undefined) updateData.type = type?.trim() || null;
         if (surface !== undefined) updateData.surface = surface?.trim() || null;
         if (indoor !== undefined) updateData.indoor = indoor;
+        if (sportType !== undefined) updateData.sportType = sportType;
         if (defaultPriceCents !== undefined) updateData.defaultPriceCents = defaultPriceCents;
 
         const updatedCourt = await mockUpdateCourtDetail(courtId, clubId, updateData);
@@ -250,6 +251,7 @@ export async function PATCH(
     if (type !== undefined) updateData.type = type?.trim() || null;
     if (surface !== undefined) updateData.surface = surface?.trim() || null;
     if (indoor !== undefined) updateData.indoor = indoor;
+    if (sportType !== undefined) updateData.sportType = sportType;
     if (defaultPriceCents !== undefined) updateData.defaultPriceCents = defaultPriceCents;
 
     const updatedCourt = await prisma.court.update({

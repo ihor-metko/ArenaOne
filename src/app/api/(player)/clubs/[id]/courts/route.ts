@@ -45,6 +45,7 @@ export async function GET(
         type: true,
         surface: true,
         indoor: true,
+        sportType: true,
         defaultPriceCents: true,
         createdAt: true,
         updatedAt: true,
@@ -87,7 +88,7 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { name, slug, type, surface, indoor, defaultPriceCents } = body;
+    const { name, slug, type, surface, indoor, sportType, defaultPriceCents } = body;
 
     if (!name || typeof name !== "string" || name.trim() === "") {
       return NextResponse.json(
@@ -117,6 +118,7 @@ export async function POST(
         type: type?.trim() || null,
         surface: surface?.trim() || null,
         indoor: indoor ?? false,
+        sportType: sportType || "PADEL",
         defaultPriceCents: defaultPriceCents ?? 0,
       },
     });

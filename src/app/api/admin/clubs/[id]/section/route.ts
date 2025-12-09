@@ -9,6 +9,7 @@ interface HeaderPayload {
   slug: string;
   shortDescription: string;
   isPublic: boolean;
+  supportedSports?: string[];
 }
 
 interface ContactsPayload {
@@ -178,6 +179,9 @@ export async function PATCH(
             slug: headerPayload.slug?.trim() || existingClub.slug,
             shortDescription: headerPayload.shortDescription?.trim() || null,
             isPublic: headerPayload.isPublic ?? existingClub.isPublic,
+            ...(headerPayload.supportedSports !== undefined && { 
+              supportedSports: headerPayload.supportedSports 
+            }),
           },
           include: {
             courts: true,
