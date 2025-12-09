@@ -9,6 +9,7 @@ import { CourtCard } from "@/components/courts";
 import type { AdminType } from "@/app/api/me/admin-status/route";
 import type { Club } from "@/types/club";
 import type { Organization } from "@/types/organization";
+import { useUserStore } from "@/stores/useUserStore";
 
 interface Court {
   id: string;
@@ -42,7 +43,7 @@ interface PaginationInfo {
 
 export default function AdminCourtsPage() {
   const t = useTranslations();
-    const router = useRouter();
+  const router = useRouter();
   const [courts, setCourts] = useState<Court[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -100,15 +101,15 @@ export default function AdminCourtsPage() {
         }
         throw new Error("Failed to fetch courts");
       }
-      
+
       const data = await response.json();
-      
+
       if (append) {
         setCourts((prev) => [...prev, ...data.courts]);
       } else {
         setCourts(data.courts);
       }
-      
+
       setPagination(data.pagination);
       setError("");
     } catch {
@@ -436,21 +437,21 @@ export default function AdminCourtsPage() {
                   showAvailabilitySummary={false}
                   showDetailedAvailability={false}
                 />
-            ))}
-          </div>
-
-          {/* Load More Button */}
-          {pagination.hasMore && (
-            <div className="mt-6 text-center">
-              <Button
-                variant="outline"
-                onClick={handleLoadMore}
-                disabled={loadingMore}
-              >
-                {loadingMore ? t("admin.courts.loading") : t("admin.courts.loadMore")}
-              </Button>
+              ))}
             </div>
-          )}
+
+            {/* Load More Button */}
+            {pagination.hasMore && (
+              <div className="mt-6 text-center">
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? t("admin.courts.loading") : t("admin.courts.loadMore")}
+                </Button>
+              </div>
+            )}
           </>
         )}
       </section>
@@ -465,13 +466,13 @@ export default function AdminCourtsPage() {
           initialValues={
             editingCourt
               ? {
-                  name: editingCourt.name,
-                  slug: editingCourt.slug || "",
-                  type: editingCourt.type || "",
-                  surface: editingCourt.surface || "",
-                  indoor: editingCourt.indoor,
-                  defaultPriceCents: editingCourt.defaultPriceCents,
-                }
+                name: editingCourt.name,
+                slug: editingCourt.slug || "",
+                type: editingCourt.type || "",
+                surface: editingCourt.surface || "",
+                indoor: editingCourt.indoor,
+                defaultPriceCents: editingCourt.defaultPriceCents,
+              }
               : undefined
           }
           onSubmit={handleSubmit}
