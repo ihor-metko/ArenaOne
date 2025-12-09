@@ -9,6 +9,7 @@ import { AdminOrganizationCard } from "@/components/admin/AdminOrganizationCard"
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
 import type { Organization } from "@/types/organization";
+import { SportType, SPORT_TYPE_OPTIONS } from "@/constants/sports";
 import "@/components/admin/AdminOrganizationCard.css";
 import "./page.css";
 
@@ -61,6 +62,7 @@ export default function AdminOrganizationsPage() {
 
   // State for search, sort, and pagination
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSportType, setSelectedSportType] = useState<string>("");
   const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -161,6 +163,13 @@ export default function AdminOrganizationsPage() {
       );
     }
 
+    // Filter by sport type
+    if (selectedSportType) {
+      result = result.filter(
+        (org) => org.supportedSports?.includes(selectedSportType as SportType)
+      );
+    }
+
     // Sort
     result.sort((a, b) => {
       let comparison = 0;
@@ -182,7 +191,7 @@ export default function AdminOrganizationsPage() {
     });
 
     return result;
-  }, [organizations, searchQuery, sortField, sortDirection]);
+  }, [organizations, searchQuery, selectedSportType, sortField, sortDirection]);
 
   // Paginated organizations
   const paginatedOrganizations = useMemo(() => {
@@ -193,10 +202,10 @@ export default function AdminOrganizationsPage() {
   // Total pages
   const totalPages = Math.ceil(filteredAndSortedOrganizations.length / itemsPerPage);
 
-  // Reset to first page when search or items per page changes
+  // Reset to first page when search, sport filter, or items per page changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, itemsPerPage]);
+  }, [searchQuery, selectedSportType, itemsPerPage]);
 
   // Sort options for the select component
   const sortOptions = [
@@ -831,6 +840,17 @@ export default function AdminOrganizationsPage() {
                 ✕
               </button>
             )}
+          </div>
+          <div className="im-admin-organizations-filters">
+            <Select
+              options={[
+                { value: "", label: t("organizations.allSports") },
+                ...SPORT_TYPE_OPTIONS
+              ]}
+              value={selectedSportType}
+              onChange={(value) => setSelectedSportType(value)}
+              aria-label={t("organizations.filterBySport")}
+            />
           </div>
           <div className="im-admin-organizations-sort">
             <Select
