@@ -7,11 +7,13 @@ import { useTranslations } from "next-intl";
 import { Input, IMLink } from "@/components/ui";
 import { getRoleHomepage } from "@/utils/roleRedirect";
 import { validateRedirectUrl } from "@/utils/redirectValidation";
+import { useUserStore } from "@/stores/useUserStore";
 
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status, update: updateSession } = useSession();
+  const loadUser = useUserStore(state => state.loadUser);
   const t = useTranslations();
   const [email, setEmail] = useState("ihor.metko@gmail.com");
   const [password, setPassword] = useState("12345678");
@@ -73,6 +75,9 @@ export default function SignInPage() {
       } else {
         // Refresh the session to get updated user data
         const updatedSession = await updateSession();
+
+        // Load user data into the store
+        await loadUser();
 
         if (updatedSession?.user) {
           handleRedirect(

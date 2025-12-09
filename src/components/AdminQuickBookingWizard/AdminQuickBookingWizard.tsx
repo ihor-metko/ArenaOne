@@ -3,6 +3,9 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
+import { useOrganizationStore } from "@/stores/useOrganizationStore";
+import { useClubStore } from "@/stores/useClubStore";
+import { toOrganizationOption } from "@/utils/organization";
 import { Step1Organization } from "./Step1Organization";
 import { Step2Club } from "./Step2Club";
 import { Step3User } from "./Step3User";
@@ -35,6 +38,11 @@ export function AdminQuickBookingWizard({
   adminType,
 }: AdminQuickBookingWizardProps) {
   const t = useTranslations();
+  
+  // Use Zustand store for organizations with auto-fetch
+  const organizations = useOrganizationStore((state) => state.getOrganizationsWithAutoFetch());
+  const isLoadingOrgs = useOrganizationStore((state) => state.loading);
+  const orgError = useOrganizationStore((state) => state.error);
 
   const [state, setState] = useState<WizardState>(() => {
     const firstStepId = getFirstVisibleStepId(adminType, predefinedData);
@@ -141,56 +149,38 @@ export function AdminQuickBookingWizard({
     }
   }, [isOpen, adminType, predefinedData]);
 
-  // Fetch organizations (Step 1)
+  // Update availableOrganizations and loading state from store (auto-fetch handled by selector)
   useEffect(() => {
-    const fetchOrganizations = async () => {
-      if (!isOpen || state.currentStep !== 1 || adminType !== "root_admin") {
-        return;
-      }
+    if (!isOpen || state.currentStep !== 1 || adminType !== "root_admin") {
+      return;
+    }
 
-      if (predefinedData?.organizationId) {
-        return; // Skip if org is predefined
-      }
+    if (predefinedData?.organizationId) {
+      return; // Skip if org is predefined
+    }
 
+    // Update loading state from store
+    setState((prev) => ({
+      ...prev,
+      isLoadingOrganizations: isLoadingOrgs,
+      organizationsError: orgError,
+    }));
+
+    // Update available organizations when store data changes
+    if (organizations.length > 0) {
+      const orgs: WizardOrganization[] = organizations.map(toOrganizationOption);
       setState((prev) => ({
         ...prev,
-        isLoadingOrganizations: true,
-        organizationsError: null,
+        availableOrganizations: orgs,
       }));
+    }
+  }, [isOpen, state.currentStep, adminType, predefinedData, organizations, isLoadingOrgs, orgError]);
 
-      try {
-        const response = await fetch("/api/admin/organizations");
-        if (!response.ok) {
-          throw new Error("Failed to fetch organizations");
-        }
-        const data = await response.json();
-        const orgs: WizardOrganization[] = data.map(
-          (org: { id: string; name: string; slug: string }) => ({
-            id: org.id,
-            name: org.name,
-            slug: org.slug,
-          })
-        );
-        setState((prev) => ({
-          ...prev,
-          availableOrganizations: orgs,
-          isLoadingOrganizations: false,
-        }));
-      } catch {
-        setState((prev) => ({
-          ...prev,
-          isLoadingOrganizations: false,
-          organizationsError: t("auth.errorOccurred"),
-        }));
-      }
-    };
+  // Fetch clubs (Step 2) - using store with inflight guard
+  const fetchClubsIfNeeded = useClubStore((state) => state.fetchClubsIfNeeded);
 
-    fetchOrganizations();
-  }, [isOpen, state.currentStep, adminType, predefinedData, t]);
-
-  // Fetch clubs (Step 2)
   useEffect(() => {
-    const fetchClubs = async () => {
+    const loadClubs = async () => {
       if (!isOpen || state.currentStep !== 2) {
         return;
       }
@@ -209,25 +199,17 @@ export function AdminQuickBookingWizard({
       }));
 
       try {
-        const response = await fetch("/api/admin/clubs");
-        if (!response.ok) {
-          throw new Error("Failed to fetch clubs");
-        }
-        const data = await response.json();
+        // Use store method with inflight guard to prevent duplicate requests
+        await fetchClubsIfNeeded();
 
-        let clubs: WizardClub[] = data.map(
-          (club: {
-            id: string;
-            name: string;
-            organizationId: string;
-            organization?: { name: string };
-          }) => ({
-            id: club.id,
-            name: club.name,
-            organizationId: club.organizationId || "",
-            organizationName: club.organization?.name,
-          })
-        );
+        // Map clubs from store to wizard format
+        const storeClubs = useClubStore.getState().clubs;
+        let clubs: WizardClub[] = storeClubs.map((club) => ({
+          id: club.id,
+          name: club.name,
+          organizationId: club.organization?.id || "",
+          organizationName: club.organization?.name,
+        }));
 
         // Filter by selected organization for root admin
         if (
@@ -244,22 +226,23 @@ export function AdminQuickBookingWizard({
           availableClubs: clubs,
           isLoadingClubs: false,
         }));
-      } catch {
+      } catch (error) {
         setState((prev) => ({
           ...prev,
           isLoadingClubs: false,
-          clubsError: t("auth.errorOccurred"),
+          clubsError: error instanceof Error ? error.message : t("auth.errorOccurred"),
         }));
       }
     };
 
-    fetchClubs();
+    loadClubs();
   }, [
     isOpen,
     state.currentStep,
     state.stepOrganization.selectedOrganizationId,
     adminType,
     predefinedData,
+    fetchClubsIfNeeded,
     t,
   ]);
 
@@ -522,6 +505,7 @@ export function AdminQuickBookingWizard({
         availableCourts: [],
       }));
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 

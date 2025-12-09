@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageHeader, Button, Modal, Select, Input } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
+import { useOrganizationStore } from "@/stores/useOrganizationStore";
+import { useClubStore } from "@/stores/useClubStore";
 import { AdminQuickBookingWizard } from "@/components/AdminQuickBookingWizard";
 import { useListController } from "@/hooks";
 import type { AdminBookingsListResponse, AdminBookingResponse } from "@/app/api/admin/bookings/route";
@@ -105,6 +107,10 @@ export default function AdminBookingsPage() {
   });
 
   // Filter options
+  const storeOrganizations = useOrganizationStore((state) => state.organizations);
+  const fetchOrganizations = useOrganizationStore((state) => state.fetchOrganizations);
+  const storeClubs = useClubStore((state) => state.clubs);
+  const fetchClubsIfNeeded = useClubStore((state) => state.fetchClubsIfNeeded);
   const [organizations, setOrganizations] = useState<FilterOption[]>([]);
   const [clubs, setClubs] = useState<FilterOption[]>([]);
 
@@ -165,34 +171,41 @@ export default function AdminBookingsPage() {
       if (!adminStatus?.isAdmin) return;
 
       try {
-        // Fetch organizations (for root admin)
+        // Fetch organizations from store (for root admin)
         if (adminStatus.adminType === "root_admin") {
-          const orgResponse = await fetch("/api/admin/organizations");
-          if (orgResponse.ok) {
-            const orgs = await orgResponse.json();
-            setOrganizations(orgs.map((org: { id: string; name: string }) => ({
-              value: org.id,
-              label: org.name,
-            })));
-          }
+          await fetchOrganizations();
+          // Don't map here - let separate useEffect handle it when store updates
         }
 
-        // Fetch clubs
-        const clubsResponse = await fetch("/api/admin/clubs");
-        if (clubsResponse.ok) {
-          const clubsData = await clubsResponse.json();
-          setClubs(clubsData.map((club: { id: string; name: string }) => ({
-            value: club.id,
-            label: club.name,
-          })));
-        }
+        // Fetch clubs using store with inflight guard
+        await fetchClubsIfNeeded();
       } catch {
         // Silently fail - filter options are optional
       }
     };
 
     fetchFilterOptions();
-  }, [adminStatus]);
+  }, [adminStatus, fetchOrganizations, fetchClubsIfNeeded]);
+
+  // Update local organizations when store organizations change
+  useEffect(() => {
+    if (storeOrganizations.length > 0 && adminStatus?.adminType === "root_admin") {
+      setOrganizations(storeOrganizations.map((org) => ({
+        value: org.id,
+        label: org.name,
+      })));
+    }
+  }, [storeOrganizations, adminStatus]);
+
+  // Update local clubs when store clubs change
+  useEffect(() => {
+    if (storeClubs.length > 0 && adminStatus?.adminType !== "club_admin") {
+      setClubs(storeClubs.map((club) => ({
+        value: club.id,
+        label: club.name,
+      })));
+    }
+  }, [storeClubs, adminStatus]);
 
   // Fetch bookings
   const fetchBookings = useCallback(async () => {

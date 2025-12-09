@@ -10,6 +10,10 @@ import {
   getMockUsers,
   getMockMemberships,
   getMockClubMemberships,
+  getMockBusinessHours,
+  getMockCourtPriceRules,
+  getMockCoaches,
+  getMockGalleryImages,
   findUserById,
   findClubById,
   findCourtById,
@@ -20,8 +24,19 @@ import {
   deleteMockBooking,
   createMockClub,
   createMockOrganization,
+  updateMockCourt,
+  deleteMockCourt,
 } from "./mockDb";
 import type { AdminBookingResponse } from "@/app/api/admin/bookings/route";
+
+// ============================================================================
+// Constants for default pagination and sorting
+// ============================================================================
+
+const DEFAULT_SORT_BY = "name";
+const DEFAULT_SORT_ORDER = "asc";
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
 
 // ============================================================================
 // Mock Bookings API
@@ -379,23 +394,252 @@ export async function mockGetOrganizationById(id: string) {
 // Mock Courts API
 // ============================================================================
 
-export async function mockGetCourts(clubId?: string) {
+export async function mockGetCourts(params: {
+  adminType: "root_admin" | "organization_admin" | "club_admin";
+  managedIds: string[];
+  filters: {
+    search?: string;
+    clubId?: string;
+    status?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    page?: number;
+    limit?: number;
+  };
+}) {
+  const { adminType, managedIds, filters } = params;
+  const {
+    search,
+    clubId,
+    status,
+    sortBy = DEFAULT_SORT_BY,
+    sortOrder = DEFAULT_SORT_ORDER,
+    page = DEFAULT_PAGE,
+    limit = DEFAULT_LIMIT,
+  } = filters;
+
   let courts = getMockCourts();
-  if (clubId) {
-    courts = courts.filter((c) => c.clubId === clubId);
+  const clubs = getMockClubs();
+  const organizations = getMockOrganizations();
+  const bookings = getMockBookings();
+
+  // Create lookup maps for O(1) access
+  const clubMap = new Map(clubs.map((club) => [club.id, club]));
+  const organizationMap = new Map(organizations.map((org) => [org.id, org]));
+
+  // Filter by role
+  if (adminType === "organization_admin") {
+    courts = courts.filter((court) => {
+      const club = clubMap.get(court.clubId);
+      return club && club.organizationId && managedIds.includes(club.organizationId);
+    });
+  } else if (adminType === "club_admin") {
+    courts = courts.filter((court) => managedIds.includes(court.clubId));
   }
-  return courts;
+
+  // Apply search filter
+  if (search) {
+    const searchLower = search.toLowerCase();
+    courts = courts.filter((court) =>
+      court.name.toLowerCase().includes(searchLower)
+    );
+  }
+
+  // Apply club filter
+  if (clubId) {
+    courts = courts.filter((court) => court.clubId === clubId);
+  }
+
+  // Apply status filter
+  if (status === "active") {
+    courts = courts.filter((court) => court.isActive);
+  } else if (status === "inactive") {
+    courts = courts.filter((court) => !court.isActive);
+  }
+
+  // Count bookings for each court
+  const courtsWithBookings = courts.map((court) => {
+    const courtBookings = bookings.filter((b) => b.courtId === court.id);
+    return {
+      ...court,
+      bookingCount: courtBookings.length,
+    };
+  });
+
+  // Sort courts
+  const sortedCourts = [...courtsWithBookings];
+  if (sortBy === "name") {
+    sortedCourts.sort((a, b) => {
+      const comparison = a.name.localeCompare(b.name);
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+  } else if (sortBy === "bookings") {
+    sortedCourts.sort((a, b) => {
+      const comparison = a.bookingCount - b.bookingCount;
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+  }
+
+  // Calculate pagination
+  const totalCount = sortedCourts.length;
+  const totalPages = Math.ceil(totalCount / limit);
+  const skip = (page - 1) * limit;
+  const paginatedCourts = sortedCourts.slice(skip, skip + limit);
+
+  // Transform to response format
+  const courtsWithDetails = paginatedCourts.map((court) => {
+    const club = clubMap.get(court.clubId);
+    const organization = club?.organizationId
+      ? organizationMap.get(club.organizationId)
+      : undefined;
+
+    // Courts should always have valid club associations in mock data
+    if (!club) {
+      throw new Error(`Invalid mock data: Court ${court.id} has no associated club`);
+    }
+
+    return {
+      id: court.id,
+      name: court.name,
+      slug: court.slug,
+      type: court.type,
+      surface: court.surface,
+      indoor: court.indoor,
+      isActive: court.isActive,
+      defaultPriceCents: court.defaultPriceCents,
+      createdAt: court.createdAt.toISOString(),
+      updatedAt: court.updatedAt.toISOString(),
+      club: {
+        id: club.id,
+        name: club.name,
+      },
+      organization: organization
+        ? {
+            id: organization.id,
+            name: organization.name,
+          }
+        : null,
+      bookingCount: court.bookingCount,
+    };
+  });
+
+  return {
+    courts: courtsWithDetails,
+    pagination: {
+      page,
+      limit,
+      total: totalCount,
+      totalPages,
+      hasMore: page * limit < totalCount,
+    },
+  };
 }
 
 export async function mockGetCourtById(id: string) {
   const court = findCourtById(id);
   if (!court) return null;
 
-  const club = findClubById(court.clubId);
+  // Return only the fields that match the real API response (no club relation)
   return {
-    ...court,
-    club: club ? { id: club.id, name: club.name } : null,
+    id: court.id,
+    name: court.name,
+    slug: court.slug,
+    type: court.type,
+    surface: court.surface,
+    indoor: court.indoor,
+    defaultPriceCents: court.defaultPriceCents,
+    clubId: court.clubId,
+    createdAt: court.createdAt.toISOString(),
+    updatedAt: court.updatedAt.toISOString(),
   };
+}
+
+export async function mockGetCourtDetailById(id: string) {
+  const court = findCourtById(id);
+  if (!court) return null;
+
+  const club = findClubById(court.clubId);
+  const businessHours = getMockBusinessHours().filter((bh) => bh.clubId === court.clubId);
+  const courtPriceRules = getMockCourtPriceRules().filter((pr) => pr.courtId === id);
+
+  return {
+    id: court.id,
+    name: court.name,
+    slug: court.slug,
+    type: court.type,
+    surface: court.surface,
+    indoor: court.indoor,
+    defaultPriceCents: court.defaultPriceCents,
+    clubId: court.clubId,
+    isActive: court.isActive,
+    createdAt: court.createdAt.toISOString(),
+    updatedAt: court.updatedAt.toISOString(),
+    club: club
+      ? {
+          id: club.id,
+          name: club.name,
+          businessHours: businessHours.map((bh) => ({
+            id: bh.id,
+            dayOfWeek: bh.dayOfWeek,
+            openTime: bh.openTime,
+            closeTime: bh.closeTime,
+            isClosed: bh.isClosed,
+          })),
+        }
+      : null,
+    courtPriceRules: courtPriceRules.map((pr) => ({
+      id: pr.id,
+      courtId: pr.courtId,
+      dayOfWeek: pr.dayOfWeek !== null ? pr.dayOfWeek : 0,
+      startTime: pr.startTime,
+      endTime: pr.endTime,
+      priceCents: pr.priceCents,
+      createdAt: pr.createdAt.toISOString(),
+      updatedAt: pr.updatedAt.toISOString(),
+    })),
+  };
+}
+
+export async function mockUpdateCourtDetail(
+  courtId: string,
+  clubId: string,
+  updateData: Record<string, unknown>
+) {
+  const existingCourt = findCourtById(courtId);
+  if (!existingCourt) {
+    throw new Error("Court not found");
+  }
+
+  if (existingCourt.clubId !== clubId) {
+    throw new Error("Court does not belong to this club");
+  }
+
+  // Update the court
+  const updatedCourt = updateMockCourt(courtId, updateData);
+  if (!updatedCourt) {
+    throw new Error("Failed to update court");
+  }
+
+  // Return the full court detail
+  return mockGetCourtDetailById(courtId);
+}
+
+export async function mockDeleteCourtDetail(courtId: string, clubId: string) {
+  const existingCourt = findCourtById(courtId);
+  if (!existingCourt) {
+    throw new Error("Court not found");
+  }
+
+  if (existingCourt.clubId !== clubId) {
+    throw new Error("Court does not belong to this club");
+  }
+
+  const success = deleteMockCourt(courtId);
+  if (!success) {
+    throw new Error("Failed to delete court");
+  }
+
+  return true;
 }
 
 // ============================================================================
@@ -413,4 +657,333 @@ export async function mockGetUserById(id: string) {
 export async function mockGetUserByEmail(email: string) {
   const users = getMockUsers();
   return users.find((u) => u.email === email);
+}
+
+// ============================================================================
+// Mock Unified Dashboard API
+// ============================================================================
+
+export async function mockGetUnifiedDashboard(params: {
+  adminType: "root_admin" | "organization_admin" | "club_admin";
+  managedIds: string[];
+}) {
+  const { adminType, managedIds } = params;
+  const bookings = getMockBookings();
+  const courts = getMockCourts();
+  const clubs = getMockClubs();
+  const organizations = getMockOrganizations();
+  const users = getMockUsers();
+  const clubMemberships = getMockClubMemberships();
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  if (adminType === "root_admin") {
+    // Platform-wide statistics
+    const activeBookings = bookings.filter((b) =>
+      ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+    ).length;
+
+    const activeBookingsCount = bookings.filter(
+      (b) =>
+        b.start >= today &&
+        ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+    ).length;
+
+    const pastBookingsCount = bookings.filter(
+      (b) =>
+        b.start < today &&
+        ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+    ).length;
+
+    return {
+      adminType,
+      isRoot: true,
+      platformStats: {
+        totalOrganizations: organizations.filter((o) => !o.archivedAt).length,
+        totalClubs: clubs.length,
+        totalUsers: users.length,
+        activeBookings,
+        activeBookingsCount,
+        pastBookingsCount,
+      },
+    };
+  }
+
+  if (adminType === "organization_admin") {
+    // Metrics for each managed organization
+    const organizationData = managedIds.map((orgId) => {
+      const org = organizations.find((o) => o.id === orgId);
+      if (!org) return null;
+
+      const orgClubs = clubs.filter((c) => c.organizationId === orgId);
+      const orgClubIds = orgClubs.map((c) => c.id);
+      const orgCourts = courts.filter((c) => orgClubIds.includes(c.clubId));
+      const orgCourtIds = orgCourts.map((c) => c.id);
+      const orgBookings = bookings.filter((b) => orgCourtIds.includes(b.courtId));
+
+      const bookingsToday = orgBookings.filter(
+        (b) => b.start >= today && b.start < tomorrow
+      ).length;
+
+      const activeBookings = orgBookings.filter(
+        (b) =>
+          b.start >= today &&
+          ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+      ).length;
+
+      const pastBookings = orgBookings.filter(
+        (b) =>
+          b.start < today &&
+          ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+      ).length;
+
+      const clubAdminsCount = clubMemberships.filter(
+        (m) => m.role === "CLUB_ADMIN" && orgClubIds.includes(m.clubId)
+      ).length;
+
+      return {
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        clubsCount: orgClubs.length,
+        courtsCount: orgCourts.length,
+        bookingsToday,
+        clubAdminsCount,
+        activeBookings,
+        pastBookings,
+      };
+    });
+
+    return {
+      adminType,
+      isRoot: false,
+      organizations: organizationData.filter(Boolean),
+    };
+  }
+
+  if (adminType === "club_admin") {
+    // Metrics for each managed club
+    const clubData = managedIds.map((clubId) => {
+      const club = clubs.find((c) => c.id === clubId);
+      if (!club) return null;
+
+      const clubCourts = courts.filter((c) => c.clubId === clubId);
+      const clubCourtIds = clubCourts.map((c) => c.id);
+      const clubBookings = bookings.filter((b) => clubCourtIds.includes(b.courtId));
+
+      const bookingsToday = clubBookings.filter(
+        (b) => b.start >= today && b.start < tomorrow
+      ).length;
+
+      const activeBookings = clubBookings.filter(
+        (b) =>
+          b.start >= today &&
+          ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+      ).length;
+
+      const pastBookings = clubBookings.filter(
+        (b) =>
+          b.start < today &&
+          ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+      ).length;
+
+      const organization = club.organizationId
+        ? organizations.find((o) => o.id === club.organizationId)
+        : undefined;
+
+      return {
+        id: club.id,
+        name: club.name,
+        slug: club.slug,
+        organizationId: club.organizationId,
+        organizationName: organization?.name ?? null,
+        courtsCount: clubCourts.length,
+        bookingsToday,
+        activeBookings,
+        pastBookings,
+      };
+    });
+
+    return {
+      adminType,
+      isRoot: false,
+      clubs: clubData.filter(Boolean),
+    };
+  }
+
+  // Should not reach here
+  throw new Error("Unknown admin type");
+}
+
+// ============================================================================
+// Mock Registered Users API
+// ============================================================================
+
+export async function mockGetRegisteredUsers() {
+  const users = getMockUsers();
+  const memberships = getMockMemberships();
+  const clubMemberships = getMockClubMemberships();
+
+  // Get admin user IDs to exclude
+  const adminIds = new Set<string>();
+
+  // Root admins
+  users.filter((u) => u.isRoot).forEach((u) => adminIds.add(u.id));
+
+  // Organization admins
+  memberships
+    .filter((m) => m.role === "ORGANIZATION_ADMIN")
+    .forEach((m) => adminIds.add(m.userId));
+
+  // Club admins
+  clubMemberships
+    .filter((m) => m.role === "CLUB_ADMIN")
+    .forEach((m) => adminIds.add(m.userId));
+
+  // Count real users (excluding admins)
+  const realUsers = users.filter((u) => !adminIds.has(u.id));
+  const totalUsers = realUsers.length;
+
+  // Generate trend data for the last 30 days
+  // For mock data, we'll create a simple pattern based on day of month for consistency
+  const trend = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split("T")[0];
+
+    // Simple mock pattern: deterministic 0-3 registrations per day based on day number
+    // This makes the data consistent across test runs
+    const count = (date.getDate() + i) % 4;
+
+    trend.push({
+      date: dateStr,
+      count,
+    });
+  }
+
+  return {
+    totalUsers,
+    trend,
+  };
+}
+
+// ============================================================================
+// Mock Dashboard Graphs API
+// ============================================================================
+
+export async function mockGetDashboardGraphs(params: {
+  adminType: "root_admin" | "organization_admin" | "club_admin";
+  managedIds: string[];
+  timeRange: "week" | "month";
+}) {
+  const { adminType, managedIds, timeRange } = params;
+  const bookings = getMockBookings();
+  const courts = getMockCourts();
+  const clubs = getMockClubs();
+
+  // Determine date range
+  const endDate = new Date();
+  endDate.setHours(23, 59, 59, 999);
+  const startDate = new Date();
+  startDate.setHours(0, 0, 0, 0);
+
+  if (timeRange === "week") {
+    startDate.setDate(startDate.getDate() - 6); // Last 7 days including today
+  } else {
+    startDate.setDate(startDate.getDate() - 29); // Last 30 days including today
+  }
+
+  // Generate date labels
+  const dateLabels: string[] = [];
+  const currentDate = new Date(startDate);
+  while (currentDate <= endDate) {
+    dateLabels.push(currentDate.toISOString().split("T")[0]);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Filter bookings based on admin type
+  let relevantBookings = bookings.filter(
+    (b) =>
+      b.createdAt >= startDate &&
+      b.createdAt <= endDate &&
+      ["pending", "paid", "reserved", "confirmed"].includes(b.status)
+  );
+
+  if (adminType === "organization_admin") {
+    // Filter by organization
+    const orgClubs = clubs.filter((c) => managedIds.includes(c.organizationId || ""));
+    const orgClubIds = orgClubs.map((c) => c.id);
+    const orgCourtIds = courts
+      .filter((c) => orgClubIds.includes(c.clubId))
+      .map((c) => c.id);
+    relevantBookings = relevantBookings.filter((b) =>
+      orgCourtIds.includes(b.courtId)
+    );
+  } else if (adminType === "club_admin") {
+    // Filter by club
+    const clubCourtIds = courts
+      .filter((c) => managedIds.includes(c.clubId))
+      .map((c) => c.id);
+    relevantBookings = relevantBookings.filter((b) =>
+      clubCourtIds.includes(b.courtId)
+    );
+  }
+
+  // Count bookings and unique users by date
+  const bookingCountsByDate = new Map<string, number>();
+  const activeUsersByDate = new Map<string, Set<string>>();
+
+  dateLabels.forEach((date) => {
+    bookingCountsByDate.set(date, 0);
+    activeUsersByDate.set(date, new Set<string>());
+  });
+
+  relevantBookings.forEach((booking) => {
+    const dateStr = booking.createdAt.toISOString().split("T")[0];
+    const currentCount = bookingCountsByDate.get(dateStr) || 0;
+    bookingCountsByDate.set(dateStr, currentCount + 1);
+
+    const usersOnDate = activeUsersByDate.get(dateStr);
+    if (usersOnDate) {
+      usersOnDate.add(booking.userId);
+    }
+  });
+
+  // Format date labels for display
+  const formatDateLabel = (dateStr: string): string => {
+    // ISO date string can be parsed directly
+    const date = new Date(dateStr);
+
+    if (timeRange === "week") {
+      return date.toLocaleDateString("en-US", { weekday: "short" });
+    } else {
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+  };
+
+  // Build response data
+  const bookingTrends = dateLabels.map((date) => ({
+    date,
+    bookings: bookingCountsByDate.get(date) || 0,
+    label: formatDateLabel(date),
+  }));
+
+  const activeUsers = dateLabels.map((date) => ({
+    date,
+    users: activeUsersByDate.get(date)?.size || 0,
+    label: formatDateLabel(date),
+  }));
+
+  return {
+    bookingTrends,
+    activeUsers,
+    timeRange,
+  };
 }

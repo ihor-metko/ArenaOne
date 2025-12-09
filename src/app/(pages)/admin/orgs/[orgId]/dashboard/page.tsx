@@ -94,6 +94,10 @@ export default function OrgDashboardPage() {
   const params = useParams();
   const orgId = params.orgId as string;
 
+  // Note: We don't use the organization store here because the dashboard API
+  // only returns partial org data (id, name, slug) without createdAt and other fields.
+  // If full org data is needed, components should fetch from the organization store separately.
+
   const [dashboardData, setDashboardData] = useState<OrgDashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -120,6 +124,11 @@ export default function OrgDashboardPage() {
 
       const data: OrgDashboardResponse = await response.json();
       setDashboardData(data);
+      
+      // Update store's currentOrg when dashboard loads successfully
+      // Note: Dashboard response only includes minimal org data (id, name, slug)
+      // We don't update the store here since it would overwrite complete org data with partial data
+      // Components should use the full organization store if they need complete data
     } catch (err) {
       // Log error in development for debugging
       if (process.env.NODE_ENV === "development") {
@@ -141,6 +150,8 @@ export default function OrgDashboardPage() {
 
     fetchDashboard();
   }, [session, status, router, fetchDashboard]);
+  
+  // Note: setCurrentOrg removed because dashboard doesn't provide complete org data
 
   if (status === "loading" || loading) {
     return (

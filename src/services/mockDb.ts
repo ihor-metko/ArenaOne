@@ -2,7 +2,7 @@
 // This module provides mock data and CRUD helpers for development when the database is unavailable.
 // See TODO_MOCK_CLEANUP.md for removal instructions.
 
-import type { User, Organization, Club, Court, Booking, Membership, ClubMembership } from "@prisma/client";
+import type { User, Organization, Club, Court, Booking, Membership, ClubMembership, ClubBusinessHours, CourtPriceRule, Coach, ClubGallery } from "@prisma/client";
 
 // ============================================================================
 // Mock Data State (mutable at runtime for testing flows)
@@ -15,6 +15,10 @@ let mockCourts: Court[] = [];
 let mockBookings: Booking[] = [];
 let mockMemberships: Membership[] = [];
 let mockClubMemberships: ClubMembership[] = [];
+let mockBusinessHours: ClubBusinessHours[] = [];
+let mockCourtPriceRules: CourtPriceRule[] = [];
+let mockCoaches: Coach[] = [];
+let mockGalleryImages: ClubGallery[] = [];
 
 // ============================================================================
 // Initialization (called once to seed data)
@@ -29,6 +33,10 @@ export function initializeMockData() {
   mockBookings = [];
   mockMemberships = [];
   mockClubMemberships = [];
+  mockBusinessHours = [];
+  mockCourtPriceRules = [];
+  mockCoaches = [];
+  mockGalleryImages = [];
 
   // Create mock users
   mockUsers = [
@@ -88,6 +96,45 @@ export function initializeMockData() {
       id: "user-5",
       name: "Jane Player",
       email: "player2@example.com",
+      emailVerified: new Date("2024-01-01"),
+      image: null,
+      password: "hashed_password",
+      isRoot: false,
+      blocked: false,
+      lastLoginAt: new Date(),
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    },
+    {
+      id: "user-coach-1",
+      name: "Coach Mike Rodriguez",
+      email: "mike.coach@example.com",
+      emailVerified: new Date("2024-01-01"),
+      image: null,
+      password: "hashed_password",
+      isRoot: false,
+      blocked: false,
+      lastLoginAt: new Date(),
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    },
+    {
+      id: "user-coach-2",
+      name: "Coach Sarah Johnson",
+      email: "sarah.coach@example.com",
+      emailVerified: new Date("2024-01-01"),
+      image: null,
+      password: "hashed_password",
+      isRoot: false,
+      blocked: false,
+      lastLoginAt: new Date(),
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    },
+    {
+      id: "user-coach-3",
+      name: "Coach David Martinez",
+      email: "david.coach@example.com",
       emailVerified: new Date("2024-01-01"),
       image: null,
       password: "hashed_password",
@@ -171,7 +218,7 @@ export function initializeMockData() {
       defaultCurrency: "USD",
       timezone: "America/New_York",
       isPublic: true,
-      status: "ACTIVE",
+      status: "active",
       tags: JSON.stringify(["premium", "indoor", "outdoor"]),
       createdAt: new Date("2024-01-15"),
       updatedAt: new Date("2024-01-15"),
@@ -200,7 +247,7 @@ export function initializeMockData() {
       defaultCurrency: "USD",
       timezone: "America/New_York",
       isPublic: true,
-      status: "ACTIVE",
+      status: "active",
       tags: JSON.stringify(["family", "outdoor"]),
       createdAt: new Date("2024-02-01"),
       updatedAt: new Date("2024-02-01"),
@@ -229,7 +276,7 @@ export function initializeMockData() {
       defaultCurrency: "USD",
       timezone: "America/New_York",
       isPublic: true,
-      status: "ACTIVE",
+      status: "active",
       tags: JSON.stringify(["professional", "coaching"]),
       createdAt: new Date("2024-03-01"),
       updatedAt: new Date("2024-03-01"),
@@ -436,6 +483,166 @@ export function initializeMockData() {
       updatedAt: new Date("2024-03-01"),
     },
   ];
+
+  // Create mock business hours for clubs
+  // Standard hours: Mon-Fri 6am-10pm, Sat-Sun 8am-8pm
+  const standardBusinessHours = [
+    { dayOfWeek: 0, openTime: "08:00", closeTime: "20:00", isClosed: false }, // Sunday
+    { dayOfWeek: 1, openTime: "06:00", closeTime: "22:00", isClosed: false }, // Monday
+    { dayOfWeek: 2, openTime: "06:00", closeTime: "22:00", isClosed: false }, // Tuesday
+    { dayOfWeek: 3, openTime: "06:00", closeTime: "22:00", isClosed: false }, // Wednesday
+    { dayOfWeek: 4, openTime: "06:00", closeTime: "22:00", isClosed: false }, // Thursday
+    { dayOfWeek: 5, openTime: "06:00", closeTime: "22:00", isClosed: false }, // Friday
+    { dayOfWeek: 6, openTime: "08:00", closeTime: "20:00", isClosed: false }, // Saturday
+  ];
+
+  mockBusinessHours = [];
+  for (const club of mockClubs) {
+    for (const hours of standardBusinessHours) {
+      mockBusinessHours.push({
+        id: `bh-${club.id}-${hours.dayOfWeek}`,
+        clubId: club.id,
+        dayOfWeek: hours.dayOfWeek,
+        openTime: hours.openTime,
+        closeTime: hours.closeTime,
+        isClosed: hours.isClosed,
+        createdAt: new Date("2024-01-15"),
+        updatedAt: new Date("2024-01-15"),
+      });
+    }
+  }
+
+  // Create mock court price rules
+  // Peak hours: weekdays 5pm-9pm and weekends 9am-6pm charge 25% more
+  mockCourtPriceRules = [];
+  for (const court of mockCourts) {
+    const peakPriceCents = Math.floor(court.defaultPriceCents * 1.25);
+    
+    // Weekday peak hours (5pm-9pm)
+    for (let day = 1; day <= 5; day++) {
+      mockCourtPriceRules.push({
+        id: `pr-${court.id}-wd-peak-${day}`,
+        courtId: court.id,
+        dayOfWeek: day,
+        date: null,
+        startTime: "17:00",
+        endTime: "21:00",
+        priceCents: peakPriceCents,
+        createdAt: new Date("2024-01-15"),
+        updatedAt: new Date("2024-01-15"),
+      });
+    }
+
+    // Weekend peak hours (9am-6pm)
+    for (const day of [0, 6]) {
+      mockCourtPriceRules.push({
+        id: `pr-${court.id}-we-peak-${day}`,
+        courtId: court.id,
+        dayOfWeek: day,
+        date: null,
+        startTime: "09:00",
+        endTime: "18:00",
+        priceCents: peakPriceCents,
+        createdAt: new Date("2024-01-15"),
+        updatedAt: new Date("2024-01-15"),
+      });
+    }
+  }
+
+  // Create mock coaches
+  mockCoaches = [
+    {
+      id: "coach-1",
+      userId: "user-coach-1",
+      clubId: "club-1",
+      bio: "Professional padel coach with 10+ years of experience. Specialized in beginner to intermediate training.",
+      phone: "+1555111111",
+      createdAt: new Date("2024-01-15"),
+    },
+    {
+      id: "coach-2",
+      userId: "user-coach-2",
+      clubId: "club-1",
+      bio: "Former professional player. Expert in advanced techniques and competitive play.",
+      phone: "+1555222222",
+      createdAt: new Date("2024-01-20"),
+    },
+    {
+      id: "coach-3",
+      userId: "user-coach-3",
+      clubId: "club-3",
+      bio: "Elite padel academy head coach. International tournament experience.",
+      phone: "+1555333333",
+      createdAt: new Date("2024-03-01"),
+    },
+  ];
+
+  // Create mock gallery images
+  mockGalleryImages = [
+    {
+      id: "gallery-1",
+      clubId: "club-1",
+      imageUrl: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800",
+      imageKey: "club-1/gallery-1.jpg",
+      altText: "Indoor court with professional lighting",
+      sortOrder: 0,
+      createdAt: new Date("2024-01-15"),
+    },
+    {
+      id: "gallery-2",
+      clubId: "club-1",
+      imageUrl: "https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=800",
+      imageKey: "club-1/gallery-2.jpg",
+      altText: "Modern facility lobby",
+      sortOrder: 1,
+      createdAt: new Date("2024-01-15"),
+    },
+    {
+      id: "gallery-3",
+      clubId: "club-1",
+      imageUrl: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800",
+      imageKey: "club-1/gallery-3.jpg",
+      altText: "Outdoor courts with city view",
+      sortOrder: 2,
+      createdAt: new Date("2024-01-15"),
+    },
+    {
+      id: "gallery-4",
+      clubId: "club-2",
+      imageUrl: "https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827?w=800",
+      imageKey: "club-2/gallery-1.jpg",
+      altText: "Family-friendly outdoor courts",
+      sortOrder: 0,
+      createdAt: new Date("2024-02-01"),
+    },
+    {
+      id: "gallery-5",
+      clubId: "club-2",
+      imageUrl: "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=800",
+      imageKey: "club-2/gallery-2.jpg",
+      altText: "Kids training session",
+      sortOrder: 1,
+      createdAt: new Date("2024-02-01"),
+    },
+    {
+      id: "gallery-6",
+      clubId: "club-3",
+      imageUrl: "https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=800",
+      imageKey: "club-3/gallery-1.jpg",
+      altText: "Professional training facility",
+      sortOrder: 0,
+      createdAt: new Date("2024-03-01"),
+    },
+    {
+      id: "gallery-7",
+      clubId: "club-3",
+      imageUrl: "https://images.unsplash.com/photo-1600965962102-9d260a71890d?w=800",
+      imageKey: "club-3/gallery-2.jpg",
+      altText: "Championship-level courts",
+      sortOrder: 1,
+      createdAt: new Date("2024-03-01"),
+    },
+  ];
 }
 
 // Initialize data on module load
@@ -471,6 +678,22 @@ export function getMockMemberships() {
 
 export function getMockClubMemberships() {
   return [...mockClubMemberships];
+}
+
+export function getMockBusinessHours() {
+  return [...mockBusinessHours];
+}
+
+export function getMockCourtPriceRules() {
+  return [...mockCourtPriceRules];
+}
+
+export function getMockCoaches() {
+  return [...mockCoaches];
+}
+
+export function getMockGalleryImages() {
+  return [...mockGalleryImages];
 }
 
 // ============================================================================
@@ -597,7 +820,7 @@ export function createMockClub(data: {
     defaultCurrency: "USD",
     timezone: "UTC",
     isPublic: true,
-    status: "ACTIVE",
+    status: "active",
     tags: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -626,6 +849,34 @@ export function createMockOrganization(data: {
   };
   mockOrganizations.push(org);
   return org;
+}
+
+export function updateMockCourt(id: string, data: Partial<Court>): Court | null {
+  const index = mockCourts.findIndex((c) => c.id === id);
+  if (index === -1) return null;
+
+  mockCourts[index] = {
+    ...mockCourts[index],
+    ...data,
+    updatedAt: new Date(),
+  };
+  return mockCourts[index];
+}
+
+export function deleteMockCourt(id: string): boolean {
+  const index = mockCourts.findIndex((c) => c.id === id);
+  if (index === -1) return false;
+  mockCourts.splice(index, 1);
+  
+  // Also delete associated price rules
+  const priceRuleIndices: number[] = [];
+  mockCourtPriceRules.forEach((pr, i) => {
+    if (pr.courtId === id) priceRuleIndices.push(i);
+  });
+  // Remove in reverse order to avoid index shifting
+  priceRuleIndices.reverse().forEach((i) => mockCourtPriceRules.splice(i, 1));
+  
+  return true;
 }
 
 // ============================================================================

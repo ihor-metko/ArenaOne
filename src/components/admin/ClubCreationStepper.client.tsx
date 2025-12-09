@@ -3,6 +3,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card } from "@/components/ui";
+import { useOrganizationStore } from "@/stores/useOrganizationStore";
+import { toOrganizationOptions, toOrganizationOption } from "@/utils/organization";
 import {
   GeneralInfoStep,
   ContactsStep,
@@ -92,9 +94,13 @@ export function ClubCreationStepper() {
 
   // Organization context state
   const [adminStatus, setAdminStatus] = useState<AdminStatusResponse | null>(null);
-  const [organizations, setOrganizations] = useState<OrganizationOption[]>([]);
   const [prefilledOrg, setPrefilledOrg] = useState<OrganizationOption | null>(null);
-  const [isLoadingOrgs, setIsLoadingOrgs] = useState(false);
+  
+  // Use Zustand store for organizations with auto-fetch
+  const organizations = useOrganizationStore((state) => state.getOrganizationsWithAutoFetch());
+  const currentOrg = useOrganizationStore((state) => state.currentOrg);
+  const isLoadingOrgs = useOrganizationStore((state) => state.loading);
+  const fetchOrganizationById = useOrganizationStore((state) => state.fetchOrganizationById);
 
   const showToast = useCallback((type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -110,25 +116,15 @@ export function ClubCreationStepper() {
           const data: AdminStatusResponse = await response.json();
           setAdminStatus(data);
 
-          // If organization admin, fetch and set the prefilled org
+          // If organization admin, fetch their organization from store
           if (data.adminType === "organization_admin" && data.managedIds.length > 0) {
             const orgId = data.managedIds[0];
             try {
-              const orgResponse = await fetch(`/api/admin/organizations/search`);
-              if (orgResponse.ok) {
-                const orgs: OrganizationOption[] = await orgResponse.json();
-                const userOrg = orgs.find(org => org.id === orgId);
-                if (userOrg) {
-                  setPrefilledOrg(userOrg);
-                  setFormData(prev => ({ ...prev, organizationId: userOrg.id }));
-                }
-              } else {
-                // If org search fails, set a minimal org object with ID only
-                // This still allows form submission even if org details aren't loaded
-                setFormData(prev => ({ ...prev, organizationId: orgId }));
-              }
+              await fetchOrganizationById(orgId);
+              // Don't access currentOrg here - let separate useEffect handle it
+              // This avoids race conditions and follows React's data flow patterns
             } catch {
-              // If org search fails, set a minimal org object with ID only
+              // If org fetch fails, set organization ID only
               setFormData(prev => ({ ...prev, organizationId: orgId }));
             }
           }
@@ -139,34 +135,24 @@ export function ClubCreationStepper() {
     };
 
     fetchAdminStatus();
-  }, []);
+  }, [fetchOrganizationById]);
 
-  // Search organizations for root admin
-  const handleOrgSearch = useCallback(async (query: string) => {
+  // Update prefilledOrg when currentOrg changes (for organization admin)
+  useEffect(() => {
+    if (currentOrg && adminStatus?.adminType === "organization_admin") {
+      const userOrg = toOrganizationOption(currentOrg);
+      setPrefilledOrg(userOrg);
+      setFormData(prev => ({ ...prev, organizationId: userOrg.id }));
+    }
+  }, [currentOrg, adminStatus?.adminType]);
+
+  // Search organizations for root admin (use store with filtering)
+  const handleOrgSearch = useCallback(async () => {
     if (adminStatus?.adminType !== "root_admin") return;
     
-    setIsLoadingOrgs(true);
-    try {
-      const response = await fetch(
-        `/api/admin/organizations/search?search=${encodeURIComponent(query)}&limit=20`
-      );
-      if (response.ok) {
-        const data: OrganizationOption[] = await response.json();
-        setOrganizations(data);
-      }
-    } catch {
-      // Silent fail for org search
-    } finally {
-      setIsLoadingOrgs(false);
-    }
+    // Organizations are auto-fetched by the selector
+    // Client-side filtering is handled in GeneralInfoStep component
   }, [adminStatus?.adminType]);
-
-  // Load initial organizations for root admin
-  useEffect(() => {
-    if (adminStatus?.adminType === "root_admin") {
-      handleOrgSearch("");
-    }
-  }, [adminStatus?.adminType, handleOrgSearch]);
 
   // Generic update handlers for step components
   const handleGeneralInfoChange = useCallback((data: Partial<GeneralInfoData>) => {
@@ -397,7 +383,7 @@ export function ClubCreationStepper() {
       isEditable: adminStatus.adminType === "root_admin",
       prefilledOrg: prefilledOrg,
       isLoading: isLoadingOrgs,
-      organizations: organizations,
+      organizations: toOrganizationOptions(organizations),
       onSearch: handleOrgSearch,
     } : undefined;
 

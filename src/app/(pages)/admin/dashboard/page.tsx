@@ -57,6 +57,7 @@ function ClubsIcon() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function UsersIcon() {
   return (
     <svg
@@ -478,18 +479,6 @@ export default function AdminDashboardPage() {
                 value={dashboardData.platformStats.totalClubs}
                 icon={<ClubsIcon />}
                 colorClass="im-stat-card--clubs"
-              />
-              <StatCard
-                title={t("rootAdmin.dashboard.totalUsers")}
-                value={dashboardData.platformStats.totalUsers}
-                icon={<UsersIcon />}
-                colorClass="im-stat-card--users"
-              />
-              <StatCard
-                title={t("rootAdmin.dashboard.activeBookings")}
-                value={dashboardData.platformStats.activeBookings}
-                icon={<BookingsIcon />}
-                colorClass="im-stat-card--bookings"
               />
             </div>
 

@@ -7,6 +7,9 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Button, Input, Modal, PageHeader, Breadcrumbs, Select, Badge, Card, Tooltip } from "@/components/ui";
 import { useListController } from "@/hooks";
+import { useOrganizationStore } from "@/stores/useOrganizationStore";
+import { useClubStore } from "@/stores/useClubStore";
+
 import "./page.css";
 
 /* Icon Components */
@@ -270,6 +273,8 @@ export default function AdminUsersPage() {
   const [error, setError] = useState("");
 
   // Options for filters
+  const storeOrganizations = useOrganizationStore((state) => state.organizations);
+  const fetchOrganizationsFromStore = useOrganizationStore((state) => state.fetchOrganizations);
   const [organizations, setOrganizations] = useState<OrganizationOption[]>([]);
   const [clubs, setClubs] = useState<ClubOption[]>([]);
 
@@ -339,23 +344,26 @@ export default function AdminUsersPage() {
 
   const fetchOrganizations = useCallback(async () => {
     try {
-      const response = await fetch("/api/admin/organizations");
-      if (response.ok) {
-        const data = await response.json();
-        setOrganizations(data.map((org: { id: string; name: string }) => ({ id: org.id, name: org.name })));
-      }
+      await fetchOrganizationsFromStore();
+      // Don't map here - let useEffect handle it when store updates
     } catch {
       // Silent fail
     }
-  }, []);
+  }, [fetchOrganizationsFromStore]);
+
+  // Update local organizations when store organizations change
+  useEffect(() => {
+    if (storeOrganizations.length > 0) {
+      setOrganizations(storeOrganizations.map((org) => ({ id: org.id, name: org.name })));
+    }
+  }, [storeOrganizations]);
 
   const fetchClubs = useCallback(async () => {
     try {
-      const response = await fetch("/api/admin/clubs");
-      if (response.ok) {
-        const data = await response.json();
-        setClubs(data.map((club: { id: string; name: string }) => ({ id: club.id, name: club.name })));
-      }
+      // Use store with inflight guard
+      await useClubStore.getState().fetchClubsIfNeeded();
+      const data = useClubStore.getState().clubs;
+      setClubs(data.map((club) => ({ id: club.id, name: club.name })));
     } catch {
       // Silent fail
     }
@@ -785,8 +793,8 @@ export default function AdminUsersPage() {
                         </div>
                       </td>
                       <td className="im-td-role">
-                        <Badge 
-                          variant={getRoleBadgeVariant(user.role)} 
+                        <Badge
+                          variant={getRoleBadgeVariant(user.role)}
                           icon={getRoleIcon(user.role)}
                         >
                           {getRoleLabel(user.role)}
@@ -909,8 +917,8 @@ export default function AdminUsersPage() {
                 </button>
                 <div className="im-pagination-pages">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum = page <= 3 
-                      ? i + 1 
+                    const pageNum = page <= 3
+                      ? i + 1
                       : page + i - 2;
                     if (pageNum < 1 || pageNum > totalPages) return null;
                     return (

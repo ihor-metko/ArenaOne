@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useUserStore } from "@/stores/useUserStore";
 import "./UserMenu.css";
 
 /**
@@ -239,9 +240,12 @@ export default function UserMenu({ userName, userEmail, isRoot = false }: UserMe
     }
   };
 
+  const clearUser = useUserStore(state => state.clearUser);
+
   // Handle logout
   const handleLogout = async () => {
     setIsOpen(false);
+    clearUser();
     await signOut({ callbackUrl: "/" });
   };
 
