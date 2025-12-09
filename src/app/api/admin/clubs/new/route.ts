@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
-import { SportType } from "@prisma/client";
+import { SportType } from "@/constants/sports";
 
 interface BusinessHourInput {
   dayOfWeek: number;

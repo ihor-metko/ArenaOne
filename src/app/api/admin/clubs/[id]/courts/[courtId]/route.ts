@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRootAdmin } from "@/lib/requireRole";
+import { isSupportedSport } from "@/constants/sports";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode } from "@/services/mockDb";
 import { mockGetCourtDetailById } from "@/services/mockApiHandlers";
@@ -122,7 +123,7 @@ export async function PATCH(
       }
 
       // Sport type validation
-      if (sportType !== undefined && !["PADEL", "TENNIS", "PICKLEBALL", "SQUASH", "BADMINTON"].includes(sportType)) {
+      if (sportType !== undefined && !isSupportedSport(sportType)) {
         errors.sportType = "Invalid sport type";
       }
 
@@ -207,7 +208,7 @@ export async function PATCH(
     }
 
     // Sport type validation
-    if (sportType !== undefined && !["PADEL", "TENNIS", "PICKLEBALL", "SQUASH", "BADMINTON"].includes(sportType)) {
+    if (sportType !== undefined && !isSupportedSport(sportType)) {
       errors.sportType = "Invalid sport type";
     }
 

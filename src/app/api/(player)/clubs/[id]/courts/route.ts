@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRootAdmin } from "@/lib/requireRole";
+import { isSupportedSport } from "@/constants/sports";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode, findClubById, getMockCourts } from "@/services/mockDb";
 
@@ -98,7 +99,7 @@ export async function POST(
     }
 
     // Validate sportType if provided
-    if (sportType && !["PADEL", "TENNIS", "PICKLEBALL", "SQUASH", "BADMINTON"].includes(sportType)) {
+    if (sportType && !isSupportedSport(sportType)) {
       return NextResponse.json(
         { error: "Invalid sport type" },
         { status: 400 }

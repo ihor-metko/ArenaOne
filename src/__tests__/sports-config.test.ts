@@ -4,7 +4,6 @@
 
 import {
   SportType,
-  SPORT_CONFIGS,
   getSportConfig,
   getAllSports,
   getSportName,
