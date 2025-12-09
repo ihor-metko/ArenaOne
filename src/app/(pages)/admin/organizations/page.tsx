@@ -847,7 +847,7 @@ export default function AdminOrganizationsPage() {
             />
           </div>
           <div className="im-admin-organizations-actions">
-            <Button onClick={() => setIsCreateModalOpen(true)}>
+            <Button onClick={() => router.push("/admin/organizations/new")}>
               {t("organizations.createOrganization")}
             </Button>
           </div>
