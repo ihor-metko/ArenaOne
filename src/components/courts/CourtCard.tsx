@@ -12,7 +12,7 @@ import {
   calculateAvailabilitySummary,
 } from "@/utils/court-card";
 import type { Court, AvailabilitySlot } from "@/types/court";
-import "./CourtCard.css";
+import "../CourtCard.css";
 
 interface CourtCardProps {
   court: Court;
@@ -29,12 +29,8 @@ interface CourtCardProps {
   bookDisabledTooltip?: string;
   maxVisibleSlots?: number;
   showLegend?: boolean;
-  /** Show availability summary badge (e.g., "5/6 available") */
   showAvailabilitySummary?: boolean;
-  /** Show detailed slots on hover (desktop) or tap (mobile) */
   showDetailedAvailability?: boolean;
-  /** @deprecated Use availabilitySlots instead */
-  todaySlots?: React.ReactNode;
 }
 
 export function CourtCard({
@@ -54,7 +50,6 @@ export function CourtCard({
   showLegend = true,
   showAvailabilitySummary = true,
   showDetailedAvailability = true,
-  todaySlots,
 }: CourtCardProps) {
   const t = useTranslations();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -127,17 +122,12 @@ export function CourtCard({
 
   // Render availability slots
   const renderAvailabilitySlots = () => {
-    if (availabilitySlots.length === 0 && !todaySlots) {
+    if (availabilitySlots.length === 0) {
       return (
         <p className="text-sm" style={{ color: "var(--im-muted)" }}>
           {t("court.noAvailabilityData")}
         </p>
       );
-    }
-
-    // If todaySlots is provided (legacy), render it
-    if (todaySlots && availabilitySlots.length === 0) {
-      return todaySlots;
     }
 
     return (
@@ -273,7 +263,7 @@ export function CourtCard({
         </div>
 
         {/* Legend */}
-        {showLegend && availabilitySlots.length > 0 && !todaySlots && (
+        {showLegend && availabilitySlots.length > 0 && (
           <div className="im-court-card-legend">
             <span className="im-court-card-legend-item">
               <span className="im-court-card-legend-dot im-court-card-legend-dot--available" />
