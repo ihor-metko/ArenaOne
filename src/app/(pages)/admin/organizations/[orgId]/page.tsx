@@ -1,3 +1,4 @@
+// Dev-only mock injection — controlled by NEXT_PUBLIC_USE_MOCKS
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -6,6 +7,8 @@ import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Input, Modal, PageHeader } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
+import { useMocks } from "@/mocks";
+import { getMockOrganizationDetail, getMockUsersPreview } from "@/mocks/admin/organization-detail";
 import "./page.css";
 
 interface User {
@@ -164,16 +167,25 @@ export default function OrganizationDetailPage() {
   const fetchOrgDetail = useCallback(async () => {
     try {
       setLoading(true);
-      // Fetch full org details from API (includes metrics, activity, etc.)
-      const response = await fetch(`/api/orgs/${orgId}`);
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          router.push("/auth/sign-in");
-          return;
+      
+      // Check if mock mode is enabled
+      let data;
+      if (useMocks()) {
+        // Use mock data instead of API call
+        data = getMockOrganizationDetail(orgId);
+      } else {
+        // Fetch full org details from API (includes metrics, activity, etc.)
+        const response = await fetch(`/api/orgs/${orgId}`);
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            router.push("/auth/sign-in");
+            return;
+          }
+          throw new Error("Failed to fetch organization");
         }
-        throw new Error("Failed to fetch organization");
+        data = await response.json();
       }
-      const data = await response.json();
+      
       setOrg(data);
       setError("");
       
@@ -201,10 +213,17 @@ export default function OrganizationDetailPage() {
 
   const fetchUsersPreview = useCallback(async () => {
     try {
-      const response = await fetch(`/api/orgs/${orgId}/users?limit=5`);
-      if (response.ok) {
-        const data = await response.json();
+      // Check if mock mode is enabled
+      if (useMocks()) {
+        // Use mock data instead of API call
+        const data = getMockUsersPreview(orgId);
         setUsersPreview(data);
+      } else {
+        const response = await fetch(`/api/orgs/${orgId}/users?limit=5`);
+        if (response.ok) {
+          const data = await response.json();
+          setUsersPreview(data);
+        }
       }
     } catch {
       // Silent fail
