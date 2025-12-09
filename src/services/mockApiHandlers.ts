@@ -327,8 +327,8 @@ export async function mockGetClubs(params: {
 
   // Apply sorting
   clubsWithCounts.sort((a, b) => {
-    let aVal: any;
-    let bVal: any;
+    let aVal: string | number;
+    let bVal: string | number;
 
     if (sortBy === "name") {
       aVal = a.name.toLowerCase();
