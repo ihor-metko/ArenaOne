@@ -112,6 +112,9 @@ export default function OrganizationDetailPage() {
   const params = useParams();
   const orgId = params?.orgId as string;
 
+  // Check if mock mode is enabled (must be called at top level)
+  const isMockMode = useMocks();
+
   // Use Zustand store
   const updateOrganization = useOrganizationStore((state) => state.updateOrganization);
   const deleteOrganization = useOrganizationStore((state) => state.deleteOrganization);
@@ -168,9 +171,9 @@ export default function OrganizationDetailPage() {
     try {
       setLoading(true);
       
-      // Check if mock mode is enabled
+      // Use mock or real data based on mode
       let data;
-      if (useMocks()) {
+      if (isMockMode) {
         // Use mock data instead of API call
         data = getMockOrganizationDetail(orgId);
       } else {
@@ -209,12 +212,12 @@ export default function OrganizationDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [orgId, router, t, setCurrentOrg]);
+  }, [isMockMode, orgId, router, t, setCurrentOrg]);
 
   const fetchUsersPreview = useCallback(async () => {
     try {
-      // Check if mock mode is enabled
-      if (useMocks()) {
+      // Use mock or real data based on mode
+      if (isMockMode) {
         // Use mock data instead of API call
         const data = getMockUsersPreview(orgId);
         setUsersPreview(data);
@@ -228,7 +231,7 @@ export default function OrganizationDetailPage() {
     } catch {
       // Silent fail
     }
-  }, [orgId]);
+  }, [isMockMode, orgId]);
 
   const fetchUsers = useCallback(async (query: string = "") => {
     try {
