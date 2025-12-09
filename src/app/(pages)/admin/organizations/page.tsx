@@ -10,7 +10,7 @@ import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import type { Organization } from "@/types/organization";
-import type { SimpleUser } from "@/types/adminUser";
+import { SportType, SPORT_TYPE_OPTIONS } from "@/constants/sports";
 import "@/components/admin/AdminOrganizationCard.css";
 import "./page.css";
 
@@ -55,6 +55,7 @@ export default function AdminOrganizationsPage() {
 
   // State for search, sort, and pagination
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSportType, setSelectedSportType] = useState<string>("");
   const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -108,11 +109,11 @@ export default function AdminOrganizationsPage() {
   const [orgClubs, setOrgClubs] = useState<Club[]>([]);
   const [clubAdminsLoading, setClubAdminsLoading] = useState(false);
   const [clubAdminsError, setClubAdminsError] = useState("");
-  
+
   // State for add club admin modal
   const [isAddClubAdminModalOpen, setIsAddClubAdminModalOpen] = useState(false);
   const [clubAdminUserSearch, setClubAdminUserSearch] = useState("");
-  const [clubAdminUsers, setClubAdminUsers] = useState<User[]>([]);
+  const [clubAdminUsers, setClubAdminUsers] = useState<any[]>([]);
   const [selectedClubAdminUserId, setSelectedClubAdminUserId] = useState("");
   const [selectedClubId, setSelectedClubId] = useState("");
   const [clubAdminAssignMode, setClubAdminAssignMode] = useState<"existing" | "new">("existing");
@@ -156,6 +157,13 @@ export default function AdminOrganizationsPage() {
       );
     }
 
+    // Filter by sport type
+    if (selectedSportType) {
+      result = result.filter(
+        (org) => org.supportedSports?.includes(selectedSportType as SportType)
+      );
+    }
+
     // Sort
     result.sort((a, b) => {
       let comparison = 0;
@@ -177,7 +185,7 @@ export default function AdminOrganizationsPage() {
     });
 
     return result;
-  }, [organizations, searchQuery, sortField, sortDirection]);
+  }, [organizations, searchQuery, selectedSportType, sortField, sortDirection]);
 
   // Paginated organizations
   const paginatedOrganizations = useMemo(() => {
@@ -188,10 +196,10 @@ export default function AdminOrganizationsPage() {
   // Total pages
   const totalPages = Math.ceil(filteredAndSortedOrganizations.length / itemsPerPage);
 
-  // Reset to first page when search or items per page changes
+  // Reset to first page when search, sport filter, or items per page changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, itemsPerPage]);
+  }, [searchQuery, selectedSportType, itemsPerPage]);
 
   // Sort options for the select component
   const sortOptions = [
@@ -517,7 +525,7 @@ export default function AdminOrganizationsPage() {
     try {
       setClubAdminsLoading(true);
       setClubAdminsError("");
-      
+
       const response = await fetch(`/api/orgs/${orgId}/club-admins`);
       if (!response.ok) {
         throw new Error("Failed to fetch club admins");
@@ -533,12 +541,12 @@ export default function AdminOrganizationsPage() {
 
   // Fetch clubs for an organization using store
   const fetchClubsIfNeeded = useClubStore((state) => state.fetchClubsIfNeeded);
-  
+
   const fetchOrgClubs = useCallback(async (orgId: string) => {
     try {
       // Use store method with inflight guard
       await fetchClubsIfNeeded();
-      
+
       // Get clubs from store and filter to organization
       const allClubs = useClubStore.getState().clubs;
       const orgClubsList = allClubs.filter((club) => club.organization?.id === orgId);
@@ -625,14 +633,14 @@ export default function AdminOrganizationsPage() {
     try {
       const payload = clubAdminAssignMode === "new"
         ? {
-            email: newClubAdminEmail,
-            name: newClubAdminName,
-            clubId: selectedClubId,
-          }
+          email: newClubAdminEmail,
+          name: newClubAdminName,
+          clubId: selectedClubId,
+        }
         : {
-            userId: selectedClubAdminUserId,
-            clubId: selectedClubId,
-          };
+          userId: selectedClubAdminUserId,
+          clubId: selectedClubId,
+        };
 
       const response = await fetch(`/api/orgs/${clubAdminsOrg.id}/club-admins`, {
         method: "POST",
@@ -822,6 +830,17 @@ export default function AdminOrganizationsPage() {
                 ✕
               </button>
             )}
+          </div>
+          <div className="im-admin-organizations-filters">
+            <Select
+              options={[
+                { value: "", label: t("organizations.allSports") },
+                ...SPORT_TYPE_OPTIONS
+              ]}
+              value={selectedSportType}
+              onChange={(value) => setSelectedSportType(value)}
+              aria-label={t("organizations.filterBySport")}
+            />
           </div>
           <div className="im-admin-organizations-sort">
             <Select
@@ -1139,7 +1158,7 @@ export default function AdminOrganizationsPage() {
                   <span className="im-manage-admin-name">{admin.name || admin.email}</span>
                   <span className="im-manage-admin-email">{admin.email}</span>
                   {admin.isPrimaryOwner && (
-                    <span 
+                    <span
                       className="im-manage-admin-owner-badge im-tooltip-wrapper"
                       role="note"
                       aria-label={t("organizations.ownerTooltip")}
@@ -1537,7 +1556,7 @@ export default function AdminOrganizationsPage() {
           )}
 
           <p className="im-delete-confirm-text">
-            {t("clubAdmins.removeConfirm", { 
+            {t("clubAdmins.removeConfirm", {
               name: removingClubAdmin?.userName || removingClubAdmin?.userEmail || "",
               club: removingClubAdmin?.clubName || ""
             })}
