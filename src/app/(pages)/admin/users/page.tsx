@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { Button, Input, Modal, PageHeader, Breadcrumbs, Select, Badge, Card, Tooltip } from "@/components/ui";
+import { Button, Input, PageHeader, Breadcrumbs, Select, Badge, Card, Tooltip } from "@/components/ui";
 import { useListController } from "@/hooks";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
@@ -80,42 +80,7 @@ function EyeIcon() {
   );
 }
 
-function EditIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-      <path d="m15 5 4 4" />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-}
-
-function UnlockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M3 6h18" />
-      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-    </svg>
-  );
-}
+// Icons removed as they're no longer needed after simplifying to View-only actions
 
 function ChevronLeftIcon() {
   return (
@@ -162,7 +127,7 @@ function MailIcon() {
   );
 }
 
-import type { AdminUser, AdminUserDetail } from "@/types/adminUser";
+import type { AdminUser } from "@/types/adminUser";
 
 interface OrganizationOption {
   id: string;
@@ -181,6 +146,13 @@ interface UserFilters {
   statusFilter: string;
   organizationFilter: string;
   clubFilter: string;
+  dateRangeField: "createdAt" | "lastActive";
+  dateFrom: string;
+  dateTo: string;
+  activeLast30d: boolean;
+  neverBooked: boolean;
+  showOnlyAdmins: boolean;
+  showOnlyUsers: boolean;
 }
 
 export default function AdminUsersPage() {
@@ -209,11 +181,18 @@ export default function AdminUsersPage() {
       statusFilter: "",
       organizationFilter: "",
       clubFilter: "",
+      dateRangeField: "createdAt",
+      dateFrom: "",
+      dateTo: "",
+      activeLast30d: false,
+      neverBooked: false,
+      showOnlyAdmins: false,
+      showOnlyUsers: false,
     },
-    defaultSortBy: "createdAt",
+    defaultSortBy: "lastActive",
     defaultSortOrder: "desc",
     defaultPage: 1,
-    defaultPageSize: 10,
+    defaultPageSize: 25,
   });
 
   // Get users from store
@@ -222,11 +201,7 @@ export default function AdminUsersPage() {
   const loading = useAdminUsersStore((state) => state.loading);
   const error = useAdminUsersStore((state) => state.error);
   const fetchUsersFromStore = useAdminUsersStore((state) => state.fetchUsers);
-  const ensureUserById = useAdminUsersStore((state) => state.ensureUserById);
-  const blockUser = useAdminUsersStore((state) => state.blockUser);
-  const unblockUser = useAdminUsersStore((state) => state.unblockUser);
-  const deleteUserFromStore = useAdminUsersStore((state) => state.deleteUser);
-  
+
   const totalCount = pagination?.totalCount || 0;
   const totalPages = pagination?.totalPages || 0;
 
@@ -236,33 +211,12 @@ export default function AdminUsersPage() {
   const [organizations, setOrganizations] = useState<OrganizationOption[]>([]);
   const [clubs, setClubs] = useState<ClubOption[]>([]);
 
-  // Modal state
-  const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [editRoleModalOpen, setEditRoleModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
-  const [userDetail, setUserDetail] = useState<AdminUserDetail | null>(null);
-  const loadingDetail = useAdminUsersStore((state) => state.loadingDetail);
-
-  // Role edit state
-  const [newRole, setNewRole] = useState("");
-  const [selectedOrgId, setSelectedOrgId] = useState("");
-  const [selectedClubId, setSelectedClubId] = useState("");
-  const [updatingRole, setUpdatingRole] = useState(false);
-
-  // Action state
-  const [processing, setProcessing] = useState(false);
-
-  // Toast state
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  // No modals needed anymore since we only have View action which navigates to detail page
 
   // Error key for translated messages
   const [errorKey, setErrorKey] = useState<string>("");
 
-  const showToast = (message: string, type: "success" | "error") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 5000);
-  };
+  // showToast function removed as we no longer show in-page toasts
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -271,12 +225,19 @@ export default function AdminUsersPage() {
         pageSize,
         filters: {
           search: filters.searchQuery,
-          role: filters.roleFilter ? (filters.roleFilter as any) : undefined,
-          status: filters.statusFilter ? (filters.statusFilter as any) : undefined,
+          role: filters.roleFilter || undefined,
+          status: filters.statusFilter || undefined,
           organizationId: filters.organizationFilter || undefined,
           clubId: filters.clubFilter || undefined,
-          sortBy: sortBy as any,
-          sortOrder: sortOrder as any,
+          sortBy: sortBy,
+          sortOrder: sortOrder,
+          dateRangeField: filters.dateRangeField,
+          dateFrom: filters.dateFrom || undefined,
+          dateTo: filters.dateTo || undefined,
+          activeLast30d: filters.activeLast30d || undefined,
+          neverBooked: filters.neverBooked || undefined,
+          showOnlyAdmins: filters.showOnlyAdmins || undefined,
+          showOnlyUsers: filters.showOnlyUsers || undefined,
         },
         force: true,
       });
@@ -342,95 +303,7 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleViewUser = async (user: AdminUser) => {
-    setSelectedUser(user);
-    setViewModalOpen(true);
-
-    try {
-      const data = await ensureUserById(user.id);
-      setUserDetail(data);
-    } catch {
-      showToast(t("users.failedToLoadDetails"), "error");
-    }
-  };
-
-  const handleEditRole = (user: AdminUser) => {
-    setSelectedUser(user);
-    setNewRole(user.role);
-    setSelectedOrgId(user.organization?.id || "");
-    setSelectedClubId(user.club?.id || "");
-    setEditRoleModalOpen(true);
-  };
-
-  const handleSaveRole = async () => {
-    if (!selectedUser) return;
-
-    setUpdatingRole(true);
-    try {
-      const body: { role: string; organizationId?: string; clubId?: string } = { role: newRole };
-      if (newRole === "organization_admin" && selectedOrgId) {
-        body.organizationId = selectedOrgId;
-      } else if (newRole === "club_admin" && selectedClubId) {
-        body.clubId = selectedClubId;
-      }
-
-      const response = await fetch(`/api/admin/users/${selectedUser.id}/role`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to update role");
-      }
-
-      showToast(t("users.roleUpdated"), "success");
-      setEditRoleModalOpen(false);
-      fetchUsers();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : t("users.failedToUpdateRole"), "error");
-    } finally {
-      setUpdatingRole(false);
-    }
-  };
-
-  const handleToggleBlock = async (user: AdminUser) => {
-    setProcessing(true);
-    try {
-      if (user.blocked) {
-        await unblockUser(user.id);
-        showToast(t("users.userUnblocked"), "success");
-      } else {
-        await blockUser(user.id);
-        showToast(t("users.userBlocked"), "success");
-      }
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : t("users.failedToUpdateUser"), "error");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleDeleteUser = (user: AdminUser) => {
-    setSelectedUser(user);
-    setDeleteModalOpen(true);
-  };
-
-  const confirmDeleteUser = async () => {
-    if (!selectedUser) return;
-
-    setProcessing(true);
-    try {
-      await deleteUserFromStore(selectedUser.id);
-      showToast(t("users.userDeleted"), "success");
-      setDeleteModalOpen(false);
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : t("users.failedToDeleteUser"), "error");
-    } finally {
-      setProcessing(false);
-    }
-  };
+  // All user action handlers removed since we only have View action which navigates to detail page
 
   const handleClearFilters = () => {
     clearFilters();
@@ -438,12 +311,24 @@ export default function AdminUsersPage() {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString("uk-UA", {
+      timeZone: "Europe/Kyiv",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
   };
 
   const formatDateTime = (dateString: string | null) => {
     if (!dateString) return "-";
-    return new Date(dateString).toLocaleString();
+    return new Date(dateString).toLocaleString("uk-UA", {
+      timeZone: "Europe/Kyiv",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const getRoleLabel = (role: string) => {
@@ -491,6 +376,9 @@ export default function AdminUsersPage() {
     { value: "", label: t("users.allStatuses") },
     { value: "active", label: t("users.status.active") },
     { value: "blocked", label: t("users.status.blocked") },
+    { value: "suspended", label: t("users.status.suspended") },
+    { value: "invited", label: t("users.status.invited") },
+    { value: "deleted", label: t("users.status.deleted") },
   ];
 
   const organizationOptions = [
@@ -521,22 +409,7 @@ export default function AdminUsersPage() {
         description={t("users.subtitle")}
       />
 
-      {/* Toast Notification */}
-      {toast && (
-        <div className={`im-toast im-toast--${toast.type}`} role="alert">
-          <span className="im-toast-icon">
-            {toast.type === "success" ? "✓" : "✕"}
-          </span>
-          <span className="im-toast-message">{toast.message}</span>
-          <button
-            className="im-toast-close"
-            onClick={() => setToast(null)}
-            aria-label={t("common.close")}
-          >
-            <XIcon />
-          </button>
-        </div>
-      )}
+      {/* No toast notifications needed */}
 
       <section className="rsp-content">
         <Breadcrumbs
@@ -556,14 +429,62 @@ export default function AdminUsersPage() {
               <FilterIcon />
               <span>{t("users.filters")}</span>
             </div>
-            {(filters.searchQuery || filters.roleFilter || filters.statusFilter || filters.organizationFilter || filters.clubFilter) && (
+            {(filters.searchQuery || filters.roleFilter || filters.statusFilter || filters.organizationFilter || filters.clubFilter || filters.dateFrom || filters.dateTo || filters.activeLast30d || filters.neverBooked || filters.showOnlyAdmins || filters.showOnlyUsers) && (
               <Button variant="outline" size="small" onClick={handleClearFilters}>
                 <XIcon />
                 {t("users.clearFilters")}
               </Button>
             )}
           </div>
+
+          {/* Quick preset buttons */}
+          <div className="im-quick-filters">
+            <Button
+              variant={filters.activeLast30d ? "primary" : "outline"}
+              size="small"
+              onClick={() => setFilter("activeLast30d", !filters.activeLast30d)}
+            >
+              {t("users.quickFilters.activeLast30d")}
+            </Button>
+            <Button
+              variant={filters.neverBooked ? "primary" : "outline"}
+              size="small"
+              onClick={() => setFilter("neverBooked", !filters.neverBooked)}
+            >
+              {t("users.quickFilters.neverBooked")}
+            </Button>
+            <Button
+              variant={filters.showOnlyAdmins ? "primary" : "outline"}
+              size="small"
+              onClick={() => {
+                if (filters.showOnlyAdmins) {
+                  setFilter("showOnlyAdmins", false);
+                } else {
+                  setFilter("showOnlyAdmins", true);
+                  setFilter("showOnlyUsers", false);
+                }
+              }}
+            >
+              {t("users.quickFilters.showOnlyAdmins")}
+            </Button>
+            <Button
+              variant={filters.showOnlyUsers ? "primary" : "outline"}
+              size="small"
+              onClick={() => {
+                if (filters.showOnlyUsers) {
+                  setFilter("showOnlyUsers", false);
+                } else {
+                  setFilter("showOnlyUsers", true);
+                  setFilter("showOnlyAdmins", false);
+                }
+              }}
+            >
+              {t("users.quickFilters.showOnlyUsers")}
+            </Button>
+          </div>
+
           <div className="im-filters-grid">
+            {/* Global search */}
             <div className="im-filter-field im-filter-field--search">
               <div className="im-search-input-wrapper">
                 <span className="im-search-icon"><SearchIcon /></span>
@@ -575,6 +496,8 @@ export default function AdminUsersPage() {
                 />
               </div>
             </div>
+
+            {/* Role filter */}
             <div className="im-filter-field">
               <Select
                 label={t("users.filterByRole")}
@@ -583,6 +506,8 @@ export default function AdminUsersPage() {
                 onChange={(value) => setFilter("roleFilter", value)}
               />
             </div>
+
+            {/* Status filter */}
             <div className="im-filter-field">
               <Select
                 label={t("users.filterByStatus")}
@@ -591,6 +516,8 @@ export default function AdminUsersPage() {
                 onChange={(value) => setFilter("statusFilter", value)}
               />
             </div>
+
+            {/* Organization filter */}
             <div className="im-filter-field">
               <Select
                 label={t("users.filterByOrganization")}
@@ -599,12 +526,51 @@ export default function AdminUsersPage() {
                 onChange={(value) => setFilter("organizationFilter", value)}
               />
             </div>
+
+            {/* Club filter */}
             <div className="im-filter-field">
               <Select
                 label={t("users.filterByClub")}
                 options={clubOptions}
                 value={filters.clubFilter}
                 onChange={(value) => setFilter("clubFilter", value)}
+              />
+            </div>
+          </div>
+
+          {/* Date range filter */}
+          <div className="im-date-range-filter">
+            <div className="im-date-range-header">
+              <span className="im-date-range-label">{t("users.dateRange.label")}</span>
+              <div className="im-date-range-toggle">
+                <button
+                  className={`im-toggle-btn ${filters.dateRangeField === "createdAt" ? "im-toggle-btn--active" : ""}`}
+                  onClick={() => setFilter("dateRangeField", "createdAt")}
+                >
+                  {t("users.dateRange.createdAt")}
+                </button>
+                <button
+                  className={`im-toggle-btn ${filters.dateRangeField === "lastActive" ? "im-toggle-btn--active" : ""}`}
+                  onClick={() => setFilter("dateRangeField", "lastActive")}
+                >
+                  {t("users.dateRange.lastActive")}
+                </button>
+              </div>
+            </div>
+            <div className="im-date-range-inputs">
+              <Input
+                type="date"
+                value={filters.dateFrom}
+                onChange={(e) => setFilter("dateFrom", e.target.value)}
+                placeholder={t("users.dateRange.from")}
+                label={t("users.dateRange.from")}
+              />
+              <Input
+                type="date"
+                value={filters.dateTo}
+                onChange={(e) => setFilter("dateTo", e.target.value)}
+                placeholder={t("users.dateRange.to")}
+                label={t("users.dateRange.to")}
               />
             </div>
           </div>
@@ -647,25 +613,38 @@ export default function AdminUsersPage() {
                         </span>
                       </span>
                     </th>
+                    <th>{t("users.columns.email")}</th>
+                    <th>{t("users.columns.role")}</th>
                     <th
-                      className={`im-th-sortable ${sortBy === "email" ? "im-th-sorted" : ""}`}
-                      onClick={() => handleSort("email")}
-                      onKeyDown={(e) => e.key === "Enter" && handleSort("email")}
+                      className={`im-th-sortable ${sortBy === "lastActive" ? "im-th-sorted" : ""}`}
+                      onClick={() => handleSort("lastActive")}
+                      onKeyDown={(e) => e.key === "Enter" && handleSort("lastActive")}
                       tabIndex={0}
                       role="button"
-                      aria-sort={sortBy === "email" ? (sortOrder === "asc" ? "ascending" : "descending") : undefined}
+                      aria-sort={sortBy === "lastActive" ? (sortOrder === "asc" ? "ascending" : "descending") : undefined}
                     >
                       <span className="im-th-content">
-                        {t("users.columns.email")}
+                        {t("users.columns.lastActive")}
                         <span className="im-sort-indicator" aria-hidden="true">
-                          {sortBy === "email" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                          {sortBy === "lastActive" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
                         </span>
                       </span>
                     </th>
-                    <th>{t("users.columns.role")}</th>
-                    <th>{t("users.columns.organization")}</th>
-                    <th>{t("users.columns.club")}</th>
-                    <th>{t("users.columns.status")}</th>
+                    <th
+                      className={`im-th-sortable ${sortBy === "totalBookings" ? "im-th-sorted" : ""}`}
+                      onClick={() => handleSort("totalBookings")}
+                      onKeyDown={(e) => e.key === "Enter" && handleSort("totalBookings")}
+                      tabIndex={0}
+                      role="button"
+                      aria-sort={sortBy === "totalBookings" ? (sortOrder === "asc" ? "ascending" : "descending") : undefined}
+                    >
+                      <span className="im-th-content">
+                        {t("users.columns.totalBookings")}
+                        <span className="im-sort-indicator" aria-hidden="true">
+                          {sortBy === "totalBookings" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                        </span>
+                      </span>
+                    </th>
                     <th
                       className={`im-th-sortable ${sortBy === "createdAt" ? "im-th-sorted" : ""}`}
                       onClick={() => handleSort("createdAt")}
@@ -675,24 +654,9 @@ export default function AdminUsersPage() {
                       aria-sort={sortBy === "createdAt" ? (sortOrder === "asc" ? "ascending" : "descending") : undefined}
                     >
                       <span className="im-th-content">
-                        {t("users.columns.registeredAt")}
+                        {t("users.columns.createdAt")}
                         <span className="im-sort-indicator" aria-hidden="true">
                           {sortBy === "createdAt" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
-                        </span>
-                      </span>
-                    </th>
-                    <th
-                      className={`im-th-sortable ${sortBy === "lastLoginAt" ? "im-th-sorted" : ""}`}
-                      onClick={() => handleSort("lastLoginAt")}
-                      onKeyDown={(e) => e.key === "Enter" && handleSort("lastLoginAt")}
-                      tabIndex={0}
-                      role="button"
-                      aria-sort={sortBy === "lastLoginAt" ? (sortOrder === "asc" ? "ascending" : "descending") : undefined}
-                    >
-                      <span className="im-th-content">
-                        {t("users.columns.lastActivity")}
-                        <span className="im-sort-indicator" aria-hidden="true">
-                          {sortBy === "lastLoginAt" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
                         </span>
                       </span>
                     </th>
@@ -701,8 +665,8 @@ export default function AdminUsersPage() {
                 </thead>
                 <tbody className="im-users-table-body">
                   {users.map((user) => (
-                    <tr 
-                      key={user.id} 
+                    <tr
+                      key={user.id}
                       className="im-user-row im-user-row--clickable"
                       onClick={() => router.push(`/admin/users/${user.id}`)}
                       role="button"
@@ -720,57 +684,58 @@ export default function AdminUsersPage() {
                           <div className="im-user-avatar">
                             {user.name ? user.name.charAt(0).toUpperCase() : "?"}
                           </div>
-                          <span className="im-user-name">{user.name || "-"}</span>
+                          <Link href={`/admin/users/${user.id}`} className="im-user-name-link">
+                            {user.name || t("users.unnamed")}
+                          </Link>
                         </div>
                       </td>
+                      {/* Email (mailto link) */}
                       <td className="im-td-email">
-                        <div className="im-email-wrapper">
+                        <a href={`mailto:${user.email}`} className="im-email-link">
                           <MailIcon />
                           <span>{user.email}</span>
+                        </a>
+                      </td>
+                      {/* Role (with org/club info below, no avatars) */}
+                      <td className="im-td-role">
+                        <div className="im-role-cell">
+                          <Badge
+                            variant={getRoleBadgeVariant(user.role)}
+                            icon={getRoleIcon(user.role)}
+                          >
+                            {getRoleLabel(user.role)}
+                          </Badge>
+                          {user.organization && (
+                            <div className="im-role-context">
+                              {t("users.org")}: {user.organization.name}
+                            </div>
+                          )}
+                          {user.club && (
+                            <div className="im-role-context">
+                              {t("users.club")}: {user.club.name}
+                            </div>
+                          )}
                         </div>
                       </td>
-                      <td className="im-td-role">
-                        <Badge
-                          variant={getRoleBadgeVariant(user.role)}
-                          icon={getRoleIcon(user.role)}
-                        >
-                          {getRoleLabel(user.role)}
-                        </Badge>
-                      </td>
-                      <td className="im-td-organization">
-                        {user.organization ? (
-                          <Link href="/admin/organizations" className="im-link">
-                            <BuildingIcon />
-                            <span>{user.organization.name}</span>
-                          </Link>
-                        ) : (
-                          <span className="im-empty-cell">—</span>
-                        )}
-                      </td>
-                      <td className="im-td-club">
-                        {user.club ? (
-                          <Link href={`/admin/clubs/${user.club.id}`} className="im-link">
-                            <HomeIcon />
-                            <span>{user.club.name}</span>
-                          </Link>
-                        ) : (
-                          <span className="im-empty-cell">—</span>
-                        )}
-                      </td>
-                      <td className="im-td-status">
-                        <Badge variant={user.blocked ? "error" : "success"}>
-                          <span className={`im-status-dot ${user.blocked ? "im-status-dot--blocked" : "im-status-dot--active"}`} />
-                          {user.blocked ? t("users.status.blocked") : t("users.status.active")}
-                        </Badge>
-                      </td>
+                      {/* Last active / Last login (Europe/Kyiv timezone) */}
                       <td className="im-td-date">
-                        <Tooltip content={formatDateTime(user.createdAt)}>
+                        <Tooltip content={user.lastActivity ? formatDateTime(user.lastActivity) : t("users.neverActive")}>
                           <div className="im-date-display">
                             <CalendarIcon />
-                            <span>{formatDate(user.createdAt)}</span>
+                            <span>{user.lastActivity ? formatDateTime(user.lastActivity) : t("users.never")}</span>
                           </div>
                         </Tooltip>
                       </td>
+                      {/* Total bookings (with last 30d subtext) */}
+                      <td className="im-td-bookings">
+                        <div className="im-bookings-cell">
+                          <span className="im-bookings-total">{user.totalBookings || 0}</span>
+                          <span className="im-bookings-recent">
+                            {user.bookingsLast30d || 0} {t("users.inLast30d")}
+                          </span>
+                        </div>
+                      </td>
+                      {/* Created at */}
                       <td className="im-td-date">
                         <Tooltip content={user.lastActivity ? formatDateTime(user.lastActivity) : t("users.neverLoggedIn")}>
                           <div className="im-date-display">
@@ -779,50 +744,14 @@ export default function AdminUsersPage() {
                           </div>
                         </Tooltip>
                       </td>
+                      {/* Actions (View only) */}
                       <td className="im-td-actions" onClick={(e) => e.stopPropagation()}>
                         <div className="im-actions-group">
                           <Tooltip content={t("users.actions.viewDetails")}>
-                            <button
-                              className="im-icon-btn im-icon-btn--view"
-                              onClick={() => handleViewUser(user)}
-                              aria-label={t("users.actions.view")}
-                            >
+                            <Link href={`/admin/users/${user.id}`} className="im-icon-btn im-icon-btn--view">
                               <EyeIcon />
-                            </button>
+                            </Link>
                           </Tooltip>
-                          {user.role !== "root_admin" && (
-                            <>
-                              <Tooltip content={t("users.actions.editRole")}>
-                                <button
-                                  className="im-icon-btn im-icon-btn--edit"
-                                  onClick={() => handleEditRole(user)}
-                                  aria-label={t("users.actions.editRole")}
-                                >
-                                  <EditIcon />
-                                </button>
-                              </Tooltip>
-                              <Tooltip content={user.blocked ? t("users.actions.unblock") : t("users.actions.block")}>
-                                <button
-                                  className={`im-icon-btn ${user.blocked ? "im-icon-btn--unblock" : "im-icon-btn--block"}`}
-                                  onClick={() => handleToggleBlock(user)}
-                                  disabled={processing}
-                                  aria-label={user.blocked ? t("users.actions.unblock") : t("users.actions.block")}
-                                >
-                                  {user.blocked ? <UnlockIcon /> : <LockIcon />}
-                                </button>
-                              </Tooltip>
-                              <Tooltip content={t("users.actions.delete")}>
-                                <button
-                                  className="im-icon-btn im-icon-btn--delete"
-                                  onClick={() => handleDeleteUser(user)}
-                                  disabled={processing}
-                                  aria-label={t("users.actions.delete")}
-                                >
-                                  <TrashIcon />
-                                </button>
-                              </Tooltip>
-                            </>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -902,283 +831,7 @@ export default function AdminUsersPage() {
         )}
       </section>
 
-      {/* View User Modal */}
-      <Modal
-        isOpen={viewModalOpen}
-        onClose={() => {
-          setViewModalOpen(false);
-          setUserDetail(null);
-        }}
-        title={t("users.viewDetails")}
-      >
-        <div className="im-modal-content">
-          {loadingDetail ? (
-            <div className="im-modal-loading">
-              <div className="im-loading-spinner" />
-            </div>
-          ) : userDetail ? (
-            <div className="im-user-details">
-              {/* User Header */}
-              <div className="im-user-details-header">
-                <div className="im-user-details-avatar">
-                  {userDetail.name ? userDetail.name.charAt(0).toUpperCase() : "?"}
-                </div>
-                <div className="im-user-details-info">
-                  <h3 className="im-user-details-name">{userDetail.name || t("users.unnamed")}</h3>
-                  <p className="im-user-details-email">{userDetail.email}</p>
-                </div>
-                <Badge variant={userDetail.blocked ? "error" : "success"}>
-                  <span className={`im-status-dot ${userDetail.blocked ? "im-status-dot--blocked" : "im-status-dot--active"}`} />
-                  {userDetail.blocked ? t("users.status.blocked") : t("users.status.active")}
-                </Badge>
-              </div>
-
-              {/* Basic Info Section */}
-              <div className="im-details-section">
-                <h4 className="im-details-section-title">{t("users.sections.basicInfo")}</h4>
-                <div className="im-details-grid">
-                  <div className="im-details-item">
-                    <span className="im-details-label">{t("users.columns.role")}</span>
-                    <Badge variant={getRoleBadgeVariant(userDetail.role)} icon={getRoleIcon(userDetail.role)}>
-                      {getRoleLabel(userDetail.role)}
-                    </Badge>
-                  </div>
-                  <div className="im-details-item">
-                    <span className="im-details-label">{t("users.columns.registeredAt")}</span>
-                    <span className="im-details-value">{formatDateTime(userDetail.createdAt)}</span>
-                  </div>
-                  <div className="im-details-item">
-                    <span className="im-details-label">{t("users.columns.lastLogin")}</span>
-                    <span className="im-details-value">{formatDateTime(userDetail.lastLoginAt)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Organizations Section */}
-              {userDetail.memberships.length > 0 && (
-                <div className="im-details-section">
-                  <h4 className="im-details-section-title">
-                    <BuildingIcon />
-                    {t("users.sections.organizations")}
-                  </h4>
-                  <div className="im-details-list">
-                    {userDetail.memberships.map((m) => (
-                      <div key={m.id} className="im-details-list-item">
-                        <span className="im-details-list-name">{m.organization.name}</span>
-                        <Badge variant="info" size="small">
-                          {m.role} {m.isPrimaryOwner && `(${t("organizations.owner")})`}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Clubs Section */}
-              {userDetail.clubMemberships.length > 0 && (
-                <div className="im-details-section">
-                  <h4 className="im-details-section-title">
-                    <HomeIcon />
-                    {t("users.sections.clubs")}
-                  </h4>
-                  <div className="im-details-list">
-                    {userDetail.clubMemberships.map((m) => (
-                      <div key={m.id} className="im-details-list-item">
-                        <span className="im-details-list-name">{m.club.name}</span>
-                        <Badge variant="warning" size="small">{m.role}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Recent Bookings Section */}
-              {userDetail.bookings.length > 0 && (
-                <div className="im-details-section">
-                  <h4 className="im-details-section-title">
-                    <CalendarIcon />
-                    {t("users.sections.recentBookings")}
-                  </h4>
-                  <div className="im-bookings-list">
-                    {userDetail.bookings.map((b) => (
-                      <div key={b.id} className="im-booking-item">
-                        <div className="im-booking-info">
-                          <span className="im-booking-venue">{b.court.club.name} - {b.court.name}</span>
-                          <span className="im-booking-date">{formatDateTime(b.start)}</span>
-                        </div>
-                        <Badge variant={b.status === "confirmed" ? "success" : "default"} size="small">
-                          {b.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="im-modal-empty">{t("users.noDetailsAvailable")}</p>
-          )}
-          <div className="im-modal-footer">
-            <Button variant="outline" onClick={() => setViewModalOpen(false)}>
-              {t("common.close")}
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Edit Role Modal */}
-      <Modal
-        isOpen={editRoleModalOpen}
-        onClose={() => setEditRoleModalOpen(false)}
-        title={t("users.editRole")}
-      >
-        <div className="im-modal-content">
-          <div className="im-edit-role-header">
-            <p className="im-edit-role-subtitle">
-              {t("users.editRoleFor")}:
-            </p>
-            <div className="im-edit-role-user">
-              <div className="im-user-avatar im-user-avatar--small">
-                {selectedUser?.name ? selectedUser.name.charAt(0).toUpperCase() : "?"}
-              </div>
-              <span className="im-edit-role-user-name">{selectedUser?.name || selectedUser?.email}</span>
-            </div>
-          </div>
-
-          <div className="im-role-options">
-            <label
-              className={`im-role-card ${newRole === "organization_admin" ? "im-role-card--selected" : ""}`}
-            >
-              <input
-                type="radio"
-                name="role"
-                value="organization_admin"
-                checked={newRole === "organization_admin"}
-                onChange={(e) => setNewRole(e.target.value)}
-                className="im-role-radio"
-              />
-              <div className="im-role-card-icon im-role-card-icon--org">
-                <BuildingIcon />
-              </div>
-              <div className="im-role-card-content">
-                <span className="im-role-card-title">{t("users.roles.organizationAdmin")}</span>
-                <span className="im-role-card-description">{t("users.roleDescriptions.organizationAdmin")}</span>
-              </div>
-            </label>
-
-            <label
-              className={`im-role-card ${newRole === "club_admin" ? "im-role-card--selected" : ""}`}
-            >
-              <input
-                type="radio"
-                name="role"
-                value="club_admin"
-                checked={newRole === "club_admin"}
-                onChange={(e) => setNewRole(e.target.value)}
-                className="im-role-radio"
-              />
-              <div className="im-role-card-icon im-role-card-icon--club">
-                <HomeIcon />
-              </div>
-              <div className="im-role-card-content">
-                <span className="im-role-card-title">{t("users.roles.clubAdmin")}</span>
-                <span className="im-role-card-description">{t("users.roleDescriptions.clubAdmin")}</span>
-              </div>
-            </label>
-
-            <label
-              className={`im-role-card ${newRole === "user" ? "im-role-card--selected" : ""}`}
-            >
-              <input
-                type="radio"
-                name="role"
-                value="user"
-                checked={newRole === "user"}
-                onChange={(e) => setNewRole(e.target.value)}
-                className="im-role-radio"
-              />
-              <div className="im-role-card-icon im-role-card-icon--user">
-                <UserIcon />
-              </div>
-              <div className="im-role-card-content">
-                <span className="im-role-card-title">{t("users.roles.user")}</span>
-                <span className="im-role-card-description">{t("users.roleDescriptions.user")}</span>
-              </div>
-            </label>
-          </div>
-
-          {newRole === "organization_admin" && (
-            <div className="im-role-entity-select">
-              <Select
-                label={t("users.selectOrganization")}
-                options={organizations.map((org) => ({ value: org.id, label: org.name }))}
-                value={selectedOrgId}
-                onChange={setSelectedOrgId}
-                placeholder={t("users.selectOrganizationPlaceholder")}
-              />
-            </div>
-          )}
-
-          {newRole === "club_admin" && (
-            <div className="im-role-entity-select">
-              <Select
-                label={t("users.selectClub")}
-                options={clubs.map((club) => ({ value: club.id, label: club.name }))}
-                value={selectedClubId}
-                onChange={setSelectedClubId}
-                placeholder={t("users.selectClubPlaceholder")}
-              />
-            </div>
-          )}
-
-          <div className="im-modal-footer">
-            <Button variant="outline" onClick={() => setEditRoleModalOpen(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button
-              onClick={handleSaveRole}
-              disabled={
-                updatingRole ||
-                (newRole === "organization_admin" && !selectedOrgId) ||
-                (newRole === "club_admin" && !selectedClubId)
-              }
-            >
-              {updatingRole ? t("common.processing") : t("common.save")}
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        title={t("users.confirmDelete")}
-      >
-        <div className="im-modal-content im-delete-modal">
-          <div className="im-delete-icon">
-            <TrashIcon />
-          </div>
-          <p className="im-delete-warning">{t("users.deleteWarning")}</p>
-          <p className="im-delete-message">
-            {t("users.deleteConfirmMessage", {
-              name: selectedUser?.name ?? selectedUser?.email ?? "",
-            })}
-          </p>
-          <div className="im-modal-footer">
-            <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button
-              variant="danger"
-              onClick={confirmDeleteUser}
-              disabled={processing}
-            >
-              {processing ? t("common.processing") : t("common.delete")}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      {/* No modals needed - View action navigates to /admin/users/[id] detail page */}
     </main>
   );
 }

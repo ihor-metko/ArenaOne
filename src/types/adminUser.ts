@@ -10,7 +10,7 @@ export type UserRole = "root_admin" | "organization_admin" | "club_admin" | "use
 /**
  * User status type
  */
-export type UserStatus = "active" | "blocked";
+export type UserStatus = "active" | "blocked" | "suspended" | "invited" | "deleted";
 
 /**
  * Organization reference in user data
@@ -42,6 +42,8 @@ export interface AdminUser {
   blocked: boolean;
   createdAt: string | Date;
   lastActivity: string | Date | null;
+  totalBookings: number;
+  bookingsLast30d: number;
 }
 
 /**
@@ -193,9 +195,16 @@ export interface UsersFilters {
   role?: UserRole | null;
   organizationId?: string | null;
   clubId?: string | null;
-  status?: UserStatus | null;
-  sortBy?: "name" | "email" | "createdAt" | "lastLoginAt";
+  status?: UserStatus | UserStatus[] | null;
+  sortBy?: "name" | "email" | "createdAt" | "lastLoginAt" | "lastActive" | "totalBookings";
   sortOrder?: "asc" | "desc";
+  dateRangeField?: "createdAt" | "lastActive";
+  dateFrom?: string | null;
+  dateTo?: string | null;
+  activeLast30d?: boolean;
+  neverBooked?: boolean;
+  showOnlyAdmins?: boolean;
+  showOnlyUsers?: boolean;
 }
 
 /**
