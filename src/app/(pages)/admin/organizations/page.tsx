@@ -8,17 +8,11 @@ import { Button, Input, Modal, PageHeader, Select } from "@/components/ui";
 import { AdminOrganizationCard } from "@/components/admin/AdminOrganizationCard";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
+import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import type { Organization } from "@/types/organization";
+import type { SimpleUser } from "@/types/adminUser";
 import "@/components/admin/AdminOrganizationCard.css";
 import "./page.css";
-
-interface User {
-  id: string;
-  name: string | null;
-  email: string;
-  isOrgAdmin: boolean;
-  organizationName: string | null;
-}
 
 interface Club {
   id: string;
@@ -77,7 +71,8 @@ export default function AdminOrganizationsPage() {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [assignMode, setAssignMode] = useState<"existing" | "new">("existing");
-  const [users, setUsers] = useState<User[]>([]);
+  const simpleUsers = useAdminUsersStore((state) => state.simpleUsers);
+  const fetchSimpleUsers = useAdminUsersStore((state) => state.fetchSimpleUsers);
   const [userSearch, setUserSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
   const [newAdminName, setNewAdminName] = useState("");
@@ -233,15 +228,11 @@ export default function AdminOrganizationsPage() {
 
   const fetchUsers = useCallback(async (query: string = "") => {
     try {
-      const response = await fetch(`/api/admin/users?q=${encodeURIComponent(query)}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
-      }
+      await fetchSimpleUsers(query);
     } catch {
       // Silent fail for user search
     }
-  }, []);
+  }, [fetchSimpleUsers]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -1040,10 +1031,10 @@ export default function AdminOrganizationsPage() {
                 placeholder={t("organizations.searchUsersPlaceholder")}
               />
               <div className="im-user-list">
-                {users.length === 0 ? (
+                {simpleUsers.length === 0 ? (
                   <p className="im-user-list-empty">{t("organizations.noUsersFound")}</p>
                 ) : (
-                  users.map((user) => {
+                  simpleUsers.map((user) => {
                     // Check if user is already an admin of the selected org
                     const isAlreadyAdminOfThisOrg = selectedOrg?.superAdmins?.some(
                       (admin) => admin.id === user.id
