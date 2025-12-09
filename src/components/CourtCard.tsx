@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui";
+import { Button, IMLink } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
 import type { Court, AvailabilitySlot } from "@/types/court";
@@ -76,11 +76,11 @@ function calculateAvailabilitySummary(slots: AvailabilitySlot[]): AvailabilitySu
   if (slots.length === 0) {
     return { available: 0, total: 0, status: "unavailable" };
   }
-  
+
   const available = slots.filter(slot => slot.status === "available" || slot.status === "partial").length;
   const total = slots.length;
   const ratio = available / total;
-  
+
   let status: "available" | "limited" | "unavailable";
   if (ratio >= 0.5) {
     status = "available";
@@ -89,7 +89,7 @@ function calculateAvailabilitySummary(slots: AvailabilitySlot[]): AvailabilitySu
   } else {
     status = "unavailable";
   }
-  
+
   return { available, total, status };
 }
 
@@ -172,7 +172,7 @@ export function CourtCard({
 
     const { available, total, status } = availabilitySummary;
     const badgeClass = `im-court-card-availability-badge im-court-card-availability-badge--${status}`;
-    
+
     return (
       <span className={badgeClass} aria-label={`${available} ${t("common.available")} of ${total}`}>
         <span className="im-court-card-availability-badge-count">{available}/{total}</span>
@@ -235,8 +235,8 @@ export function CourtCard({
   };
 
   return (
-    <article 
-      className={`im-court-card ${showDetails ? "im-court-card--details-visible" : ""}`} 
+    <article
+      className={`im-court-card ${showDetails ? "im-court-card--details-visible" : ""}`}
       aria-label={court.name}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -268,10 +268,10 @@ export function CourtCard({
             </svg>
           </div>
         )}
-        
+
         {/* Gradient Overlay */}
         <div className="im-court-card-overlay" />
-        
+
         {/* Badges on top */}
         <div className="im-court-card-badges">
           {court.type && (
@@ -350,16 +350,9 @@ export function CourtCard({
       {/* Actions */}
       <div className="im-court-card-actions">
         {showViewDetails && onViewDetails && (
-          <Button
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              onViewDetails(court.id);
-            }}
-            aria-label={`${t("common.viewDetails")} ${court.name}`}
-          >
+          <IMLink asButton href={`/admin/courts/${court.id}`} variant="outline" className="w-full">
             {t("common.viewDetails")}
-          </Button>
+          </IMLink>
         )}
         {showBookButton && onBook && (
           <Button

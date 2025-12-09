@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { GET, PATCH, DELETE } from "@/app/api/admin/clubs/[id]/courts/[courtId]/route";
+import { GET, PATCH, DELETE } from "@/app/api/admin/courts/[courtId]/route";
 import { prisma } from "@/lib/prisma";
 import { requireRootAdmin } from "@/lib/requireRole";
 
@@ -182,7 +182,7 @@ describe("Admin Court Detail API", () => {
       (prisma.court.findUnique as jest.Mock)
         .mockResolvedValueOnce(mockCourt) // Court lookup
         .mockResolvedValueOnce({ id: "other-court", slug: "existing-slug" }); // Slug check
-      
+
       (prisma.court.findMany as jest.Mock).mockResolvedValueOnce([]); // Find similar slugs
 
       const request = createRequest("PATCH", { slug: "existing-slug" });
