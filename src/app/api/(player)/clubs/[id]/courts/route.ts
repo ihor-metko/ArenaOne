@@ -97,6 +97,14 @@ export async function POST(
       );
     }
 
+    // Validate sportType if provided
+    if (sportType && !["PADEL", "TENNIS", "PICKLEBALL", "SQUASH", "BADMINTON"].includes(sportType)) {
+      return NextResponse.json(
+        { error: "Invalid sport type" },
+        { status: 400 }
+      );
+    }
+
     // Check for slug uniqueness if provided
     if (slug) {
       const existingCourt = await prisma.court.findUnique({

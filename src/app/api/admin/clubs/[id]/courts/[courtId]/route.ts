@@ -121,6 +121,11 @@ export async function PATCH(
         }
       }
 
+      // Sport type validation
+      if (sportType !== undefined && !["PADEL", "TENNIS", "PICKLEBALL", "SQUASH", "BADMINTON"].includes(sportType)) {
+        errors.sportType = "Invalid sport type";
+      }
+
       if (Object.keys(errors).length > 0) {
         return NextResponse.json(
           { error: "Validation failed", errors },
@@ -199,6 +204,11 @@ export async function PATCH(
       if (typeof defaultPriceCents !== "number" || defaultPriceCents < 0) {
         errors.defaultPriceCents = "Price must be a non-negative number";
       }
+    }
+
+    // Sport type validation
+    if (sportType !== undefined && !["PADEL", "TENNIS", "PICKLEBALL", "SQUASH", "BADMINTON"].includes(sportType)) {
+      errors.sportType = "Invalid sport type";
     }
 
     if (Object.keys(errors).length > 0) {
