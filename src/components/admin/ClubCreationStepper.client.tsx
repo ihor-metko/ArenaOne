@@ -327,9 +327,12 @@ export function ClubCreationStepper() {
           type: court.type || null,
           surface: court.surface || null,
           indoor: court.indoor,
+          sportType: court.sportType,
           defaultPriceCents: court.defaultPriceCents,
         })),
         tags: formData.clubType ? JSON.stringify([formData.clubType]) : null,
+        // Collect unique sport types from courts as supportedSports
+        supportedSports: Array.from(new Set(formData.courts.map(court => court.sportType).filter(Boolean))),
       };
 
       const response = await fetch("/api/admin/clubs/new", {
