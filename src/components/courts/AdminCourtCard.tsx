@@ -20,7 +20,38 @@ interface AdminCourtCardProps {
 
 /**
  * AdminCourtCard - Wrapper component for admin pages
- * Combines the client-facing CourtCard with admin-only details
+ * 
+ * Combines the client-facing CourtCard with admin-only details (AdminCourtDetails).
+ * This component should be used in admin pages where court management capabilities
+ * are needed alongside the basic court information.
+ * 
+ * @param court - The court object to display
+ * @param clubId - ID of the club this court belongs to
+ * @param clubName - Name of the club (displayed in admin details)
+ * @param orgName - Optional organization name (displayed if showOrganization is true)
+ * @param isActive - Whether the court is currently active (default: true)
+ * @param onViewDetails - Callback when "View Details" is clicked
+ * @param onEdit - Callback when "Edit" button is clicked
+ * @param onDelete - Callback when "Delete" button is clicked
+ * @param showOrganization - Whether to show organization information (default: true)
+ * @param canEdit - Whether to show the Edit button (default: true)
+ * @param canDelete - Whether to show the Delete button (default: false)
+ * 
+ * @example
+ * ```tsx
+ * <AdminCourtCard
+ *   court={courtData}
+ *   clubId="club-123"
+ *   clubName="Tennis Club"
+ *   orgName="Sports Organization"
+ *   isActive={true}
+ *   onViewDetails={(id) => router.push(`/admin/courts/${id}`)}
+ *   onEdit={(id) => handleEdit(id)}
+ *   onDelete={(id) => handleDelete(id)}
+ *   canEdit={true}
+ *   canDelete={true}
+ * />
+ * ```
  */
 export function AdminCourtCard({
   court,
