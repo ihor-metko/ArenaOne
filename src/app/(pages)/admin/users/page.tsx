@@ -201,7 +201,7 @@ export default function AdminUsersPage() {
   const loading = useAdminUsersStore((state) => state.loading);
   const error = useAdminUsersStore((state) => state.error);
   const fetchUsersFromStore = useAdminUsersStore((state) => state.fetchUsers);
-  
+
   const totalCount = pagination?.totalCount || 0;
   const totalPages = pagination?.totalPages || 0;
 
@@ -436,7 +436,7 @@ export default function AdminUsersPage() {
               </Button>
             )}
           </div>
-          
+
           {/* Quick preset buttons */}
           <div className="im-quick-filters">
             <Button
@@ -496,7 +496,7 @@ export default function AdminUsersPage() {
                 />
               </div>
             </div>
-            
+
             {/* Role filter */}
             <div className="im-filter-field">
               <Select
@@ -506,7 +506,7 @@ export default function AdminUsersPage() {
                 onChange={(value) => setFilter("roleFilter", value)}
               />
             </div>
-            
+
             {/* Status filter */}
             <div className="im-filter-field">
               <Select
@@ -516,7 +516,7 @@ export default function AdminUsersPage() {
                 onChange={(value) => setFilter("statusFilter", value)}
               />
             </div>
-            
+
             {/* Organization filter */}
             <div className="im-filter-field">
               <Select
@@ -526,7 +526,7 @@ export default function AdminUsersPage() {
                 onChange={(value) => setFilter("organizationFilter", value)}
               />
             </div>
-            
+
             {/* Club filter */}
             <div className="im-filter-field">
               <Select
@@ -537,7 +537,7 @@ export default function AdminUsersPage() {
               />
             </div>
           </div>
-          
+
           {/* Date range filter */}
           <div className="im-date-range-filter">
             <div className="im-date-range-header">
@@ -665,8 +665,20 @@ export default function AdminUsersPage() {
                 </thead>
                 <tbody className="im-users-table-body">
                   {users.map((user) => (
-                    <tr key={user.id} className="im-user-row">
-                      {/* Avatar + Name (clickable to user detail) */}
+                    <tr
+                      key={user.id}
+                      className="im-user-row im-user-row--clickable"
+                      onClick={() => router.push(`/admin/users/${user.id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.code === "Enter" || e.code === "Space") {
+                          e.preventDefault();
+                          router.push(`/admin/users/${user.id}`);
+                        }
+                      }}
+                      aria-label={t("users.actions.viewUserDetail", { name: user.name || user.email })}
+                    >
                       <td className="im-td-user">
                         <div className="im-user-info">
                           <div className="im-user-avatar">
@@ -725,15 +737,15 @@ export default function AdminUsersPage() {
                       </td>
                       {/* Created at */}
                       <td className="im-td-date">
-                        <Tooltip content={formatDateTime(user.createdAt)}>
+                        <Tooltip content={user.lastActivity ? formatDateTime(user.lastActivity) : t("users.neverLoggedIn")}>
                           <div className="im-date-display">
                             <CalendarIcon />
-                            <span>{formatDate(user.createdAt)}</span>
+                            <span>{formatDate(user.lastActivity)}</span>
                           </div>
                         </Tooltip>
                       </td>
                       {/* Actions (View only) */}
-                      <td className="im-td-actions">
+                      <td className="im-td-actions" onClick={(e) => e.stopPropagation()}>
                         <div className="im-actions-group">
                           <Tooltip content={t("users.actions.viewDetails")}>
                             <Link href={`/admin/users/${user.id}`} className="im-icon-btn im-icon-btn--view">
