@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
-import { isMockMode, getMockClubs, getMockCourts } from "@/services/mockDb";
+import { isMockMode, getMockClubs, getMockCourts, getMockCoaches, getMockBusinessHours, getMockGalleryImages, getMockUsers } from "@/services/mockDb";
 
 export async function GET(
   request: Request,
@@ -15,6 +15,10 @@ export async function GET(
     if (isMockMode()) {
       const mockClubs = getMockClubs();
       const mockCourts = getMockCourts();
+      const mockCoaches = getMockCoaches();
+      const mockBusinessHours = getMockBusinessHours();
+      const mockGalleryImages = getMockGalleryImages();
+      const mockUsers = getMockUsers();
       
       const club = mockClubs.find((c) => c.id === clubId);
       
@@ -33,11 +37,27 @@ export async function GET(
           defaultPriceCents: court.defaultPriceCents,
         }));
       
-      // Mock empty arrays for data we don't have in mockDb
-      // TODO: Add these to mockDb when needed for testing
-      const coaches: Array<{ id: string; name: string }> = [];
-      const businessHours: Array<unknown> = [];
-      const gallery: Array<unknown> = [];
+      // Get coaches for this club
+      const clubCoaches = mockCoaches
+        .filter((c) => c.clubId === clubId)
+        .map((coach) => {
+          const user = mockUsers.find((u) => u.id === coach.userId);
+          return {
+            id: coach.id,
+            name: user?.name || "Unknown Coach",
+          };
+        });
+      
+      // Get business hours for this club
+      const clubBusinessHours = mockBusinessHours
+        .filter((bh) => bh.clubId === clubId)
+        .sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+      
+      // Get gallery images for this club
+      const clubGallery = mockGalleryImages
+        .filter((img) => img.clubId === clubId)
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .slice(0, 6);
       
       return NextResponse.json({
         id: club.id,
@@ -62,9 +82,9 @@ export async function GET(
         timezone: club.timezone,
         tags: club.tags,
         courts,
-        coaches,
-        businessHours,
-        gallery,
+        coaches: clubCoaches,
+        businessHours: clubBusinessHours,
+        gallery: clubGallery,
       });
     }
 
