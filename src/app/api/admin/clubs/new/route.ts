@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
+import { SportType } from "@prisma/client";
 
 interface BusinessHourInput {
   dayOfWeek: number;
@@ -14,7 +15,7 @@ interface CourtInput {
   type: string | null;
   surface: string | null;
   indoor: boolean;
-  sportType?: string;
+  sportType?: SportType;
   defaultPriceCents: number;
 }
 
@@ -42,7 +43,7 @@ interface CreateClubRequest {
   timezone?: string;
   isPublic?: boolean;
   tags?: string | null;
-  supportedSports?: string[];
+  supportedSports?: SportType[];
   heroImage?: string;
   logo?: string;
   gallery?: GalleryInput[];

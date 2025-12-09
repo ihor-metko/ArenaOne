@@ -151,14 +151,6 @@ export async function POST(request: Request) {
     // Fetch court details with club
     const court = await prisma.court.findUnique({
       where: { id: courtId },
-      include: {
-        club: {
-          select: {
-            id: true,
-            organizationId: true,
-          },
-        },
-      },
       select: {
         id: true,
         sportType: true,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRootAdmin } from "@/lib/requireRole";
+import { SportType } from "@prisma/client";
 
 type Section = "header" | "contacts" | "hours" | "gallery" | "coaches";
 
@@ -9,7 +10,7 @@ interface HeaderPayload {
   slug: string;
   shortDescription: string;
   isPublic: boolean;
-  supportedSports?: string[];
+  supportedSports?: SportType[];
 }
 
 interface ContactsPayload {
