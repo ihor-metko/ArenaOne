@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { Button, Input, Modal, PageHeader, Breadcrumbs, Select, Badge, Tooltip } from "@/components/ui";
+import { Button, Input, Modal, PageHeader, Select, Badge, Tooltip } from "@/components/ui";
 import { useListController } from "@/hooks";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
@@ -583,16 +583,6 @@ export default function AdminUsersPage() {
       )}
 
       <section className="rsp-content">
-        <Breadcrumbs
-          items={[
-            { label: t("breadcrumbs.home"), href: "/" },
-            { label: t("breadcrumbs.admin"), href: "/admin/dashboard" },
-            { label: t("users.breadcrumb") },
-          ]}
-          className="mb-6"
-          ariaLabel={t("breadcrumbs.navigation")}
-        />
-
         {/* Filters Card */}
         <AdminListFilters
           title={t("users.filters")}

@@ -5,6 +5,7 @@
   @apply p-6 md:p-8 max-w-7xl mx-auto;
   background-color: var(--rsp-background);
   color: var(--rsp-foreground);
+  width: inherit;
 }
 
 /* ===== Loading State ===== */
@@ -35,6 +36,7 @@
     opacity: 0;
     transform: translateX(100%);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
