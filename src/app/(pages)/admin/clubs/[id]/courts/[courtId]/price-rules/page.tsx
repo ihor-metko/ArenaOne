@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button, Card, Modal, IMLink } from "@/components/ui";
 import { PriceRuleForm, PriceRuleFormData } from "@/components/admin/PriceRuleForm";
 import { formatPrice } from "@/utils/price";
+import { useCourtStore } from "@/stores/useCourtStore";
 
 
 interface PriceRule {
@@ -110,17 +111,18 @@ export default function PriceRulesPage({
     }
   }, [clubId]);
 
+  const ensureCourtByIdFromStore = useCourtStore((state) => state.ensureCourtById);
+  
   const fetchCourt = useCallback(async () => {
     if (!courtId) return;
 
     try {
-      const { ensureCourtById } = await import("@/stores/useCourtStore").then(m => m.useCourtStore.getState());
-      const courtData = await ensureCourtById(courtId, { clubId: clubId || undefined });
+      const courtData = await ensureCourtByIdFromStore(courtId, { clubId: clubId || undefined });
       setCourt(courtData);
     } catch {
       setError("Failed to load court");
     }
-  }, [courtId, clubId]);
+  }, [ensureCourtByIdFromStore, courtId, clubId]);
 
   useEffect(() => {
     if (status === "loading") return;

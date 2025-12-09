@@ -45,12 +45,13 @@ export default function CourtDetailPage({
     });
   }, [params]);
 
+  const ensureCourtByIdFromStore = useCourtStore((state) => state.ensureCourtById);
+  
   const fetchCourt = useCallback(async () => {
     if (!clubId || !courtId) return;
 
     try {
-      const { ensureCourtById } = await import("@/stores/useCourtStore").then(m => m.useCourtStore.getState());
-      const courtData = await ensureCourtById(courtId, { clubId });
+      const courtData = await ensureCourtByIdFromStore(courtId, { clubId });
       setCourt(courtData);
     } catch (err) {
       if (err instanceof Error) {
@@ -65,7 +66,7 @@ export default function CourtDetailPage({
         setError("Failed to load court");
       }
     }
-  }, [clubId, courtId, router]);
+  }, [ensureCourtByIdFromStore, clubId, courtId, router]);
 
   useEffect(() => {
     if (status === "loading") return;

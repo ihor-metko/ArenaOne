@@ -110,7 +110,9 @@ export default function CourtDetailPage({
     async function fetchCourtData() {
       try {
         const resolvedParams = await params;
-        const { ensureCourtById } = await import("@/stores/useCourtStore").then(m => m.useCourtStore.getState());
+        // Import and use store method
+        const { useCourtStore: courtStore } = await import("@/stores/useCourtStore");
+        const ensureCourtById = courtStore.getState().ensureCourtById;
         
         // Try to get from cache first, then fetch if needed
         const courtData = await ensureCourtById(resolvedParams.courtId);

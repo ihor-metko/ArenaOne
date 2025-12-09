@@ -210,10 +210,21 @@ export const useCourtStore = create<CourtState>((set, get) => ({
         // Update both courtsById cache and courts array if not present
         set((state) => {
           const courtsById = { ...state.courtsById, [courtId]: court };
-          const courtExists = state.courts.some(c => c.id === courtId);
-          const courts = courtExists 
-            ? state.courts.map(c => c.id === courtId ? court : c)
-            : [...state.courts, court];
+          
+          // Single pass: check if exists and update/append in one iteration
+          let courtExists = false;
+          const courts = state.courts.map(c => {
+            if (c.id === courtId) {
+              courtExists = true;
+              return court;
+            }
+            return c;
+          });
+          
+          // Append if not found
+          if (!courtExists) {
+            courts.push(court);
+          }
           
           const inflightById = { ...state._inflightFetchCourtById };
           delete inflightById[courtId];
