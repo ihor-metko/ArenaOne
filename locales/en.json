@@ -67,8 +67,8 @@
     "totalPrice": "Total Price"
   },
   "home": {
-    "title": "Padel Club",
-    "welcomeTitle": "Welcome to Padel Club",
+    "title": "ArenaOne",
+    "welcomeTitle": "Welcome to ArenaOne",
     "welcomeMessage": "This is an example card component using rsp- prefixed classes for structure and styling.",
     "yourName": "Your Name",
     "enterYourName": "Enter your name",
@@ -726,7 +726,7 @@
     "bookingsError": "Failed to load bookings. Please try again."
   },
   "footer": {
-    "brandName": "Padel Club",
+    "brandName": "ArenaOne",
     "tagline": "Find and book padel courts at the best clubs near you.",
     "quickLinks": "Quick Links",
     "home": "Home",
