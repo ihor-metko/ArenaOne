@@ -357,6 +357,13 @@ function getNavItems(): NavItem[] {
       icon: <SettingsIcon />,
       rootOnly: true,
     },
+    {
+      id: "sport-config",
+      href: "/admin/sport-config",
+      labelKey: "sidebar.sportConfig",
+      icon: <SettingsIcon />,
+      rootOnly: true,
+    },
   ];
 }
 
