@@ -2,14 +2,8 @@
  * @jest-environment jsdom
  */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import AdminSidebar from "@/components/layout/AdminSidebar";
-
-// Mock next-auth
-jest.mock("next-auth/react", () => ({
-  useSession: jest.fn(),
-}));
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({
@@ -84,7 +78,6 @@ jest.mock("@/stores/useUserStore", () => ({
   }),
 }));
 
-const mockUseSession = useSession as jest.Mock;
 const mockUsePathname = usePathname as jest.Mock;
 
 // Helper to set user store state
