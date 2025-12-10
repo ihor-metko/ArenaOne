@@ -878,7 +878,9 @@
     "collapse": "Collapse",
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
-    "comingSoon": "Coming Soon"
+    "comingSoon": "Coming Soon",
+    "organization": "Organization",
+    "myOrganization": "My Organization"
   },
   "organizations": {
     "title": "Organizations",
