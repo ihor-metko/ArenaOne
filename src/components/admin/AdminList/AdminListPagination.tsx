@@ -135,7 +135,7 @@ export function AdminListPagination({
           id="page-size"
           className="im-pagination-size-select"
           value={pageSize}
-          onChange={(e) => setPageSize(parseInt(e.target.value))}
+          onChange={(e) => setPageSize(parseInt(e.target.value, 10))}
         >
           <option value="10">10</option>
           <option value="25">25</option>
