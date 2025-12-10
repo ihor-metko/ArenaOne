@@ -14,6 +14,7 @@ import {
   getMockCourtPriceRules,
   getMockAuditLogs,
   getMockAdminNotifications,
+  getMockCoaches,
   findUserById,
   findClubById,
   findCourtById,
@@ -1414,7 +1415,7 @@ export async function mockGetAdminNotifications(params: {
   // Enrich notifications with player and coach names
   const enrichedNotifications = paginatedNotifications.map((notification) => {
     const player = users.find((u) => u.id === notification.playerId);
-    const coach = coaches.find((c) => c.userId === notification.coachId);
+    const coach = coaches.find((c) => c.id === notification.coachId);
     const coachUser = coach ? users.find((u) => u.id === coach.userId) : undefined;
 
     return {
@@ -1450,7 +1451,7 @@ export async function mockGetAdminNotificationById(id: string) {
   const users = getMockUsers();
   const coaches = getMockCoaches();
   const player = users.find((u) => u.id === notification.playerId);
-  const coach = coaches.find((c) => c.userId === notification.coachId);
+  const coach = coaches.find((c) => c.id === notification.coachId);
   const coachUser = coach ? users.find((u) => u.id === coach.userId) : undefined;
 
   return {
