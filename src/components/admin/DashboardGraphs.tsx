@@ -13,7 +13,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  ReferenceLine,
 } from "recharts";
 import type { DashboardGraphsResponse, TimeRange } from "@/types/graphs";
 import "./DashboardGraphs.css";
@@ -149,8 +148,8 @@ export default function DashboardGraphs({ loading: externalLoading, error: exter
   const graphHeight = hasSmallDataset ? 350 : 320;
 
   // Calculate max values for better axis scaling
-  const maxBookings = Math.max(...data.bookingTrends.map(d => d.bookings), 1);
-  const maxUsers = Math.max(...data.activeUsers.map(d => d.users), 1);
+  const maxBookings = Math.max(...data.bookingTrends.map(d => d.bookings), 0);
+  const maxUsers = Math.max(...data.activeUsers.map(d => d.users), 0);
   
   // Set dynamic domain for better visualization of small values
   const bookingsYDomain = maxBookings <= 5 ? [0, Math.max(maxBookings + 2, 5)] : [0, 'auto'];
@@ -261,9 +260,6 @@ export default function DashboardGraphs({ loading: externalLoading, error: exter
                   wrapperStyle={{ paddingTop: "15px" }}
                   iconType="square"
                 />
-                {maxUsers === 0 && (
-                  <ReferenceLine y={0} stroke="var(--im-border-color)" strokeDasharray="3 3" />
-                )}
                 <Line
                   type="monotone"
                   dataKey="users"
