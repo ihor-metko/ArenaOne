@@ -10,6 +10,7 @@ import { useListController } from "@/hooks";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
+import { AdminListPagination } from "@/components/admin/AdminList";
 
 import "./page.css";
 
@@ -81,22 +82,6 @@ function EyeIcon() {
 }
 
 // Icons removed as they're no longer needed after simplifying to View-only actions
-
-function ChevronLeftIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m15 18-6-6 6-6" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}
 
 function XIcon() {
   return (
@@ -761,72 +746,22 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Pagination */}
-            <Card className="im-pagination-card">
-              <div className="im-pagination-info">
-                <span className="im-pagination-text">
-                  {t("users.pagination.showing", {
-                    start: (page - 1) * pageSize + 1,
-                    end: Math.min(page * pageSize, totalCount),
-                    total: totalCount,
-                  })}
-                </span>
-              </div>
-              <div className="im-pagination-controls">
-                <button
-                  className="im-pagination-btn"
-                  onClick={() => setPage(page - 1)}
-                  disabled={page <= 1}
-                  aria-label={t("users.pagination.previous")}
-                >
-                  <ChevronLeftIcon />
-                  <span className="im-pagination-btn-text">{t("users.pagination.previous")}</span>
-                </button>
-                <div className="im-pagination-pages">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum = page <= 3
-                      ? i + 1
-                      : page + i - 2;
-                    if (pageNum < 1 || pageNum > totalPages) return null;
-                    return (
-                      <button
-                        key={pageNum}
-                        className={`im-pagination-page ${page === pageNum ? "im-pagination-page--active" : ""}`}
-                        onClick={() => setPage(pageNum)}
-                        aria-label={`Page ${pageNum}`}
-                        aria-current={page === pageNum ? "page" : undefined}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  className="im-pagination-btn"
-                  onClick={() => setPage(page + 1)}
-                  disabled={page >= totalPages}
-                  aria-label={t("users.pagination.next")}
-                >
-                  <span className="im-pagination-btn-text">{t("users.pagination.next")}</span>
-                  <ChevronRightIcon />
-                </button>
-              </div>
-              <div className="im-pagination-size">
-                <label htmlFor="page-size" className="im-pagination-size-label">
-                  {t("users.pagination.pageSize")}
-                </label>
-                <select
-                  id="page-size"
-                  className="im-pagination-size-select"
-                  value={pageSize}
-                  onChange={(e) => setPageSize(parseInt(e.target.value))}
-                >
-                  <option value="10">10</option>
-                  <option value="25">25</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                </select>
-              </div>
-            </Card>
+            <AdminListPagination
+              page={page}
+              pageSize={pageSize}
+              totalCount={totalCount}
+              totalPages={totalPages}
+              setPage={setPage}
+              setPageSize={setPageSize}
+              showingText={t("users.pagination.showing", {
+                start: (page - 1) * pageSize + 1,
+                end: Math.min(page * pageSize, totalCount),
+                total: totalCount,
+              })}
+              previousText={t("users.pagination.previous")}
+              nextText={t("users.pagination.next")}
+              pageSizeLabel={t("users.pagination.pageSize")}
+            />
           </>
         )}
       </section>

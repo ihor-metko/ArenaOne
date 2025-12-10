@@ -9,6 +9,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
 import { AdminQuickBookingWizard } from "@/components/AdminQuickBookingWizard";
+import { AdminListPagination } from "@/components/admin/AdminList";
 import { useListController } from "@/hooks";
 import type { AdminBookingsListResponse, AdminBookingResponse } from "@/app/api/admin/bookings/route";
 import type { AdminBookingDetailResponse } from "@/app/api/admin/bookings/[id]/route";
@@ -487,33 +488,22 @@ export default function AdminBookingsPage() {
 
           {/* Pagination */}
           {bookingsData && bookingsData.totalPages > 1 && (
-            <div className="im-admin-bookings-pagination">
-              <span className="im-admin-bookings-pagination-info">
-                {t("adminBookings.showing", {
-                  start: (page - 1) * pageSize + 1,
-                  end: Math.min(page * pageSize, bookingsData.total),
-                  total: bookingsData.total,
-                })}
-              </span>
-              <div className="im-admin-bookings-pagination-controls">
-                <Button
-                  variant="outline"
-                  size="small"
-                  disabled={page <= 1}
-                  onClick={() => setPage(page - 1)}
-                >
-                  {t("organizations.previous")}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="small"
-                  disabled={page >= bookingsData.totalPages}
-                  onClick={() => setPage(page + 1)}
-                >
-                  {t("organizations.next")}
-                </Button>
-              </div>
-            </div>
+            <AdminListPagination
+              page={page}
+              pageSize={pageSize}
+              totalCount={bookingsData.total}
+              totalPages={bookingsData.totalPages}
+              setPage={setPage}
+              setPageSize={setPageSize}
+              showingText={t("adminBookings.showing", {
+                start: (page - 1) * pageSize + 1,
+                end: Math.min(page * pageSize, bookingsData.total),
+                total: bookingsData.total,
+              })}
+              previousText={t("organizations.previous")}
+              nextText={t("organizations.next")}
+              pageSizeLabel={t("common.pageSize") || "Per page:"}
+            />
           )}
         </div>
       )}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Input, IMLink, PageHeader } from "@/components/ui";
 import { AdminClubCard } from "@/components/admin/AdminClubCard";
+import { AdminListPagination } from "@/components/admin/AdminList";
 import { useListController } from "@/hooks";
 import type { ClubWithCounts } from "@/types/club";
 import { useUserStore } from "@/stores/useUserStore";
@@ -318,43 +319,18 @@ export default function AdminClubsPage() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="im-pagination">
-                <div className="im-pagination-info">
-                  {t("admin.clubs.showing")} {((page - 1) * pageSize) + 1} {t("admin.clubs.to")} {Math.min(page * pageSize, totalCount)} {t("admin.clubs.of")} {totalCount} {t("admin.clubs.results")}
-                </div>
-                <div className="im-pagination-controls">
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage(Math.max(1, page - 1))}
-                    disabled={page === 1}
-                  >
-                    {t("common.previous")}
-                  </Button>
-                  <span className="im-pagination-page">
-                    {t("admin.clubs.page")} {page} {t("admin.clubs.of")} {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage(Math.min(totalPages, page + 1))}
-                    disabled={page === totalPages}
-                  >
-                    {t("common.next")}
-                  </Button>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      setPageSize(parseInt(e.target.value, 10));
-                      setPage(1);
-                    }}
-                    className="im-native-select im-pagination-size"
-                  >
-                    <option value="10">10 {t("admin.clubs.itemsPerPage")}</option>
-                    <option value="20">20 {t("admin.clubs.itemsPerPage")}</option>
-                    <option value="50">50 {t("admin.clubs.itemsPerPage")}</option>
-                    <option value="100">100 {t("admin.clubs.itemsPerPage")}</option>
-                  </select>
-                </div>
-              </div>
+              <AdminListPagination
+                page={page}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                totalPages={totalPages}
+                setPage={setPage}
+                setPageSize={setPageSize}
+                showingText={`${t("admin.clubs.showing")} ${((page - 1) * pageSize) + 1} ${t("admin.clubs.to")} ${Math.min(page * pageSize, totalCount)} ${t("admin.clubs.of")} ${totalCount} ${t("admin.clubs.results")}`}
+                previousText={t("common.previous")}
+                nextText={t("common.next")}
+                pageSizeLabel={`${t("admin.clubs.itemsPerPage")}:`}
+              />
             )}
           </>
         )}

@@ -1,38 +1,27 @@
 "use client";
 
-import { ReactNode, useCallback, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { ReactNode } from "react";
 import { PageHeader, Card } from "@/components/ui";
-import { useListController, UseListControllerOptions, UseListControllerReturn } from "@/hooks";
+import { UseListControllerReturn } from "@/hooks";
 import { AdminListPagination } from "./AdminListPagination";
 import "./AdminList.css";
 
 /**
  * Props for AdminList component
  */
-export interface AdminListProps<TFilters = Record<string, unknown>, TItem = unknown> {
+export interface AdminListProps<TItem = unknown> {
   /** Page title */
   title: string;
   /** Page subtitle/description */
   subtitle?: string;
   /** Actions to display in page header (e.g., Create button) */
   headerActions?: ReactNode;
-  /** List controller options */
-  listOptions: UseListControllerOptions<TFilters>;
   /** Render function for filters */
-  renderFilters: (controller: UseListControllerReturn<TFilters>) => ReactNode;
+  renderFilters: (controller: UseListControllerReturn<unknown>) => ReactNode;
   /** Render function for list content (table, cards, etc.) */
-  renderList: (controller: UseListControllerReturn<TFilters>, items: TItem[], loading: boolean) => ReactNode;
-  /** Custom pagination renderer (optional, uses default if not provided) */
-  renderPagination?: (controller: UseListControllerReturn<TFilters>, totalCount: number, totalPages: number) => ReactNode;
-  /** Fetch function that receives current filters, sorting, and pagination */
-  fetchData: (params: {
-    filters: TFilters;
-    sortBy: string;
-    sortOrder: "asc" | "desc";
-    page: number;
-    pageSize: number;
-  }) => Promise<void>;
+  renderList: (controller: UseListControllerReturn<unknown>, items: TItem[], loading: boolean) => ReactNode;
+  /** List controller instance (from useListController hook) */
+  controller: UseListControllerReturn<unknown>;
   /** Items to display */
   items: TItem[];
   /** Loading state */
@@ -53,53 +42,70 @@ export interface AdminListProps<TFilters = Record<string, unknown>, TItem = unkn
   breadcrumbs?: ReactNode;
   /** Show pagination (default: true) */
   showPagination?: boolean;
+  /** Custom pagination labels */
+  paginationLabels?: {
+    showingText?: string;
+    previousText?: string;
+    nextText?: string;
+    pageSizeLabel?: string;
+  };
 }
 
 /**
  * Generic AdminList component
  * 
  * This component provides a reusable structure for admin list pages with:
- * - Integrated useListController for persistent state management
- * - Automatic data fetching when filters/sorting/pagination changes
  * - Common UI shell (header, filters, content, pagination)
  * - Flexible rendering via render props for entity-specific UI
+ * - Integrated pagination component with customizable labels
+ * - Error and empty states
+ * 
+ * The component is a **presentation component** that doesn't manage data fetching.
+ * Pages should:
+ * 1. Initialize useListController hook
+ * 2. Fetch data when controller state changes (via useEffect)
+ * 3. Pass the controller and data to AdminList
  * 
  * Features:
- * - Persists filters, sorting, and pagination to localStorage
- * - Debounced state updates to prevent excessive writes
- * - Type-safe filter management
- * - Graceful error handling
- * - Loading and empty states
- * - Reusable pagination component
+ * - Works with any entity type (Users, Clubs, Bookings, etc.)
+ * - Maintains state persistence via useListController
+ * - Provides consistent layout and UX across all admin list pages
+ * - Type-safe and flexible
  * 
  * @example
  * ```tsx
- * <AdminList
- *   title={t("users.title")}
- *   subtitle={t("users.subtitle")}
- *   listOptions={{
- *     entityKey: "users",
- *     defaultFilters: { search: "", role: "" },
- *   }}
- *   renderFilters={(controller) => <UserFilters {...controller} />}
- *   renderList={(controller, items) => <UserTable items={items} />}
- *   fetchData={fetchUsers}
- *   items={users}
- *   loading={loading}
- *   totalCount={totalCount}
- *   totalPages={totalPages}
- * />
+ * const controller = useListController({
+ *   entityKey: "users",
+ *   defaultFilters: { search: "", role: "" },
+ * });
+ * 
+ * // Fetch data when controller changes
+ * useEffect(() => {
+ *   fetchUsers(controller.filters, controller.sortBy, controller.page);
+ * }, [controller.filters, controller.sortBy, controller.page]);
+ * 
+ * return (
+ *   <AdminList
+ *     title="Users"
+ *     subtitle="Manage system users"
+ *     controller={controller}
+ *     renderFilters={(ctrl) => <UserFilters {...ctrl} />}
+ *     renderList={(ctrl, items) => <UserTable items={items} />}
+ *     items={users}
+ *     loading={loading}
+ *     totalCount={totalCount}
+ *     totalPages={totalPages}
+ *   />
+ * );
  * ```
  */
-export function AdminList<TFilters = Record<string, unknown>, TItem = unknown>({
+export function AdminList<TItem = unknown>({
   title,
   subtitle,
   headerActions,
-  listOptions,
   renderFilters,
   renderList,
-  renderPagination,
-  fetchData,
+  controller,
   items,
   loading,
   error,
@@ -110,36 +116,15 @@ export function AdminList<TFilters = Record<string, unknown>, TItem = unknown>({
   emptyIcon,
   breadcrumbs,
   showPagination = true,
-}: AdminListProps<TFilters, TItem>) {
-  const t = useTranslations();
-  
-  // Initialize list controller with provided options
-  const controller = useListController<TFilters>(listOptions);
-
-  // Fetch data when controller state changes
-  const handleFetchData = useCallback(async () => {
-    await fetchData({
-      filters: controller.filters,
-      sortBy: controller.sortBy,
-      sortOrder: controller.sortOrder,
-      page: controller.page,
-      pageSize: controller.pageSize,
-    });
-  }, [fetchData, controller.filters, controller.sortBy, controller.sortOrder, controller.page, controller.pageSize]);
-
-  useEffect(() => {
-    if (controller.isLoaded) {
-      handleFetchData();
-    }
-  }, [controller.isLoaded, handleFetchData]);
-
+  paginationLabels,
+}: AdminListProps<TItem>) {
   // Show loading state on initial load
   if (loading && items.length === 0 && !error) {
     return (
       <main className="im-admin-list-page">
         <div className="im-admin-list-loading">
           <div className="im-admin-list-loading-spinner" />
-          <span className="im-admin-list-loading-text">{t("common.loading")}</span>
+          <span className="im-admin-list-loading-text">Loading...</span>
         </div>
       </main>
     );
@@ -183,18 +168,15 @@ export function AdminList<TFilters = Record<string, unknown>, TItem = unknown>({
 
             {/* Pagination */}
             {showPagination && totalPages > 1 && (
-              renderPagination ? (
-                renderPagination(controller, totalCount, totalPages)
-              ) : (
-                <AdminListPagination
-                  page={controller.page}
-                  pageSize={controller.pageSize}
-                  totalCount={totalCount}
-                  totalPages={totalPages}
-                  setPage={controller.setPage}
-                  setPageSize={controller.setPageSize}
-                />
-              )
+              <AdminListPagination
+                page={controller.page}
+                pageSize={controller.pageSize}
+                totalCount={totalCount}
+                totalPages={totalPages}
+                setPage={controller.setPage}
+                setPageSize={controller.setPageSize}
+                {...paginationLabels}
+              />
             )}
           </>
         )}
