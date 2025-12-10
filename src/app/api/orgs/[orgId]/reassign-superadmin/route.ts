@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireRootAdmin, isValidEmail } from "@/lib/requireRole";
 import { auditLog, AuditAction, TargetType } from "@/lib/auditLog";
 import { MembershipRole } from "@/constants/roles";
+// TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+import { isMockMode } from "@/services/mockDb";
 
 /**
  * POST /api/orgs/[orgId]/reassign-superadmin
@@ -30,7 +32,7 @@ export async function POST(
     const { userId, email, name } = body;
 
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
-    if (process.env.USE_MOCK_DATA === "true") {
+    if (isMockMode()) {
       const { mockReassignOwnerHandler } = await import("@/services/mockApiHandlers");
       try {
         const result = await mockReassignOwnerHandler({

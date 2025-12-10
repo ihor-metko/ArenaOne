@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRootAdmin } from "@/lib/requireRole";
 import { auditLog, AuditAction, TargetType } from "@/lib/auditLog";
+// TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+import { isMockMode } from "@/services/mockDb";
 
 /**
  * Generate a URL-friendly slug from a name
@@ -43,7 +45,7 @@ export async function PATCH(
     const { name, slug, supportedSports } = body;
 
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
-    if (process.env.USE_MOCK_DATA === "true") {
+    if (isMockMode()) {
       const { mockUpdateOrganizationHandler } = await import("@/services/mockApiHandlers");
       try {
         const result = await mockUpdateOrganizationHandler({
@@ -210,7 +212,7 @@ export async function DELETE(
     }
 
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
-    if (process.env.USE_MOCK_DATA === "true") {
+    if (isMockMode()) {
       const { mockDeleteOrganizationHandler } = await import("@/services/mockApiHandlers");
       try {
         const result = await mockDeleteOrganizationHandler({

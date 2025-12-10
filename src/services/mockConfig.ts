@@ -65,7 +65,8 @@ export function loadMockConfig(): MockConfig {
   }
 
   try {
-    // Dynamic import for Node.js-only modules
+    // Use require for synchronous loading of Node.js modules
+    // This is intentional for server-side only code
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const fs = require("fs");
     // eslint-disable-next-line @typescript-eslint/no-var-requires

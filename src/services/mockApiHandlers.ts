@@ -1600,7 +1600,7 @@ export async function mockCreateOrganizationHandler(data: {
     createdBy: { id: org.createdById, name: null, email: "mock@example.com" },
     clubCount: 0,
     superAdmin: null,
-    supportedSports: data.supportedSports || ["PADEL"],
+    supportedSports: org.supportedSports,
   };
 }
 
