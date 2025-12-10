@@ -41,7 +41,6 @@ jest.mock("next-intl", () => ({
         "sidebar.expandSidebar": "Expand sidebar",
         "sidebar.comingSoon": "Coming Soon",
         "sidebar.organization": "Organization",
-        "sidebar.myOrganization": "My Organization",
       };
       return translations[key] || key;
     };
