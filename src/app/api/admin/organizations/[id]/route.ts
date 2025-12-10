@@ -42,6 +42,27 @@ export async function PATCH(
     const body = await request.json();
     const { name, slug, supportedSports } = body;
 
+    // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+    if (process.env.USE_MOCK_DATA === "true") {
+      const { mockUpdateOrganizationHandler } = await import("@/services/mockApiHandlers");
+      try {
+        const result = await mockUpdateOrganizationHandler({
+          orgId: id,
+          name,
+          slug,
+          supportedSports,
+          userId: authResult.userId,
+        });
+        return NextResponse.json(result);
+      } catch (error: unknown) {
+        const err = error as { status?: number; message?: string };
+        return NextResponse.json(
+          { error: err.message || "Internal server error" },
+          { status: err.status || 500 }
+        );
+      }
+    }
+
     // Verify organization exists
     const organization = await prisma.organization.findUnique({
       where: { id },
@@ -186,6 +207,31 @@ export async function DELETE(
       confirmOrgSlug = body.confirmOrgSlug;
     } catch {
       // Body is optional if there are no clubs
+    }
+
+    // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+    if (process.env.USE_MOCK_DATA === "true") {
+      const { mockDeleteOrganizationHandler } = await import("@/services/mockApiHandlers");
+      try {
+        const result = await mockDeleteOrganizationHandler({
+          orgId: id,
+          userId: authResult.userId,
+          confirmOrgSlug,
+        });
+        return NextResponse.json(result);
+      } catch (error: unknown) {
+        const err = error as { status?: number; message?: string; clubCount?: number; activeBookingsCount?: number; requiresConfirmation?: boolean; hint?: string };
+        return NextResponse.json(
+          { 
+            error: err.message || "Internal server error",
+            ...(err.clubCount !== undefined && { clubCount: err.clubCount }),
+            ...(err.activeBookingsCount !== undefined && { activeBookingsCount: err.activeBookingsCount }),
+            ...(err.requiresConfirmation !== undefined && { requiresConfirmation: err.requiresConfirmation }),
+            ...(err.hint && { hint: err.hint }),
+          },
+          { status: err.status || 500 }
+        );
+      }
     }
 
     // Verify organization exists
