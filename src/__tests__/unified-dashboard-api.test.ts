@@ -79,7 +79,6 @@ describe("Unified Dashboard API", () => {
       });
       (prisma.organization.count as jest.Mock).mockResolvedValue(3);
       (prisma.club.count as jest.Mock).mockResolvedValue(5);
-      (prisma.user.count as jest.Mock).mockResolvedValue(100);
       (prisma.booking.count as jest.Mock)
         .mockResolvedValueOnce(20) // activeBookingsCount
         .mockResolvedValueOnce(50); // pastBookingsCount
@@ -93,7 +92,6 @@ describe("Unified Dashboard API", () => {
       expect(data.platformStats).toEqual({
         totalOrganizations: 3,
         totalClubs: 5,
-        totalUsers: 100,
         activeBookingsCount: 20,
         pastBookingsCount: 50,
       });

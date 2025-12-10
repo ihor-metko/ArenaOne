@@ -97,7 +97,6 @@ export async function GET(
       ] = await Promise.all([
         prisma.organization.count(),
         prisma.club.count(),
-        prisma.user.count(),
         // Active/Upcoming bookings: today and future
         prisma.booking.count({
           where: {
