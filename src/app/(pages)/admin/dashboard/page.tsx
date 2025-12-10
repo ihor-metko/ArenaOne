@@ -244,12 +244,6 @@ function ClubCard({ club }: ClubCardProps) {
           icon={<CourtsIcon />}
           colorClass="im-stat-card--clubs"
         />
-        <StatCard
-          title={t("unifiedDashboard.bookingsToday")}
-          value={club.bookingsToday}
-          icon={<BookingsIcon />}
-          colorClass="im-stat-card--bookings"
-        />
       </div>
 
       <BookingsOverview
