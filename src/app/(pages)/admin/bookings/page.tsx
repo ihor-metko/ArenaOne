@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { PageHeader, Button, Modal, Select, Input } from "@/components/ui";
+import { PageHeader, Button, Modal, Select, Input, Card } from "@/components/ui";
 import { TableSkeleton } from "@/components/ui/skeletons";
 import { formatPrice } from "@/utils/price";
 import { useUserStore } from "@/stores/useUserStore";
@@ -53,6 +53,29 @@ function calculateDuration(start: string, end: string): number {
 function StatusBadge({ status }: { status: string }) {
   const statusClass = `im-booking-status im-booking-status--${status}`;
   return <span className={statusClass}>{status}</span>;
+}
+
+/**
+ * Filter icon
+ */
+function FilterIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+  );
+}
+
+/**
+ * X icon for clear button
+ */
+function XIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
 }
 
 /**
@@ -327,77 +350,90 @@ export default function AdminBookingsPage() {
         }
       />
 
-      {/* Filters */}
-      <div className="im-admin-bookings-filters">
-        {/* Organization filter - Root admin only */}
-        {adminStatus.adminType === "root_admin" && (
-          <div className="im-admin-bookings-filter-group">
-            <label>{t("adminBookings.organization")}</label>
-            <Select
-              options={[
-                { value: "", label: t("adminBookings.allOrganizations") },
-                ...organizations,
-              ]}
-              value={filters.selectedOrg}
-              onChange={(value) => setFilter("selectedOrg", value)}
-              placeholder={t("adminBookings.selectOrganization")}
-            />
+      {/* Filters Card */}
+      <Card className="im-filters-card">
+        <div className="im-filters-header">
+          <div className="im-filters-title">
+            <FilterIcon />
+            <span>{t("adminBookings.filters")}</span>
           </div>
-        )}
+          {(filters.selectedOrg || filters.selectedClub || filters.selectedStatus || filters.dateFrom || filters.dateTo) && (
+            <Button variant="outline" size="small" onClick={handleClearFilters}>
+              <XIcon />
+              {t("common.clearFilters")}
+            </Button>
+          )}
+        </div>
 
-        {/* Club filter - Root and Org admins */}
-        {adminStatus.adminType !== "club_admin" && (
-          <div className="im-admin-bookings-filter-group">
-            <label>{t("adminBookings.club")}</label>
+        <div className="im-filters-grid">
+          {/* Organization filter - Root admin only */}
+          {adminStatus.adminType === "root_admin" && (
+            <div className="im-filter-field">
+              <Select
+                label={t("adminBookings.organization")}
+                options={[
+                  { value: "", label: t("adminBookings.allOrganizations") },
+                  ...organizations,
+                ]}
+                value={filters.selectedOrg}
+                onChange={(value) => setFilter("selectedOrg", value)}
+                placeholder={t("adminBookings.selectOrganization")}
+              />
+            </div>
+          )}
+
+          {/* Club filter - Root and Org admins */}
+          {adminStatus.adminType !== "club_admin" && (
+            <div className="im-filter-field">
+              <Select
+                label={t("adminBookings.club")}
+                options={[
+                  { value: "", label: t("adminBookings.allClubs") },
+                  ...clubs,
+                ]}
+                value={filters.selectedClub}
+                onChange={(value) => setFilter("selectedClub", value)}
+                placeholder={t("adminBookings.selectClub")}
+              />
+            </div>
+          )}
+
+          {/* Status filter */}
+          <div className="im-filter-field">
             <Select
-              options={[
-                { value: "", label: t("adminBookings.allClubs") },
-                ...clubs,
-              ]}
-              value={filters.selectedClub}
-              onChange={(value) => setFilter("selectedClub", value)}
-              placeholder={t("adminBookings.selectClub")}
+              label={t("common.status")}
+              options={statusOptions}
+              value={filters.selectedStatus}
+              onChange={(value) => setFilter("selectedStatus", value)}
             />
           </div>
-        )}
+        </div>
 
         {/* Date range filter */}
-        <div className="im-admin-bookings-filter-group">
-          <label>{t("adminBookings.dateRange")}</label>
-          <div className="im-admin-bookings-date-range">
+        <div className="im-date-range-filter">
+          <div className="im-date-range-header">
+            <span className="im-date-range-label">{t("adminBookings.dateRange")}</span>
+          </div>
+          <div className="im-date-range-inputs">
             <Input
               type="date"
               value={filters.dateFrom}
               onChange={(e) => setFilter("dateFrom", e.target.value)}
               max={filters.dateTo || undefined}
+              label={t("adminBookings.dateFrom")}
+              placeholder={t("adminBookings.dateFrom")}
             />
-            <span>—</span>
             <Input
               type="date"
               value={filters.dateTo}
               onChange={(e) => setFilter("dateTo", e.target.value)}
               min={filters.dateFrom || undefined}
+              label={t("adminBookings.dateTo")}
+              placeholder={t("adminBookings.dateTo")}
             />
           </div>
         </div>
-
-        {/* Status filter */}
-        <div className="im-admin-bookings-filter-group">
-          <label>{t("common.status")}</label>
-          <Select
-            options={statusOptions}
-            value={filters.selectedStatus}
-            onChange={(value) => setFilter("selectedStatus", value)}
-          />
-        </div>
-
-        {/* Clear filters button */}
-        <div className="im-admin-bookings-filter-actions">
-          <Button variant="outline" size="small" onClick={handleClearFilters}>
-            {t("common.clearFilters")}
-          </Button>
-        </div>
-      </div>
+      </Card>
 
       {/* Error message */}
       {error && (

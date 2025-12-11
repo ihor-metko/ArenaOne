@@ -2,48 +2,90 @@
   padding: 1.5rem 2rem;
 }
 
-.im-admin-bookings-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+/* Filters Card - Using shared filter styles */
+.im-filters-card {
   margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--im-bg-secondary);
-  border-radius: 0.5rem;
-  border: 1px solid var(--im-border-color);
 }
 
-.im-admin-bookings-filter-group {
+.im-filters-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.im-filters-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--im-text-primary);
+}
+
+.im-filters-title svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--im-text-muted);
+}
+
+.im-filters-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(1, 1fr);
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .im-filters-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .im-filters-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.im-filter-field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  min-width: 180px;
 }
 
-.im-admin-bookings-filter-group label {
-  font-size: 0.75rem;
-  font-weight: 500;
+/* Date range filter */
+.im-date-range-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--im-border-color);
+}
+
+.im-date-range-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.im-date-range-label {
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--im-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.025em;
 }
 
-.im-admin-bookings-date-range {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.im-date-range-inputs {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(1, 1fr);
 }
 
-.im-admin-bookings-date-range span {
-  color: var(--im-text-muted);
-  font-size: 0.875rem;
-}
-
-.im-admin-bookings-filter-actions {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.5rem;
-  margin-left: auto;
+@media (min-width: 640px) {
+  .im-date-range-inputs {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .im-admin-bookings-table-container {
@@ -275,17 +317,14 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .im-admin-bookings-filters {
+  .im-admin-bookings-page {
+    padding: 1rem;
+  }
+
+  .im-filters-header {
     flex-direction: column;
-  }
-
-  .im-admin-bookings-filter-group {
-    width: 100%;
-  }
-
-  .im-admin-bookings-filter-actions {
-    margin-left: 0;
-    margin-top: 0.5rem;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 
   .im-admin-bookings-table {
