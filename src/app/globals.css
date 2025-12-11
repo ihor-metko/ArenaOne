@@ -49,10 +49,27 @@
   --im-primary: #1ABC9C;
   --im-primary-hover: #16A085;
   --im-border: #e5e7eb;
+  --im-border-color: #e5e7eb; /* Alias for consistency */
+  --im-border-hover: #d1d5db;
   --im-card-bg: #f9fafb;
   --im-surface: #ffffff;
   --im-muted: #6b7280;
   --im-icon-color: #374151;
+  
+  /* Text colors */
+  --im-text-primary: #0A0A0A;
+  --im-text-secondary: #6b7280;
+  
+  /* Background variants */
+  --im-bg-primary: #ffffff;
+  --im-bg-secondary: #f9fafb;
+  --im-bg-tertiary: #f3f4f6;
+  
+  /* Chart colors */
+  --im-success: #22c55e;
+  --im-warning: #f59e0b;
+  --im-danger: #ef4444;
+  --im-info: #3b82f6;
 
   /* Weekly availability colors (light theme) */
   --im-availability-available-bg: #22c55e;
@@ -132,10 +149,27 @@
   --im-primary: #6C63FF;
   --im-primary-hover: #837DFF;
   --im-border: #1A1A1A;
+  --im-border-color: #1A1A1A; /* Alias for consistency */
+  --im-border-hover: #2d2d2d;
   --im-card-bg: #121212;
   --im-surface: #0A0A0A;
   --im-muted: #9ca3af;
   --im-icon-color: #EAEAEA;
+  
+  /* Text colors (dark theme) */
+  --im-text-primary: #EAEAEA;
+  --im-text-secondary: #9ca3af;
+  
+  /* Background variants (dark theme) */
+  --im-bg-primary: #0A0A0A;
+  --im-bg-secondary: #121212;
+  --im-bg-tertiary: #1A1A1A;
+  
+  /* Chart colors (dark theme) */
+  --im-success: #22c55e;
+  --im-warning: #f59e0b;
+  --im-danger: #ef4444;
+  --im-info: #3b82f6;
 
   /* Weekly availability colors (dark theme) */
   --im-availability-available-bg: #16a34a;
