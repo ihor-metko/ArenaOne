@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageHeader, Button, Modal, Select, Input } from "@/components/ui";
-import { TableSkeleton, PageHeaderSkeleton } from "@/components/ui/skeletons";
+import { TableSkeleton } from "@/components/ui/skeletons";
 import { formatPrice } from "@/utils/price";
 import { useUserStore } from "@/stores/useUserStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
@@ -82,7 +82,7 @@ export default function AdminBookingsPage() {
 
   // Bookings data
   const [bookingsData, setBookingsData] = useState<AdminBookingsListResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
   const [error, setError] = useState("");
 
   // Use list controller hook for persistent filters
@@ -173,7 +173,7 @@ export default function AdminBookingsPage() {
   const fetchBookings = useCallback(async () => {
     if (!adminStatus?.isAdmin) return;
 
-    setLoading(true);
+    setIsLoadingBookings(true);
     setError("");
 
     try {
@@ -206,7 +206,7 @@ export default function AdminBookingsPage() {
     } catch {
       setError(t("adminBookings.failedToLoad"));
     } finally {
-      setLoading(false);
+      setIsLoadingBookings(false);
     }
   }, [adminStatus, page, pageSize, filters, router, t]);
 

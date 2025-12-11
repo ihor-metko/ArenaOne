@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Input, Card, Modal, IMLink, PageHeader } from "@/components/ui";
-import { CardListSkeleton, PageHeaderSkeleton } from "@/components/ui/skeletons";
+import { CardListSkeleton } from "@/components/ui/skeletons";
 import { CourtForm, CourtFormData } from "@/components/admin/CourtForm";
 import { CourtCard } from "@/components/courts";
 import type { AdminType } from "@/app/api/me/admin-status/route";
