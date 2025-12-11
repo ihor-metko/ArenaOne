@@ -163,7 +163,7 @@ export async function GET(request: Request) {
     // Quick filter: Active last 30 days
     if (activeLast30d) {
       const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      thirtyDaysAgo.setTime(thirtyDaysAgo.getTime() - 30 * 24 * 60 * 60 * 1000);
       whereConditions.push({
         lastLoginAt: {
           gte: thirtyDaysAgo,
@@ -265,17 +265,29 @@ export async function GET(request: Request) {
     
     // Build order by clause
     // Note: lastActive and totalBookings require special handling since they're computed
-    const validSortFields = ["name", "email", "createdAt", "lastLoginAt"];
     let orderBy: Prisma.UserOrderByWithRelationInput;
     
-    if (validSortFields.includes(sortBy)) {
-      orderBy = { [sortBy]: sortOrder };
-    } else if (sortBy === "totalBookings") {
-      // Sort by bookings count
-      orderBy = { bookings: { _count: sortOrder } };
-    } else {
-      // Default to lastLoginAt as proxy for lastActive
-      orderBy = { lastLoginAt: sortOrder };
+    switch (sortBy) {
+      case "name":
+        orderBy = { name: sortOrder };
+        break;
+      case "email":
+        orderBy = { email: sortOrder };
+        break;
+      case "createdAt":
+        orderBy = { createdAt: sortOrder };
+        break;
+      case "lastLoginAt":
+        orderBy = { lastLoginAt: sortOrder };
+        break;
+      case "totalBookings":
+        // Sort by bookings count
+        orderBy = { bookings: { _count: sortOrder } };
+        break;
+      default:
+        // Default to lastLoginAt as proxy for lastActive
+        orderBy = { lastLoginAt: sortOrder };
+        break;
     }
     
     // Get total count
@@ -283,7 +295,7 @@ export async function GET(request: Request) {
     
     // Calculate date 30 days ago for bookings filter
     const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setTime(thirtyDaysAgo.getTime() - 30 * 24 * 60 * 60 * 1000);
     
     // Get users with related data
     const users = await prisma.user.findMany({

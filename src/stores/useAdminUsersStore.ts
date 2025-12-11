@@ -323,11 +323,14 @@ export const useAdminUsersStore = create<AdminUsersState>((set, get) => ({
 
   /**
    * Fetch simple users for autocomplete/search (from /api/admin/users with simple=true)
+   * @param query - Search query string (uses 'q' param for brevity in simple mode)
    */
   fetchSimpleUsers: async (query = "") => {
     set({ loading: true, error: null });
     try {
       const params = new URLSearchParams({ simple: "true" });
+      // Use 'q' parameter for simple mode (shorter, common for search/autocomplete)
+      // Full mode uses 'search' for consistency with other filters
       if (query) params.append("q", query);
       
       const response = await fetch(`/api/admin/users?${params.toString()}`);
