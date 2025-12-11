@@ -9,7 +9,6 @@ import BookingsOverview from "@/components/admin/BookingsOverview";
 import { RegisteredUsersCard } from "@/components/admin/RegisteredUsersCard";
 import DashboardGraphs from "@/components/admin/DashboardGraphs";
 import DashboardShell from "@/components/admin/DashboardShell";
-import ClubsPreview from "@/components/admin/ClubsPreview";
 import type { UnifiedDashboardResponse } from "@/app/api/admin/unified-dashboard/route";
 import { fetchUnifiedDashboard } from "@/services/dashboard";
 import "./RootDashboard.css";
@@ -320,9 +319,6 @@ export default function AdminDashboardPage() {
               activeBookings={dashboardData.clubs.reduce((sum, club) => sum + club.activeBookings, 0)}
               pastBookings={dashboardData.clubs.reduce((sum, club) => sum + club.pastBookings, 0)}
             />
-
-            {/* Clubs Preview */}
-            <ClubsPreview clubs={dashboardData.clubs} maxPreview={10} />
 
             {/* Dashboard Graphs Section */}
             <DashboardGraphs />
