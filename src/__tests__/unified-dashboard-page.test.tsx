@@ -60,6 +60,11 @@ jest.mock("next-intl", () => ({
         "bookingsOverview.pastBookings": "Past Bookings",
         "unifiedDashboard.byClubs": "Across clubs",
         "unifiedDashboard.byCourts": "Across courts",
+        "unifiedDashboard.clubsStatsTitle": "Clubs Statistics",
+        "unifiedDashboard.clubsStatsDescription": "Overview of clubs in your organizations",
+        "unifiedDashboard.clubAdminStatsTitle": "Overview",
+        "unifiedDashboard.clubAdminStatsDescription": "Summary of courts and bookings across your clubs",
+        "unifiedDashboard.totalCourts": "Total Courts",
       };
       return translations[key] || key;
     };
