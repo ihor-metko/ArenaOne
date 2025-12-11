@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRootAdmin } from "@/lib/requireRole";
+import { requireClubAccess } from "@/lib/requireRole";
+import { auditLog, AuditAction, TargetType } from "@/lib/auditLog";
 import { isSupportedSport } from "@/constants/sports";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode } from "@/services/mockDb";
@@ -10,15 +11,27 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string; courtId: string }> }
 ) {
-  const authResult = await requireRootAdmin(request);
-
-  if (!authResult.authorized) {
-    return authResult.response;
-  }
-
   try {
     const resolvedParams = await params;
     const { id: clubId, courtId } = resolvedParams;
+
+    // Check access to the club (club admins can view)
+    const authResult = await requireClubAccess(clubId);
+
+    if (!authResult.authorized) {
+      // Log unauthorized access attempt
+      await auditLog(
+        authResult.userId || "unknown",
+        AuditAction.UNAUTHORIZED_ACCESS_ATTEMPT,
+        TargetType.CLUB,
+        clubId,
+        {
+          attemptedPath: `/api/admin/clubs/${clubId}/courts/${courtId}`,
+          method: "GET",
+        }
+      );
+      return authResult.response;
+    }
 
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
     if (isMockMode()) {
@@ -80,15 +93,28 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string; courtId: string }> }
 ) {
-  const authResult = await requireRootAdmin(request);
-
-  if (!authResult.authorized) {
-    return authResult.response;
-  }
-
   try {
     const resolvedParams = await params;
     const { id: clubId, courtId } = resolvedParams;
+
+    // Check access - club admins cannot edit (only root and org admins)
+    const authResult = await requireClubAccess(clubId, { allowClubAdmin: false });
+
+    if (!authResult.authorized) {
+      // Log unauthorized access attempt
+      await auditLog(
+        authResult.userId || "unknown",
+        AuditAction.UNAUTHORIZED_ACCESS_ATTEMPT,
+        TargetType.CLUB,
+        clubId,
+        {
+          attemptedPath: `/api/admin/clubs/${clubId}/courts/${courtId}`,
+          method: "PATCH",
+        }
+      );
+      return authResult.response;
+    }
+
     const body = await request.json();
     const { name, slug, type, surface, indoor, sportType, defaultPriceCents } = body;
 
@@ -300,15 +326,27 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string; courtId: string }> }
 ) {
-  const authResult = await requireRootAdmin(request);
-
-  if (!authResult.authorized) {
-    return authResult.response;
-  }
-
   try {
     const resolvedParams = await params;
     const { id: clubId, courtId } = resolvedParams;
+
+    // Check access - club admins cannot delete (only root and org admins)
+    const authResult = await requireClubAccess(clubId, { allowClubAdmin: false });
+
+    if (!authResult.authorized) {
+      // Log unauthorized access attempt
+      await auditLog(
+        authResult.userId || "unknown",
+        AuditAction.UNAUTHORIZED_ACCESS_ATTEMPT,
+        TargetType.CLUB,
+        clubId,
+        {
+          attemptedPath: `/api/admin/clubs/${clubId}/courts/${courtId}`,
+          method: "DELETE",
+        }
+      );
+      return authResult.response;
+    }
 
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
     if (isMockMode()) {

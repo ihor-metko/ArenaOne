@@ -20,6 +20,7 @@ export const AuditAction = {
   USER_UNBLOCK: "user.unblock",
   USER_DELETE: "user.delete",
   USER_ROLE_CHANGE: "user.role_change",
+  UNAUTHORIZED_ACCESS_ATTEMPT: "access.unauthorized_attempt",
 } as const;
 
 export type AuditActionType = (typeof AuditAction)[keyof typeof AuditAction];

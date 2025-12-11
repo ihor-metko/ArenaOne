@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { ClubMembershipRole, MembershipRole } from "@/constants/roles";
+import { requireClubAccess } from "@/lib/requireRole";
+import { auditLog, AuditAction, TargetType } from "@/lib/auditLog";
+import { ClubMembershipRole } from "@/constants/roles";
 import { hash } from "bcryptjs";
 
 /**
@@ -13,50 +14,25 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
-    // Verify club exists
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      select: { id: true, organizationId: true },
-    });
+    // Check access - only root and org admins can view club admins list
+    const authResult = await requireClubAccess(clubId, { allowClubAdmin: false });
 
-    if (!club) {
-      return NextResponse.json(
-        { error: "Club not found" },
-        { status: 404 }
+    if (!authResult.authorized) {
+      // Log unauthorized access attempt
+      await auditLog(
+        authResult.userId || "unknown",
+        AuditAction.UNAUTHORIZED_ACCESS_ATTEMPT,
+        TargetType.CLUB,
+        clubId,
+        {
+          attemptedPath: `/api/admin/clubs/${clubId}/admins`,
+          method: "GET",
+        }
       );
-    }
-
-    const isRoot = session.user.isRoot ?? false;
-
-    // Check if user has permission (Root, Organization Owner, or Organization Admin)
-    if (!isRoot && club.organizationId) {
-      const orgMembership = await prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId: session.user.id,
-            organizationId: club.organizationId,
-          },
-        },
-      });
-
-      if (!orgMembership || orgMembership.role !== MembershipRole.ORGANIZATION_ADMIN) {
-        return NextResponse.json(
-          { error: "Forbidden" },
-          { status: 403 }
-        );
-      }
+      return authResult.response;
     }
 
     const clubAdmins = await prisma.clubMembership.findMany({
@@ -103,54 +79,29 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
+    // Check access - only root and org admins can add club admins
+    const authResult = await requireClubAccess(clubId, { allowClubAdmin: false });
+
+    if (!authResult.authorized) {
+      // Log unauthorized access attempt
+      await auditLog(
+        authResult.userId || "unknown",
+        AuditAction.UNAUTHORIZED_ACCESS_ATTEMPT,
+        TargetType.CLUB,
+        clubId,
+        {
+          attemptedPath: `/api/admin/clubs/${clubId}/admins`,
+          method: "POST",
+        }
+      );
+      return authResult.response;
+    }
+
     const body = await request.json();
     const { userId, createNew, name, email, password } = body;
-
-    // Verify club exists
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      select: { id: true, name: true, organizationId: true },
-    });
-
-    if (!club) {
-      return NextResponse.json(
-        { error: "Club not found" },
-        { status: 404 }
-      );
-    }
-
-    const isRoot = session.user.isRoot ?? false;
-
-    // Check if user has permission (Root or Organization Admin)
-    if (!isRoot && club.organizationId) {
-      const orgMembership = await prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId: session.user.id,
-            organizationId: club.organizationId,
-          },
-        },
-      });
-
-      if (!orgMembership || orgMembership.role !== MembershipRole.ORGANIZATION_ADMIN) {
-        return NextResponse.json(
-          { error: "Forbidden" },
-          { status: 403 }
-        );
-      }
-    }
 
     let targetUserId: string;
 
@@ -299,17 +250,26 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
+
+    // Check access - only root and org admins can remove club admins
+    const authResult = await requireClubAccess(clubId, { allowClubAdmin: false });
+
+    if (!authResult.authorized) {
+      // Log unauthorized access attempt
+      await auditLog(
+        authResult.userId || "unknown",
+        AuditAction.UNAUTHORIZED_ACCESS_ATTEMPT,
+        TargetType.CLUB,
+        clubId,
+        {
+          attemptedPath: `/api/admin/clubs/${clubId}/admins`,
+          method: "DELETE",
+        }
+      );
+      return authResult.response;
+    }
 
     const body = await request.json();
     const { userId } = body;
@@ -319,40 +279,6 @@ export async function DELETE(
         { error: "User ID is required" },
         { status: 400 }
       );
-    }
-
-    // Verify club exists
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      select: { id: true, organizationId: true },
-    });
-
-    if (!club) {
-      return NextResponse.json(
-        { error: "Club not found" },
-        { status: 404 }
-      );
-    }
-
-    const isRoot = session.user.isRoot ?? false;
-
-    // Check if user has permission (Root or Organization Admin)
-    if (!isRoot && club.organizationId) {
-      const orgMembership = await prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId: session.user.id,
-            organizationId: club.organizationId,
-          },
-        },
-      });
-
-      if (!orgMembership || orgMembership.role !== MembershipRole.ORGANIZATION_ADMIN) {
-        return NextResponse.json(
-          { error: "Forbidden" },
-          { status: 403 }
-        );
-      }
     }
 
     // Find the membership to remove

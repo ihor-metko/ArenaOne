@@ -1,50 +1,37 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAnyAdmin, requireRootAdmin } from "@/lib/requireRole";
+import { requireClubAccess, requireRootAdmin } from "@/lib/requireRole";
+import { auditLog, AuditAction, TargetType } from "@/lib/auditLog";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode, getMockClubs, getMockCourts, getMockCoaches, getMockBusinessHours, getMockGalleryImages, getMockUsers } from "@/services/mockDb";
-
-/**
- * Check if an admin has access to a specific club
- */
-async function canAccessClub(
-  adminType: "root_admin" | "organization_admin" | "club_admin",
-  managedIds: string[],
-  clubId: string
-): Promise<boolean> {
-  if (adminType === "root_admin") {
-    return true;
-  }
-
-  if (adminType === "club_admin") {
-    return managedIds.includes(clubId);
-  }
-
-  if (adminType === "organization_admin") {
-    // Check if club belongs to one of the managed organizations
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      select: { organizationId: true },
-    });
-    return club?.organizationId ? managedIds.includes(club.organizationId) : false;
-  }
-
-  return false;
-}
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authResult = await requireAnyAdmin(request);
-
-  if (!authResult.authorized) {
-    return authResult.response;
-  }
-
   try {
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
+
+    // Check access using the centralized helper
+    const authResult = await requireClubAccess(clubId);
+
+    if (!authResult.authorized) {
+      // Log unauthorized access attempt
+      const { searchParams } = new URL(request.url);
+      await auditLog(
+        authResult.userId || "unknown",
+        AuditAction.UNAUTHORIZED_ACCESS_ATTEMPT,
+        TargetType.CLUB,
+        clubId,
+        {
+          attemptedPath: `/api/admin/clubs/${clubId}`,
+          method: "GET",
+          queryParams: Object.fromEntries(searchParams.entries()),
+        }
+      );
+      return authResult.response;
+    }
 
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
     if (isMockMode()) {
@@ -59,17 +46,6 @@ export async function GET(
       
       if (!club) {
         return NextResponse.json({ error: "Club not found" }, { status: 404 });
-      }
-      
-      // Check access permission for mock mode
-      if (authResult.adminType === "club_admin") {
-        if (!authResult.managedIds.includes(clubId)) {
-          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
-      } else if (authResult.adminType === "organization_admin") {
-        if (!club.organizationId || !authResult.managedIds.includes(club.organizationId)) {
-          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
       }
       
       const courts = mockCourts
@@ -107,17 +83,6 @@ export async function GET(
         specialHours: [],
         gallery: clubGallery,
       });
-    }
-
-    // Check access permission
-    const hasAccess = await canAccessClub(
-      authResult.adminType,
-      authResult.managedIds,
-      clubId
-    );
-
-    if (!hasAccess) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const club = await prisma.club.findUnique({
@@ -170,31 +135,26 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authResult = await requireAnyAdmin(request);
-
-  if (!authResult.authorized) {
-    return authResult.response;
-  }
-
-  // Only root admins and organization admins can edit clubs
-  if (authResult.adminType === "club_admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
   try {
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
-    // Check access permission for organization admins
-    if (authResult.adminType === "organization_admin") {
-      const hasAccess = await canAccessClub(
-        authResult.adminType,
-        authResult.managedIds,
-        clubId
+    // Check access - club admins cannot edit clubs (only root and org admins)
+    const authResult = await requireClubAccess(clubId, { allowClubAdmin: false });
+
+    if (!authResult.authorized) {
+      // Log unauthorized access attempt
+      await auditLog(
+        authResult.userId || "unknown",
+        AuditAction.UNAUTHORIZED_ACCESS_ATTEMPT,
+        TargetType.CLUB,
+        clubId,
+        {
+          attemptedPath: `/api/admin/clubs/${clubId}`,
+          method: "PUT",
+        }
       );
-      if (!hasAccess) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
+      return authResult.response;
     }
 
     const existingClub = await prisma.club.findUnique({
