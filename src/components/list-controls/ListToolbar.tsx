@@ -77,7 +77,7 @@ function XIcon() {
  *     // Additional custom logic
  *   }}
  * >
- *   {/* filters */}
+ *   <ListSearch />
  * </ListToolbar>
  * ```
  */

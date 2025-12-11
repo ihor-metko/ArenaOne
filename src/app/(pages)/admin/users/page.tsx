@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { Button, Input, PageHeader, Breadcrumbs, Select, Badge, Card, Tooltip } from "@/components/ui";
+import { PageHeader, Breadcrumbs, Badge, Card, Tooltip } from "@/components/ui";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/ui/skeletons";
 import { useListController } from "@/hooks";
 import { 
@@ -20,8 +20,6 @@ import {
   QuickPresets,
   PaginationControls,
 } from "@/components/list-controls";
-import { useOrganizationStore } from "@/stores/useOrganizationStore";
-import { useClubStore } from "@/stores/useClubStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 
 import "./page.css";
@@ -99,8 +97,6 @@ function MailIcon() {
   );
 }
 
-import type { AdminUser } from "@/types/adminUser";
-
 // Define filters interface
 interface UserFilters {
   searchQuery: string;
@@ -153,10 +149,7 @@ export default function AdminUsersPage() {
     sortOrder,
     setSortOrder,
     page,
-    setPage,
     pageSize,
-    setPageSize,
-    clearFilters,
   } = controller;
 
   // Get users from store
@@ -233,10 +226,6 @@ export default function AdminUsersPage() {
   };
 
   // All user action handlers removed since we only have View action which navigates to detail page
-
-  const handleClearFilters = () => {
-    clearFilters();
-  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
