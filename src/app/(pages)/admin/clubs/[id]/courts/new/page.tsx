@@ -215,7 +215,7 @@ export default function CreateCourtPage({
     };
 
     fetchClub();
-  }, [clubId, setValue]);
+  }, [clubId, setValue, t]);
 
   // Auth check
   useEffect(() => {
