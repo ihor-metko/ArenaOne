@@ -399,7 +399,6 @@ export default function OrganizationDetailPage() {
 
   // Prepare banner data
   const bannerSubtitle = org.address || (org.website ? `${t("orgDetail.website")}: ${org.website}` : null);
-  const bannerLocation = org.address || null;
 
   return (
     <main className="im-org-detail-page">
@@ -407,7 +406,7 @@ export default function OrganizationDetailPage() {
       <EntityBanner
         title={org.name}
         subtitle={bannerSubtitle}
-        location={bannerLocation}
+        location={org.address}
         imageUrl={null}
         logoUrl={null}
         imageAlt={`${org.name} banner`}

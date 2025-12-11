@@ -11,8 +11,26 @@
  * - Placeholder when no image provided
  */
 
-import React from "react";
+import React, { useMemo } from "react";
 import { isValidImageUrl } from "@/utils/image";
+
+/**
+ * Location pin icon - reusable SVG component
+ */
+const LocationIcon = () => (
+  <svg 
+    width="16" 
+    height="16" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    aria-hidden="true"
+  >
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
 
 export interface EntityBannerProps {
   /**
@@ -70,8 +88,9 @@ export function EntityBanner({
   logoAlt,
   className = "",
 }: EntityBannerProps) {
-  const hasHeroImage = isValidImageUrl(imageUrl);
-  const hasLogo = isValidImageUrl(logoUrl);
+  // Memoize validation to avoid unnecessary calls on each render
+  const hasHeroImage = useMemo(() => isValidImageUrl(imageUrl), [imageUrl]);
+  const hasLogo = useMemo(() => isValidImageUrl(logoUrl), [logoUrl]);
   
   // Generate initials for placeholder if no image
   const placeholderInitial = title ? title.charAt(0).toUpperCase() : "";
@@ -110,10 +129,7 @@ export function EntityBanner({
         )}
         {location && (
           <p className="rsp-club-hero-location">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
+            <LocationIcon />
             {location}
           </p>
         )}
