@@ -345,6 +345,7 @@ export default function AdminUsersPage() {
 
             <DateRangeFilter
               field={filters.dateRangeField}
+              label={t("users.dateRange.createdAt")}
               fromKey="dateFrom"
               toKey="dateTo"
               fromLabel={t("users.dateRange.from")}
