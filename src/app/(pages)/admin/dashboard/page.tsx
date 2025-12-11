@@ -60,29 +60,6 @@ function ClubsIcon() {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function UsersIcon() {
-  return (
-    <svg
-      className="im-stat-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-
-
 interface StatCardProps {
   title: string;
   value: number;
@@ -117,7 +94,6 @@ export default function AdminDashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [dashboardData, setDashboardData] = useState<UnifiedDashboardResponse | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const fetchDashboard = useCallback(async () => {
@@ -142,19 +118,16 @@ export default function AdminDashboardPage() {
     }
 
     const initializeDashboard = async () => {
-      setLoading(true);
       setError("");
 
       const data = await fetchDashboard();
 
       if (!data) {
         setError(t("unifiedDashboard.failedToLoad"));
-        setLoading(false);
         return;
       }
 
       setDashboardData(data);
-      setLoading(false);
     };
 
     initializeDashboard();
@@ -187,17 +160,6 @@ export default function AdminDashboardPage() {
     }
     return t("admin.dashboard.subtitle");
   };
-
-  if (status === "loading" || loading) {
-    return (
-      <main className="im-root-dashboard-page">
-        <div className="im-root-dashboard-loading">
-          <div className="im-root-dashboard-loading-spinner" />
-          <span className="im-root-dashboard-loading-text">{t("common.loading")}</span>
-        </div>
-      </main>
-    );
-  }
 
   if (error) {
     return (
@@ -275,9 +237,6 @@ export default function AdminDashboardPage() {
         {/* Organization Admin: Organization-scoped dashboard */}
         {dashboardData.adminType === "organization_admin" && dashboardData.organizations && (
           <>
-            {/* Quick Actions */}
-            <QuickActions organizationId={dashboardData.organizations[0]?.id} />
-
             {/* Clubs Count Card - organization-scoped */}
             <div className="im-stats-grid">
               <StatCard
@@ -287,15 +246,6 @@ export default function AdminDashboardPage() {
                 colorClass="im-stat-card--clubs"
               />
             </div>
-
-            {/* Admins Panel */}
-            {dashboardData.organizations[0] && (
-              <AdminsPanel
-                orgAdminsCount={1}
-                clubAdminsCount={dashboardData.organizations.reduce((sum, org) => sum + org.clubAdminsCount, 0)}
-                organizationId={dashboardData.organizations[0].id}
-              />
-            )}
 
             {/* Bookings Overview Section - organization-scoped */}
             <BookingsOverview
@@ -311,11 +261,6 @@ export default function AdminDashboardPage() {
         {/* Club Admin: Club-specific dashboards */}
         {dashboardData.adminType === "club_admin" && dashboardData.clubs && (
           <>
-            {/* Quick Actions for club context */}
-            {dashboardData.clubs.length === 1 && (
-              <QuickActions clubId={dashboardData.clubs[0].id} />
-            )}
-
             {/* Clubs Preview */}
             <ClubsPreview clubs={dashboardData.clubs} maxPreview={10} />
 
