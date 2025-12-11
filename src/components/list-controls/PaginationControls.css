@@ -1,0 +1,92 @@
+/* Pagination Controls Styles */
+.im-pagination-card {
+  @apply flex flex-wrap items-center justify-between gap-4 p-4;
+}
+
+.im-pagination-info {
+  @apply flex items-center;
+}
+
+.im-pagination-text {
+  @apply text-sm;
+  color: var(--text-secondary);
+}
+
+.im-pagination-controls {
+  @apply flex items-center gap-2;
+}
+
+.im-pagination-btn {
+  @apply flex items-center gap-1;
+}
+
+.im-pagination-btn svg {
+  @apply w-4 h-4;
+}
+
+.im-pagination-btn-text {
+  @apply hidden sm:inline;
+}
+
+.im-pagination-pages {
+  @apply flex items-center gap-1;
+}
+
+.im-pagination-page {
+  @apply min-w-[2rem] h-8 px-2 rounded-sm;
+  @apply flex items-center justify-center;
+  @apply text-sm font-medium;
+  @apply transition-colors;
+  color: var(--text-secondary);
+  background: var(--surface-secondary);
+}
+
+.im-pagination-page:hover:not(.im-pagination-page--active) {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.im-pagination-page--active {
+  background: var(--primary-color);
+  color: var(--text-on-primary);
+}
+
+.im-pagination-size {
+  @apply flex items-center gap-2;
+}
+
+.im-pagination-size-label {
+  @apply text-sm;
+  color: var(--text-secondary);
+}
+
+.im-pagination-size-select {
+  @apply px-2 py-1 rounded-sm border text-sm;
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.im-pagination-size-select:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .im-pagination-card {
+    @apply flex-col items-stretch;
+  }
+
+  .im-pagination-info {
+    @apply justify-center;
+  }
+
+  .im-pagination-controls {
+    @apply justify-center;
+  }
+
+  .im-pagination-size {
+    @apply justify-center;
+  }
+}

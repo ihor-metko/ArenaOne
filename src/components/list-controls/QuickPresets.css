@@ -1,0 +1,4 @@
+/* Quick Presets Styles */
+.im-quick-presets {
+  @apply flex flex-wrap items-center gap-2;
+}

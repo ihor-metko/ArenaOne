@@ -1,0 +1,17 @@
+/* Date Range Filter Styles */
+.im-date-range-filter {
+  @apply flex flex-col gap-2;
+}
+
+.im-date-range-label {
+  @apply text-sm font-medium;
+  color: var(--text-primary);
+}
+
+.im-date-range-inputs {
+  @apply flex flex-col sm:flex-row gap-2;
+}
+
+.im-date-range-inputs > div {
+  @apply flex-1;
+}
