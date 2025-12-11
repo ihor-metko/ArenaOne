@@ -407,7 +407,7 @@ export default function AdminBookingsPage() {
       )}
 
       {/* Bookings table */}
-      {isLoadingData ? (
+      {isLoadingBookings ? (
         <TableSkeleton rows={pageSize > 20 ? 20 : pageSize} columns={8} showHeader />
       ) : bookingsData?.bookings.length === 0 ? (
         <div className="im-admin-bookings-table-container">
