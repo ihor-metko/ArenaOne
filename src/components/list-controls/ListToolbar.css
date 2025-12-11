@@ -1,0 +1,35 @@
+/* List Toolbar Styles */
+.im-list-toolbar {
+  @apply flex flex-wrap items-center gap-4 p-4;
+}
+
+.im-list-toolbar--compact {
+  @apply gap-2 p-3;
+}
+
+.im-list-toolbar-content {
+  @apply flex-1 flex flex-wrap items-center gap-3;
+}
+
+.im-list-toolbar-actions {
+  @apply flex items-center gap-2;
+}
+
+.im-list-toolbar-actions button svg {
+  @apply w-4 h-4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .im-list-toolbar {
+    @apply flex-col items-stretch;
+  }
+
+  .im-list-toolbar-content {
+    @apply flex-col items-stretch;
+  }
+
+  .im-list-toolbar-actions {
+    @apply justify-end;
+  }
+}
