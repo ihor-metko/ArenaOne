@@ -39,6 +39,25 @@ function formatDateTime(isoString: string): string {
 }
 
 /**
+ * Get user initials from name for avatar
+ */
+function getInitials(name: string | null | undefined, email: string | null): string {
+  const getEmailInitial = () => {
+    return email && email.length > 0 ? email.charAt(0).toUpperCase() : "?";
+  };
+
+  if (!name) {
+    return getEmailInitial();
+  }
+  const parts = name.split(" ").filter(Boolean);
+  if (parts.length === 0) {
+    return getEmailInitial();
+  }
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+/**
  * Calculate duration in minutes
  */
 function calculateDuration(start: string, end: string): number {
@@ -433,51 +452,38 @@ export default function AdminBookingsPage() {
           <table className="im-admin-bookings-table">
             <thead>
               <tr>
-                <th>{t("adminBookings.bookingId")}</th>
                 <th>{t("adminBookings.user")}</th>
                 {adminStatus.adminType === "root_admin" && <th>{t("adminBookings.organization")}</th>}
                 {adminStatus.adminType !== "club_admin" && <th>{t("adminBookings.club")}</th>}
-                <th>{t("adminBookings.dateTime")}</th>
                 <th>{t("adminBookings.court")}</th>
-                <th>{t("common.status")}</th>
+                <th>{t("adminBookings.dateTime")}</th>
                 <th>{t("common.duration")}</th>
-                <th>{t("common.actions")}</th>
+                <th>{t("common.status")}</th>
               </tr>
             </thead>
             <tbody>
               {bookingsData?.bookings.map((booking) => (
                 <tr key={booking.id} onClick={() => handleViewBooking(booking)}>
-                  <td>{booking.id.slice(0, 8)}...</td>
-                  <td>{booking.userName || booking.userEmail}</td>
+                  <td className="im-td-user">
+                    <div className="im-user-info">
+                      <div className="im-user-avatar">
+                        {getInitials(booking.userName, booking.userEmail)}
+                      </div>
+                      <span className="im-user-name">
+                        {booking.userName || booking.userEmail}
+                      </span>
+                    </div>
+                  </td>
                   {adminStatus.adminType === "root_admin" && (
                     <td>{booking.organizationName || "—"}</td>
                   )}
                   {adminStatus.adminType !== "club_admin" && (
                     <td>{booking.clubName}</td>
                   )}
-                  <td>{formatDateTime(booking.start)}</td>
                   <td>{booking.courtName}</td>
-                  <td><StatusBadge status={booking.status} /></td>
+                  <td>{formatDateTime(booking.start)}</td>
                   <td>{calculateDuration(booking.start, booking.end)} {t("common.minutes")}</td>
-                  <td onClick={(e) => e.stopPropagation()}>
-                    <div className="im-admin-bookings-actions">
-                      <button
-                        className="im-admin-bookings-action-btn im-admin-bookings-action-btn--view"
-                        onClick={() => handleViewBooking(booking)}
-                      >
-                        {t("common.view")}
-                      </button>
-                      {booking.status !== "cancelled" && (
-                        <button
-                          className="im-admin-bookings-action-btn im-admin-bookings-action-btn--cancel"
-                          onClick={() => handleCancelBooking(booking.id)}
-                          disabled={isCancelling}
-                        >
-                          {t("common.cancel")}
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                  <td><StatusBadge status={booking.status} /></td>
                 </tr>
               ))}
             </tbody>
