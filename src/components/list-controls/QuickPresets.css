@@ -9,7 +9,7 @@
 /* Ensure preset buttons have consistent styling */
 .im-quick-presets button {
   @apply transition-all duration-200;
-  font-size: var(--font-size-sm, 0.875rem);
+  font-size: var(--font-size-sm);
   font-weight: 500;
 }
 
@@ -17,6 +17,8 @@
 .im-quick-presets button[aria-pressed="true"] {
   box-shadow: 0 0 0 2px var(--im-primary);
   transform: translateY(-1px);
+  background-color: var(--im-primary);
+  color: #ffffff;
 }
 
 .im-quick-presets button[aria-pressed="true"]:hover {

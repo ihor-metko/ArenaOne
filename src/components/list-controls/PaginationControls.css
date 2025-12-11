@@ -73,11 +73,13 @@
   color: #ffffff;
   border-color: var(--im-primary);
   font-weight: 600;
-  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+  /* Use filter for subtle ring effect that adapts to primary color */
+  filter: drop-shadow(0 0 4px var(--im-primary));
 }
 
 .dark .im-pagination-page--active {
-  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.3);
+  /* Slightly stronger glow in dark mode */
+  filter: drop-shadow(0 0 6px var(--im-primary));
 }
 
 .im-pagination-page--active:hover {

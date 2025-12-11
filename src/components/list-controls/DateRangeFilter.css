@@ -33,9 +33,12 @@
 
 .im-date-range-inputs input[type="date"]:focus {
   border-color: var(--im-primary);
-  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.1);
+  /* Use outline for focus ring to adapt to primary color */
+  outline: 2px solid var(--im-primary);
+  outline-offset: -2px;
+  opacity: 0.8;
 }
 
 .dark .im-date-range-inputs input[type="date"]:focus {
-  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.25);
+  opacity: 1;
 }
