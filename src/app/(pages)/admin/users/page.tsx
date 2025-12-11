@@ -127,7 +127,7 @@ function MailIcon() {
   );
 }
 
-import type { AdminUser } from "@/types/adminUser";
+// AdminUser type not used - removed to fix lint
 
 interface OrganizationOption {
   id: string;
