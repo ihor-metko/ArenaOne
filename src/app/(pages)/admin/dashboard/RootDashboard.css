@@ -129,13 +129,11 @@
 
 /* ===== Dashboard Section ===== */
 .im-dashboard-section {
-  @apply mt-8 p-6 rounded-xl;
-  background-color: var(--rsp-card-bg);
-  border: 1px solid var(--rsp-border);
+  @apply mb-6;
 }
 
 .im-dashboard-section-title {
-  @apply text-xl font-semibold mb-2;
+  @apply text-2xl font-bold mb-2;
   color: var(--rsp-foreground);
 }
 
