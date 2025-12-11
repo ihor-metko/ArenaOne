@@ -616,6 +616,142 @@ export async function requireClubAdminManagement(
 }
 
 /**
+ * Success result type for club access check.
+ */
+export interface ClubAccessSuccess {
+  authorized: true;
+  userId: string;
+  isRoot: boolean;
+  accessType: "root" | "organization_admin" | "club_admin";
+}
+
+/**
+ * Failure result type for club access check.
+ */
+export interface ClubAccessFailure {
+  authorized: false;
+  response: NextResponse;
+  userId?: string;
+}
+
+/**
+ * Result type for club access check.
+ */
+export type ClubAccessResult = ClubAccessSuccess | ClubAccessFailure;
+
+/**
+ * Check if the current user has access to a specific club.
+ * 
+ * This function allows access to a club if:
+ * - Root Admin: Can access any club
+ * - Organization Admin: Can access clubs within their managed organization(s)
+ * - Club Admin: Can access only their specific club
+ * 
+ * @param clubId - The club ID to check access for
+ * @param options - Optional configuration
+ * @param options.allowClubAdmin - Whether to allow club admins (default: true)
+ * @returns Promise resolving to authorized status with user info or error response
+ * 
+ * @example
+ * const authResult = await requireClubAccess(clubId);
+ * if (!authResult.authorized) return authResult.response;
+ * 
+ * @example
+ * // Only allow root and org admins, not club admins
+ * const authResult = await requireClubAccess(clubId, { allowClubAdmin: false });
+ * if (!authResult.authorized) return authResult.response;
+ */
+export async function requireClubAccess(
+  clubId: string,
+  options: { allowClubAdmin?: boolean } = {}
+): Promise<ClubAccessResult> {
+  const { allowClubAdmin = true } = options;
+  
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      authorized: false,
+      response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    };
+  }
+
+  const userId = session.user.id;
+  const isRoot = session.user.isRoot ?? false;
+
+  // Root admins can access any club
+  if (isRoot) {
+    return {
+      authorized: true,
+      userId,
+      isRoot: true,
+      accessType: "root",
+    };
+  }
+
+  // Check if user is a club admin for this specific club
+  if (allowClubAdmin) {
+    const clubMembership = await prisma.clubMembership.findUnique({
+      where: {
+        userId_clubId: {
+          userId,
+          clubId,
+        },
+      },
+    });
+
+    if (clubMembership && clubMembership.role === ClubMembershipRole.CLUB_ADMIN) {
+      return {
+        authorized: true,
+        userId,
+        isRoot: false,
+        accessType: "club_admin",
+      };
+    }
+  }
+
+  // Check if user is an organization admin for the club's parent organization
+  const club = await prisma.club.findUnique({
+    where: { id: clubId },
+    select: { organizationId: true },
+  });
+
+  if (!club) {
+    return {
+      authorized: false,
+      response: NextResponse.json({ error: "Club not found" }, { status: 404 }),
+    };
+  }
+
+  if (club.organizationId) {
+    const orgMembership = await prisma.membership.findUnique({
+      where: {
+        userId_organizationId: {
+          userId,
+          organizationId: club.organizationId,
+        },
+      },
+    });
+
+    if (orgMembership && orgMembership.role === MembershipRole.ORGANIZATION_ADMIN) {
+      return {
+        authorized: true,
+        userId,
+        isRoot: false,
+        accessType: "organization_admin",
+      };
+    }
+  }
+
+  // User does not have access to this club
+  return {
+    authorized: false,
+    response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+    userId,
+  };
+}
+
+/**
  * Validate email format.
  * @param email - The email to validate
  * @returns true if the email format is valid
