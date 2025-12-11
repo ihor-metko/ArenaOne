@@ -186,7 +186,6 @@ export function PaginationControls<TFilters = Record<string, unknown>>({
             value={pageSize.toString()}
             onChange={(value) => setPageSize(parseInt(value, 10))}
             className="im-pagination-size-select"
-            aria-label={t("pagination.pageSize")}
           />
         </div>
       )}
