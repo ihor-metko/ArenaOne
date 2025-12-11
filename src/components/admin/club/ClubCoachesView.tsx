@@ -104,13 +104,15 @@ export function ClubCoachesView({ club, onUpdate }: ClubCoachesViewProps) {
     <>
       <div className="im-section-view-header">
         <h2 className="im-club-view-section-title">Coaches</h2>
-        <Button
-          variant="outline"
-          onClick={handleEdit}
-          className="im-section-edit-btn"
-        >
-          Edit
-        </Button>
+        {onUpdate && (
+          <Button
+            variant="outline"
+            onClick={handleEdit}
+            className="im-section-edit-btn"
+          >
+            Edit
+          </Button>
+        )}
       </div>
 
       <div className="im-section-view">
