@@ -321,19 +321,19 @@ function getNavItems(): NavItem[] {
       labelKey: "sidebar.dashboard",
       icon: <DashboardIcon />,
     },
-    // Bookings
-    {
-      id: "bookings",
-      href: "/admin/bookings",
-      labelKey: "sidebar.bookings",
-      icon: <BookingsIcon />,
-    },
     // Operations - Visible for all admin types
     {
       id: "operations",
       href: "/admin/operations",
       labelKey: "sidebar.operations",
       icon: <OperationsIcon />,
+    },
+    // Bookings
+    {
+      id: "bookings",
+      href: "/admin/bookings",
+      labelKey: "sidebar.bookings",
+      icon: <BookingsIcon />,
     },
     // Courts Management - Visible for all admin types
     {
