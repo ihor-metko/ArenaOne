@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PageHeader, Button, Input } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
@@ -13,10 +13,10 @@ import {
   TodayBookingsList,
   QuickCreateModal,
   BookingDetailModal,
+  OperationsClubSelector,
 } from "@/components/club-operations";
 import type { OperationsBooking } from "@/types/booking";
 import { TableSkeleton } from "@/components/ui/skeletons";
-import { ClubSelector } from "@/components/list-controls";
 import "./page.css";
 
 /**
@@ -38,14 +38,16 @@ import "./page.css";
 export default function OperationsPage() {
   const t = useTranslations();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // User store
   const adminStatus = useUserStore((state) => state.adminStatus);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   const isLoadingUser = useUserStore((state) => state.isLoading);
+  const user = useUserStore((state) => state.user);
 
   // Club and courts stores
-  const { clubsById, ensureClubById, loading: loadingClub } = useClubStore();
+  const { clubsById, clubs, ensureClubById, loading: loadingClub } = useClubStore();
   const { courts, fetchCourtsIfNeeded, loading: loadingCourts } = useCourtStore();
 
   // Booking store
@@ -88,13 +90,57 @@ export default function OperationsPage() {
       return;
     }
 
-    // Auto-select club for Club Admins
-    if (adminStatus.adminType === "club_admin" && adminStatus.assignedClub) {
-      setSelectedClubId(adminStatus.assignedClub.id);
-    }
-  }, [isLoadingUser, isLoggedIn, adminStatus, router]);
+    // Check for clubId in URL query params
+    const urlClubId = searchParams.get("clubId");
 
-  // Load club data
+    // Auto-select club for Club Admins (fast-path)
+    if (adminStatus.adminType === "club_admin" && adminStatus.assignedClub) {
+      // For Club Admin, validate URL clubId matches their assigned club
+      if (urlClubId && urlClubId !== adminStatus.assignedClub.id) {
+        // URL clubId doesn't match - enforce security by redirecting to correct club
+        console.warn("Club Admin attempted to access unauthorized club");
+        router.replace("/admin/operations?clubId=" + adminStatus.assignedClub.id);
+      }
+      setSelectedClubId(adminStatus.assignedClub.id);
+    } else if (urlClubId) {
+      // For Root Admin, they have access to all clubs
+      if (user?.isRoot) {
+        setSelectedClubId(urlClubId);
+      }
+      // For Org Admin with URL clubId:
+      // We defer selection until clubs are loaded to validate access
+      // See separate useEffect below that validates Org Admin URL clubId
+    }
+    // For Organization Admin and Root Admin without URL clubId: do NOT auto-select
+    // They must explicitly choose a club via the selector
+  }, [isLoadingUser, isLoggedIn, adminStatus, router, searchParams, user]);
+
+  // Validate and set URL clubId for Org Admin after clubs are loaded
+  useEffect(() => {
+    const urlClubId = searchParams.get("clubId");
+    
+    if (
+      urlClubId &&
+      !selectedClubId &&
+      adminStatus?.adminType === "organization_admin" &&
+      clubs.length > 0
+    ) {
+      // Validate that the URL club belongs to one of the Org Admin's managed organizations
+      const urlClub = clubs.find((c) => c.id === urlClubId);
+      const managedOrgIds = new Set(adminStatus.managedIds);
+      
+      if (urlClub && managedOrgIds.has(urlClub.organizationId)) {
+        // Valid club - set it
+        setSelectedClubId(urlClubId);
+      } else {
+        // Invalid club - clear URL parameter and show error
+        console.warn("Organization Admin attempted to access unauthorized club");
+        router.replace("/admin/operations");
+      }
+    }
+  }, [searchParams, selectedClubId, adminStatus, clubs, router]);
+
+  // Load club data only when a club is selected
   useEffect(() => {
     if (selectedClubId) {
       ensureClubById(selectedClubId).catch(console.error);
@@ -102,7 +148,7 @@ export default function OperationsPage() {
     }
   }, [selectedClubId, ensureClubById, fetchCourtsIfNeeded]);
 
-  // Load bookings for selected date
+  // Load bookings for selected date only when a club is selected
   useEffect(() => {
     if (selectedClubId && selectedDate) {
       fetchBookingsForDay(selectedClubId, selectedDate).catch(console.error);
@@ -199,16 +245,17 @@ export default function OperationsPage() {
           description={t("operations.description") || "Manage club operations"}
         />
         
-        {/* Club selector */}
+        {/* Club selector - required before operations UI loads */}
         <div className="im-club-operations-controls">
           <div className="im-club-operations-club-selector">
-            <label htmlFor="club-select" className="im-club-operations-label">
-              {t("operations.selectClub") || "Select a club to view operations"}
-            </label>
-            <ClubSelector
+            <p className="im-club-operations-instruction">
+              {t("operations.selectClubInstruction") || "Please select a club to view its operations."}
+            </p>
+            <OperationsClubSelector
               value={selectedClubId}
               onChange={handleClubChange}
-              organizationFilter=""
+              label={t("operations.club") || "Club"}
+              placeholder={t("operations.selectClub") || "Select a club"}
             />
           </div>
         </div>
@@ -244,19 +291,16 @@ export default function OperationsPage() {
 
       {/* Controls - Club selector and date picker */}
       <div className="im-club-operations-controls">
-        {/* Club selector - only for Org Admins and Root Admins */}
-        {!isClubAdmin && (
-          <div className="im-club-operations-club-selector">
-            <label htmlFor="club-select" className="im-club-operations-label">
-              {t("operations.club") || "Club"}
-            </label>
-            <ClubSelector
-              value={selectedClubId}
-              onChange={handleClubChange}
-              organizationFilter=""
-            />
-          </div>
-        )}
+        {/* Club selector */}
+        <div className="im-club-operations-club-selector">
+          <OperationsClubSelector
+            value={selectedClubId}
+            onChange={handleClubChange}
+            label={t("operations.club") || "Club"}
+            placeholder={t("operations.selectClub") || "Select a club"}
+            disabled={isClubAdmin}
+          />
+        </div>
 
         {/* Date picker */}
         <div className="im-club-operations-date-picker">
