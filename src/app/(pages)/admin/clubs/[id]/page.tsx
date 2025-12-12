@@ -475,7 +475,6 @@ export default function AdminClubDetailPage({
         <section className="im-admin-club-admins-section">
           <ClubAdminsSection
             clubId={club.id}
-            organizationId={club.organizationId}
             onRefresh={fetchClub}
           />
         </section>

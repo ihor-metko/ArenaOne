@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Button, Modal, Input, Select } from "@/components/ui";
+import { Button, Modal, Input } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import { UserProfileModal } from "../UserProfileModal";
@@ -15,13 +15,11 @@ interface ClubAdmin {
 
 interface ClubAdminsSectionProps {
   clubId: string;
-  organizationId: string | null;
   onRefresh?: () => void;
 }
 
 export function ClubAdminsSection({
   clubId,
-  organizationId,
   onRefresh,
 }: ClubAdminsSectionProps) {
   const t = useTranslations();
