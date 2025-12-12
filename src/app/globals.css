@@ -786,3 +786,88 @@ body {
 .dark .im-tooltip-wrapper::before {
   border-top-color: var(--im-tooltip-bg-dark, #374151);
 }
+
+/* ===== Entity Color Utility Classes ===== */
+
+/* Entity-specific badge classes */
+.entity-badge-organization {
+  background-color: var(--entity-color-organization-light);
+  color: var(--entity-color-organization-text);
+  border: 1px solid var(--entity-color-organization-border);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.entity-badge-club {
+  background-color: var(--entity-color-club-light);
+  color: var(--entity-color-club-text);
+  border: 1px solid var(--entity-color-club-border);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.entity-badge-court {
+  background-color: var(--entity-color-court-light);
+  color: var(--entity-color-court-text);
+  border: 1px solid var(--entity-color-court-border);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.entity-badge-booking {
+  background-color: var(--entity-color-booking-light);
+  color: var(--entity-color-booking-text);
+  border: 1px solid var(--entity-color-booking-border);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Entity card accent classes */
+.entity-card-organization {
+  border-left: 4px solid var(--entity-color-organization);
+}
+
+.entity-card-club {
+  border-left: 4px solid var(--entity-color-club);
+}
+
+.entity-card-court {
+  border-left: 4px solid var(--entity-color-court);
+}
+
+.entity-card-booking {
+  border-left: 4px solid var(--entity-color-booking);
+}
+
+/* Entity card hover states */
+.entity-card-organization:hover {
+  border-color: var(--entity-color-organization);
+}
+
+.entity-card-club:hover {
+  border-color: var(--entity-color-club);
+}
+
+.entity-card-court:hover {
+  border-color: var(--entity-color-court);
+}
+
+.entity-card-booking:hover {
+  border-color: var(--entity-color-booking);
+}

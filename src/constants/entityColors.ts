@@ -76,4 +76,4 @@ export const ENTITY_COLOR_VARIANTS = {
  * Type definitions for entity colors
  */
 export type EntityType = keyof typeof ENTITY_COLORS;
-export type EntityColorVariant = keyof typeof ENTITY_COLOR_VARIANTS[EntityType];
+export type EntityColorVariant = keyof typeof ENTITY_COLOR_VARIANTS["organization"];

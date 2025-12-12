@@ -104,10 +104,6 @@ export function useEntityStyles(entityType: EntityType) {
 
 /**
  * Get entity color directly (non-hook version for use outside React components)
- * 
- * @param entityType - The type of entity
- * @returns The base color hex value
+ * Re-exported from entityColors.ts for convenience
  */
-export function getEntityColorValue(entityType: EntityType): string {
-  return ENTITY_COLORS[entityType];
-}
+export { getEntityColor as getEntityColorValue } from "@/constants/entityColors";
