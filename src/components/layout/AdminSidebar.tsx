@@ -528,20 +528,6 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
     }
   }, [onCollapsedChange]);
 
-  // Fetch organization data for organization admins
-  useEffect(() => {
-    const isOrgAdmin = adminStatus?.adminType === "organization_admin";
-    if (isOrgAdmin && adminStatus?.managedIds && adminStatus.managedIds.length > 0) {
-      const orgId = adminStatus.managedIds[0];
-      // Only fetch if we don't have the org data yet
-      if (!currentOrg || currentOrg.id !== orgId) {
-        fetchOrganizationById(orgId).catch((error) => {
-          console.error("Failed to fetch organization:", error);
-        });
-      }
-    }
-  }, [adminStatus, currentOrg, fetchOrganizationById]);
-
   // Toggle collapsed state
   const toggleCollapsed = useCallback(() => {
     setIsCollapsed((prev) => {
@@ -560,6 +546,19 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
   // Check if user is a club admin or organization admin
   const isClubAdmin = adminStatus?.adminType === "club_admin";
   const isOrgAdmin = adminStatus?.adminType === "organization_admin";
+
+  // Fetch organization data for organization admins
+  useEffect(() => {
+    if (isOrgAdmin && adminStatus?.managedIds && adminStatus.managedIds.length > 0) {
+      const orgId = adminStatus.managedIds[0];
+      // Only fetch if we don't have the org data yet
+      if (!currentOrg || currentOrg.id !== orgId) {
+        fetchOrganizationById(orgId).catch((error) => {
+          console.error(`Failed to fetch organization ${orgId}:`, error);
+        });
+      }
+    }
+  }, [isOrgAdmin, adminStatus, currentOrg, fetchOrganizationById]);
 
   // Get filtered navigation items based on isRoot status and admin type
   const navItems = useMemo(() => {
