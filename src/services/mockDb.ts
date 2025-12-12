@@ -205,7 +205,7 @@ export function initializeMockData() {
       id: "6d47229c-280f-475e-bb81-2a0d47d36771",
       name: "Downtown Padel Club",
       slug: "downtown-padel-club",
-      organizationId: "org-1",
+      organizationId: "64f3b281-c4cf-4fba-82a5-f4d20b0c7c29",
       createdById: "user-2",
       shortDescription: "Premier downtown location",
       longDescription: "Full-service padel facility in the heart of downtown",
