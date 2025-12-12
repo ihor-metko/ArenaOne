@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Select, type SelectOption } from "@/components/ui";
 import { useClubStore } from "@/stores/useClubStore";
 import { useUserStore } from "@/stores/useUserStore";
@@ -62,6 +62,7 @@ export function OperationsClubSelector({
   const user = useUserStore((state) => state.user);
 
   const [hasInitialized, setHasInitialized] = useState(false);
+  const latestSelectionRef = useRef<string>("");
 
   // Fetch clubs on mount
   useEffect(() => {
@@ -97,6 +98,7 @@ export function OperationsClubSelector({
   }, [clubs, adminStatus, user]);
 
   // Pre-select currentClub from store if available and not disabled
+  // This takes priority over auto-selection logic below
   useEffect(() => {
     if (currentClub && !value && !disabled && filteredClubs.some(c => c.id === currentClub.id)) {
       // If there's a currentClub in the store and no selection yet, use it
@@ -107,17 +109,19 @@ export function OperationsClubSelector({
   // Auto-select if Org Admin has only one club
   // Note: Club Admins are handled in the Operations page itself (auto-select on mount)
   // This only applies to Org Admins who have exactly one club in their organization
+  // This won't run if currentClub pre-selection above already set a value
   useEffect(() => {
     if (
       adminStatus?.adminType === "organization_admin" &&
       filteredClubs.length === 1 &&
       !value &&
-      !disabled
+      !disabled &&
+      !currentClub // Don't auto-select if we have a currentClub (handled above)
     ) {
       // Auto-select the only available club for convenience
       onChange(filteredClubs[0].id);
     }
-  }, [adminStatus, filteredClubs, value, onChange, disabled]);
+  }, [adminStatus, filteredClubs, value, onChange, disabled, currentClub]);
 
   // Convert clubs to select options
   const options: SelectOption[] = filteredClubs.map((club) => ({
@@ -134,6 +138,8 @@ export function OperationsClubSelector({
 
   // Handle club selection - update both local state and store
   const handleClubChange = async (clubId: string) => {
+    // Track the latest selection to avoid race conditions
+    latestSelectionRef.current = clubId;
     onChange(clubId);
     
     // Update store's currentClub for persistence
@@ -141,7 +147,10 @@ export function OperationsClubSelector({
       // Fetch full club detail first, then set as current
       try {
         const clubDetail = await ensureClubById(clubId);
-        setCurrentClub(clubDetail);
+        // Only set if this is still the latest selection (user didn't change again)
+        if (latestSelectionRef.current === clubId) {
+          setCurrentClub(clubDetail);
+        }
       } catch (error) {
         console.error("Failed to fetch club detail:", error);
         // Still allow selection even if detail fetch fails
