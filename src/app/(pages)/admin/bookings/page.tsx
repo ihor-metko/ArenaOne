@@ -92,7 +92,10 @@ function StatusBadge({ status }: { status: string }) {
     cancelled: t("adminBookings.statusCancelled"),
   };
   
-  return <span className={statusClass}>{statusLabels[status] || status}</span>;
+  // Get translated label or use a capitalized version of status as last resort
+  const displayText = statusLabels[status] || status.charAt(0).toUpperCase() + status.slice(1);
+  
+  return <span className={statusClass}>{displayText}</span>;
 }
 
 /**
