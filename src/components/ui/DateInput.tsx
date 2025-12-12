@@ -154,7 +154,9 @@ export function DateInput({
           readOnly
           aria-label={ariaLabel || label}
           aria-haspopup="dialog"
+          role="combobox"
           aria-expanded={isOpen}
+          aria-controls={isOpen ? `${inputId}-calendar` : undefined}
         />
         <button
           type="button"
@@ -172,7 +174,7 @@ export function DateInput({
         </button>
         
         {isOpen && (
-          <div className="im-date-input-popup">
+          <div className="im-date-input-popup" id={`${inputId}-calendar`}>
             <CustomCalendar
               value={value}
               onChange={handleCalendarChange}

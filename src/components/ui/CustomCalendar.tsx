@@ -63,6 +63,10 @@ export function CustomCalendar({
   });
   const [focusedDate, setFocusedDate] = useState<Date | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
+  
+  // Note: isRangeStart is reserved for future styling enhancements
+  // Currently not used in rendering logic
+  void isRangeStart;
 
   // Parse dates for comparison
   const selectedDate = value ? new Date(value) : null;
@@ -291,8 +295,8 @@ export function CustomCalendar({
               disabled={disabled}
               data-date={formatDateToISO(date)}
               aria-label={formatDateToISO(date)}
-              aria-selected={selected}
               aria-disabled={disabled}
+              aria-current={selected ? "date" : undefined}
               tabIndex={selected || (index === firstDayOfWeek && !value) ? 0 : -1}
             >
               {date.getDate()}
