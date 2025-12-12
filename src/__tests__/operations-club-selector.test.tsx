@@ -12,6 +12,10 @@ const mockClubStore = {
   loadingClubs: false,
   currentClub: null as any,
   setCurrentClub: jest.fn(),
+  ensureClubById: jest.fn().mockImplementation((id: string) => {
+    const club = mockClubStore.clubs.find((c: any) => c.id === id);
+    return Promise.resolve(club || { id, name: `Club ${id}` });
+  }),
 };
 
 const mockUserStore = {

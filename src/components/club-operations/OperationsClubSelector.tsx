@@ -55,6 +55,7 @@ export function OperationsClubSelector({
   const loading = useClubStore((state) => state.loadingClubs);
   const currentClub = useClubStore((state) => state.currentClub);
   const setCurrentClub = useClubStore((state) => state.setCurrentClub);
+  const ensureClubById = useClubStore((state) => state.ensureClubById);
 
   // Get user info for filtering
   const adminStatus = useUserStore((state) => state.adminStatus);
@@ -132,16 +133,18 @@ export function OperationsClubSelector({
   }, [value, filteredClubs, onChange]);
 
   // Handle club selection - update both local state and store
-  const handleClubChange = (clubId: string) => {
+  const handleClubChange = async (clubId: string) => {
     onChange(clubId);
     
     // Update store's currentClub for persistence
     if (clubId) {
-      const selectedClub = filteredClubs.find(c => c.id === clubId);
-      if (selectedClub) {
-        // Note: ClubWithCounts can be used as ClubDetail since it has all required fields
-        // TypeScript needs explicit cast since they're different interfaces
-        setCurrentClub(selectedClub as unknown as typeof currentClub);
+      // Fetch full club detail first, then set as current
+      try {
+        const clubDetail = await ensureClubById(clubId);
+        setCurrentClub(clubDetail);
+      } catch (error) {
+        console.error("Failed to fetch club detail:", error);
+        // Still allow selection even if detail fetch fails
       }
     } else {
       setCurrentClub(null);
