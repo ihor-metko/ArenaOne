@@ -1,0 +1,164 @@
+@reference "tailwindcss";
+
+/* Operations Dashboard Page Styles */
+
+.im-operations-page {
+  @apply w-full;
+}
+
+.im-operations-loading {
+  @apply w-full p-8;
+}
+
+.im-operations-empty {
+  @apply p-8 text-center;
+  background-color: var(--im-card-bg);
+  border: 1px solid var(--im-border);
+  border-radius: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.im-operations-empty h2 {
+  @apply text-xl font-semibold mb-2;
+  color: var(--im-text-primary);
+}
+
+.im-operations-empty p {
+  @apply text-sm;
+  color: var(--im-text-secondary);
+}
+
+/* Club Picker Section */
+.im-operations-club-picker {
+  @apply mb-6;
+}
+
+.im-operations-club-picker-content {
+  @apply p-6;
+}
+
+.im-operations-club-picker-title {
+  @apply text-xl font-semibold mb-2;
+  color: var(--im-text-primary);
+}
+
+.im-operations-club-picker-description {
+  @apply text-sm mb-4;
+  color: var(--im-text-secondary);
+}
+
+.im-operations-club-picker-select {
+  @apply max-w-md;
+}
+
+/* Quick Actions Section */
+.im-operations-quick-actions {
+  @apply mb-6;
+}
+
+.im-operations-actions-grid {
+  @apply grid gap-4;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+/* Error Banner */
+.im-operations-error-banner {
+  @apply p-4 mb-6 rounded-lg;
+  background-color: var(--im-danger);
+  color: white;
+  border: 1px solid var(--im-danger);
+}
+
+/* Content Grid */
+.im-operations-content-grid {
+  @apply grid gap-6;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .im-operations-content-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.im-operations-section {
+  @apply w-full;
+}
+
+/* Table Styles */
+.im-operations-table {
+  @apply w-full;
+}
+
+/* Booking Status Badges */
+.im-booking-status {
+  @apply inline-block px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.im-booking-status--CONFIRMED {
+  background-color: var(--im-success);
+  color: white;
+}
+
+.im-booking-status--PENDING {
+  background-color: var(--im-warning);
+  color: var(--im-text-primary);
+}
+
+.im-booking-status--CANCELLED {
+  background-color: var(--im-danger);
+  color: white;
+}
+
+.im-booking-status--COMPLETED {
+  background-color: var(--im-muted);
+  color: white;
+}
+
+/* Court Status Badges */
+.im-court-status {
+  @apply inline-block px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.im-court-status--free {
+  background-color: var(--im-success);
+  color: white;
+}
+
+.im-court-status--occupied {
+  background-color: var(--im-danger);
+  color: white;
+}
+
+.im-court-status--maintenance {
+  background-color: var(--im-warning);
+  color: var(--im-text-primary);
+}
+
+/* Dark Theme Overrides */
+:root.dark .im-operations-empty {
+  background-color: var(--im-card-bg);
+  border-color: var(--im-border);
+}
+
+:root.dark .im-operations-empty h2 {
+  color: var(--im-text-primary);
+}
+
+:root.dark .im-operations-empty p {
+  color: var(--im-text-secondary);
+}
+
+:root.dark .im-operations-club-picker-title {
+  color: var(--im-text-primary);
+}
+
+:root.dark .im-operations-club-picker-description {
+  color: var(--im-text-secondary);
+}
+
+:root.dark .im-operations-error-banner {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--im-danger);
+  border-color: var(--im-danger);
+}
