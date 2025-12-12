@@ -93,6 +93,7 @@ export function ClubAdminsSection({
   useEffect(() => {
     fetchClubAdmins();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // fetchClubAdmins is defined inline and changes on every render, but we only want to refetch when clubId changes
   }, [clubId]);
 
   // Handle add club admin
