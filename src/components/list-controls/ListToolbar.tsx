@@ -21,6 +21,8 @@ interface ListToolbarProps<TFilters = Record<string, unknown>> {
   compact?: boolean;
   /** Additional CSS classes */
   className?: string;
+  /** Custom action button to display at top-right corner */
+  actionButton?: ReactNode;
 }
 
 // Default icon for reset button
@@ -62,6 +64,19 @@ function XIcon() {
  *   <Select label="Status" options={statusOptions} />
  * </ListToolbar>
  * 
+ * // With action button
+ * <ListToolbar 
+ *   controller={controller} 
+ *   showReset
+ *   actionButton={
+ *     <Button onClick={handleCreate} variant="primary">
+ *       Create New
+ *     </Button>
+ *   }
+ * >
+ *   <ListSearch placeholder="Search..." />
+ * </ListToolbar>
+ * 
  * // Compact mode
  * <ListToolbar controller={controller} compact>
  *   <ListSearch placeholder="Search..." />
@@ -89,6 +104,7 @@ export function ListToolbar<TFilters = Record<string, unknown>>({
   onReset,
   compact = false,
   className = "",
+  actionButton,
 }: ListToolbarProps<TFilters>) {
   // Use helper hook that handles both prop and context
   const controller = useControllerOrContext(controllerProp);
@@ -115,14 +131,19 @@ export function ListToolbar<TFilters = Record<string, unknown>>({
         {children}
       </div>
       
-      {showReset && hasActiveFilters && (
-        <div className="im-list-toolbar-actions">
+      <div className="im-list-toolbar-actions">
+        {showReset && hasActiveFilters && (
           <Button variant="outline" size="small" onClick={handleReset}>
             <XIcon />
             {resetLabel}
           </Button>
-        </div>
-      )}
+        )}
+        {actionButton && (
+          <div className="im-list-toolbar-action-button">
+            {actionButton}
+          </div>
+        )}
+      </div>
     </Card>
   );
 }
