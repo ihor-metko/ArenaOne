@@ -15,22 +15,9 @@
  */
 
 import { Badge } from "@/components/ui";
-import { useEntityColor, useEntityStyles } from "@/hooks/useEntityColor";
 import { ENTITY_COLORS } from "@/constants/entityColors";
 
 export function EntityColorsDemo() {
-  // Example 1: Using hooks for dynamic styling
-  const orgColor = useEntityColor("organization");
-  const clubColor = useEntityColor("club");
-  const courtColor = useEntityColor("court");
-  const bookingColor = useEntityColor("booking");
-  
-  // Example 2: Using pre-built styles from hook
-  const orgStyles = useEntityStyles("organization");
-  const clubStyles = useEntityStyles("club");
-  const courtStyles = useEntityStyles("court");
-  const bookingStyles = useEntityStyles("booking");
-  
   return (
     <div className="p-8 space-y-8">
       <div className="max-w-4xl mx-auto">

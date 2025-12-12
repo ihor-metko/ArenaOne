@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ENTITY_COLORS, ENTITY_COLOR_VARIANTS, type EntityType } from "@/constants/entityColors";
+import { ENTITY_COLOR_VARIANTS, type EntityType } from "@/constants/entityColors";
 
 /**
  * Hook to get entity color and variants for a given entity type
