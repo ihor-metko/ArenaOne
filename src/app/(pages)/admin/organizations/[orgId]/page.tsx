@@ -7,6 +7,8 @@ import { useTranslations } from "next-intl";
 import { Button, Input, Modal, PageHeader, EntityBanner } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
+import OrganizationAdminsTable from "@/components/admin/OrganizationAdminsTable";
+import ClubAdminsTable from "@/components/admin/ClubAdminsTable";
 import type { AdminBookingResponse } from "@/app/api/admin/bookings/route";
 
 import "./page.css";
@@ -32,6 +34,28 @@ interface ClubAdmin {
   userEmail: string;
   clubId: string;
   clubName: string;
+}
+
+interface OrgAdmin {
+  id: string;
+  type: "superadmin";
+  userId: string;
+  userName: string | null;
+  userEmail: string;
+  isPrimaryOwner: boolean;
+  lastLoginAt: Date | null;
+  createdAt: Date;
+}
+
+interface ClubAdminGrouped {
+  id: string;
+  type: "clubadmin";
+  userId: string;
+  userName: string | null;
+  userEmail: string;
+  lastLoginAt: Date | null;
+  clubs: Array<{ id: string; name: string; membershipId: string }>;
+  createdAt: Date;
 }
 
 interface ClubPreview {
@@ -114,6 +138,8 @@ export default function OrganizationDetailPage() {
 
   const [org, setOrg] = useState<OrgDetail | null>(null);
   const [bookingsPreview, setBookingsPreview] = useState<BookingsPreviewData | null>(null);
+  const [orgAdmins, setOrgAdmins] = useState<OrgAdmin[]>([]);
+  const [clubAdmins, setClubAdmins] = useState<ClubAdminGrouped[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -198,6 +224,19 @@ export default function OrganizationDetailPage() {
     }
   }, [orgId, router, t, setCurrentOrg]);
 
+  const fetchAdmins = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/orgs/${orgId}/admins`);
+      if (response.ok) {
+        const data = await response.json();
+        setOrgAdmins(data.superAdmins || []);
+        setClubAdmins(data.clubAdmins || []);
+      }
+    } catch {
+      // Silent fail - admins section will show empty state
+    }
+  }, [orgId]);
+
   const fetchBookingsPreview = useCallback(async () => {
     try {
       // Constants for booking limits
@@ -267,8 +306,9 @@ export default function OrganizationDetailPage() {
       return;
     }
     fetchOrgDetail();
+    fetchAdmins();
     fetchBookingsPreview();
-  }, [session, status, router, fetchOrgDetail, fetchBookingsPreview]);
+  }, [session, status, router, fetchOrgDetail, fetchAdmins, fetchBookingsPreview]);
 
   // Debounced user search
   useEffect(() => {
@@ -636,68 +676,23 @@ export default function OrganizationDetailPage() {
           )}
         </div>
 
-        {/* Admins Preview */}
-        <div className="im-section-card">
-          <div className="im-section-header">
-            <div className="im-section-icon im-section-icon--admins">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-            </div>
-            <h2 className="im-section-title">{t("orgDetail.admins")}</h2>
-          </div>
-          <div className="im-admins-section">
-            <h4 className="im-admins-section-title">{t("organizations.superAdmins")}</h4>
-            {org.superAdmins.length === 0 ? (
-              <p className="im-preview-empty">{t("orgDetail.noAdmins")}</p>
-            ) : (
-              <div className="im-admins-list">
-                {org.superAdmins.map((admin) => (
-                  <div key={admin.id} className="im-admin-item">
-                    <div className="im-admin-avatar">
-                      {getInitials(admin.name, admin.email)}
-                    </div>
-                    <div className="im-admin-details">
-                      <span className="im-admin-name">{admin.name || admin.email}</span>
-                      <span className="im-admin-email">{admin.email}</span>
-                    </div>
-                    {admin.isPrimaryOwner && (
-                      <span 
-                        className="im-admin-owner-badge im-tooltip-wrapper"
-                        role="note"
-                        aria-label={t("organizations.ownerTooltip")}
-                      >
-                        {t("organizations.owner")}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Organization Admins Management */}
+        <div className="im-section-card im-org-detail-content--full">
+          <OrganizationAdminsTable
+            orgId={orgId}
+            admins={orgAdmins}
+            onRefresh={fetchAdmins}
+          />
+        </div>
 
-          {org.clubAdmins.length > 0 && (
-            <div className="im-admins-section">
-              <h4 className="im-admins-section-title">{t("clubAdmins.title")}</h4>
-              <div className="im-admins-list">
-                {org.clubAdmins.map((ca) => (
-                  <div key={ca.id} className="im-admin-item">
-                    <div className="im-admin-avatar">
-                      {getInitials(ca.userName, ca.userEmail)}
-                    </div>
-                    <div className="im-admin-details">
-                      <span className="im-admin-name">{ca.userName || ca.userEmail}</span>
-                      <span className="im-admin-email">{ca.userEmail}</span>
-                    </div>
-                    <span className="im-admin-club-badge">{ca.clubName}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        {/* Club Admins Management */}
+        <div className="im-section-card im-org-detail-content--full">
+          <ClubAdminsTable
+            orgId={orgId}
+            admins={clubAdmins}
+            clubs={org.clubsPreview.map(c => ({ id: c.id, name: c.name }))}
+            onRefresh={fetchAdmins}
+          />
         </div>
 
         {/* Bookings Summary */}
