@@ -100,7 +100,12 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
       try {
         const response = await fetch(`/api/admin/users/${userId}`);
         if (!response.ok) {
-          throw new Error("Failed to load user profile");
+          const statusText = response.status === 403 
+            ? "You don't have permission to view this user"
+            : response.status === 404 
+            ? "User not found"
+            : `Failed to load user profile (${response.status})`;
+          throw new Error(statusText);
         }
         const data = await response.json();
         setUser(data);
@@ -160,7 +165,11 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
     }
   };
 
-  const isUserBlocked = user?.blocked || user?.status === "blocked";
+  // Utility function to check if user is blocked
+  const isUserBlocked = (userData: AdminUserDetail | null): boolean => {
+    if (!userData) return false;
+    return userData.blocked || userData.status === "blocked";
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t("userProfile.title")}>
@@ -192,9 +201,9 @@ export function UserProfileModal({ isOpen, onClose, userId }: UserProfileModalPr
                   <span>{user.email}</span>
                 </div>
                 <div className="im-user-profile-badges">
-                  <Badge variant={isUserBlocked ? "error" : "success"}>
-                    <span className={`im-status-dot ${isUserBlocked ? "im-status-dot--blocked" : "im-status-dot--active"}`} />
-                    {isUserBlocked ? t("users.status.blocked") : t("users.status.active")}
+                  <Badge variant={isUserBlocked(user) ? "error" : "success"}>
+                    <span className={`im-status-dot ${isUserBlocked(user) ? "im-status-dot--blocked" : "im-status-dot--active"}`} />
+                    {isUserBlocked(user) ? t("users.status.blocked") : t("users.status.active")}
                   </Badge>
                   {user.role && (
                     <Badge variant={getRoleBadgeVariant(user.role)} icon={getRoleIcon(user.role)}>
