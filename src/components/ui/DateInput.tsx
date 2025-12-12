@@ -89,14 +89,16 @@ export function DateInput({
     setIsOpen(true);
   };
 
-  // Handle input blur with delay to allow calendar clicks
-  const handleInputBlur = () => {
-    // Delay to allow calendar clicks to register
-    setTimeout(() => {
-      if (containerRef.current && !containerRef.current.contains(document.activeElement)) {
-        setIsOpen(false);
-      }
-    }, 200);
+  // Handle input blur - check if focus moved outside the component
+  const handleInputBlur = (e: React.FocusEvent) => {
+    // Check if the related target (where focus is moving to) is within our container
+    const relatedTarget = e.relatedTarget as Node | null;
+    if (containerRef.current && relatedTarget && containerRef.current.contains(relatedTarget)) {
+      // Focus is moving to an element inside our component, don't close
+      return;
+    }
+    // Focus is moving outside, close the calendar
+    setIsOpen(false);
   };
 
   // Close calendar when clicking outside
@@ -163,7 +165,7 @@ export function DateInput({
           className="im-date-input-icon"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Open calendar"
-          tabIndex={-1}
+          tabIndex={0}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>

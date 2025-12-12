@@ -64,9 +64,9 @@ export function CustomCalendar({
   const [focusedDate, setFocusedDate] = useState<Date | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   
-  // Note: isRangeStart is reserved for future styling enhancements
-  // Currently not used in rendering logic
-  void isRangeStart;
+  // Apply different styling or behavior for range start vs end
+  // Currently used for passing range context to calendar
+  const isStartInput = isRangeStart;
 
   // Parse dates for comparison
   const selectedDate = value ? new Date(value) : null;
@@ -226,6 +226,7 @@ export function CustomCalendar({
       ref={calendarRef}
       role="application"
       aria-label={ariaLabel}
+      data-range-position={isStartInput ? "start" : "end"}
     >
       {/* Calendar Header */}
       <div className="im-calendar-header">
@@ -297,7 +298,12 @@ export function CustomCalendar({
               aria-label={formatDateToISO(date)}
               aria-disabled={disabled}
               aria-current={selected ? "date" : undefined}
-              tabIndex={selected || (index === firstDayOfWeek && !value) ? 0 : -1}
+              tabIndex={
+                selected ? 0 : 
+                (!value && today) ? 0 : 
+                (!value && !selectedDate && index === firstDayOfWeek) ? 0 : 
+                -1
+              }
             >
               {date.getDate()}
             </button>
