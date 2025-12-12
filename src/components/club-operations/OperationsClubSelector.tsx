@@ -63,7 +63,7 @@ export function OperationsClubSelector({
 
   const [hasInitialized, setHasInitialized] = useState(false);
   const latestSelectionRef = useRef<string>("");
-  const isMountedRef = useRef<boolean>(true);
+  const isMountedRef = useRef<boolean>(false);
 
   // Track component mount/unmount
   useEffect(() => {
@@ -113,6 +113,7 @@ export function OperationsClubSelector({
 
   // Pre-select currentClub from store if available and not disabled
   // This takes priority over auto-selection logic below
+  // Note: onChange is included in deps per React rules. The !value check prevents infinite loops.
   useEffect(() => {
     if (currentClub && !value && !disabled && filteredClubIds.has(currentClub.id)) {
       // If there's a currentClub in the store and no selection yet, use it
@@ -124,6 +125,7 @@ export function OperationsClubSelector({
   // Note: Club Admins are handled in the Operations page itself (auto-select on mount)
   // This only applies to Org Admins who have exactly one club in their organization
   // This won't run if currentClub pre-selection above already set a value
+  // Note: onChange is included in deps per React rules. The !value check prevents infinite loops.
   useEffect(() => {
     if (
       adminStatus?.adminType === "organization_admin" &&
@@ -144,6 +146,7 @@ export function OperationsClubSelector({
   }));
 
   // Clear selection if selected club is no longer in filtered list
+  // Note: onChange is included in deps per React rules. The condition check prevents infinite loops.
   useEffect(() => {
     if (value && !filteredClubs.find((club) => club.id === value)) {
       onChange("");
