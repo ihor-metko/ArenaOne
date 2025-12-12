@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button, Modal, Input, Select } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
@@ -229,11 +229,18 @@ export default function ClubAdminsTable({
   // Debounced user search
   const handleUserSearchChange = (value: string) => {
     setUserSearch(value);
-    const timer = setTimeout(() => {
-      fetchSimpleUsers(value);
-    }, 300);
-    return () => clearTimeout(timer);
   };
+
+  // Debounce user search
+  useEffect(() => {
+    if (!isAddModalOpen || addMode !== "existing") return;
+
+    const timer = setTimeout(() => {
+      fetchSimpleUsers(userSearch);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [userSearch, isAddModalOpen, addMode, fetchSimpleUsers]);
 
   // Root Admin or Organization Admin can manage club admins
   const canManageClubAdmins = isRoot || isOrgAdmin(orgId);
