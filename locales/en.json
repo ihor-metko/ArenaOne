@@ -51,7 +51,7 @@
     "draft": "Draft",
     "previous": "Previous",
     "next": "Next",
-    "clearFilters": "Clear Filters",
+    "clearFilters": "Clear filters",
     "courts": "Courts",
     "events": "Events",
     "settings": "Settings",
@@ -61,11 +61,12 @@
     "carouselSlides": "Carousel slides",
     "slide": "Slide",
     "slideOf": "Slide {current} of {total}",
-    "clearFilters": "Clear filters",
     "allStatuses": "All Statuses",
     "view": "View",
     "or": "or",
-    "totalPrice": "Total Price"
+    "totalPrice": "Total Price",
+    "remove": "Remove",
+    "never": "Never"
   },
   "home": {
     "title": "ArenaOne",
@@ -225,15 +226,6 @@
   },
   "admin": {
     "club": "Club",
-    "clubs": "Clubs",
-    "dashboard": {
-      "title": "Admin Dashboard",
-      "subtitle": "Manage your platform",
-      "organizationSubtitle": "Manage your organizations and clubs",
-      "clubSubtitle": "Manage your club",
-      "welcome": "Welcome to Admin Dashboard",
-      "welcomeDescription": "Use the sidebar navigation to access different management features."
-    },
     "clubs": {
       "title": "Admin - Clubs",
       "subtitle": "Manage all padel clubs",
@@ -407,6 +399,14 @@
           "multi": "Multi-sport"
         }
       }
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "subtitle": "Manage your platform",
+      "organizationSubtitle": "Manage your organizations and clubs",
+      "clubSubtitle": "Manage your club",
+      "welcome": "Welcome to Admin Dashboard",
+      "welcomeDescription": "Use the sidebar navigation to access different management features."
     },
     "coaches": {
       "title": "Admin - Coaches",
@@ -1142,7 +1142,8 @@
       "rootAdmin": "Root Admin",
       "organizationAdmin": "Organization Admin",
       "clubAdmin": "Club Admin",
-      "user": "User"
+      "user": "User",
+      "member": "Member"
     },
     "roleDescriptions": {
       "organizationAdmin": "Can manage organization and its clubs",
@@ -1197,14 +1198,7 @@
     "deleteWarning": "This action cannot be undone!",
     "deleteConfirmMessage": "Are you sure you want to delete {name}? All their data will be permanently removed.",
     "userDeleted": "User deleted successfully",
-    "failedToDeleteUser": "Failed to delete user",
-    "roles": {
-      "rootAdmin": "Root Admin",
-      "organizationAdmin": "Organization Admin",
-      "clubAdmin": "Club Admin",
-      "user": "User",
-      "member": "Member"
-    }
+    "failedToDeleteUser": "Failed to delete user"
   },
   "userDetail": {
     "breadcrumb": "User Details",
@@ -1301,7 +1295,18 @@
     "alreadyClubAdmin": "Already a club admin of this club",
     "assign": "Assign",
     "removeConfirm": "Are you sure you want to remove {name} as a Club Admin of {club}?",
-    "cannotUndoRemoval": "This action cannot be undone."
+    "cannotUndoRemoval": "This action cannot be undone.",
+    "addAdmin": "Add Club Admin",
+    "adminAdded": "Club admin added successfully",
+    "adminUpdated": "Club admin updated successfully",
+    "adminRemoved": "Club admin removed successfully",
+    "editAdmin": "Edit Club Admin",
+    "editDescription": "Reassign {name} to a different club",
+    "selectMembership": "Select Membership",
+    "reassignToClub": "Reassign to Club",
+    "inviteUser": "Invite User",
+    "lastLogin": "Last Login",
+    "noAdmins": "No club admins assigned yet."
   },
   "orgDetail": {
     "title": "Organization Details",
@@ -1483,5 +1488,26 @@
     "viewAll": "View All Activity",
     "showMore": "Show {count} more activities",
     "by": "by"
+  },
+  "orgAdmins": {
+    "title": "Organization Admins",
+    "addAdmin": "Add Admin",
+    "removeAdmin": "Remove Admin",
+    "changeOwner": "Change Owner",
+    "owner": "Owner",
+    "orgAdmin": "Organization Admin",
+    "role": "Role",
+    "lastLogin": "Last Login",
+    "noAdmins": "No organization admins assigned yet.",
+    "existingUser": "Existing User",
+    "newUser": "New User",
+    "searchUsers": "Search Users",
+    "searchUsersPlaceholder": "Search by name or email...",
+    "noUsersFound": "No users found.",
+    "adminAdded": "Admin added successfully",
+    "adminRemoved": "Admin removed successfully",
+    "ownerChanged": "Owner changed successfully",
+    "removeConfirm": "Are you sure you want to remove {name} as an Organization Admin?",
+    "changeOwnerDescription": "Select a new primary owner for this organization. The current owner will become a regular organization admin."
   }
 }
