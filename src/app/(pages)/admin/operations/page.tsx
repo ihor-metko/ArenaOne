@@ -47,7 +47,7 @@ export default function OperationsPage() {
   const user = useUserStore((state) => state.user);
 
   // Club and courts stores
-  const { clubsById, ensureClubById, loading: loadingClub } = useClubStore();
+  const { clubsById, clubs, ensureClubById, loading: loadingClub } = useClubStore();
   const { courts, fetchCourtsIfNeeded, loading: loadingCourts } = useCourtStore();
 
   // Booking store
@@ -97,26 +97,50 @@ export default function OperationsPage() {
     if (adminStatus.adminType === "club_admin" && adminStatus.assignedClub) {
       // For Club Admin, validate URL clubId matches their assigned club
       if (urlClubId && urlClubId !== adminStatus.assignedClub.id) {
-        // URL clubId doesn't match - redirect to 403 or ignore
+        // URL clubId doesn't match - enforce security by redirecting to correct club
         console.warn("Club Admin attempted to access unauthorized club");
-        // Use their assigned club instead
+        router.replace("/admin/operations?clubId=" + adminStatus.assignedClub.id);
       }
       setSelectedClubId(adminStatus.assignedClub.id);
     } else if (urlClubId) {
-      // For Org Admin or Root Admin, validate they have access to the URL clubId
-      // We'll validate access when the club is loaded
-      // Root admins have access to all clubs
+      // For Root Admin, they have access to all clubs
       if (user?.isRoot) {
         setSelectedClubId(urlClubId);
       } else if (adminStatus.adminType === "organization_admin") {
-        // For Org Admin, we'll validate after clubs are loaded
-        // For now, set it and let the selector handle validation
-        setSelectedClubId(urlClubId);
+        // For Org Admin, we need to validate they have access to this club
+        // We'll defer selection until we can validate against loaded clubs
+        // Store URL clubId temporarily to validate after clubs load
+        // This prevents unauthorized access before validation
       }
     }
     // For Organization Admin and Root Admin without URL clubId: do NOT auto-select
     // They must explicitly choose a club via the selector
   }, [isLoadingUser, isLoggedIn, adminStatus, router, searchParams, user]);
+
+  // Validate and set URL clubId for Org Admin after clubs are loaded
+  useEffect(() => {
+    const urlClubId = searchParams.get("clubId");
+    
+    if (
+      urlClubId &&
+      !selectedClubId &&
+      adminStatus?.adminType === "organization_admin" &&
+      clubs.length > 0
+    ) {
+      // Validate that the URL club belongs to one of the Org Admin's managed organizations
+      const urlClub = clubs.find((c) => c.id === urlClubId);
+      const managedOrgIds = new Set(adminStatus.managedIds);
+      
+      if (urlClub && managedOrgIds.has(urlClub.organizationId)) {
+        // Valid club - set it
+        setSelectedClubId(urlClubId);
+      } else {
+        // Invalid club - clear URL parameter and show error
+        console.warn("Organization Admin attempted to access unauthorized club");
+        router.replace("/admin/operations");
+      }
+    }
+  }, [searchParams, selectedClubId, adminStatus, clubs, router]);
 
   // Load club data only when a club is selected
   useEffect(() => {

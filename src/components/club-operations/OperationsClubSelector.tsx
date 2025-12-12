@@ -107,13 +107,10 @@ export function OperationsClubSelector({
   }, [adminStatus, filteredClubs, value, onChange, disabled]);
 
   // Convert clubs to select options
-  const options: SelectOption[] = [
-    { value: "", label: placeholder },
-    ...filteredClubs.map((club) => ({
-      value: club.id,
-      label: club.name,
-    })),
-  ];
+  const options: SelectOption[] = filteredClubs.map((club) => ({
+    value: club.id,
+    label: club.name,
+  }));
 
   // Clear selection if selected club is no longer in filtered list
   useEffect(() => {
@@ -122,16 +119,12 @@ export function OperationsClubSelector({
     }
   }, [value, filteredClubs, onChange]);
 
-  const handleChange = (newValue: string) => {
-    onChange(newValue);
-  };
-
   return (
     <Select
       label={label}
       options={options}
       value={value}
-      onChange={handleChange}
+      onChange={onChange}
       placeholder={placeholder}
       disabled={disabled || loading || filteredClubs.length === 0}
       className={className}
