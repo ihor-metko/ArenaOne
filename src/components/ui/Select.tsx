@@ -12,13 +12,40 @@ export interface SelectOption {
   icon?: ReactNode;
 }
 
+/**
+ * Select Component Props
+ * 
+ * **IMPORTANT**: This is a controlled component. You MUST:
+ * 1. Provide a `value` prop (the current selected value)
+ * 2. Provide an `onChange` handler that updates the parent state
+ * 
+ * @example
+ * ```tsx
+ * function MyForm() {
+ *   const [selectedValue, setSelectedValue] = useState("");
+ *   
+ *   return (
+ *     <Select
+ *       options={[
+ *         { value: "1", label: "Option 1" },
+ *         { value: "2", label: "Option 2" },
+ *       ]}
+ *       value={selectedValue}
+ *       onChange={setSelectedValue}  // Update parent state
+ *     />
+ *   );
+ * }
+ * ```
+ */
 interface SelectProps {
   id?: string;
   label?: string;
   className?: string;
   options: SelectOption[];
   placeholder?: string;
+  /** Current selected value - REQUIRED for controlled behavior */
   value?: string;
+  /** Callback when value changes - REQUIRED for controlled behavior */
   onChange?: (value: string) => void;
   disabled?: boolean;
   required?: boolean;
@@ -49,6 +76,15 @@ export function Select({
   const listboxId = `${selectId}-listbox`;
 
   const selectedOption = options.find((o) => o.value === value);
+
+  // Development-only warning for missing onChange handler
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development" && !onChange) {
+      console.warn(
+        "Select component: 'onChange' prop is missing. This is a controlled component and requires an onChange handler to update the parent state. Selection will not work without it."
+      );
+    }
+  }, [onChange]);
 
   // Calculate dropdown position
   const dropdownPosition = useDropdownPosition({

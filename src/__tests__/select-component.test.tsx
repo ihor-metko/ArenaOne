@@ -2,6 +2,9 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Select } from "@/components/ui/Select";
 import { useState } from "react";
 
+// Mock scrollIntoView for jsdom
+Element.prototype.scrollIntoView = jest.fn();
+
 // Mock Portal to render in the same container
 jest.mock("@/components/ui/Portal", () => ({
   Portal: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -39,6 +42,14 @@ function TestSelectComponent() {
 }
 
 describe("Select Component Value Binding", () => {
+  beforeEach(() => {
+    jest.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it("should display placeholder when no value is selected", () => {
     render(<TestSelectComponent />);
     expect(screen.getByText("Select an option")).toBeInTheDocument();
@@ -134,5 +145,28 @@ describe("Select Component Value Binding", () => {
 
     // Verify onChange was called with correct value
     expect(mockOnChange).toHaveBeenCalledWith("option1");
+  });
+
+  it("should warn in development when onChange is missing", () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
+
+    const consoleWarn = jest.spyOn(console, "warn");
+
+    render(
+      <Select
+        options={[
+          { value: "option1", label: "Option 1" },
+        ]}
+        value=""
+        placeholder="Select"
+      />
+    );
+
+    expect(consoleWarn).toHaveBeenCalledWith(
+      expect.stringContaining("'onChange' prop is missing")
+    );
+
+    process.env.NODE_ENV = originalEnv;
   });
 });
