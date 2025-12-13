@@ -6,6 +6,8 @@
   background-color: var(--im-card-bg);
   border: 1px solid var(--im-border);
   border-radius: var(--border-radius, 0.5rem);
+  padding: 0.25rem 1rem !important;
+  margin-top: 1rem;
 }
 
 .im-pagination-info {
@@ -119,7 +121,7 @@
   .im-pagination-size {
     @apply justify-center;
   }
-  
+
   .im-pagination-pages {
     @apply flex-wrap justify-center;
   }
