@@ -426,7 +426,7 @@ export default function OrganizationDetailPage() {
 
 
 
-  // If initial load is happening and we have critical error, show error state
+  // Show loading spinner while checking authentication
   if (status === "loading") {
     return (
       <main className="im-org-detail-page">

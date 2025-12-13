@@ -468,8 +468,6 @@
 
 .im-club-preview-skeleton-item {
   @apply flex items-center justify-between p-4 rounded-lg;
-  background-color: var(--im-skeleton-base-color);
-  opacity: 0.5;
 }
 
 .im-club-preview-skeleton-info {
@@ -484,8 +482,6 @@
 
 .im-bookings-summary-skeleton-item {
   @apply text-center p-4 rounded-lg;
-  background-color: var(--im-skeleton-base-color);
-  opacity: 0.3;
 }
 
 .im-bookings-preview-skeleton-list {
@@ -494,8 +490,6 @@
 
 .im-booking-preview-skeleton-item {
   @apply flex items-center gap-4 p-4 rounded-lg;
-  background-color: var(--im-skeleton-base-color);
-  opacity: 0.5;
 }
 
 .im-booking-preview-skeleton-info {
