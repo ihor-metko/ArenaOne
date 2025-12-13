@@ -563,8 +563,11 @@ export function AdminQuickBookingWizard({
       let userId = stepUser.selectedUser?.id;
       
       if (stepUser.isGuestBooking && stepUser.guestName) {
-        // Create a guest user with a generated email
-        const guestEmail = `guest-${Date.now()}-${Math.random().toString(36).substring(7)}@${GUEST_EMAIL_DOMAIN}`;
+        // Create a guest user with a generated email using secure random values
+        const randomValues = new Uint32Array(2);
+        crypto.getRandomValues(randomValues);
+        const randomId = Array.from(randomValues, (num) => num.toString(36)).join('');
+        const guestEmail = `guest-${Date.now()}-${randomId}@${GUEST_EMAIL_DOMAIN}`;
         const createUserResponse = await fetch("/api/admin/users/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

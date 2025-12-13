@@ -63,7 +63,7 @@ export function Step5User({
             <h4 className="rsp-admin-wizard-form-title">
               {t("adminWizard.guestBookingDetails")}
             </h4>
-            <p className="rsp-admin-wizard-step-description">
+            <p id="guest-booking-description" className="rsp-admin-wizard-step-description">
               {t("adminWizard.guestBookingDescription")}
             </p>
             <Input
@@ -74,6 +74,8 @@ export function Step5User({
               onChange={(e) => onGuestNameChange(e.target.value)}
               placeholder={t("adminWizard.enterGuestName")}
               required
+              aria-describedby="guest-booking-description"
+              aria-required="true"
             />
             <div className="rsp-admin-wizard-form-actions">
               <Button

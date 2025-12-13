@@ -142,39 +142,44 @@ export interface WizardStepConfig {
   shouldShow: (adminType: AdminType, predefinedData?: PredefinedData) => boolean;
 }
 
+/**
+ * Admin wizard steps in order
+ * Flow: Organization → Club → DateTime → Court → User → Confirmation
+ * This order allows admins to check availability before selecting users
+ */
 export const ADMIN_WIZARD_STEPS: WizardStepConfig[] = [
   {
     id: 1,
-    label: "organization",
+    label: "organization", // Step 1: Select Organization
     shouldShow: (adminType, predefinedData) => 
       adminType === "root_admin" && !predefinedData?.organizationId,
   },
   {
     id: 2,
-    label: "club",
+    label: "club", // Step 2: Select Club
     shouldShow: (adminType, predefinedData) => 
       (adminType === "root_admin" || adminType === "organization_admin") && 
       !predefinedData?.clubId,
   },
   {
     id: 3,
-    label: "dateTime",
+    label: "dateTime", // Step 3: Select Date & Time (check availability first)
     shouldShow: (_, predefinedData) => 
       !predefinedData?.date || !predefinedData?.startTime || !predefinedData?.duration,
   },
   {
     id: 4,
-    label: "selectCourt",
+    label: "selectCourt", // Step 4: Select Court (from available courts)
     shouldShow: (_, predefinedData) => !predefinedData?.courtId,
   },
   {
     id: 5,
-    label: "user",
+    label: "user", // Step 5: Select/Create User or Guest (after confirming availability)
     shouldShow: (_, predefinedData) => !predefinedData?.userId,
   },
   {
     id: 6,
-    label: "confirmation",
+    label: "confirmation", // Step 6: Review and Confirm
     shouldShow: () => true, // Always show confirmation
   },
 ];
