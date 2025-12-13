@@ -44,7 +44,7 @@ export default function AdminClubsPage() {
   const [clubs, setClubs] = useState<ClubWithCounts[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   // Get admin status from user store
   const adminStatus = useUserStore((state) => state.adminStatus);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
@@ -167,11 +167,9 @@ export default function AdminClubsPage() {
           <ListToolbar
             showReset
             actionButton={
-              canCreate ? (
-                <IMLink href="/admin/clubs/new" asButton variant="primary">
-                  {t("admin.clubs.createClub")}
-                </IMLink>
-              ) : undefined
+              <IMLink href="/admin/clubs/new" asButton variant="primary">
+                {t("admin.clubs.createClub")}
+              </IMLink>
             }
           >
             <ListSearch
