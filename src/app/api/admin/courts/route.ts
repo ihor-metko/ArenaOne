@@ -18,7 +18,10 @@ import { mockGetCourts } from "@/services/mockApiHandlers";
  * - search: Search by court name
  * - clubId: Filter by club ID
  * - status: Filter by status (active/inactive/all)
- * - sortBy: Sort field (name/bookings)
+ * - sportType: Filter by sport type (PADEL/TENNIS/SQUASH/etc)
+ * - surfaceType: Filter by surface type (Hard/Clay/Grass/etc)
+ * - indoor: Filter by location (indoor/outdoor/all)
+ * - sortBy: Sort field (name/sportType/bookings/createdAt)
  * - sortOrder: Sort order (asc/desc)
  * - page: Page number (default: 1)
  * - limit: Items per page (default: 20)
@@ -37,6 +40,8 @@ export async function GET(request: Request) {
     const clubId = searchParams.get("clubId") || "";
     const status = searchParams.get("status") || "all";
     const sportType = searchParams.get("sportType") || "";
+    const surfaceType = searchParams.get("surfaceType") || "";
+    const indoorFilter = searchParams.get("indoor") || "all";
     const sortBy = searchParams.get("sortBy") || "name";
     const sortOrder = searchParams.get("sortOrder") || "asc";
     const page = parseInt(searchParams.get("page") || "1", 10);
@@ -53,6 +58,8 @@ export async function GET(request: Request) {
             clubId,
             status,
             sportType,
+            surfaceType,
+            indoor: indoorFilter,
             sortBy,
             sortOrder,
             page,
@@ -110,11 +117,29 @@ export async function GET(request: Request) {
       whereClause.sportType = sportType;
     }
 
+    // Add surface type filter (exact match)
+    if (surfaceType) {
+      whereClause.surface = {
+        equals: surfaceType,
+        mode: "insensitive",
+      };
+    }
+
+    // Add indoor/outdoor filter
+    if (indoorFilter === "indoor") {
+      whereClause.indoor = true;
+    } else if (indoorFilter === "outdoor") {
+      whereClause.indoor = false;
+    }
+    // "all" shows both indoor and outdoor
+
     // Build orderBy clause
     let orderBy: Prisma.CourtOrderByWithRelationInput | Prisma.CourtOrderByWithRelationInput[] = { createdAt: "desc" };
     
     if (sortBy === "name") {
       orderBy = { name: sortOrder as "asc" | "desc" };
+    } else if (sortBy === "sportType") {
+      orderBy = { sportType: sortOrder as "asc" | "desc" };
     } else if (sortBy === "bookings") {
       // For sorting by bookings count, we need to use a different approach
       // We'll fetch all matching courts and sort in-memory
