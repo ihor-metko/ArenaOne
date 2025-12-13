@@ -1,5 +1,11 @@
 @reference "tailwindcss";
 
+/* Override modal width for booking detail */
+.rsp-modal:has(.im-booking-detail) {
+  max-width: 56rem; /* 896px - wider for detailed content */
+  padding: 0; /* Remove padding to use custom sections */
+}
+
 /* Booking Detail Modal Styles */
 .im-booking-detail {
   display: flex;
@@ -133,7 +139,12 @@
 }
 
 /* Mobile Responsive */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .rsp-modal:has(.im-booking-detail) {
+    max-width: 95vw;
+    margin: 1rem;
+  }
+
   .im-booking-detail-header {
     flex-direction: column;
     align-items: flex-start;
