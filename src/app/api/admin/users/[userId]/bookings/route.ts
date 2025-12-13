@@ -4,6 +4,7 @@ import {
   requireUserViewPermission,
   UserViewPermission,
 } from "@/lib/userPermissions";
+import { calculateBookingStatus } from "@/utils/bookingStatus";
 
 interface RouteParams {
   params: Promise<{ userId: string }>;
@@ -138,8 +139,25 @@ export async function GET(request: Request, { params }: RouteParams) {
       where: whereClause,
     });
 
+    // Transform bookings with dynamic status calculation
+    const bookingsWithStatus = bookings.map((booking) => {
+      const displayStatus = calculateBookingStatus(
+        booking.start,
+        booking.end,
+        booking.status as any
+      );
+
+      return {
+        ...booking,
+        status: displayStatus,
+        start: booking.start.toISOString(),
+        end: booking.end.toISOString(),
+        createdAt: booking.createdAt.toISOString(),
+      };
+    });
+
     return NextResponse.json({
-      bookings,
+      bookings: bookingsWithStatus,
       totalCount,
       scope: effectiveScope,
       limit,
