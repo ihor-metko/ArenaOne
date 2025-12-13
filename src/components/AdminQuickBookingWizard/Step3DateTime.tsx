@@ -11,17 +11,17 @@ import {
 
 const TIME_OPTIONS = generateTimeOptions();
 
-interface Step4DateTimeProps {
+interface Step3DateTimeProps {
   data: WizardStepDateTime;
   onChange: (data: Partial<WizardStepDateTime>) => void;
   isLoading?: boolean;
 }
 
-export function Step4DateTime({
+export function Step3DateTime({
   data,
   onChange,
   isLoading = false,
-}: Step4DateTimeProps) {
+}: Step3DateTimeProps) {
   const t = useTranslations();
 
   return (

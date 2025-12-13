@@ -4,29 +4,33 @@ import { useTranslations } from "next-intl";
 import { Select, Input, Button } from "@/components/ui";
 import type { WizardUser, WizardStepUser } from "./types";
 
-interface Step3UserProps {
+interface Step5UserProps {
   data: WizardStepUser;
   users: WizardUser[];
   isLoading: boolean;
   error: string | null;
   onSelect: (user: WizardUser) => void;
   onToggleCreateNew: () => void;
+  onToggleGuest: () => void;
   onNewUserChange: (field: "name" | "email", value: string) => void;
+  onGuestNameChange: (name: string) => void;
   onCreateUser: () => void;
   isCreatingUser: boolean;
 }
 
-export function Step3User({
+export function Step5User({
   data,
   users,
   isLoading,
   error,
   onSelect,
   onToggleCreateNew,
+  onToggleGuest,
   onNewUserChange,
+  onGuestNameChange,
   onCreateUser,
   isCreatingUser,
-}: Step3UserProps) {
+}: Step5UserProps) {
   const t = useTranslations();
 
   const handleUserChange = (userId: string) => {
@@ -54,7 +58,35 @@ export function Step3User({
           </div>
         ) : null}
 
-        {!data.isCreatingNewUser ? (
+        {data.isGuestBooking ? (
+          <div className="rsp-admin-wizard-create-user-form">
+            <h4 className="rsp-admin-wizard-form-title">
+              {t("adminWizard.guestBookingDetails")}
+            </h4>
+            <p id="guest-booking-description" className="rsp-admin-wizard-step-description">
+              {t("adminWizard.guestBookingDescription")}
+            </p>
+            <Input
+              id="guest-name"
+              label={t("common.name")}
+              type="text"
+              value={data.guestName}
+              onChange={(e) => onGuestNameChange(e.target.value)}
+              placeholder={t("adminWizard.enterGuestName")}
+              required
+              aria-describedby="guest-booking-description"
+              aria-required="true"
+            />
+            <div className="rsp-admin-wizard-form-actions">
+              <Button
+                onClick={onToggleGuest}
+                variant="outline"
+              >
+                {t("common.back")}
+              </Button>
+            </div>
+          </div>
+        ) : !data.isCreatingNewUser ? (
           <>
             {isLoading ? (
               <div className="rsp-admin-wizard-loading">
@@ -64,9 +96,14 @@ export function Step3User({
             ) : users.length === 0 ? (
               <div className="rsp-admin-wizard-empty">
                 <p>{t("adminWizard.noUsersAvailable")}</p>
-                <Button onClick={onToggleCreateNew} variant="primary">
-                  {t("adminWizard.createNewUser")}
-                </Button>
+                <div className="rsp-admin-wizard-form-actions">
+                  <Button onClick={onToggleCreateNew} variant="primary">
+                    {t("adminWizard.createNewUser")}
+                  </Button>
+                  <Button onClick={onToggleGuest} variant="outline">
+                    {t("adminWizard.bookForGuest")}
+                  </Button>
+                </div>
               </div>
             ) : (
               <>
@@ -75,9 +112,9 @@ export function Step3User({
                   label={t("adminWizard.existingUser")}
                   options={users.map((user) => ({
                     value: user.id,
-                    label: user.name
+                    label: user.name && user.email
                       ? `${user.name} (${user.email})`
-                      : user.email,
+                      : user.email || user.name || user.id,
                   }))}
                   value={data.selectedUserId || ""}
                   onChange={handleUserChange}
@@ -86,13 +123,22 @@ export function Step3User({
                 <div className="rsp-admin-wizard-divider">
                   <span>{t("common.or")}</span>
                 </div>
-                <Button
-                  onClick={onToggleCreateNew}
-                  variant="outline"
-                  className="rsp-admin-wizard-create-user-btn"
-                >
-                  {t("adminWizard.createNewUser")}
-                </Button>
+                <div className="rsp-admin-wizard-form-actions">
+                  <Button
+                    onClick={onToggleCreateNew}
+                    variant="outline"
+                    className="rsp-admin-wizard-create-user-btn"
+                  >
+                    {t("adminWizard.createNewUser")}
+                  </Button>
+                  <Button
+                    onClick={onToggleGuest}
+                    variant="outline"
+                    className="rsp-admin-wizard-create-user-btn"
+                  >
+                    {t("adminWizard.bookForGuest")}
+                  </Button>
+                </div>
               </>
             )}
           </>

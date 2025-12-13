@@ -5,7 +5,7 @@ import { Card, Button } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import type { WizardCourt } from "./types";
 
-interface Step5CourtsProps {
+interface Step4CourtsProps {
   courts: WizardCourt[];
   selectedCourtId: string | null;
   onSelectCourt: (court: WizardCourt) => void;
@@ -13,13 +13,13 @@ interface Step5CourtsProps {
   error: string | null;
 }
 
-export function Step5Courts({
+export function Step4Courts({
   courts,
   selectedCourtId,
   onSelectCourt,
   isLoading,
   error,
-}: Step5CourtsProps) {
+}: Step4CourtsProps) {
   const t = useTranslations();
 
   return (
