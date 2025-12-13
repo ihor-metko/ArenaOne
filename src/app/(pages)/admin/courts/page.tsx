@@ -11,7 +11,7 @@ import type { AdminType } from "@/app/api/me/admin-status/route";
 import { useUserStore } from "@/stores/useUserStore";
 import { SPORT_TYPE_OPTIONS } from "@/constants/sports";
 import { useListController } from "@/hooks";
-import { 
+import {
   ListControllerProvider,
   ListToolbar,
   ListSearch,
@@ -324,11 +324,10 @@ export default function AdminCourtsPage() {
       key: 'status',
       header: t('common.status'),
       render: (court) => (
-        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-          court.isActive 
-            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
-        }`}>
+        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${court.isActive
+          ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+          : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
+          }`}>
           {court.isActive ? t('admin.courts.active') : t('admin.courts.inactive')}
         </span>
       ),
@@ -423,60 +422,69 @@ export default function AdminCourtsPage() {
               ) : undefined
             }
           >
-            <ListSearch 
-              placeholder={t("common.search")}
-              filterKey="searchQuery"
-            />
-            
-            {showOrganizationFilter && (
-              <OrgSelector 
-                filterKey="organizationFilter"
-                label={t("common.organization")}
-                placeholder={t("admin.courts.allOrganizations")}
+            <div className="full-row flex w-full gap-4">
+              <ListSearch
+                className="flex-1"
+                placeholder={t("common.search")}
+                filterKey="searchQuery"
               />
-            )}
-            
-            {showClubFilter && (
-              <ClubSelector 
-                filterKey="clubFilter"
-                orgFilterKey="organizationFilter"
-                label={t("common.club")}
-                placeholder={t("admin.courts.allClubs")}
+            </div>
+
+            <div className="full-row flex w-full gap-4 items-end">
+              {showOrganizationFilter && (
+                <OrgSelector
+                  filterKey="organizationFilter"
+                  label={t("common.organization")}
+                  placeholder={t("admin.courts.allOrganizations")}
+                />
+              )}
+
+              {showClubFilter && (
+                <ClubSelector
+                  filterKey="clubFilter"
+                  orgFilterKey="organizationFilter"
+                  label={t("common.club")}
+                  placeholder={t("admin.courts.allClubs")}
+                />
+              )}
+
+              <StatusFilter
+                filterKey="statusFilter"
+                label={t("common.status")}
+                placeholder={t("admin.courts.allStatuses")}
+                statuses={statusOptions}
               />
-            )}
-            
-            <StatusFilter
-              filterKey="statusFilter"
-              label={t("common.status")}
-              placeholder={t("admin.courts.allStatuses")}
-              statuses={statusOptions}
-            />
+            </div>
 
-            <StatusFilter
-              filterKey="sportTypeFilter"
-              label={t("admin.courts.sport")}
-              placeholder={t("admin.courts.allSports")}
-              statuses={sportTypeOptions}
-            />
+            <div className="full-row flex w-full gap-4 items-end">
+              <StatusFilter
+                filterKey="sportTypeFilter"
+                label={t("admin.courts.sport")}
+                placeholder={t("admin.courts.allSports")}
+                statuses={sportTypeOptions}
+              />
 
-            <StatusFilter
-              filterKey="surfaceTypeFilter"
-              label={t("admin.courts.surface")}
-              placeholder={t("admin.courts.allSurfaces")}
-              statuses={surfaceTypeOptions}
-            />
+              <StatusFilter
+                filterKey="surfaceTypeFilter"
+                label={t("admin.courts.surface")}
+                placeholder={t("admin.courts.allSurfaces")}
+                statuses={surfaceTypeOptions}
+              />
+            </div>
 
-            <StatusFilter
-              filterKey="indoorFilter"
-              label={t("admin.courts.courtLocation")}
-              placeholder={t("admin.courts.allLocations")}
-              statuses={indoorOptions}
-            />
+            <div className="full-row flex w-full gap-4 items-end">
+              <StatusFilter
+                filterKey="indoorFilter"
+                label={t("admin.courts.courtLocation")}
+                placeholder={t("admin.courts.allLocations")}
+                statuses={indoorOptions}
+              />
 
-            <SortSelect
-              label={t("admin.courts.sortBy")}
-              options={sortOptions}
-            />
+              <SortSelect
+                label={t("admin.courts.sortBy")}
+                options={sortOptions}
+              />
+            </div>
           </ListToolbar>
 
           {error && (
@@ -519,54 +527,54 @@ export default function AdminCourtsPage() {
           )}
         </section>
 
-      {/* Edit Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title={t("admin.courts.editCourt")}
-      >
-        <CourtForm
-          initialValues={
-            editingCourt
-              ? {
-                name: editingCourt.name,
-                slug: editingCourt.slug || "",
-                type: editingCourt.type || "",
-                surface: editingCourt.surface || "",
-                indoor: editingCourt.indoor,
-                defaultPriceCents: editingCourt.defaultPriceCents,
-              }
-              : undefined
-          }
-          onSubmit={handleSubmit}
-          onCancel={handleCloseModal}
-          isSubmitting={submitting}
-        />
-      </Modal>
+        {/* Edit Modal */}
+        <Modal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          title={t("admin.courts.editCourt")}
+        >
+          <CourtForm
+            initialValues={
+              editingCourt
+                ? {
+                  name: editingCourt.name,
+                  slug: editingCourt.slug || "",
+                  type: editingCourt.type || "",
+                  surface: editingCourt.surface || "",
+                  indoor: editingCourt.indoor,
+                  defaultPriceCents: editingCourt.defaultPriceCents,
+                }
+                : undefined
+            }
+            onSubmit={handleSubmit}
+            onCancel={handleCloseModal}
+            isSubmitting={submitting}
+          />
+        </Modal>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        title={t("admin.courts.deleteCourt")}
-      >
-        <p className="mb-4">
-          {t("admin.courts.deleteConfirm", { name: deletingCourt?.name || "" })}
-        </p>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={handleCloseDeleteModal}>
-            {t("common.cancel")}
-          </Button>
-          <Button
-            onClick={handleDelete}
-            disabled={submitting}
-            className="bg-red-500 hover:bg-red-600"
-          >
-            {submitting ? t("common.processing") : t("common.delete")}
-          </Button>
-        </div>
-      </Modal>
-    </main>
+        {/* Delete Confirmation Modal */}
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={handleCloseDeleteModal}
+          title={t("admin.courts.deleteCourt")}
+        >
+          <p className="mb-4">
+            {t("admin.courts.deleteConfirm", { name: deletingCourt?.name || "" })}
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleCloseDeleteModal}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={handleDelete}
+              disabled={submitting}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              {submitting ? t("common.processing") : t("common.delete")}
+            </Button>
+          </div>
+        </Modal>
+      </main>
     </ListControllerProvider>
   );
 }
