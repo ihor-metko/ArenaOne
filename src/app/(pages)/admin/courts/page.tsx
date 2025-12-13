@@ -88,6 +88,7 @@ export default function AdminCourtsPage() {
   });
 
   // Use list controller hook for persistent filters
+  // Start with base defaults (will be updated with pre-selected filters after mount)
   const controller = useListController<CourtFilters>({
     entityKey: "courts",
     defaultFilters: {
@@ -104,6 +105,50 @@ export default function AdminCourtsPage() {
     defaultPage: 1,
     defaultPageSize: 25,
   });
+
+  // Track if pre-selected filters have been applied
+  const [preSelectedFiltersApplied, setPreSelectedFiltersApplied] = useState(false);
+
+  // Apply pre-selected filters on first load (when no filters are set and admin status is available)
+  useEffect(() => {
+    if (!adminStatus || isLoadingStore || preSelectedFiltersApplied) return;
+
+    // Check if filters are already set (from localStorage or user interaction)
+    const hasExistingFilters = 
+      controller.filters.statusFilter !== "" ||
+      controller.filters.surfaceTypeFilter !== "" ||
+      controller.filters.organizationFilter !== "" ||
+      controller.filters.clubFilter !== "";
+
+    // Only apply pre-selected filters if no filters are currently set
+    if (!hasExistingFilters && controller.isLoaded) {
+      const preSelectedFilters: Partial<CourtFilters> = {
+        statusFilter: "active", // Pre-selected: Available/Active courts
+        surfaceTypeFilter: "Hard", // Pre-selected: Hard court type
+      };
+
+      // Pre-select organization/club based on admin role
+      if (adminStatus.adminType === "club_admin") {
+        // Club Admin: Pre-select their club
+        if (adminStatus.managedIds.length > 0) {
+          preSelectedFilters.clubFilter = adminStatus.managedIds[0];
+        }
+      } else if (adminStatus.adminType === "organization_admin") {
+        // Organization Admin: Pre-select their first organization
+        if (adminStatus.managedIds.length > 0) {
+          preSelectedFilters.organizationFilter = adminStatus.managedIds[0];
+        }
+      }
+      // Root Admin: No pre-selection (sees all)
+
+      controller.setFilters(preSelectedFilters);
+      setPreSelectedFiltersApplied(true);
+    } else if (hasExistingFilters) {
+      // Mark as applied if filters already exist
+      setPreSelectedFiltersApplied(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminStatus, isLoadingStore, preSelectedFiltersApplied]);
 
   // Admin status is loaded from store via UserStoreInitializer
   const fetchCourts = useCallback(async () => {
