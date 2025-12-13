@@ -23,26 +23,27 @@ The wizard dynamically adapts its steps based on:
    - Shows only managed clubs for OrgAdmin
    - Fetches clubs from `/api/admin/clubs`
 
-3. **Select/Create User** (All admins, skipped if predefined)
-   - Choose from existing users or create a new user inline
-   - Users can be created without passwords - they'll set up their account later
-   - Fetches users from `/api/admin/users`
-   - Creates users via `/api/admin/users/create`
-
-4. **Select Date & Time** (All admins, skipped if predefined)
+3. **Select Date & Time** (All admins, skipped if predefined)
    - Standard date, time, and duration selection
    - Validates against business hours (9:00 - 22:00)
    - Duration options: 30, 60, 90, 120 minutes
 
-5. **Select Court** (All admins, skipped if predefined)
+4. **Select Court** (All admins, skipped if predefined)
    - Shows available courts for the selected club and time slot
    - Displays court details (type, surface, indoor/outdoor)
    - Shows resolved pricing based on time-based pricing rules
    - Fetches courts from `/api/clubs/{clubId}/available-courts`
 
+5. **Select/Create User** (All admins, skipped if predefined)
+   - Choose from existing users or create a new user inline
+   - Users can be created without passwords - they'll set up their account later
+   - **Guest Booking**: Book for a guest by entering their name only (no account created)
+   - Fetches users from `/api/admin/users`
+   - Creates users via `/api/admin/users/create`
+
 6. **Confirmation** (Always shown)
    - Review all booking details
-   - Shows organization, club, user, date/time, court, and total price
+   - Shows organization, club, user/guest, date/time, court, and total price
    - No payment required - admin bookings are automatically set to "reserved" status
 
 ### Role-Based Access Control
@@ -132,9 +133,9 @@ AdminQuickBookingWizard/
 ├── AdminQuickBookingWizard.css    # Styles
 ├── Step1Organization.tsx          # Organization selection
 ├── Step2Club.tsx                  # Club selection
-├── Step3User.tsx                  # User selection/creation
-├── Step4DateTime.tsx              # Date and time selection
-├── Step5Courts.tsx                # Court selection
+├── Step3DateTime.tsx              # Date and time selection
+├── Step4Courts.tsx                # Court selection
+├── Step5User.tsx                  # User selection/creation/guest booking
 ├── Step6Confirmation.tsx          # Review and confirm
 ├── types.ts                       # TypeScript types and utilities
 └── index.ts                       # Exports

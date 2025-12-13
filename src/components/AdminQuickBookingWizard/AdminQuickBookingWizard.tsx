@@ -30,6 +30,7 @@ import {
 import "./AdminQuickBookingWizard.css";
 
 const MINUTES_PER_HOUR = 60;
+const GUEST_EMAIL_DOMAIN = "guest.arenaone.local";
 
 export function AdminQuickBookingWizard({
   isOpen,
@@ -563,7 +564,7 @@ export function AdminQuickBookingWizard({
       
       if (stepUser.isGuestBooking && stepUser.guestName) {
         // Create a guest user with a generated email
-        const guestEmail = `guest-${Date.now()}-${Math.random().toString(36).substring(7)}@guest.arenaone.local`;
+        const guestEmail = `guest-${Date.now()}-${Math.random().toString(36).substring(7)}@${GUEST_EMAIL_DOMAIN}`;
         const createUserResponse = await fetch("/api/admin/users/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

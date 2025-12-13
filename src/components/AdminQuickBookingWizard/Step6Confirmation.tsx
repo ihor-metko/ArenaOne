@@ -42,6 +42,17 @@ export function Step6Confirmation({
 }: Step6ConfirmationProps) {
   const t = useTranslations();
 
+  // Helper function to format booking user display
+  const getBookingUserDisplay = () => {
+    if (guestName) {
+      return guestName;
+    }
+    if (user) {
+      return user.name ? `${user.name} (${user.email})` : user.email;
+    }
+    return "";
+  };
+
   if (isComplete) {
     return (
       <div className="rsp-admin-wizard-step">
@@ -127,7 +138,7 @@ export function Step6Confirmation({
                 {t("adminWizard.bookingFor")}
               </span>
               <span className="rsp-admin-wizard-summary-value">
-                {user ? (user.name ? `${user.name} (${user.email})` : user.email) : guestName}
+                {getBookingUserDisplay()}
               </span>
             </div>
           )}
