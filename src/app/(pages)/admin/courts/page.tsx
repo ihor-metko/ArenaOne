@@ -530,5 +530,6 @@ export default function AdminCourtsPage() {
         </div>
       </Modal>
     </main>
+    </ListControllerProvider>
   );
 }
