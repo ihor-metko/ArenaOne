@@ -72,15 +72,15 @@ export function DateRangeFilter<TFilters = Record<string, unknown>>({
   const controller = useControllerOrContext(controllerProp);
 
   // Get current values
-  const fromValue = (controller.filters[fromKey] as string) || "";
-  const toValue = (controller.filters[toKey] as string) || "";
+  const fromValue = String(controller.filters[fromKey] || "");
+  const toValue = String(controller.filters[toKey] || "");
 
   const handleFromChange = (date: string) => {
-    controller.setFilter(fromKey, date as TFilters[keyof TFilters]);
+    controller.setFilter(fromKey, (date || "") as TFilters[keyof TFilters]);
   };
 
   const handleToChange = (date: string) => {
-    controller.setFilter(toKey, date as TFilters[keyof TFilters]);
+    controller.setFilter(toKey, (date || "") as TFilters[keyof TFilters]);
   };
 
   return (
@@ -90,6 +90,7 @@ export function DateRangeFilter<TFilters = Record<string, unknown>>({
       )}
       <div className="im-date-range-inputs">
         <DateInput
+          key={`${field}-from`}
           value={fromValue}
           onChange={handleFromChange}
           label={fromLabel}
@@ -101,6 +102,7 @@ export function DateRangeFilter<TFilters = Record<string, unknown>>({
           aria-label={`${field} ${fromLabel}`}
         />
         <DateInput
+          key={`${field}-to`}
           value={toValue}
           onChange={handleToChange}
           label={toLabel}

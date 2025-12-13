@@ -79,13 +79,17 @@ export function DateInput({
     if (!dateStr) return "";
     try {
       const date = new Date(dateStr);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return "";
+      }
       return date.toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
         day: "numeric",
       });
     } catch {
-      return dateStr;
+      return "";
     }
   };
 
@@ -162,6 +166,7 @@ export function DateInput({
           type="text"
           className="im-date-input"
           value={displayValue}
+          onChange={() => {}} // No-op for readOnly input to satisfy React controlled component
           placeholder={placeholder}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
