@@ -21,9 +21,10 @@
   gap: 0.5rem;
 }
 
-.im-date-range-inputs > div {
+.im-date-range-inputs>div {
   flex: 1;
-  min-width: 0; /* Prevent overflow */
+  min-width: 0;
+  /* Prevent overflow */
 }
 
 /* Date input styling is handled by DateInput.css */
@@ -34,7 +35,8 @@
 
 /* When in toolbar - more compact layout */
 .im-list-toolbar-content .im-date-range-filter {
-  flex-direction: row;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .im-list-toolbar-content .im-date-range-inputs {

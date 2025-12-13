@@ -506,9 +506,6 @@ export default function AdminBookingsPage() {
               </svg>
               <h3 className="im-admin-bookings-empty-title">{t("adminBookings.noBookings")}</h3>
               <p className="im-admin-bookings-empty-description">{t("adminBookings.noBookingsDescription")}</p>
-              <Button onClick={handleOpenBookingWizard} variant="primary">
-                {t("adminBookings.createBooking")}
-              </Button>
             </div>
           </div>
         ) : (

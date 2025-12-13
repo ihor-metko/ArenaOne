@@ -51,6 +51,7 @@
   background: var(--im-bg-secondary);
   border-radius: 0.5rem;
   border: 1px solid var(--im-border-color);
+  margin-top: 1rem;
 }
 
 .im-admin-bookings-table {
