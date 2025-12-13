@@ -112,9 +112,9 @@ export function Step5User({
                   label={t("adminWizard.existingUser")}
                   options={users.map((user) => ({
                     value: user.id,
-                    label: user.name
+                    label: user.name && user.email
                       ? `${user.name} (${user.email})`
-                      : user.email,
+                      : user.email || user.name || user.id,
                   }))}
                   value={data.selectedUserId || ""}
                   onChange={handleUserChange}

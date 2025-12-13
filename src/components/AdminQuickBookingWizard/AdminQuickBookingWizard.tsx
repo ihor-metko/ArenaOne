@@ -510,6 +510,8 @@ export function AdminQuickBookingWizard({
           isCreatingNewUser: false,
           newUserName: "",
           newUserEmail: "",
+          isGuestBooking: false,
+          guestName: "",
         },
         availableUsers: [...prev.availableUsers, newUser],
       }));

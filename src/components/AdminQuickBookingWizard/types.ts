@@ -36,7 +36,7 @@ export interface WizardClub {
 export interface WizardUser {
   id: string;
   name: string | null;
-  email: string;
+  email: string | null;
 }
 
 export interface WizardStepOrganization {
