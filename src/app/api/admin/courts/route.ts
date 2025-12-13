@@ -117,10 +117,10 @@ export async function GET(request: Request) {
       whereClause.sportType = sportType;
     }
 
-    // Add surface type filter
+    // Add surface type filter (exact match)
     if (surfaceType) {
       whereClause.surface = {
-        contains: surfaceType,
+        equals: surfaceType,
         mode: "insensitive",
       };
     }
