@@ -152,6 +152,7 @@ export function toBookingStatus(status: string): BookingStatus {
     "pending",
     "paid",
     "reserved",
+    "ongoing",
     "cancelled",
     "no-show",
     "completed",
