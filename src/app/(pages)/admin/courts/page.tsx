@@ -255,6 +255,7 @@ export default function AdminCourtsPage() {
   const sortOptions = [
     { key: 'name', label: t('admin.courts.sortNameAsc'), direction: 'asc' as const },
     { key: 'name', label: t('admin.courts.sortNameDesc'), direction: 'desc' as const },
+    { key: 'sportType', label: t('admin.courts.sortSportType'), direction: 'asc' as const },
     { key: 'createdAt', label: t('admin.clubs.sortNewest'), direction: 'desc' as const },
     { key: 'createdAt', label: t('admin.clubs.sortOldest'), direction: 'asc' as const },
     { key: 'bookings', label: t('admin.courts.sortBookingsDesc'), direction: 'desc' as const },

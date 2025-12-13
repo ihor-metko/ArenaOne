@@ -21,7 +21,7 @@ import { mockGetCourts } from "@/services/mockApiHandlers";
  * - sportType: Filter by sport type (PADEL/TENNIS/SQUASH/etc)
  * - surfaceType: Filter by surface type (Hard/Clay/Grass/etc)
  * - indoor: Filter by location (indoor/outdoor/all)
- * - sortBy: Sort field (name/bookings/createdAt)
+ * - sortBy: Sort field (name/sportType/bookings/createdAt)
  * - sortOrder: Sort order (asc/desc)
  * - page: Page number (default: 1)
  * - limit: Items per page (default: 20)
@@ -138,6 +138,8 @@ export async function GET(request: Request) {
     
     if (sortBy === "name") {
       orderBy = { name: sortOrder as "asc" | "desc" };
+    } else if (sortBy === "sportType") {
+      orderBy = { sportType: sortOrder as "asc" | "desc" };
     } else if (sortBy === "bookings") {
       // For sorting by bookings count, we need to use a different approach
       // We'll fetch all matching courts and sort in-memory

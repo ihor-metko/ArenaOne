@@ -451,6 +451,7 @@
       "sortBy": "Sort by",
       "sortNameAsc": "Name (A-Z)",
       "sortNameDesc": "Name (Z-A)",
+      "sortSportType": "Sport Type",
       "sortBookingsDesc": "Most bookings",
       "sortBookingsAsc": "Least bookings",
       "addCourt": "Add Court",
