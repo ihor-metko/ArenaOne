@@ -1,17 +1,26 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, Input, Card, Modal, IMLink, PageHeader } from "@/components/ui";
-import { CardListSkeleton } from "@/components/ui/skeletons";
+import { Button, Card, Modal, IMLink, PageHeader, Table } from "@/components/ui";
+import type { TableColumn } from "@/components/ui";
+import { TableSkeleton } from "@/components/ui/skeletons";
 import { CourtForm, CourtFormData } from "@/components/admin/CourtForm";
-import { CourtCard } from "@/components/courts";
 import type { AdminType } from "@/app/api/me/admin-status/route";
-import type { Club } from "@/types/club";
-import type { Organization } from "@/types/organization";
 import { useUserStore } from "@/stores/useUserStore";
 import { SPORT_TYPE_OPTIONS } from "@/constants/sports";
+import { useListController } from "@/hooks";
+import { 
+  ListControllerProvider,
+  ListToolbar,
+  ListSearch,
+  OrgSelector,
+  ClubSelector,
+  StatusFilter,
+  SortSelect,
+  PaginationControls,
+} from "@/components/list-controls";
 
 interface Court {
   id: string;
@@ -20,6 +29,7 @@ interface Court {
   type: string | null;
   surface: string | null;
   indoor: boolean;
+  sportType: string | null;
   isActive: boolean;
   defaultPriceCents: number;
   createdAt: string;
@@ -43,12 +53,20 @@ interface PaginationInfo {
   hasMore: boolean;
 }
 
+// Define filters interface
+interface CourtFilters {
+  searchQuery: string;
+  organizationFilter: string;
+  clubFilter: string;
+  statusFilter: string;
+  sportTypeFilter: string;
+}
+
 export default function AdminCourtsPage() {
   const t = useTranslations();
   const router = useRouter();
   const [courts, setCourts] = useState<Court[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -60,42 +78,45 @@ export default function AdminCourtsPage() {
   const isLoadingStore = useUserStore((state) => state.isLoading);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
-    limit: 20,
+    limit: 25,
     total: 0,
     totalPages: 0,
     hasMore: false,
   });
 
-  // Filtering and sorting state
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedOrganization, setSelectedOrganization] = useState("");
-  const [selectedClub, setSelectedClub] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "inactive">("all");
-  const [selectedSportType, setSelectedSportType] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "bookings">("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  // Use list controller hook for persistent filters
+  const controller = useListController<CourtFilters>({
+    entityKey: "courts",
+    defaultFilters: {
+      searchQuery: "",
+      organizationFilter: "",
+      clubFilter: "",
+      statusFilter: "",
+      sportTypeFilter: "",
+    },
+    defaultSortBy: "name",
+    defaultSortOrder: "asc",
+    defaultPage: 1,
+    defaultPageSize: 25,
+  });
 
   // Admin status is loaded from store via UserStoreInitializer
-  const fetchCourts = useCallback(async (page: number = 1, append: boolean = false) => {
+  const fetchCourts = useCallback(async () => {
     try {
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
 
       // Build query parameters
       const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "20",
+        page: controller.page.toString(),
+        limit: controller.pageSize.toString(),
       });
 
-      if (searchQuery) params.append("search", searchQuery);
-      if (selectedClub) params.append("clubId", selectedClub);
-      if (selectedStatus !== "all") params.append("status", selectedStatus);
-      if (selectedSportType) params.append("sportType", selectedSportType);
-      params.append("sortBy", sortBy);
-      params.append("sortOrder", sortOrder);
+      if (controller.filters.searchQuery) params.append("search", controller.filters.searchQuery);
+      if (controller.filters.clubFilter) params.append("clubId", controller.filters.clubFilter);
+      if (controller.filters.statusFilter) params.append("status", controller.filters.statusFilter);
+      if (controller.filters.sportTypeFilter) params.append("sportType", controller.filters.sportTypeFilter);
+      params.append("sortBy", controller.sortBy);
+      params.append("sortOrder", controller.sortOrder);
 
       const response = await fetch(`/api/admin/courts?${params.toString()}`);
       if (!response.ok) {
@@ -108,21 +129,15 @@ export default function AdminCourtsPage() {
 
       const data = await response.json();
 
-      if (append) {
-        setCourts((prev) => [...prev, ...data.courts]);
-      } else {
-        setCourts(data.courts);
-      }
-
+      setCourts(data.courts);
       setPagination(data.pagination);
       setError("");
     } catch {
       setError(t("admin.courts.noResults"));
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
-  }, [router, t, searchQuery, selectedClub, selectedStatus, sortBy, sortOrder]);
+  }, [router, t, controller.filters, controller.sortBy, controller.sortOrder, controller.page, controller.pageSize]);
 
   useEffect(() => {
     if (isLoadingStore) return;
@@ -134,53 +149,13 @@ export default function AdminCourtsPage() {
 
     // Check admin status and fetch data
     if (adminStatus?.isAdmin) {
-      fetchCourts(1, false);
+      fetchCourts();
     } else if (!isLoadingStore) {
       // User is not an admin, redirect
       router.push("/auth/sign-in");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn, isLoadingStore, adminStatus, router]);
-
-  // Refetch when filters or sorting change
-  useEffect(() => {
-    if (adminStatus?.isAdmin) {
-      fetchCourts(1, false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, selectedClub, selectedStatus, sortBy, sortOrder]);
-
-  // Extract unique organizations and clubs for filters
-  const { organizations, clubs } = useMemo(() => {
-    const orgs = new Map<string, string>();
-    const clubMap = new Map<string, { name: string; orgId: string | null }>();
-
-    courts.forEach((court) => {
-      if (court.organization) {
-        orgs.set(court.organization.id, court.organization.name);
-      }
-      clubMap.set(court.club.id, {
-        name: court.club.name,
-        orgId: court.organization?.id || null,
-      });
-    });
-
-    // Filter clubs by selected organization if applicable
-    let filteredClubs = Array.from(clubMap.entries()).map(([id, data]) => ({
-      id,
-      name: data.name,
-      orgId: data.orgId,
-    }));
-
-    if (selectedOrganization) {
-      filteredClubs = filteredClubs.filter((c) => c.orgId === selectedOrganization);
-    }
-
-    return {
-      organizations: Array.from(orgs.entries()).map(([id, name]) => ({ id, name })),
-      clubs: filteredClubs.sort((a, b) => a.name.localeCompare(b.name)),
-    };
-  }, [courts, selectedOrganization]);
+  }, [isLoggedIn, isLoadingStore, adminStatus, router, fetchCourts]);
 
   // Determine permissions based on admin type
   const canCreate = (adminType: AdminType | undefined): boolean =>
@@ -237,7 +212,7 @@ export default function AdminCourtsPage() {
       }
 
       handleCloseModal();
-      fetchCourts(1, false);
+      fetchCourts();
     } catch (err) {
       throw err;
     } finally {
@@ -261,7 +236,7 @@ export default function AdminCourtsPage() {
       }
 
       handleCloseDeleteModal();
-      fetchCourts(1, false);
+      fetchCourts();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete court");
     } finally {
@@ -269,213 +244,243 @@ export default function AdminCourtsPage() {
     }
   };
 
-  const handleClearFilters = () => {
-    setSearchQuery("");
-    setSelectedOrganization("");
-    setSelectedClub("");
-    setSelectedStatus("all");
-    setSelectedSportType("");
-  };
+  // Define sort options
+  const sortOptions = [
+    { key: 'name', label: t('admin.courts.sortNameAsc'), direction: 'asc' as const },
+    { key: 'name', label: t('admin.courts.sortNameDesc'), direction: 'desc' as const },
+    { key: 'createdAt', label: t('admin.clubs.sortNewest'), direction: 'desc' as const },
+    { key: 'createdAt', label: t('admin.clubs.sortOldest'), direction: 'asc' as const },
+    { key: 'bookings', label: t('admin.courts.sortBookingsDesc'), direction: 'desc' as const },
+    { key: 'bookings', label: t('admin.courts.sortBookingsAsc'), direction: 'asc' as const },
+  ];
 
-  const handleLoadMore = () => {
-    if (pagination.hasMore && !loadingMore) {
-      fetchCourts(pagination.page + 1, true);
-    }
-  };
+  // Define status options for filter
+  const statusOptions = [
+    { value: 'active', label: t('admin.courts.active') },
+    { value: 'inactive', label: t('admin.courts.inactive') },
+  ];
 
-  const handleSortChange = (value: string) => {
-    const [newSortBy, newSortOrder] = value.split("-") as ["name" | "bookings", "asc" | "desc"];
-    setSortBy(newSortBy);
-    setSortOrder(newSortOrder);
-  };
+  // Define sport type options for filter
+  const sportTypeOptions = SPORT_TYPE_OPTIONS.map(sport => ({
+    value: sport.value,
+    label: sport.label,
+  }));
 
-  if (loading || isLoadingStore) {
+  // Define table columns
+  const columns: TableColumn<Court>[] = [
+    {
+      key: 'name',
+      header: t('common.name'),
+      sortable: true,
+      render: (court) => (
+        <div className="font-medium">{court.name}</div>
+      ),
+    },
+    {
+      key: 'organization',
+      header: t('common.organization'),
+      render: (court) => (
+        <div className="text-sm">{court.organization?.name || '-'}</div>
+      ),
+    },
+    {
+      key: 'club',
+      header: t('common.club'),
+      render: (court) => (
+        <div className="text-sm">{court.club.name}</div>
+      ),
+    },
+    {
+      key: 'sportType',
+      header: t('admin.courts.sport'),
+      render: (court) => (
+        <div className="text-sm">{court.sportType || '-'}</div>
+      ),
+    },
+    {
+      key: 'status',
+      header: t('common.status'),
+      render: (court) => (
+        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+          court.isActive 
+            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+            : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
+        }`}>
+          {court.isActive ? t('admin.courts.active') : t('admin.courts.inactive')}
+        </span>
+      ),
+    },
+    {
+      key: 'bookingCount',
+      header: t('admin.clubs.bookings'),
+      sortable: true,
+      render: (court) => (
+        <div className="text-sm">{court.bookingCount}</div>
+      ),
+    },
+    {
+      key: 'createdAt',
+      header: t('common.created'),
+      sortable: true,
+      render: (court) => (
+        <div className="text-sm">{new Date(court.createdAt).toLocaleDateString()}</div>
+      ),
+    },
+    {
+      key: 'actions',
+      header: t('common.actions'),
+      render: (court) => (
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/admin/clubs/${court.club.id}/courts/${court.id}`)}
+            aria-label={`View ${court.name}`}
+          >
+            {t('common.view')}
+          </Button>
+          {canEdit(adminStatus?.adminType) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleOpenEditModal(court)}
+              aria-label={`Edit ${court.name}`}
+            >
+              {t('common.edit')}
+            </Button>
+          )}
+          {canDelete(adminStatus?.adminType) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleOpenDeleteModal(court)}
+              aria-label={`Delete ${court.name}`}
+              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+            >
+              {t('common.delete')}
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  if (loading && isLoadingStore) {
     return (
       <main className="rsp-container p-8">
-        <div className="rsp-loading text-center">{t("common.loading")}</div>
+        <PageHeader
+          title={t("admin.courts.title")}
+          description={t("admin.courts.subtitle")}
+        />
+        <TableSkeleton columns={8} rows={10} />
       </main>
     );
   }
 
   return (
-    <main className="rsp-container p-8">
-      <PageHeader
-        title={t("admin.courts.title")}
-        description={t("admin.courts.subtitle")}
-      />
+    <ListControllerProvider controller={controller}>
+      <main className="rsp-container p-8">
+        <PageHeader
+          title={t("admin.courts.title")}
+          description={t("admin.courts.subtitle")}
+        />
 
-      <section className="rsp-content">
-        {/* Filters and Sorting */}
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          <Input
-            placeholder={t("common.search")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-xs"
-          />
-
-          {showOrganizationFilter && organizations.length > 0 && (
-            <select
-              value={selectedOrganization}
-              onChange={(e) => {
-                setSelectedOrganization(e.target.value);
-                setSelectedClub(""); // Reset club filter when org changes
-              }}
-              className="im-native-select"
-              aria-label={t("admin.courts.filterByOrganization")}
-            >
-              <option value="">{t("admin.courts.allOrganizations")}</option>
-              {organizations.map((org) => (
-                <option key={org.id} value={org.id}>
-                  {org.name}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {showClubFilter && clubs.length > 0 && (
-            <select
-              value={selectedClub}
-              onChange={(e) => setSelectedClub(e.target.value)}
-              className="im-native-select"
-              aria-label={t("admin.courts.filterByClub")}
-            >
-              <option value="">{t("admin.courts.allClubs")}</option>
-              {clubs.map((club) => (
-                <option key={club.id} value={club.id}>
-                  {club.name}
-                </option>
-              ))}
-            </select>
-          )}
-
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value as "all" | "active" | "inactive")}
-            className="im-native-select"
-            aria-label={t("admin.courts.filterByStatus")}
+        <section className="rsp-content space-y-4">
+          {/* List Toolbar with Filters */}
+          <ListToolbar
+            showReset
+            resetLabel={t("common.clearFilters")}
+            actionButton={
+              canCreate(adminStatus?.adminType) ? (
+                <IMLink href="/admin/clubs">
+                  <Button variant="primary">
+                    {t("admin.courts.createCourt")}
+                  </Button>
+                </IMLink>
+              ) : undefined
+            }
           >
-            <option value="all">{t("admin.courts.allStatuses")}</option>
-            <option value="active">{t("admin.courts.active")}</option>
-            <option value="inactive">{t("admin.courts.inactive")}</option>
-          </select>
-
-          <select
-            value={selectedSportType}
-            onChange={(e) => setSelectedSportType(e.target.value)}
-            className="im-native-select"
-            aria-label={t("admin.courts.filterBySport")}
-          >
-            <option value="">{t("admin.courts.allSports")}</option>
-            {SPORT_TYPE_OPTIONS.map((sport) => (
-              <option key={sport.value} value={sport.value}>
-                {sport.label}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={`${sortBy}-${sortOrder}`}
-            onChange={(e) => handleSortChange(e.target.value)}
-            className="im-native-select"
-            aria-label={t("admin.courts.sortBy")}
-          >
-            <option value="name-asc">{t("admin.courts.sortNameAsc")}</option>
-            <option value="name-desc">{t("admin.courts.sortNameDesc")}</option>
-            <option value="bookings-desc">{t("admin.courts.sortBookingsDesc")}</option>
-            <option value="bookings-asc">{t("admin.courts.sortBookingsAsc")}</option>
-          </select>
-
-          {(searchQuery || selectedOrganization || selectedClub || selectedStatus !== "all" || selectedSportType) && (
-            <Button variant="outline" onClick={handleClearFilters}>
-              {t("common.clearFilters")}
-            </Button>
-          )}
-        </div>
-
-        {/* Quick Actions */}
-        {canCreate(adminStatus?.adminType) && (
-          <div className="mb-6">
-            <IMLink href="/admin/clubs">
-              <Button variant="primary">
-                {t("admin.courts.createCourt")}
-              </Button>
-            </IMLink>
-          </div>
-        )}
-
-        {error && (
-          <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm mb-4">
-            {error}
-          </div>
-        )}
-
-        {isLoadingData ? (
-          <CardListSkeleton count={9} variant="compact" />
-        ) : courts.length === 0 ? (
-          <Card>
-            <div className="py-8 text-center text-gray-500">
-              {t("admin.courts.noResults")}
-            </div>
-          </Card>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courts.map((court) => (
-                <CourtCard
-                  key={court.id}
-                  court={{
-                    id: court.id,
-                    name: court.name,
-                    slug: court.slug,
-                    type: court.type,
-                    surface: court.surface,
-                    indoor: court.indoor,
-                    defaultPriceCents: court.defaultPriceCents,
-                    imageUrl: null,
-                  }}
-                  club={
-                    // Pass minimal club info - only id and name are used by CourtCard
-                    {
-                      id: court.club.id,
-                      name: court.club.name,
-                    } as Club
-                  }
-                  organization={
-                    // Pass minimal org info - only name is used by CourtCard
-                    court.organization
-                      ? ({ name: court.organization.name } as Organization)
-                      : undefined
-                  }
-                  isActive={court.isActive}
-                  showBookButton={false}
-                  showViewSchedule={false}
-                  showViewDetails={true}
-                  onViewDetails={(courtId) => router.push(`/admin/clubs/${court.club.id}/courts/${courtId}`)}
-                  onEdit={canEdit(adminStatus?.adminType) ? () => handleOpenEditModal(court) : undefined}
-                  onDelete={canDelete(adminStatus?.adminType) ? () => handleOpenDeleteModal(court) : undefined}
-                  showLegend={false}
-                  showAvailabilitySummary={false}
-                  showDetailedAvailability={false}
-                />
-              ))}
-            </div>
-
-            {/* Load More Button */}
-            {pagination.hasMore && (
-              <div className="mt-6 text-center">
-                <Button
-                  variant="outline"
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                >
-                  {loadingMore ? t("admin.courts.loading") : t("admin.courts.loadMore")}
-                </Button>
-              </div>
+            <ListSearch 
+              placeholder={t("common.search")}
+              filterKey="searchQuery"
+            />
+            
+            {showOrganizationFilter && (
+              <OrgSelector 
+                filterKey="organizationFilter"
+                label={t("common.organization")}
+                placeholder={t("admin.courts.allOrganizations")}
+              />
             )}
-          </>
-        )}
-      </section>
+            
+            {showClubFilter && (
+              <ClubSelector 
+                filterKey="clubFilter"
+                orgFilterKey="organizationFilter"
+                label={t("common.club")}
+                placeholder={t("admin.courts.allClubs")}
+              />
+            )}
+            
+            <StatusFilter
+              filterKey="statusFilter"
+              label={t("common.status")}
+              placeholder={t("admin.courts.allStatuses")}
+              statuses={statusOptions}
+            />
+
+            <StatusFilter
+              filterKey="sportTypeFilter"
+              label={t("admin.courts.sport")}
+              placeholder={t("admin.courts.allSports")}
+              statuses={sportTypeOptions}
+            />
+
+            <SortSelect
+              label={t("admin.courts.sortBy")}
+              options={sortOptions}
+            />
+          </ListToolbar>
+
+          {error && (
+            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Courts Table */}
+          {loading ? (
+            <TableSkeleton columns={8} rows={10} />
+          ) : courts.length === 0 ? (
+            <Card>
+              <div className="py-8 text-center text-gray-500">
+                {t("admin.courts.noResultsMatch")}
+              </div>
+            </Card>
+          ) : (
+            <Table
+              columns={columns}
+              data={courts}
+              keyExtractor={(court) => court.id}
+              sortBy={controller.sortBy}
+              sortOrder={controller.sortOrder}
+              onSort={(key) => {
+                controller.setSortBy(key);
+              }}
+              emptyMessage={t("admin.courts.noResults")}
+              ariaLabel={t("admin.courts.title")}
+            />
+          )}
+
+          {/* Pagination */}
+          {!loading && courts.length > 0 && (
+            <PaginationControls
+              totalCount={pagination.total}
+              totalPages={pagination.totalPages}
+              showPageSize
+            />
+          )}
+        </section>
 
       {/* Edit Modal */}
       <Modal

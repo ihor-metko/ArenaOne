@@ -468,6 +468,9 @@
       "outdoor": "Outdoor",
       "active": "Active",
       "inactive": "Inactive",
+      "sport": "Sport",
+      "allSports": "All Sports",
+      "filterBySport": "Filter by sport",
       "loadMore": "Load More",
       "loading": "Loading...",
       "new": {
