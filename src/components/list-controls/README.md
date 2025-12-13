@@ -587,6 +587,184 @@ const controller = useListController({
 });
 ```
 
+## Example: Courts Page
+
+Here's a complete example of the Courts admin page using List Controls:
+
+```typescript
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Button, Card, Modal, IMLink, PageHeader, Table } from "@/components/ui";
+import type { TableColumn } from "@/components/ui";
+import { TableSkeleton } from "@/components/ui/skeletons";
+import { useUserStore } from "@/stores/useUserStore";
+import { SPORT_TYPE_OPTIONS } from "@/constants/sports";
+import { useListController } from "@/hooks";
+import { 
+  ListControllerProvider,
+  ListToolbar,
+  ListSearch,
+  OrgSelector,
+  ClubSelector,
+  StatusFilter,
+  SortSelect,
+  PaginationControls,
+} from "@/components/list-controls";
+
+interface CourtFilters {
+  searchQuery: string;
+  organizationFilter: string;
+  clubFilter: string;
+  statusFilter: string;
+  sportTypeFilter: string;
+}
+
+export default function AdminCourtsPage() {
+  const t = useTranslations();
+  const router = useRouter();
+  const [courts, setCourts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ total: 0, totalPages: 0 });
+  const adminStatus = useUserStore((state) => state.adminStatus);
+  
+  // Initialize list controller
+  const controller = useListController<CourtFilters>({
+    entityKey: "courts",
+    defaultFilters: {
+      searchQuery: "",
+      organizationFilter: "",
+      clubFilter: "",
+      statusFilter: "",
+      sportTypeFilter: "",
+    },
+    defaultSortBy: "name",
+    defaultSortOrder: "asc",
+    defaultPage: 1,
+    defaultPageSize: 25,
+  });
+
+  // Fetch courts based on controller state
+  const fetchCourts = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams({
+      page: controller.page.toString(),
+      limit: controller.pageSize.toString(),
+    });
+    
+    if (controller.filters.searchQuery) params.append("search", controller.filters.searchQuery);
+    if (controller.filters.clubFilter) params.append("clubId", controller.filters.clubFilter);
+    if (controller.filters.statusFilter) params.append("status", controller.filters.statusFilter);
+    if (controller.filters.sportTypeFilter) params.append("sportType", controller.filters.sportTypeFilter);
+    params.append("sortBy", controller.sortBy);
+    params.append("sortOrder", controller.sortOrder);
+
+    const response = await fetch(`/api/admin/courts?${params}`);
+    const data = await response.json();
+    setCourts(data.courts);
+    setPagination(data.pagination);
+    setLoading(false);
+  }, [controller.filters, controller.sortBy, controller.sortOrder, controller.page, controller.pageSize]);
+
+  useEffect(() => {
+    if (adminStatus?.isAdmin) {
+      fetchCourts();
+    }
+  }, [adminStatus, fetchCourts]);
+
+  // Define sort options
+  const sortOptions = [
+    { key: 'name', label: 'Name (A-Z)', direction: 'asc' as const },
+    { key: 'name', label: 'Name (Z-A)', direction: 'desc' as const },
+    { key: 'createdAt', label: 'Newest', direction: 'desc' as const },
+    { key: 'bookings', label: 'Most bookings', direction: 'desc' as const },
+  ];
+
+  // Define status options
+  const statusOptions = [
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+  ];
+
+  // Define table columns
+  const columns: TableColumn<Court>[] = [
+    { key: 'name', header: 'Name', sortable: true },
+    { key: 'organization', header: 'Organization', render: (court) => court.organization?.name || '-' },
+    { key: 'club', header: 'Club', render: (court) => court.club.name },
+    { key: 'sportType', header: 'Sport', render: (court) => court.sportType || '-' },
+    { key: 'status', header: 'Status', render: (court) => court.isActive ? 'Active' : 'Inactive' },
+    { key: 'bookingCount', header: 'Bookings', sortable: true },
+    { key: 'actions', header: 'Actions', render: (court) => (
+      <Button onClick={() => router.push(`/admin/clubs/${court.club.id}/courts/${court.id}`)}>
+        View
+      </Button>
+    )},
+  ];
+
+  return (
+    <ListControllerProvider controller={controller}>
+      <main className="rsp-container p-8">
+        <PageHeader title="Courts" description="Manage courts across clubs" />
+
+        <section className="rsp-content space-y-4">
+          {/* List Toolbar with Filters */}
+          <ListToolbar
+            showReset
+            actionButton={
+              <IMLink href="/admin/clubs">
+                <Button variant="primary">Create Court</Button>
+              </IMLink>
+            }
+          >
+            <ListSearch placeholder="Search courts..." filterKey="searchQuery" />
+            <OrgSelector filterKey="organizationFilter" placeholder="All Organizations" />
+            <ClubSelector filterKey="clubFilter" orgFilterKey="organizationFilter" placeholder="All Clubs" />
+            <StatusFilter filterKey="statusFilter" statuses={statusOptions} placeholder="All Statuses" />
+            <StatusFilter filterKey="sportTypeFilter" statuses={SPORT_TYPE_OPTIONS} placeholder="All Sports" label="Sport" />
+            <SortSelect options={sortOptions} />
+          </ListToolbar>
+
+          {/* Courts Table */}
+          {loading ? (
+            <TableSkeleton columns={7} rows={10} />
+          ) : courts.length === 0 ? (
+            <Card><div className="py-8 text-center">No courts match your filters</div></Card>
+          ) : (
+            <Table
+              columns={columns}
+              data={courts}
+              keyExtractor={(court) => court.id}
+              sortBy={controller.sortBy}
+              sortOrder={controller.sortOrder}
+              onSort={(key) => controller.setSortBy(key)}
+            />
+          )}
+
+          {/* Pagination */}
+          {!loading && courts.length > 0 && (
+            <PaginationControls totalCount={pagination.total} totalPages={pagination.totalPages} showPageSize />
+          )}
+        </section>
+      </main>
+    </ListControllerProvider>
+  );
+}
+```
+
+**Key Features in This Example:**
+- ✅ Persistent filters with localStorage using `useListController`
+- ✅ Horizontal toolbar layout with all filters in one row
+- ✅ Organization and club selectors with automatic filtering
+- ✅ Status filters for court status and sport type
+- ✅ Sort options integrated with table sorting
+- ✅ Pagination controls with page size selector
+- ✅ Action button in toolbar for creating new courts
+- ✅ Table component for displaying court data
+- ✅ Proper permission checks for showing action buttons
+- ✅ Automatic refetch when filters, sorting, or pagination changes
+
 ## Contributing
 
 When adding new filter components:
