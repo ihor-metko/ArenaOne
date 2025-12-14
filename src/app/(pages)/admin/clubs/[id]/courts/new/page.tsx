@@ -56,6 +56,11 @@ interface CourtFormData {
 interface Club {
   id: string;
   name: string;
+  organizationId?: string;
+  organization?: {
+    id: string;
+    name: string;
+  } | null;
   defaultCurrency?: string;
   businessHours?: Array<{
     dayOfWeek: number;
