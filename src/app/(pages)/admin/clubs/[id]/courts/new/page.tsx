@@ -159,7 +159,7 @@ export default function CreateCourtPage({
     steps.push({ id: "meta", label: t("admin.courts.new.steps.meta"), number: stepNumber++ });
     
     return steps;
-  }, [isRootAdmin, isOrgAdmin, clubIdFromUrl, t]);
+  }, [isRootAdmin, isOrgAdmin, isClubAdmin, clubIdFromUrl, t]);
   
   const [currentStep, setCurrentStep] = useState(ALL_STEPS[0]?.id || "basic");
 
