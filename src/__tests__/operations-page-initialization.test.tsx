@@ -8,18 +8,20 @@ import { act } from "react";
 
 // Mock next/navigation
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
 const mockRouter = {
   push: mockPush,
   refresh: jest.fn(),
   back: jest.fn(),
   forward: jest.fn(),
   prefetch: jest.fn(),
-  replace: jest.fn(),
+  replace: mockReplace,
 };
 
 jest.mock("next/navigation", () => ({
   useRouter: () => mockRouter,
   usePathname: () => "/admin/operations",
+  useParams: () => ({}),
   useSearchParams: () => ({
     get: jest.fn(),
     toString: () => "",
@@ -194,7 +196,7 @@ describe("OperationsPage - Initialization", () => {
   });
 
   describe("Club Admin Role", () => {
-    it("should auto-select assigned club for Club Admin", async () => {
+    it("should auto-redirect to assigned club for Club Admin", async () => {
       mockUserStore.isLoggedIn = true;
       mockUserStore.isLoading = false;
       mockUserStore.adminStatus = {
@@ -207,56 +209,11 @@ describe("OperationsPage - Initialization", () => {
         },
       };
 
-      mockClubStore.clubsById = {
-        "club-1": {
-          id: "club-1",
-          name: "Test Club",
-          location: "Test Location",
-          status: "active",
-          createdAt: new Date().toISOString(),
-        } as any,
-      };
-
       render(<OperationsPage />);
 
-      // Wait for the club to be loaded
+      // Should redirect to the club-specific operations page
       await waitFor(() => {
-        expect(mockClubStore.ensureClubById).toHaveBeenCalledWith("club-1");
-      });
-
-      // Verify courts and bookings are fetched
-      expect(mockCourtStore.fetchCourtsIfNeeded).toHaveBeenCalledWith({ clubId: "club-1" });
-      expect(mockBookingStore.fetchBookingsForDay).toHaveBeenCalled();
-    });
-
-    it("should show disabled club selector for Club Admin", async () => {
-      mockUserStore.isLoggedIn = true;
-      mockUserStore.isLoading = false;
-      mockUserStore.adminStatus = {
-        isAdmin: true,
-        adminType: "club_admin",
-        managedIds: ["club-1"],
-        assignedClub: {
-          id: "club-1",
-          name: "Test Club",
-        },
-      };
-
-      mockClubStore.clubsById = {
-        "club-1": {
-          id: "club-1",
-          name: "Test Club",
-          location: "Test Location",
-          status: "active",
-          createdAt: new Date().toISOString(),
-        } as any,
-      };
-
-      render(<OperationsPage />);
-
-      await waitFor(() => {
-        const selector = screen.getByTestId("club-select");
-        expect(selector).toBeDisabled();
+        expect(mockReplace).toHaveBeenCalledWith("/admin/operations/club-1");
       });
     });
 
@@ -293,7 +250,7 @@ describe("OperationsPage - Initialization", () => {
       expect(screen.getByText("operations.selectClubInstruction")).toBeInTheDocument();
     });
 
-    it("should NOT auto-select club for Organization Admin", () => {
+    it("should NOT auto-redirect for Organization Admin", () => {
       mockUserStore.isLoggedIn = true;
       mockUserStore.isLoading = false;
       mockUserStore.adminStatus = {
@@ -312,13 +269,12 @@ describe("OperationsPage - Initialization", () => {
 
       render(<OperationsPage />);
 
-      // Should NOT fetch any club data or bookings initially
-      expect(mockClubStore.ensureClubById).not.toHaveBeenCalled();
-      expect(mockCourtStore.fetchCourtsIfNeeded).not.toHaveBeenCalled();
-      expect(mockBookingStore.fetchBookingsForDay).not.toHaveBeenCalled();
+      // Should NOT redirect
+      expect(mockReplace).not.toHaveBeenCalled();
+      expect(mockPush).not.toHaveBeenCalled();
     });
 
-    it("should NOT show calendar/bookings until club is selected", () => {
+    it("should NOT show calendar/bookings on list page", () => {
       mockUserStore.isLoggedIn = true;
       mockUserStore.isLoading = false;
       mockUserStore.adminStatus = {
@@ -329,7 +285,7 @@ describe("OperationsPage - Initialization", () => {
 
       render(<OperationsPage />);
 
-      // Should not show calendar or bookings list
+      // Should not show calendar or bookings list (this is the list page)
       expect(screen.queryByTestId("day-calendar")).not.toBeInTheDocument();
       expect(screen.queryByTestId("today-bookings")).not.toBeInTheDocument();
     });
@@ -382,57 +338,38 @@ describe("OperationsPage - Initialization", () => {
   });
 
   describe("Data Fetching", () => {
-    it("should only fetch data when club is selected", async () => {
+    it("should fetch clubs list for Organization Admin", async () => {
       mockUserStore.isLoggedIn = true;
       mockUserStore.isLoading = false;
       mockUserStore.adminStatus = {
         isAdmin: true,
-        adminType: "club_admin",
-        managedIds: ["club-1"],
-        assignedClub: {
-          id: "club-1",
-          name: "Test Club",
-        },
+        adminType: "organization_admin",
+        managedIds: ["org-1"],
       };
 
       render(<OperationsPage />);
 
-      // Verify data fetching happens after club is auto-selected
+      // Should fetch clubs list
       await waitFor(() => {
-        expect(mockClubStore.ensureClubById).toHaveBeenCalledWith("club-1");
-        expect(mockCourtStore.fetchCourtsIfNeeded).toHaveBeenCalledWith({ clubId: "club-1" });
-        expect(mockBookingStore.fetchBookingsForDay).toHaveBeenCalled();
+        expect(mockClubStore.fetchClubsIfNeeded).toHaveBeenCalled();
       });
     });
 
-    it("should start polling when club and date are selected", async () => {
+    it("should NOT fetch club details on list page", async () => {
       mockUserStore.isLoggedIn = true;
       mockUserStore.isLoading = false;
       mockUserStore.adminStatus = {
         isAdmin: true,
-        adminType: "club_admin",
-        managedIds: ["club-1"],
-        assignedClub: {
-          id: "club-1",
-          name: "Test Club",
-        },
-      };
-
-      mockClubStore.clubsById = {
-        "club-1": {
-          id: "club-1",
-          name: "Test Club",
-          location: "Test Location",
-          status: "active",
-          createdAt: new Date().toISOString(),
-        } as any,
+        adminType: "organization_admin",
+        managedIds: ["org-1"],
       };
 
       render(<OperationsPage />);
 
-      await waitFor(() => {
-        expect(mockBookingStore.startPolling).toHaveBeenCalled();
-      });
+      // Should NOT fetch individual club details or courts/bookings
+      expect(mockClubStore.ensureClubById).not.toHaveBeenCalled();
+      expect(mockCourtStore.fetchCourtsIfNeeded).not.toHaveBeenCalled();
+      expect(mockBookingStore.fetchBookingsForDay).not.toHaveBeenCalled();
     });
   });
 });
