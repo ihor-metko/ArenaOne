@@ -259,10 +259,9 @@ export default function CreateCourtPage({
     }
     
     if (isClubAdmin && adminStatus?.managedIds && adminStatus.managedIds.length > 0) {
-      // For club admin, pre-select their club
+      // For club admin, pre-select their club (organizationId will be populated when club data loads)
       const clubId = adminStatus.managedIds[0];
       setValue("clubId", clubId);
-      setValue("organizationId", ""); // Will be determined from club
     }
   }, [isOrgAdmin, isClubAdmin, adminStatus, setValue]);
 
@@ -702,6 +701,7 @@ export default function CreateCourtPage({
 
   // Club Selection Step
   const renderClubStep = () => {
+    // Club selection is disabled for org/club admins (pre-selected) and during submission
     const isDisabled = isOrgAdmin || isClubAdmin || isSubmitting || clubsLoading;
     
     return (
@@ -730,6 +730,9 @@ export default function CreateCourtPage({
             </select>
             {isOrgAdmin && (
               <span className="im-create-court-hint">{t("admin.courts.new.clubStep.orgAdminHint")}</span>
+            )}
+            {isClubAdmin && (
+              <span className="im-create-court-hint">{t("admin.courts.new.clubStep.clubAdminHint")}</span>
             )}
             {errors.clubId && (
               <span className="im-create-court-error">{errors.clubId.message}</span>

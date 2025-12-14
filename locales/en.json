@@ -510,7 +510,8 @@
           "description": "Choose the club where this court will be located.",
           "club": "Club",
           "selectClub": "Select a club...",
-          "orgAdminHint": "Your organization's club is pre-selected"
+          "orgAdminHint": "Your organization's club is pre-selected",
+          "clubAdminHint": "Your club is pre-selected"
         },
         "basicStep": {
           "title": "Basic Information",
