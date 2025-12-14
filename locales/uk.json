@@ -64,6 +64,9 @@
     "created": "Створено",
     "allStatuses": "Всі статуси",
     "view": "Переглянути",
+    "viewItem": "Переглянути {name}",
+    "editItem": "Редагувати {name}",
+    "deleteItem": "Видалити {name}",
     "viewProfile": "Переглянути профіль"
   },
   "home": {
