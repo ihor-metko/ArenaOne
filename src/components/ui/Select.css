@@ -96,13 +96,31 @@
 /* Portal-rendered dropdown with fixed positioning */
 .im-select-options-portal {
   z-index: 9999;
+}
+
+.im-select-options-portal.im-placement-bottom {
   animation: slideDown 0.15s ease-out;
+}
+
+.im-select-options-portal.im-placement-top {
+  animation: slideUp 0.15s ease-out;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
     transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
   to {
     opacity: 1;

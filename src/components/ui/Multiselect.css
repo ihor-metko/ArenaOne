@@ -54,13 +54,31 @@
 /* Portal-rendered dropdown with fixed positioning */
 .rsp-multiselect-dropdown-portal {
   z-index: 9999;
+}
+
+.rsp-multiselect-dropdown-portal.rsp-placement-bottom {
   animation: slideDown 0.15s ease-out;
+}
+
+.rsp-multiselect-dropdown-portal.rsp-placement-top {
+  animation: slideUp 0.15s ease-out;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
     transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
   to {
     opacity: 1;

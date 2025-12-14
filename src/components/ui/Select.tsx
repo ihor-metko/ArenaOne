@@ -212,10 +212,15 @@ export function Select({
             id={listboxId}
             role="listbox"
             aria-labelledby={label ? `${selectId}-label` : undefined}
-            className="im-select-options im-select-options-portal"
+            className={`im-select-options im-select-options-portal ${
+              dropdownPosition.placement === "top" ? "im-placement-top" : "im-placement-bottom"
+            }`}
             style={{
               position: 'fixed',
-              top: `${dropdownPosition.top}px`,
+              ...(dropdownPosition.placement === "bottom"
+                ? { top: `${dropdownPosition.top}px` }
+                : { bottom: `${window.innerHeight - dropdownPosition.top}px` }
+              ),
               left: `${dropdownPosition.left}px`,
               width: `${dropdownPosition.width}px`,
               maxHeight: `${dropdownPosition.maxHeight}px`,

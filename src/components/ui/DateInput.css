@@ -83,18 +83,33 @@
 
 /* Calendar Popup */
 .im-date-input-popup {
-  animation: slideDown 0.2s ease-out;
+  z-index: 9999;
 }
 
 /* Portal-rendered popup */
-.im-date-input-popup-portal {
-  z-index: 9999;
+.im-date-input-popup-portal.im-placement-bottom {
+  animation: slideDown 0.2s ease-out;
+}
+
+.im-date-input-popup-portal.im-placement-top {
+  animation: slideUp 0.2s ease-out;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
     transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;

@@ -215,11 +215,16 @@ export function DateInput({
         <Portal>
           <div 
             ref={calendarPopupRef}
-            className="im-date-input-popup im-date-input-popup-portal" 
+            className={`im-date-input-popup im-date-input-popup-portal ${
+              dropdownPosition.placement === "top" ? "im-placement-top" : "im-placement-bottom"
+            }`}
             id={`${inputId}-calendar`}
             style={{
               position: 'fixed',
-              top: `${dropdownPosition.top}px`,
+              ...(dropdownPosition.placement === "bottom"
+                ? { top: `${dropdownPosition.top}px` }
+                : { bottom: `${window.innerHeight - dropdownPosition.top}px` }
+              ),
               left: `${dropdownPosition.left}px`,
               zIndex: 9999,
             }}

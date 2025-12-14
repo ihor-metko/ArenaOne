@@ -210,10 +210,15 @@ export function Multiselect({
             role="listbox"
             aria-multiselectable="true"
             aria-labelledby={label ? `${selectId}-label` : undefined}
-            className="rsp-multiselect-dropdown rsp-multiselect-dropdown-portal"
+            className={`rsp-multiselect-dropdown rsp-multiselect-dropdown-portal ${
+              dropdownPosition.placement === "top" ? "rsp-placement-top" : "rsp-placement-bottom"
+            }`}
             style={{
               position: 'fixed',
-              top: `${dropdownPosition.top}px`,
+              ...(dropdownPosition.placement === "bottom"
+                ? { top: `${dropdownPosition.top}px` }
+                : { bottom: `${window.innerHeight - dropdownPosition.top}px` }
+              ),
               left: `${dropdownPosition.left}px`,
               width: `${dropdownPosition.width}px`,
               maxHeight: `${dropdownPosition.maxHeight}px`,
