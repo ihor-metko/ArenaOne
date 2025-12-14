@@ -124,12 +124,15 @@ export async function GET(request: Request) {
     // If court count filter is specified, we need to fetch all clubs first then filter
     // Otherwise use standard pagination
     const needsPostFilterPagination = courtCountMin || courtCountMax;
+    
+    // For post-filtering, limit to a reasonable maximum to prevent memory issues
+    const MAX_CLUBS_FOR_POST_FILTER = 1000;
 
     const clubs = await prisma.club.findMany({
       where: whereClause,
       orderBy,
       skip: needsPostFilterPagination ? undefined : skip,
-      take: needsPostFilterPagination ? undefined : take,
+      take: needsPostFilterPagination ? MAX_CLUBS_FOR_POST_FILTER : take,
       select: {
         id: true,
         name: true,
@@ -241,8 +244,10 @@ export async function GET(request: Request) {
       });
     }
 
-    // Apply pagination if we did post-filtering
+    // Calculate total count before pagination
     const totalCount = needsPostFilterPagination ? clubsWithCounts.length : totalCountBeforeCourtFilter;
+    
+    // Apply pagination if we did post-filtering
     if (needsPostFilterPagination) {
       const startIndex = skip;
       const endIndex = skip + take;
