@@ -111,6 +111,8 @@ export function useDropdownPosition({
         : top;
 
       // Calculate bottom property for top placement to avoid repeated window.innerHeight lookups
+      // For top placement, constrainedTop represents where the dropdown's bottom edge should be
+      // CSS bottom = distance from viewport bottom to dropdown's bottom edge
       const bottom = placement === "top"
         ? viewportHeight - constrainedTop
         : undefined;
