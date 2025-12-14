@@ -1,11 +1,14 @@
+@reference "tailwindcss";
+
 /* Club Operations Page Styles */
 .im-club-operations-page {
+  @apply max-w-7xl mx-auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 24px;
   padding: 24px;
   max-width: 1800px;
-  margin: 0 auto;
 }
 
 .im-club-operations-controls {
