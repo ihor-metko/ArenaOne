@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
+import { calculateBookingStatus, toBookingStatus } from "@/utils/bookingStatus";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode } from "@/services/mockDb";
 import { mockGetBookingById, mockUpdateBookingById } from "@/services/mockApiHandlers";
@@ -204,7 +205,7 @@ export async function GET(
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
     if (isMockMode()) {
       const mockBooking = await mockGetBookingById(id);
-      
+
       if (!mockBooking) {
         return NextResponse.json(
           { error: "Booking not found" },
@@ -214,7 +215,7 @@ export async function GET(
 
       // Check access based on admin type
       let hasAccess = false;
-      
+
       if (adminType === "root_admin") {
         hasAccess = true;
       } else if (adminType === "organization_admin" && mockBooking.organizationId) {
@@ -242,6 +243,16 @@ export async function GET(
       );
     }
 
+    const startISO = booking.start.toISOString();
+    const endISO = booking.end.toISOString();
+
+    // Calculate the display status based on time and persistent status
+    const displayStatus = calculateBookingStatus(
+      startISO,
+      endISO,
+      toBookingStatus(booking.status)
+    );
+
     const response: AdminBookingDetailResponse = {
       id: booking.id,
       userId: booking.userId,
@@ -255,9 +266,9 @@ export async function GET(
       clubName: booking.court.club.name,
       organizationId: booking.court.club.organizationId,
       organizationName: booking.court.club.organization?.name ?? null,
-      start: booking.start.toISOString(),
-      end: booking.end.toISOString(),
-      status: booking.status,
+      start: startISO,
+      end: endISO,
+      status: displayStatus,
       price: booking.price,
       coachId: booking.coachId,
       coachName: booking.coach?.user.name ?? null,
@@ -323,7 +334,7 @@ export async function PATCH(
     if (isMockMode()) {
       // First check if booking exists and admin has access
       const mockBooking = await mockGetBookingById(id);
-      
+
       if (!mockBooking) {
         return NextResponse.json(
           { error: "Booking not found" },
@@ -333,7 +344,7 @@ export async function PATCH(
 
       // Check access based on admin type
       let hasAccess = false;
-      
+
       if (adminType === "root_admin") {
         hasAccess = true;
       } else if (adminType === "organization_admin" && mockBooking.organizationId) {
@@ -351,7 +362,7 @@ export async function PATCH(
 
       // Update the booking
       const updatedBooking = await mockUpdateBookingById(id, { status });
-      
+
       if (!updatedBooking) {
         return NextResponse.json(
           { error: "Failed to update booking" },
@@ -431,6 +442,16 @@ export async function PATCH(
       },
     });
 
+    const startISO = updatedBooking.start.toISOString();
+    const endISO = updatedBooking.end.toISOString();
+
+    // Calculate the display status based on time and persistent status
+    const displayStatus = calculateBookingStatus(
+      startISO,
+      endISO,
+      toBookingStatus(updatedBooking.status)
+    );
+
     const response: AdminBookingDetailResponse = {
       id: updatedBooking.id,
       userId: updatedBooking.userId,
@@ -444,9 +465,9 @@ export async function PATCH(
       clubName: updatedBooking.court.club.name,
       organizationId: updatedBooking.court.club.organizationId,
       organizationName: updatedBooking.court.club.organization?.name ?? null,
-      start: updatedBooking.start.toISOString(),
-      end: updatedBooking.end.toISOString(),
-      status: updatedBooking.status,
+      start: startISO,
+      end: endISO,
+      status: displayStatus,
       price: updatedBooking.price,
       coachId: updatedBooking.coachId,
       coachName: updatedBooking.coach?.user.name ?? null,
