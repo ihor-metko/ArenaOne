@@ -6,8 +6,11 @@
 }
 
 .rsp-modal {
+  max-height: 90%;
   @apply relative w-full max-w-md rounded-lg p-6 shadow-lg;
   background-color: var(--rsp-card-bg);
+  display: flex;
+  flex-direction: column;
 }
 
 .rsp-modal-header {
