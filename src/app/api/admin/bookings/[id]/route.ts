@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
+import { calculateBookingStatus, toBookingStatus } from "@/utils/bookingStatus";
 
 /**
  * Booking detail response type
@@ -207,6 +208,16 @@ export async function GET(
       );
     }
 
+    const startISO = booking.start.toISOString();
+    const endISO = booking.end.toISOString();
+    
+    // Calculate the display status based on time and persistent status
+    const displayStatus = calculateBookingStatus(
+      startISO,
+      endISO,
+      toBookingStatus(booking.status)
+    );
+
     const response: AdminBookingDetailResponse = {
       id: booking.id,
       userId: booking.userId,
@@ -220,9 +231,9 @@ export async function GET(
       clubName: booking.court.club.name,
       organizationId: booking.court.club.organizationId,
       organizationName: booking.court.club.organization?.name ?? null,
-      start: booking.start.toISOString(),
-      end: booking.end.toISOString(),
-      status: booking.status,
+      start: startISO,
+      end: endISO,
+      status: displayStatus,
       price: booking.price,
       coachId: booking.coachId,
       coachName: booking.coach?.user.name ?? null,
@@ -353,6 +364,16 @@ export async function PATCH(
       },
     });
 
+    const startISO = updatedBooking.start.toISOString();
+    const endISO = updatedBooking.end.toISOString();
+    
+    // Calculate the display status based on time and persistent status
+    const displayStatus = calculateBookingStatus(
+      startISO,
+      endISO,
+      toBookingStatus(updatedBooking.status)
+    );
+
     const response: AdminBookingDetailResponse = {
       id: updatedBooking.id,
       userId: updatedBooking.userId,
@@ -366,9 +387,9 @@ export async function PATCH(
       clubName: updatedBooking.court.club.name,
       organizationId: updatedBooking.court.club.organizationId,
       organizationName: updatedBooking.court.club.organization?.name ?? null,
-      start: updatedBooking.start.toISOString(),
-      end: updatedBooking.end.toISOString(),
-      status: updatedBooking.status,
+      start: startISO,
+      end: endISO,
+      status: displayStatus,
       price: updatedBooking.price,
       coachId: updatedBooking.coachId,
       coachName: updatedBooking.coach?.user.name ?? null,

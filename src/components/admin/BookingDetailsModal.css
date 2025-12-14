@@ -1,0 +1,103 @@
+@reference "tailwindcss";
+
+/* ===== Booking Detail Modal ===== */
+.im-booking-modal {
+  @apply flex flex-col gap-6;
+}
+
+/* Status Badge at Top */
+.im-booking-modal-status {
+  @apply flex justify-center pb-2;
+}
+
+/* Card Styling */
+.im-booking-modal-card {
+  background: var(--im-bg-secondary);
+  border: 1px solid var(--im-border-color);
+}
+
+/* Card Header with Icon */
+.im-booking-modal-card-header {
+  @apply flex items-center gap-3 mb-4;
+}
+
+.im-booking-modal-icon {
+  @apply w-5 h-5 flex-shrink-0;
+  color: var(--im-primary);
+}
+
+.im-booking-modal-section-title {
+  @apply text-base font-semibold;
+  color: var(--im-text-primary);
+}
+
+/* Field Grid */
+.im-booking-modal-grid {
+  @apply grid grid-cols-1 gap-4;
+}
+
+@media (min-width: 640px) {
+  .im-booking-modal-grid {
+    @apply grid-cols-2;
+  }
+}
+
+/* Individual Field */
+.im-booking-modal-field {
+  @apply flex flex-col gap-1;
+}
+
+.im-booking-modal-field-wide {
+  @apply col-span-full;
+}
+
+.im-booking-modal-label {
+  @apply text-xs font-medium uppercase tracking-wide;
+  color: var(--im-text-secondary);
+}
+
+.im-booking-modal-value {
+  @apply text-sm font-medium;
+  color: var(--im-text-primary);
+}
+
+.im-booking-modal-value-time {
+  @apply text-base;
+  color: var(--im-primary);
+}
+
+.im-booking-modal-value-price {
+  @apply text-lg font-semibold;
+  color: var(--im-primary);
+}
+
+.im-booking-modal-value-muted {
+  color: var(--im-text-secondary);
+}
+
+/* Modal Actions */
+.im-booking-modal-actions {
+  @apply flex justify-end gap-3 pt-4;
+  border-top: 1px solid var(--im-border-color);
+}
+
+/* Modal Loading State */
+.im-booking-modal-loading {
+  @apply flex justify-center items-center py-12 gap-3;
+}
+
+.im-booking-modal-spinner {
+  @apply w-6 h-6 border-2 border-transparent rounded-full animate-spin;
+  border-top-color: var(--im-primary);
+  border-right-color: var(--im-primary);
+}
+
+/* Modal Error State */
+.im-booking-modal-error {
+  @apply flex flex-col items-center gap-4 py-8;
+  color: var(--im-text-error);
+}
+
+.im-booking-modal-error p {
+  @apply text-center;
+}

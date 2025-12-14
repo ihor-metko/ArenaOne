@@ -1452,7 +1452,11 @@
     "statusPaid": "Paid",
     "statusReserved": "Reserved",
     "statusPending": "Pending",
-    "statusCancelled": "Cancelled"
+    "statusCancelled": "Cancelled",
+    "statusOngoing": "Ongoing",
+    "statusCompleted": "Completed",
+    "statusNoShow": "No-show",
+    "bookingNotFound": "Booking not found"
   },
   "bookingsOverview": {
     "title": "Bookings Overview",

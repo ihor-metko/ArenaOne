@@ -1361,7 +1361,11 @@
     "statusPaid": "Оплачено",
     "statusReserved": "Зарезервовано",
     "statusPending": "Очікує",
-    "statusCancelled": "Скасовано"
+    "statusCancelled": "Скасовано",
+    "statusOngoing": "В процесі",
+    "statusCompleted": "Завершено",
+    "statusNoShow": "Не з'явився",
+    "bookingNotFound": "Бронювання не знайдено"
   },
   "bookingsOverview": {
     "title": "Огляд бронювань",
