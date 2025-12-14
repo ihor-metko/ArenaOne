@@ -330,6 +330,7 @@ export async function mockGetClubs(params: {
       tags: club.tags,
       isPublic: club.isPublic,
       status: club.status,
+      supportedSports: club.supportedSports || ["PADEL"],
       createdAt: club.createdAt,
       indoorCount,
       outdoorCount,
