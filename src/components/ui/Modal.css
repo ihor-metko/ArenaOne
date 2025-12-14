@@ -19,6 +19,9 @@
 
 .rsp-modal-body {
   @apply mb-4;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
 }
 
 .rsp-modal-footer {
