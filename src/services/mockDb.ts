@@ -3,6 +3,7 @@
 // See TODO_MOCK_CLEANUP.md for removal instructions.
 
 import type { User, Organization, Club, Court, Booking, Membership, ClubMembership, ClubBusinessHours, CourtPriceRule, Coach, ClubGallery, AuditLog, AdminNotification, Payment } from "@prisma/client";
+import { SportType } from "@/constants/sports";
 
 // ============================================================================
 // Mock Data State (mutable at runtime for testing flows)
@@ -512,15 +513,13 @@ export function initializeMockData() {
 
   // Create mock bookings (mix of past, current, and future)
   const now = new Date();
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const today = new Date(now);
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-  const nextWeek = new Date(now);
-  nextWeek.setDate(nextWeek.getDate() + 7);
+  
+  // Helper to create a date at start of day
+  const createStartOfDay = (date: Date): Date => {
+    const newDate = new Date(date);
+    newDate.setHours(0, 0, 0, 0);
+    return newDate;
+  };
 
   // Helper to create a date at specific time
   const createDateAtTime = (baseDate: Date, hour: number, minute: number = 0) => {
@@ -528,6 +527,14 @@ export function initializeMockData() {
     date.setHours(hour, minute, 0, 0);
     return date;
   };
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const today = createStartOfDay(now);
+  const tomorrow = createStartOfDay(new Date(now));
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const nextWeek = new Date(now);
+  nextWeek.setDate(nextWeek.getDate() + 7);
 
   mockBookings = [
     // Yesterday's bookings
@@ -539,7 +546,7 @@ export function initializeMockData() {
       start: createDateAtTime(yesterday, 10, 0),
       end: createDateAtTime(yesterday, 11, 30),
       price: 5000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-1",
       createdAt: new Date(yesterday.getTime() - 24 * 60 * 60 * 1000),
@@ -552,7 +559,7 @@ export function initializeMockData() {
       start: createDateAtTime(yesterday, 15, 0),
       end: createDateAtTime(yesterday, 16, 0),
       price: 8000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "cancelled",
       paymentId: null,
       createdAt: new Date(yesterday.getTime() - 48 * 60 * 60 * 1000),
@@ -567,7 +574,7 @@ export function initializeMockData() {
       start: createDateAtTime(today, 9, 0),
       end: createDateAtTime(today, 10, 30),
       price: 6250,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-today-1",
       createdAt: createDateAtTime(today, 8, 0),
@@ -580,7 +587,7 @@ export function initializeMockData() {
       start: createDateAtTime(today, 14, 0),
       end: createDateAtTime(today, 15, 30),
       price: 6250,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-today-2",
       createdAt: createDateAtTime(today, 7, 30),
@@ -593,7 +600,7 @@ export function initializeMockData() {
       start: createDateAtTime(today, 18, 0),
       end: createDateAtTime(today, 19, 30),
       price: 6250,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "reserved",
       paymentId: null,
       createdAt: createDateAtTime(today, 12, 0),
@@ -606,7 +613,7 @@ export function initializeMockData() {
       start: createDateAtTime(today, 10, 0),
       end: createDateAtTime(today, 11, 30),
       price: 6250,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-today-3",
       createdAt: createDateAtTime(today, 8, 15),
@@ -619,7 +626,7 @@ export function initializeMockData() {
       start: createDateAtTime(today, 16, 0),
       end: createDateAtTime(today, 17, 0),
       price: 5000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "pending",
       paymentId: null,
       createdAt: createDateAtTime(today, 15, 0),
@@ -632,7 +639,7 @@ export function initializeMockData() {
       start: createDateAtTime(today, 11, 0),
       end: createDateAtTime(today, 12, 30),
       price: 5000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-today-4",
       createdAt: createDateAtTime(today, 9, 0),
@@ -645,7 +652,7 @@ export function initializeMockData() {
       start: createDateAtTime(today, 15, 0),
       end: createDateAtTime(today, 16, 30),
       price: 5000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-today-5",
       createdAt: createDateAtTime(today, 10, 30),
@@ -658,7 +665,7 @@ export function initializeMockData() {
       start: createDateAtTime(today, 19, 0),
       end: createDateAtTime(today, 20, 0),
       price: 5000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-today-6",
       createdAt: createDateAtTime(today, 11, 0),
@@ -673,7 +680,7 @@ export function initializeMockData() {
       start: createDateAtTime(tomorrow, 10, 0),
       end: createDateAtTime(tomorrow, 11, 30),
       price: 5000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "pending",
       paymentId: null,
       createdAt: now,
@@ -686,7 +693,7 @@ export function initializeMockData() {
       start: createDateAtTime(tomorrow, 13, 0),
       end: createDateAtTime(tomorrow, 14, 30),
       price: 6250,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "reserved",
       paymentId: null,
       createdAt: now,
@@ -699,7 +706,7 @@ export function initializeMockData() {
       start: createDateAtTime(tomorrow, 17, 0),
       end: createDateAtTime(tomorrow, 18, 30),
       price: 7500,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-tomorrow-1",
       createdAt: now,
@@ -712,7 +719,7 @@ export function initializeMockData() {
       start: createDateAtTime(tomorrow, 9, 0),
       end: createDateAtTime(tomorrow, 10, 0),
       price: 5000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-tomorrow-2",
       createdAt: now,
@@ -727,7 +734,7 @@ export function initializeMockData() {
       start: createDateAtTime(new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), 10, 0),
       end: createDateAtTime(new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), 11, 0),
       price: 6000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "reserved",
       paymentId: null,
       createdAt: now,
@@ -742,7 +749,7 @@ export function initializeMockData() {
       start: createDateAtTime(nextWeek, 14, 0),
       end: createDateAtTime(nextWeek, 15, 0),
       price: 4000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-2",
       createdAt: now,
@@ -755,7 +762,7 @@ export function initializeMockData() {
       start: createDateAtTime(nextWeek, 16, 0),
       end: createDateAtTime(nextWeek, 17, 0),
       price: 3500,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-3",
       createdAt: now,
@@ -768,7 +775,7 @@ export function initializeMockData() {
       start: createDateAtTime(nextWeek, 10, 0),
       end: createDateAtTime(nextWeek, 11, 30),
       price: 10000,
-      sportType: "PADEL",
+      sportType: SportType.PADEL,
       status: "paid",
       paymentId: "payment-4",
       createdAt: now,

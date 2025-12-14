@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireClubAdmin, requireOrganizationAdmin } from "@/lib/requireRole";
 import type { OperationsBooking } from "@/types/booking";
 import { calculateBookingStatus, toBookingStatus } from "@/utils/bookingStatus";
+import { isSupportedSport, SportType } from "@/constants/sports";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode, findClubById, getMockBookings, getMockCourts, getMockUsers, getMockCoaches } from "@/services/mockDb";
 
@@ -93,6 +94,11 @@ export async function GET(
         toBookingStatus(booking.status)
       );
 
+      // Validate and ensure sportType is a valid enum value
+      const sportType = isSupportedSport(booking.sportType) 
+        ? booking.sportType 
+        : SportType.PADEL; // Default to PADEL if invalid
+
       return {
         id: booking.id,
         userId: booking.userId,
@@ -104,7 +110,7 @@ export async function GET(
         end: endISO,
         status: displayStatus,
         price: booking.price,
-        sportType: booking.sportType,
+        sportType,
         coachId: booking.coachId,
         coachName: coachUser?.name || null,
         createdAt: booking.createdAt.toISOString(),
