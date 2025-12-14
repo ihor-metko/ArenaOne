@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { IMLink } from "@/components/ui";
+import { IMLink, Button } from "@/components/ui";
 import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
 import { getSportName } from "@/constants/sports";
 import type { ClubWithCounts } from "@/types/club";
@@ -11,6 +11,15 @@ export interface AdminClubCardProps {
   club: ClubWithCounts;
   /** Whether to show organization info (typically for root admins) */
   showOrganization?: boolean;
+  /** Custom action button configuration */
+  actionButton?: {
+    /** Button label text */
+    label: string;
+    /** Click handler for custom behavior */
+    onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
+    /** Optional href for navigation (if no onClick provided) */
+    href?: string;
+  };
 }
 
 /**
@@ -44,10 +53,59 @@ function parseTags(tags: string | null | undefined): string[] {
 }
 
 /**
+ * Renders the action button for the club card
+ * 
+ * @param actionButton - Optional custom action button configuration
+ * @param clubId - ID of the club (used for default href)
+ * @param t - Translation function from next-intl
+ * @returns JSX element for the action button
+ */
+function renderActionButton(
+  actionButton: AdminClubCardProps['actionButton'],
+  clubId: string,
+  t: (key: string) => string
+) {
+  // Custom action button provided
+  if (actionButton) {
+    // Button with onClick handler
+    if (actionButton.onClick) {
+      return (
+        <Button 
+          onClick={actionButton.onClick} 
+          variant="outline" 
+          className="w-full"
+        >
+          {actionButton.label}
+        </Button>
+      );
+    }
+    
+    // Link with custom or default href
+    return (
+      <IMLink 
+        asButton 
+        href={actionButton.href || `/admin/clubs/${clubId}`} 
+        variant="outline" 
+        className="w-full"
+      >
+        {actionButton.label}
+      </IMLink>
+    );
+  }
+  
+  // Default: View Club link
+  return (
+    <IMLink asButton href={`/admin/clubs/${clubId}`} variant="outline" className="w-full">
+      {t("clubs.viewClub")}
+    </IMLink>
+  );
+}
+
+/**
  * Admin Club Card component - Card-based display for club management
  * Displays key club information with admin actions (view, edit, delete, courts)
  */
-export function AdminClubCard({ club, showOrganization }: AdminClubCardProps) {
+export function AdminClubCard({ club, showOrganization, actionButton }: AdminClubCardProps) {
   const t = useTranslations();
 
   // Convert stored paths to full Supabase Storage URLs
@@ -209,9 +267,7 @@ export function AdminClubCard({ club, showOrganization }: AdminClubCardProps) {
 
       {/* Action Buttons */}
       <div className="im-admin-club-card-actions">
-        <IMLink asButton href={`/admin/clubs/${club.id}`} variant="outline" className="w-full">
-          {t("clubs.viewClub")}
-        </IMLink>
+        {renderActionButton(actionButton, club.id, t)}
       </div>
     </article>
   );
