@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
+// TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+import { isMockMode } from "@/services/mockDb";
+import { mockGetBookingById, mockUpdateBookingById } from "@/services/mockApiHandlers";
 
 /**
  * Booking detail response type
@@ -198,6 +201,38 @@ export async function GET(
   const { id } = await params;
 
   try {
+    // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+    if (isMockMode()) {
+      const mockBooking = await mockGetBookingById(id);
+      
+      if (!mockBooking) {
+        return NextResponse.json(
+          { error: "Booking not found" },
+          { status: 404 }
+        );
+      }
+
+      // Check access based on admin type
+      let hasAccess = false;
+      
+      if (adminType === "root_admin") {
+        hasAccess = true;
+      } else if (adminType === "organization_admin" && mockBooking.organizationId) {
+        hasAccess = managedIds.includes(mockBooking.organizationId);
+      } else if (adminType === "club_admin") {
+        hasAccess = managedIds.includes(mockBooking.clubId);
+      }
+
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: "Booking not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(mockBooking);
+    }
+
     const { hasAccess, booking } = await checkBookingAccess(id, adminType, managedIds);
 
     if (!hasAccess || !booking) {
@@ -272,16 +307,6 @@ export async function PATCH(
   const { id } = await params;
 
   try {
-    // First check if admin has access to this booking
-    const { hasAccess, booking: existingBooking } = await checkBookingAccess(id, adminType, managedIds);
-
-    if (!hasAccess || !existingBooking) {
-      return NextResponse.json(
-        { error: "Booking not found" },
-        { status: 404 }
-      );
-    }
-
     const body = await request.json();
     const { status } = body;
 
@@ -291,6 +316,59 @@ export async function PATCH(
       return NextResponse.json(
         { error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` },
         { status: 400 }
+      );
+    }
+
+    // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+    if (isMockMode()) {
+      // First check if booking exists and admin has access
+      const mockBooking = await mockGetBookingById(id);
+      
+      if (!mockBooking) {
+        return NextResponse.json(
+          { error: "Booking not found" },
+          { status: 404 }
+        );
+      }
+
+      // Check access based on admin type
+      let hasAccess = false;
+      
+      if (adminType === "root_admin") {
+        hasAccess = true;
+      } else if (adminType === "organization_admin" && mockBooking.organizationId) {
+        hasAccess = managedIds.includes(mockBooking.organizationId);
+      } else if (adminType === "club_admin") {
+        hasAccess = managedIds.includes(mockBooking.clubId);
+      }
+
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: "Booking not found" },
+          { status: 404 }
+        );
+      }
+
+      // Update the booking
+      const updatedBooking = await mockUpdateBookingById(id, { status });
+      
+      if (!updatedBooking) {
+        return NextResponse.json(
+          { error: "Failed to update booking" },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json(updatedBooking);
+    }
+
+    // First check if admin has access to this booking
+    const { hasAccess, booking: existingBooking } = await checkBookingAccess(id, adminType, managedIds);
+
+    if (!hasAccess || !existingBooking) {
+      return NextResponse.json(
+        { error: "Booking not found" },
+        { status: 404 }
       );
     }
 
