@@ -44,6 +44,7 @@ export function Select({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const listboxRef = useRef<HTMLUListElement>(null);
+  const portalRef = useRef<HTMLUListElement>(null);
   const generatedId = useId();
   const selectId = id || generatedId;
   const listboxId = `${selectId}-listbox`;
@@ -138,7 +139,11 @@ export function Select({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const isInsideWrapper = wrapperRef.current && wrapperRef.current.contains(target);
+      const isInsidePortal = portalRef.current && portalRef.current.contains(target);
+      
+      if (!isInsideWrapper && !isInsidePortal) {
         setOpen(false);
         setFocusedIndex(-1);
       }
@@ -203,7 +208,10 @@ export function Select({
       {open && dropdownPosition && (
         <Portal>
           <ul
-            ref={listboxRef}
+            ref={(node) => {
+              listboxRef.current = node;
+              portalRef.current = node;
+            }}
             id={listboxId}
             role="listbox"
             aria-labelledby={label ? `${selectId}-label` : undefined}
