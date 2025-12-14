@@ -2,7 +2,7 @@
 // This module provides mock data and CRUD helpers for development when the database is unavailable.
 // See TODO_MOCK_CLEANUP.md for removal instructions.
 
-import type { User, Organization, Club, Court, Booking, Membership, ClubMembership, ClubBusinessHours, CourtPriceRule, Coach, ClubGallery, AuditLog, AdminNotification } from "@prisma/client";
+import type { User, Organization, Club, Court, Booking, Membership, ClubMembership, ClubBusinessHours, CourtPriceRule, Coach, ClubGallery, AuditLog, AdminNotification, Payment } from "@prisma/client";
 
 // ============================================================================
 // Mock Data State (mutable at runtime for testing flows)
@@ -13,6 +13,7 @@ let mockOrganizations: Organization[] = [];
 let mockClubs: Club[] = [];
 let mockCourts: Court[] = [];
 let mockBookings: Booking[] = [];
+let mockPayments: Payment[] = [];
 let mockMemberships: Membership[] = [];
 let mockClubMemberships: ClubMembership[] = [];
 let mockBusinessHours: ClubBusinessHours[] = [];
@@ -33,6 +34,7 @@ export function initializeMockData() {
   mockClubs = [];
   mockCourts = [];
   mockBookings = [];
+  mockPayments = [];
   mockMemberships = [];
   mockClubMemberships = [];
   mockBusinessHours = [];
@@ -578,6 +580,66 @@ export function initializeMockData() {
       paymentId: null,
       createdAt: new Date(yesterday.getTime() - 48 * 60 * 60 * 1000),
     },
+    {
+      id: "booking-6",
+      courtId: "court-7",
+      userId: "user-5",
+      coachId: "coach-3",
+      start: nextWeek,
+      end: new Date(nextWeek.getTime() + 90 * 60 * 1000),
+      price: 10000,
+      status: "paid",
+      paymentId: "payment-4",
+      createdAt: now,
+    },
+    {
+      id: "booking-7",
+      courtId: "court-8",
+      userId: "user-4",
+      coachId: null,
+      start: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
+      end: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
+      price: 6000,
+      status: "reserved",
+      paymentId: null,
+      createdAt: now,
+    },
+  ];
+
+  // Create mock payments
+  mockPayments = [
+    {
+      id: "payment-1",
+      bookingId: "booking-1",
+      provider: "stripe",
+      status: "completed",
+      amount: 5000,
+      createdAt: new Date(yesterday.getTime() - 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "payment-2",
+      bookingId: "booking-3",
+      provider: "stripe",
+      status: "completed",
+      amount: 4000,
+      createdAt: now,
+    },
+    {
+      id: "payment-3",
+      bookingId: "booking-4",
+      provider: "paypal",
+      status: "completed",
+      amount: 3500,
+      createdAt: now,
+    },
+    {
+      id: "payment-4",
+      bookingId: "booking-6",
+      provider: "stripe",
+      status: "completed",
+      amount: 10000,
+      createdAt: now,
+    },
   ];
 
   // Create mock memberships
@@ -1000,6 +1062,10 @@ export function getMockBookings() {
   return [...mockBookings];
 }
 
+export function getMockPayments() {
+  return [...mockPayments];
+}
+
 export function getMockMemberships() {
   return [...mockMemberships];
 }
@@ -1088,6 +1154,17 @@ export function createMockBooking(data: {
   };
   mockBookings.push(booking);
   return booking;
+}
+
+export function updateMockBooking(id: string, data: Partial<Booking>): Booking | null {
+  const index = mockBookings.findIndex((b) => b.id === id);
+  if (index === -1) return null;
+
+  mockBookings[index] = {
+    ...mockBookings[index],
+    ...data,
+  };
+  return mockBookings[index];
 }
 
 export function cancelMockBooking(id: string): boolean {
