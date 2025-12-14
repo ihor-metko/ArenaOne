@@ -213,8 +213,21 @@ export async function mockGetBookingById(id: string) {
 
   const court = findCourtById(booking.courtId);
   const user = findUserById(booking.userId);
-  const club = court ? findClubById(court.clubId) : undefined;
-  const organization = club?.organizationId ? findOrganizationById(club.organizationId) : undefined;
+  
+  // Validate required relations exist in mock data
+  if (!user) {
+    throw new Error(`Mock data error: User ${booking.userId} not found for booking ${id}`);
+  }
+  if (!court) {
+    throw new Error(`Mock data error: Court ${booking.courtId} not found for booking ${id}`);
+  }
+  
+  const club = findClubById(court.clubId);
+  if (!club) {
+    throw new Error(`Mock data error: Club ${court.clubId} not found for court ${court.id}`);
+  }
+  
+  const organization = club.organizationId ? findOrganizationById(club.organizationId) : null;
   const payments = getMockPayments().filter((p) => p.bookingId === id);
   
   // Get coach information if coachId exists
@@ -232,15 +245,15 @@ export async function mockGetBookingById(id: string) {
   return {
     id: booking.id,
     userId: booking.userId,
-    userName: user?.name || null,
-    userEmail: user?.email || "",
+    userName: user.name,
+    userEmail: user.email,
     courtId: booking.courtId,
-    courtName: court?.name || "",
-    courtType: court?.type || null,
-    courtSurface: court?.surface || null,
-    clubId: court?.clubId || "",
-    clubName: club?.name || "",
-    organizationId: club?.organizationId || null,
+    courtName: court.name,
+    courtType: court.type,
+    courtSurface: court.surface,
+    clubId: court.clubId,
+    clubName: club.name,
+    organizationId: club.organizationId,
     organizationName: organization?.name || null,
     start: booking.start.toISOString(),
     end: booking.end.toISOString(),
