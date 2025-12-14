@@ -5,6 +5,8 @@ import {
   getDatesFromStart,
   getWeekMonday,
 } from "@/utils/dateTime";
+// TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+import { isMockMode, findClubById, getMockCourts, getMockBookings } from "@/services/mockDb";
 
 // Business hours configuration
 const BUSINESS_START_HOUR = 8;
@@ -110,6 +112,176 @@ export async function GET(
     
     // Format today's date for comparison
     const todayStr = today.toISOString().split("T")[0];
+
+    // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+    if (isMockMode()) {
+      const club = findClubById(clubId);
+      if (!club) {
+        return NextResponse.json({ error: "Club not found" }, { status: 404 });
+      }
+
+      const courts = getMockCourts()
+        .filter((c) => c.clubId === clubId)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      // Get dates for the requested period
+      const datesToShow = getDatesFromStart(startDate, numDays);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + numDays - 1);
+
+      // Get all bookings for the period
+      const periodStartUtc = new Date(`${datesToShow[0]}T00:00:00.000Z`);
+      const periodEndUtc = new Date(`${datesToShow[datesToShow.length - 1]}T23:59:59.999Z`);
+
+      const allBookings = getMockBookings();
+      const confirmedBookings = allBookings.filter((b) => {
+        return (
+          courts.some((c) => c.id === b.courtId) &&
+          b.start >= periodStartUtc &&
+          b.end <= periodEndUtc &&
+          (b.status === "reserved" || b.status === "paid")
+        );
+      });
+
+      const pendingBookings = allBookings.filter((b) => {
+        return (
+          courts.some((c) => c.id === b.courtId) &&
+          b.start >= periodStartUtc &&
+          b.end <= periodEndUtc &&
+          b.status === "pending"
+        );
+      });
+
+      // Build availability for each day
+      const days: DayAvailability[] = [];
+
+      for (const dateStr of datesToShow) {
+        const date = new Date(dateStr);
+        const dayOfWeek = date.getDay();
+        const dayName = getDayName(date);
+        const isToday = dateStr === todayStr;
+
+        const hours: HourSlotAvailability[] = [];
+
+        for (let hour = BUSINESS_START_HOUR; hour < BUSINESS_END_HOUR; hour++) {
+          const slotStart = new Date(`${dateStr}T${hour.toString().padStart(2, "0")}:00:00.000Z`);
+          const slotEnd = new Date(`${dateStr}T${(hour + 1).toString().padStart(2, "0")}:00:00.000Z`);
+
+          const courtsStatus: CourtAvailabilityStatus[] = [];
+          let availableCount = 0;
+          let bookedCount = 0;
+          let partialCount = 0;
+          let pendingCount = 0;
+
+          for (const court of courts) {
+            // Check for bookings that overlap with this slot
+            const courtPendingBookings = pendingBookings.filter((b) => b.courtId === court.id);
+            const courtConfirmedBookings = confirmedBookings.filter((b) => b.courtId === court.id);
+            let status: "available" | "booked" | "partial" | "pending" = "available";
+
+            // First check pending bookings - they take priority for pending status
+            for (const booking of courtPendingBookings) {
+              const bookingStart = new Date(booking.start);
+              const bookingEnd = new Date(booking.end);
+
+              // Check for overlap
+              if (bookingStart < slotEnd && bookingEnd > slotStart) {
+                // If the booking completely covers the slot or overlaps, mark as pending
+                if (bookingStart <= slotStart && bookingEnd >= slotEnd) {
+                  status = "pending";
+                  break;
+                } else {
+                  // Partial overlap with pending
+                  status = "pending";
+                }
+              }
+            }
+
+            // If not pending, check confirmed bookings
+            if (status === "available") {
+              for (const booking of courtConfirmedBookings) {
+                const bookingStart = new Date(booking.start);
+                const bookingEnd = new Date(booking.end);
+
+                // Check for overlap
+                if (bookingStart < slotEnd && bookingEnd > slotStart) {
+                  // If the booking completely covers the slot, it's booked
+                  if (bookingStart <= slotStart && bookingEnd >= slotEnd) {
+                    status = "booked";
+                    break;
+                  } else {
+                    // Partial overlap - only upgrade from available to partial
+                    status = "partial";
+                  }
+                }
+              }
+            }
+
+            courtsStatus.push({
+              courtId: court.id,
+              courtName: court.name,
+              courtType: court.type,
+              indoor: court.indoor,
+              status,
+            });
+
+            if (status === "available") availableCount++;
+            else if (status === "booked") bookedCount++;
+            else if (status === "pending") pendingCount++;
+            else partialCount++;
+          }
+
+          // Determine overall status for this hour slot
+          let overallStatus: "available" | "partial" | "booked" | "pending";
+          if (availableCount === courts.length) {
+            overallStatus = "available";
+          } else if (bookedCount === courts.length) {
+            overallStatus = "booked";
+          } else if (pendingCount === courts.length) {
+            overallStatus = "pending";
+          } else {
+            overallStatus = "partial";
+          }
+
+          hours.push({
+            hour,
+            courts: courtsStatus,
+            summary: {
+              available: availableCount,
+              booked: bookedCount,
+              partial: partialCount,
+              pending: pendingCount,
+              total: courts.length,
+            },
+            overallStatus,
+          });
+        }
+
+        days.push({
+          date: dateStr,
+          dayOfWeek,
+          dayName,
+          hours,
+          isToday,
+        });
+      }
+
+      const response: WeeklyAvailabilityResponse = {
+        weekStart: datesToShow[0],
+        weekEnd: datesToShow[datesToShow.length - 1],
+        days,
+        courts: courts.map((c) => ({
+          id: c.id,
+          name: c.name,
+          type: c.type,
+          indoor: c.indoor,
+          sportType: "PADEL",
+        })),
+        mode: modeParam || "rolling",
+      };
+
+      return NextResponse.json(response);
+    }
 
     // Check if club exists and get its courts
     const club = await prisma.club.findUnique({

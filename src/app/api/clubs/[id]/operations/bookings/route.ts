@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireClubAdmin, requireOrganizationAdmin } from "@/lib/requireRole";
 import type { OperationsBooking } from "@/types/booking";
 import { calculateBookingStatus, toBookingStatus } from "@/utils/bookingStatus";
+// TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+import { isMockMode, findClubById, getMockBookings, getMockCourts, getMockUsers, getMockCoaches } from "@/services/mockDb";
 
 /**
  * GET /api/clubs/[clubId]/operations/bookings
@@ -41,6 +43,75 @@ export async function GET(
       { error: "Invalid date format. Expected YYYY-MM-DD" },
       { status: 400 }
     );
+  }
+
+  // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
+  if (isMockMode()) {
+    const club = findClubById(clubId);
+    if (!club) {
+      return NextResponse.json({ error: "Club not found" }, { status: 404 });
+    }
+
+    // Parse date and create start/end of day timestamps
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Get all bookings for this club on this date
+    const allBookings = getMockBookings();
+    const courts = getMockCourts().filter((c) => c.clubId === clubId);
+    const courtIds = courts.map((c) => c.id);
+    const users = getMockUsers();
+    const coaches = getMockCoaches();
+
+    const bookings = allBookings
+      .filter((b) => {
+        return (
+          courtIds.includes(b.courtId) &&
+          b.start >= startOfDay &&
+          b.start <= endOfDay
+        );
+      })
+      .sort((a, b) => a.start.getTime() - b.start.getTime());
+
+    // Transform to response format with dynamic status calculation
+    const operationsBookings: OperationsBooking[] = bookings.map((booking) => {
+      const court = courts.find((c) => c.id === booking.courtId);
+      const user = users.find((u) => u.id === booking.userId);
+      const coach = booking.coachId ? coaches.find((c) => c.id === booking.coachId) : null;
+      const coachUser = coach ? users.find((u) => u.id === coach.userId) : null;
+
+      const startISO = booking.start.toISOString();
+      const endISO = booking.end.toISOString();
+
+      // Calculate the display status based on time and persistent status
+      const displayStatus = calculateBookingStatus(
+        startISO,
+        endISO,
+        toBookingStatus(booking.status)
+      );
+
+      return {
+        id: booking.id,
+        userId: booking.userId,
+        userName: user?.name || null,
+        userEmail: user?.email || "",
+        courtId: booking.courtId,
+        courtName: court?.name || "Unknown Court",
+        start: startISO,
+        end: endISO,
+        status: displayStatus,
+        price: booking.price,
+        sportType: booking.sportType,
+        coachId: booking.coachId,
+        coachName: coachUser?.name || null,
+        createdAt: booking.createdAt.toISOString(),
+      };
+    });
+
+    return NextResponse.json(operationsBookings);
   }
 
   // First, try club admin authorization
