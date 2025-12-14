@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import "./Input.css";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -8,7 +8,8 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   showPasswordToggle?: boolean;
 }
 
-export function Input({ label, className = "", id, type, showPasswordToggle = false, ...props }: InputProps) {
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  function Input({ label, className = "", id, type, showPasswordToggle = false, ...props }, ref) {
   const [showPassword, setShowPassword] = useState(false);
   const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
 
@@ -28,6 +29,7 @@ export function Input({ label, className = "", id, type, showPasswordToggle = fa
       )}
       <div className={shouldShowToggle ? "rsp-input-password-wrapper" : "rsp-input-field-wrapper"}>
         <input
+          ref={ref}
           id={inputId}
           type={actualType}
           className={`rsp-input ${shouldShowToggle ? "rsp-input--with-toggle" : ""} ${className}`.trim()}
@@ -55,4 +57,4 @@ export function Input({ label, className = "", id, type, showPasswordToggle = fa
       </div>
     </div>
   );
-}
+});
