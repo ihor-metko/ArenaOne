@@ -8,6 +8,7 @@ import {
   getMockCourts,
   getMockOrganizations,
   getMockUsers,
+  getMockPayments,
   getMockMemberships,
   getMockClubMemberships,
   getMockBusinessHours,
@@ -22,6 +23,7 @@ import {
   findOrganizationById,
   findAdminNotificationById,
   createMockBooking,
+  updateMockBooking,
   cancelMockBooking,
   deleteMockBooking,
   createMockClub,
@@ -211,29 +213,83 @@ export async function mockGetBookingById(id: string) {
 
   const court = findCourtById(booking.courtId);
   const user = findUserById(booking.userId);
-  const club = court ? findClubById(court.clubId) : undefined;
-  const organization = club?.organizationId ? findOrganizationById(club.organizationId) : undefined;
+  
+  // Validate required relations exist in mock data
+  if (!user) {
+    throw new Error(`Mock data error: User ${booking.userId} not found for booking ${id}`);
+  }
+  if (!court) {
+    throw new Error(`Mock data error: Court ${booking.courtId} not found for booking ${id}`);
+  }
+  
+  const club = findClubById(court.clubId);
+  if (!club) {
+    throw new Error(`Mock data error: Club ${court.clubId} not found for court ${court.id}`);
+  }
+  
+  const organization = club.organizationId ? findOrganizationById(club.organizationId) : null;
+  const payments = getMockPayments().filter((p) => p.bookingId === id);
+  
+  // Get coach information if coachId exists
+  const coaches = getMockCoaches();
+  const users = getMockUsers();
+  let coachName: string | null = null;
+  if (booking.coachId) {
+    const coach = coaches.find((c) => c.id === booking.coachId);
+    if (coach) {
+      const coachUser = users.find((u) => u.id === coach.userId);
+      coachName = coachUser?.name || null;
+    }
+  }
 
   return {
-    ...booking,
-    user: user ? { id: user.id, name: user.name, email: user.email } : null,
-    court: court
-      ? {
-          id: court.id,
-          name: court.name,
-          clubId: court.clubId,
-          club: club
-            ? {
-                id: club.id,
-                name: club.name,
-                organizationId: club.organizationId,
-                organization: organization ? { id: organization.id, name: organization.name } : null,
-              }
-            : null,
-        }
-      : null,
-    coach: null,
+    id: booking.id,
+    userId: booking.userId,
+    userName: user.name,
+    userEmail: user.email,
+    courtId: booking.courtId,
+    courtName: court.name,
+    courtType: court.type,
+    courtSurface: court.surface,
+    clubId: court.clubId,
+    clubName: club.name,
+    organizationId: club.organizationId,
+    organizationName: organization?.name || null,
+    start: booking.start.toISOString(),
+    end: booking.end.toISOString(),
+    status: booking.status,
+    price: booking.price,
+    coachId: booking.coachId,
+    coachName,
+    paymentId: booking.paymentId,
+    createdAt: booking.createdAt.toISOString(),
+    payments: payments.map((payment) => ({
+      id: payment.id,
+      provider: payment.provider,
+      status: payment.status,
+      amount: payment.amount,
+      createdAt: payment.createdAt.toISOString(),
+    })),
   };
+}
+
+/**
+ * Mock handler for updating a booking
+ * Used by PATCH /api/admin/bookings/:id
+ */
+export async function mockUpdateBookingById(id: string, data: { status?: string }) {
+  const booking = findBookingById(id);
+  if (!booking) return null;
+
+  // Update the booking
+  const updatedBooking = updateMockBooking(id, {
+    status: data.status || booking.status,
+  });
+
+  if (!updatedBooking) return null;
+
+  // Return the full booking detail (reuse the get function)
+  return mockGetBookingById(id);
 }
 
 // ============================================================================

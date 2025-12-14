@@ -59,8 +59,14 @@
     "slide": "Слайд",
     "slideOf": "Слайд {current} з {total}",
     "clearFilters": "Очистити фільтри",
+    "club": "Клуб",
+    "organization": "Організація",
+    "created": "Створено",
     "allStatuses": "Всі статуси",
     "view": "Переглянути",
+    "viewItem": "Переглянути {name}",
+    "editItem": "Редагувати {name}",
+    "deleteItem": "Видалити {name}",
     "viewProfile": "Переглянути профіль"
   },
   "home": {
@@ -458,6 +464,9 @@
       "courtLocation": "Розташування",
       "allLocations": "Усі розташування",
       "filterByLocation": "Фільтр за розташуванням",
+      "presetActiveCourts": "Активні корти",
+      "presetMaintenanceCourts": "Корти на обслуговуванні",
+      "presetPrimeTime": "Найбільш затребувані",
       "loadMore": "Завантажити ще",
       "loading": "Завантаження...",
       "new": {
