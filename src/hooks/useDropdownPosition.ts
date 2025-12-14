@@ -97,6 +97,8 @@ export function useDropdownPosition({
       const actualMaxHeight = Math.min(maxHeight, availableSpace - SAFE_ZONE_BUFFER);
 
       // Get actual dropdown height if listboxRef is available
+      // Note: getBoundingClientRect is called within requestAnimationFrame (see handleUpdate)
+      // which batches layout reads and prevents layout thrashing during scroll/resize
       let dropdownHeight = actualMaxHeight;
       if (listboxRef?.current) {
         const listboxRect = listboxRef.current.getBoundingClientRect();

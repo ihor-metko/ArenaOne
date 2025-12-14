@@ -192,10 +192,10 @@ describe("useDropdownPosition", () => {
 
     expect(result.current).not.toBeNull();
     expect(result.current?.placement).toBe("top");
-    // Available space = 900 - 4 = 896
-    // actualMaxHeight = min(300, 896 - 20) = 300
+    // Available space above = 900 - 4 (offset) = 896
+    // actualMaxHeight = min(maxHeight, availableSpace - SAFE_ZONE_BUFFER)
+    // actualMaxHeight = min(300, 896 - 20) = min(300, 876) = 300
     // Should use actualMaxHeight (300) not listbox height (500)
-    // maxHeight in result should be 300
     expect(result.current?.maxHeight).toBe(300);
   });
 
