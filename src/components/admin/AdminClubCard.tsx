@@ -16,7 +16,7 @@ export interface AdminClubCardProps {
     /** Button label text */
     label: string;
     /** Click handler for custom behavior */
-    onClick?: () => void;
+    onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
     /** Optional href for navigation (if no onClick provided) */
     href?: string;
   };

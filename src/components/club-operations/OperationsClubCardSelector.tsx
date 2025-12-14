@@ -136,7 +136,10 @@ export function OperationsClubCardSelector({
                 showOrganization={showOrganization}
                 actionButton={{
                   label: t("operations.selectClub") || "Select Club",
-                  onClick: () => handleCardClick(club.id)
+                  onClick: (e) => {
+                    e?.stopPropagation();
+                    handleCardClick(club.id);
+                  }
                 }}
               />
             </div>
