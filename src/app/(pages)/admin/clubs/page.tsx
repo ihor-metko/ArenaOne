@@ -14,6 +14,7 @@ import {
   OrgSelector,
   SortSelect,
   PaginationControls,
+  QuickPresets,
 } from "@/components/list-controls";
 import type { ClubWithCounts } from "@/types/club";
 import { useUserStore } from "@/stores/useUserStore";
@@ -27,6 +28,8 @@ interface ClubFilters {
   selectedCity: string;
   selectedStatus: string;
   selectedSportType: string;
+  courtCountMin: string;
+  courtCountMax: string;
 }
 
 /**
@@ -59,6 +62,8 @@ export default function AdminClubsPage() {
       selectedCity: "",
       selectedStatus: "",
       selectedSportType: "",
+      courtCountMin: "",
+      courtCountMax: "",
     },
     defaultSortBy: "name",
     defaultSortOrder: "asc",
@@ -81,6 +86,8 @@ export default function AdminClubsPage() {
       if (controller.filters.selectedStatus) params.append("status", controller.filters.selectedStatus);
       if (controller.filters.organizationFilter) params.append("organizationId", controller.filters.organizationFilter);
       if (controller.filters.selectedSportType) params.append("sportType", controller.filters.selectedSportType);
+      if (controller.filters.courtCountMin) params.append("courtCountMin", controller.filters.courtCountMin);
+      if (controller.filters.courtCountMax) params.append("courtCountMax", controller.filters.courtCountMax);
       params.append("sortBy", controller.sortBy);
       params.append("sortOrder", controller.sortOrder);
       params.append("page", controller.page.toString());
@@ -154,6 +161,26 @@ export default function AdminClubsPage() {
     { key: "bookingCount", label: t("admin.clubs.sortBookings"), direction: "desc" as const },
   ];
 
+  // Quick filter presets for court count
+  const quickFilterPresets = [
+    {
+      id: "small_clubs",
+      label: t("admin.clubs.smallClubs"),
+      filters: {
+        courtCountMin: "",
+        courtCountMax: "2",
+      },
+    },
+    {
+      id: "large_clubs",
+      label: t("admin.clubs.largeClubs"),
+      filters: {
+        courtCountMin: "5",
+        courtCountMax: "",
+      },
+    },
+  ];
+
   return (
     <ListControllerProvider controller={controller}>
       <main className="im-admin-clubs-page">
@@ -163,6 +190,9 @@ export default function AdminClubsPage() {
         />
 
         <section className="rsp-content">
+          {/* Quick Filters */}
+          <QuickPresets presets={quickFilterPresets} />
+
           {/* List Controls Toolbar with consolidated filters */}
           <ListToolbar
             showReset
