@@ -102,8 +102,14 @@ export function useDropdownPosition({
       const left = Math.max(VIEWPORT_PADDING, Math.min(rect.left, viewportWidth - rect.width - VIEWPORT_PADDING));
       const width = matchWidth ? rect.width : Math.min(rect.width, viewportWidth - (VIEWPORT_PADDING * 2));
 
+      // Apply viewport padding constraint only for bottom placement
+      // For top placement, the value represents bottom edge position and should not be constrained
+      const constrainedTop = placement === "bottom"
+        ? Math.max(VIEWPORT_PADDING, top)
+        : top;
+
       setPosition({
-        top: Math.max(VIEWPORT_PADDING, top),
+        top: constrainedTop,
         left,
         width,
         maxHeight: actualMaxHeight,
