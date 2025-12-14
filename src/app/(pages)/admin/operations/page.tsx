@@ -27,7 +27,7 @@ export default function OperationsListPage() {
   const isLoadingUser = useUserStore((state) => state.isLoading);
 
   // Club store
-  const { clubs, fetchClubsIfNeeded, loading: loadingClubs } = useClubStore();
+  const { fetchClubsIfNeeded, loading: loadingClubs } = useClubStore();
 
   // Check access permissions and redirect Club Admins
   useEffect(() => {
