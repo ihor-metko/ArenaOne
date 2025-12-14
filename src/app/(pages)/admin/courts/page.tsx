@@ -20,6 +20,7 @@ import {
   StatusFilter,
   SortSelect,
   PaginationControls,
+  QuickPresets,
 } from "@/components/list-controls";
 
 interface Court {
@@ -63,6 +64,7 @@ interface CourtFilters {
   sportTypeFilter: string;
   surfaceTypeFilter: string;
   indoorFilter: string;
+  primeTimeFilter: string; // Special flag for Prime Time preset
 }
 
 export default function AdminCourtsPage() {
@@ -98,6 +100,7 @@ export default function AdminCourtsPage() {
       sportTypeFilter: "",
       surfaceTypeFilter: "",
       indoorFilter: "",
+      primeTimeFilter: "",
     },
     defaultSortBy: "name",
     defaultSortOrder: "asc",
@@ -145,6 +148,17 @@ export default function AdminCourtsPage() {
       setLoading(false);
     }
   }, [router, t, controller.filters, controller.sortBy, controller.sortOrder, controller.page, controller.pageSize]);
+
+  // Handle Prime Time preset - auto-sort by bookings when active
+  useEffect(() => {
+    if (controller.filters.primeTimeFilter === "true") {
+      // Set sort to bookings descending when Prime Time is active
+      if (controller.sortBy !== "bookings" || controller.sortOrder !== "desc") {
+        controller.setSortBy("bookings");
+        controller.setSortOrder("desc");
+      }
+    }
+  }, [controller.filters.primeTimeFilter, controller]);
 
   useEffect(() => {
     if (isLoadingStore) return;
@@ -289,6 +303,30 @@ export default function AdminCourtsPage() {
     { value: 'outdoor', label: t('admin.courts.outdoor') },
   ];
 
+  // Quick presets for common court filters
+  const getQuickPresets = () => {
+    return [
+      {
+        id: "active_courts",
+        label: t("admin.courts.presetActiveCourts"),
+        filters: { statusFilter: "active" },
+      },
+      {
+        id: "maintenance_courts",
+        label: t("admin.courts.presetMaintenanceCourts"),
+        filters: { statusFilter: "inactive" },
+      },
+      {
+        id: "prime_time",
+        label: t("admin.courts.presetPrimeTime"),
+        filters: { 
+          statusFilter: "active",
+          primeTimeFilter: "true", // Flag to trigger sort by bookings
+        },
+      },
+    ];
+  };
+
   // Define table columns
   const columns: TableColumn<Court>[] = [
     {
@@ -427,6 +465,11 @@ export default function AdminCourtsPage() {
                 className="flex-1"
                 placeholder={t("common.search")}
                 filterKey="searchQuery"
+              />
+
+              <QuickPresets
+                className="flex-1"
+                presets={getQuickPresets()}
               />
             </div>
 
