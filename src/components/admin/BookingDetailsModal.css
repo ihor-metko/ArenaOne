@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@reference "tailwindcss";
 
 /* ===== Booking Detail Modal ===== */
 .im-booking-modal {

@@ -48,6 +48,9 @@ function StatusBadge({ status }: { status: string }) {
     paid: t("adminBookings.statusPaid"),
     reserved: t("adminBookings.statusReserved"),
     cancelled: t("adminBookings.statusCancelled"),
+    ongoing: t("adminBookings.statusOngoing"),
+    completed: t("adminBookings.statusCompleted"),
+    "no-show": t("adminBookings.statusNoShow"),
   };
 
   // Get translated label or use a capitalized version of status as last resort
