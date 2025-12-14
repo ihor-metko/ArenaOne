@@ -71,6 +71,7 @@
 .im-list-toolbar-actions {
   @apply flex flex-col items-stretch gap-2;
   flex-shrink: 0;
+  align-items: center;
 }
 
 .im-list-toolbar-actions button {
