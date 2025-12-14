@@ -138,7 +138,12 @@ export function Select({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      // Check if click is outside both the wrapper and the listbox
+      const isOutsideWrapper = wrapperRef.current && !wrapperRef.current.contains(target);
+      const isOutsideListbox = listboxRef.current && !listboxRef.current.contains(target);
+      
+      if (isOutsideWrapper && isOutsideListbox) {
         setOpen(false);
         setFocusedIndex(-1);
       }

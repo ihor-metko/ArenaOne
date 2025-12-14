@@ -64,6 +64,7 @@ export function DateInput({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const calendarPopupRef = useRef<HTMLDivElement>(null);
 
   // Calculate dropdown position
   const dropdownPosition = useDropdownPosition({
@@ -120,7 +121,12 @@ export function DateInput({
   // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      // Check if click is outside both the container and the calendar popup
+      const isOutsideContainer = containerRef.current && !containerRef.current.contains(target);
+      const isOutsidePopup = calendarPopupRef.current && !calendarPopupRef.current.contains(target);
+      
+      if (isOutsideContainer && isOutsidePopup) {
         setIsOpen(false);
       }
     };
@@ -195,6 +201,7 @@ export function DateInput({
       {isOpen && dropdownPosition && (
         <Portal>
           <div 
+            ref={calendarPopupRef}
             className="im-date-input-popup im-date-input-popup-portal" 
             id={`${inputId}-calendar`}
             style={{
