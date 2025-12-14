@@ -65,6 +65,7 @@ export function DateInput({
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const calendarPopupRef = useRef<HTMLDivElement>(null);
+  const justClosedRef = useRef(false);
 
   // Calculate dropdown position
   const dropdownPosition = useDropdownPosition({
@@ -97,12 +98,21 @@ export function DateInput({
   // Handle calendar selection
   const handleCalendarChange = (date: string) => {
     onChange(date);
+    justClosedRef.current = true;
     setIsOpen(false);
+    // Use setTimeout to ensure the justClosedRef flag is cleared after focus event
+    setTimeout(() => {
+      justClosedRef.current = false;
+    }, 100);
     inputRef.current?.focus();
   };
 
   // Handle input focus
   const handleInputFocus = () => {
+    // Don't re-open if we just closed from a date selection
+    if (justClosedRef.current) {
+      return;
+    }
     setIsOpen(true);
   };
 
