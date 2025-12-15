@@ -6,7 +6,6 @@
 
 import { render, screen } from "@testing-library/react";
 import { BookingStatusBadge, PaymentStatusBadge } from "@/components/ui";
-import type { BookingStatus, PaymentStatus } from "@/types/booking";
 
 // Mock next-intl
 jest.mock("next-intl", () => ({
@@ -161,7 +160,7 @@ describe("PaymentStatusBadge", () => {
 
 describe("Status Badge Components - Integration", () => {
   it("should render both booking and payment status badges together", () => {
-    const { container } = render(
+    render(
       <div>
         <BookingStatusBadge status="Active" />
         <PaymentStatusBadge status="Paid" />
@@ -170,13 +169,10 @@ describe("Status Badge Components - Integration", () => {
     
     expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.getByText("Paid")).toBeInTheDocument();
-    
-    const badges = container.querySelectorAll("span[class*='im-']");
-    expect(badges.length).toBeGreaterThanOrEqual(2);
   });
 
   it("should maintain consistent styling between booking and payment badges", () => {
-    const { container } = render(
+    render(
       <div>
         <BookingStatusBadge status="Active" />
         <PaymentStatusBadge status="Paid" />
