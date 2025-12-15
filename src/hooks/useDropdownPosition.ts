@@ -85,16 +85,35 @@ export function useDropdownPosition({
       const availableSpace = placement === "bottom" ? spaceBelow : spaceAbove;
       const actualMaxHeight = Math.min(maxHeight, availableSpace - SAFE_ZONE_BUFFER);
 
-      // Calculate position
-      const top = placement === "bottom"
-        ? rect.bottom + offset
-        : rect.top - actualMaxHeight - offset;
-
-      const left = Math.max(VIEWPORT_PADDING, Math.min(rect.left, viewportWidth - rect.width - VIEWPORT_PADDING));
+      // Calculate width first so we can use it for positioning
       const width = matchWidth ? rect.width : Math.min(rect.width, viewportWidth - (VIEWPORT_PADDING * 2));
 
+      // Calculate vertical position
+      // For upward placement, ensure dropdown doesn't go above viewport
+      // For downward placement, position below trigger without clamping to top
+      let top = placement === "bottom"
+        ? rect.bottom + offset
+        : rect.top - actualMaxHeight - offset;
+      
+      // Only clamp to top viewport edge for upward placement
+      if (placement === "top" && top < VIEWPORT_PADDING) {
+        top = VIEWPORT_PADDING;
+      }
+
+      // Calculate horizontal position
+      // Ensure dropdown stays within viewport horizontally
+      let left = rect.left;
+      // Check if dropdown would overflow right edge
+      if (left + width > viewportWidth - VIEWPORT_PADDING) {
+        left = viewportWidth - width - VIEWPORT_PADDING;
+      }
+      // Check if dropdown would overflow left edge
+      if (left < VIEWPORT_PADDING) {
+        left = VIEWPORT_PADDING;
+      }
+
       setPosition({
-        top: Math.max(VIEWPORT_PADDING, top),
+        top,
         left,
         width,
         maxHeight: actualMaxHeight,
