@@ -178,4 +178,46 @@ describe("useDropdownPosition", () => {
     expect(result.current?.top).toBe(200);
     expect(result.current?.left).toBe(100);
   });
+
+  it("should set refs even when dropdown is closed to prevent positioning issues", () => {
+    const { useFloating } = require("@floating-ui/react");
+    const mockSetReference = jest.fn();
+    const mockSetFloating = jest.fn();
+    
+    useFloating.mockReturnValue({
+      x: 50,
+      y: 144,
+      refs: {
+        setReference: mockSetReference,
+        setFloating: mockSetFloating,
+      },
+      placement: "bottom-start",
+    });
+
+    const trigger = document.createElement("div");
+    const listbox = document.createElement("div");
+    const triggerRef = { current: trigger };
+    const listboxRef = { current: listbox };
+    
+    // Render with dropdown closed
+    const { rerender } = renderHook(
+      ({ isOpen }) => useDropdownPosition({
+        triggerRef,
+        listboxRef,
+        isOpen,
+      }),
+      { initialProps: { isOpen: false } }
+    );
+
+    // Refs should be set even when closed
+    expect(mockSetReference).toHaveBeenCalledWith(trigger);
+    expect(mockSetFloating).toHaveBeenCalledWith(listbox);
+
+    // When dropdown opens, refs should already be set
+    rerender({ isOpen: true });
+    
+    // Verify refs were set at least once
+    expect(mockSetReference).toHaveBeenCalled();
+    expect(mockSetFloating).toHaveBeenCalled();
+  });
 });
