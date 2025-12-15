@@ -290,6 +290,7 @@
       "statusSuspended": "Призупинено",
       "allSports": "Усі види спорту",
       "filterBySport": "Фільтр за видом спорту",
+      "supportedSports": "Підтримувані види спорту",
       "smallClubs": "Малі клуби (< 3 корти)",
       "largeClubs": "Великі клуби (≥ 5 кортів)",
       "form": {
@@ -1026,6 +1027,7 @@
     "superAdmins": "СуперАдміни",
     "createdAt": "Створено",
     "notAssigned": "Не призначено",
+    "noDescription": "Без опису",
     "assignAdmin": "Призначити адміна",
     "changeAdmin": "Змінити адміна",
     "addAdmin": "Додати адміна",
@@ -1083,7 +1085,8 @@
     "createdDate": "Дата створення",
     "filterBySport": "Вид спорту",
     "allSports": "Всі види спорту",
-    "searchByAdmin": "Пошук за адміном/власником..."
+    "searchByAdmin": "Пошук за адміном/власником...",
+    "supportedSports": "Підтримувані види спорту"
   },
   "operations": {
     "title": "Операції",

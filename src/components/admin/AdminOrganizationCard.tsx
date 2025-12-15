@@ -10,6 +10,7 @@ export interface AdminOrganizationCardProps {
     id: string;
     name: string;
     slug: string;
+    description?: string | null;
     createdAt: string;
     clubCount?: number;
     supportedSports?: SportType[];
@@ -110,57 +111,53 @@ export function AdminOrganizationCard({
       <div className="im-admin-org-card-content">
         {/* Title */}
         <h2 id={`admin-org-name-${organization.id}`} className="im-admin-org-name">
-          {onView ? (
-            <button
-              onClick={() => onView(organization.id)}
-              className="im-admin-org-name-link"
-              aria-label={t("organizations.viewDetails")}
-            >
-              {organization.name}
-            </button>
-          ) : (
-            organization.name
-          )}
+          {organization.name}
         </h2>
 
-        {/* Slug */}
-        <p className="im-admin-org-slug">{organization.slug}</p>
+        {/* Description */}
+        {organization.description ? (
+          <p className="im-admin-org-description">
+            {organization.description}
+          </p>
+        ) : (
+          <p className="im-admin-org-description im-admin-org-description--empty">
+            {t("organizations.noDescription")}
+          </p>
+        )}
 
         {/* Owner Information */}
-        {ownerInfo ? (
-          <div className="im-admin-org-owner">
-            <div className="im-admin-org-owner-label">
-              <svg
-                className="im-admin-org-icon"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <span className="im-admin-org-label-text">
-                {primaryOwner ? t("organizations.owner") : t("organizations.superAdmin")}:
-              </span>
-            </div>
-            <div className="im-admin-org-owner-info">
-              <span className="im-admin-org-owner-name">
-                {ownerInfo.name || ownerInfo.email}
-              </span>
-              <span className="im-admin-org-owner-email">{ownerInfo.email}</span>
-            </div>
-          </div>
-        ) : (
-          <div className="im-admin-org-owner">
-            <span className="im-admin-org-no-owner">
-              {t("organizations.notAssigned")}
+        <div className="im-admin-org-owner">
+          <svg
+            className="im-admin-org-icon"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <div className="im-admin-org-owner-content">
+            <span className="im-admin-org-owner-label">
+              {t("organizations.owner")}
             </span>
+            {ownerInfo ? (
+              <div className="im-admin-org-owner-info">
+                <span className="im-admin-org-owner-name">
+                  {ownerInfo.name || ownerInfo.email}
+                </span>
+                <span className="im-admin-org-owner-email">{ownerInfo.email}</span>
+              </div>
+            ) : (
+              <span className="im-admin-org-no-owner">
+                {t("organizations.notAssigned")}
+              </span>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Metadata Row */}
         <div className="im-admin-org-meta">
@@ -181,28 +178,6 @@ export function AdminOrganizationCard({
             </svg>
             <span className="im-admin-org-meta-value">
               {organization.clubCount || 0} {(organization.clubCount || 0) === 1 ? t("admin.club") : t("admin.clubs")}
-            </span>
-          </div>
-
-          {/* Admins Count */}
-          <div className="im-admin-org-meta-item">
-            <svg
-              className="im-admin-org-meta-icon"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
-            >
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            <span className="im-admin-org-meta-value">
-              {organization.superAdmins?.length || 0} {t("organizations.superAdmins")}
             </span>
           </div>
 
