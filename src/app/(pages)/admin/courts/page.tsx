@@ -18,7 +18,6 @@ import {
   ClubSelector,
   StatusFilter,
   SortSelect,
-  PaginationControls,
   QuickPresets,
 } from "@/components/list-controls";
 
@@ -398,15 +397,6 @@ export default function AdminCourtsPage() {
                 />
               ))}
             </div>
-          )}
-
-          {/* Pagination */}
-          {!deferredLoading && courts.length > 0 && (
-            <PaginationControls
-              totalCount={pagination.total}
-              totalPages={pagination.totalPages}
-              showPageSize
-            />
           )}
         </section>
       </main>
