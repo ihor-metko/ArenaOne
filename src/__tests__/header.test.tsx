@@ -118,9 +118,10 @@ describe("Header Component", () => {
       });
     });
 
-    it("renders the header with brand title", () => {
+    it("renders the header with brand logo", () => {
       render(<Header />);
-      expect(screen.getByText("Padel Club MVP")).toBeInTheDocument();
+      expect(screen.getByText("Arena")).toBeInTheDocument();
+      expect(screen.getByText("One")).toBeInTheDocument();
     });
 
     it("shows sign in and register links for unauthenticated users", () => {
@@ -388,9 +389,11 @@ describe("Header Component", () => {
       });
     });
 
-    it("uses custom title when provided", () => {
-      render(<Header title="Custom Title" />);
-      expect(screen.getByText("Custom Title")).toBeInTheDocument();
+    it("always renders the ArenaOne logo", () => {
+      render(<Header />);
+      // Logo is always "ArenaOne"
+      expect(screen.getByText("Arena")).toBeInTheDocument();
+      expect(screen.getByText("One")).toBeInTheDocument();
     });
 
     it("hides profile section when hideProfile is true", () => {

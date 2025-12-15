@@ -48,12 +48,12 @@
 
 /* Logo / Brand */
 .im-header-brand {
-  @apply flex items-center gap-2 text-lg font-bold no-underline;
-  color: var(--im-foreground);
+  @apply flex items-center gap-2 no-underline;
+  transition: transform 0.2s ease;
 }
 
 .im-header-brand:hover {
-  color: var(--im-primary);
+  transform: scale(1.05);
 }
 
 .im-header-brand:focus {
@@ -61,14 +61,31 @@
   outline-offset: 2px;
 }
 
-.im-header-title {
-  @apply text-lg font-semibold;
-  color: var(--im-foreground);
+/* Modern logo with brand colors */
+.im-logo {
+  @apply font-sans font-extrabold;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.im-logo-arena {
+  color: var(--im-logo-cyan);
+}
+
+.im-logo-one {
+  color: var(--im-logo-emerald);
+}
+
+@media (max-width: 768px) {
+  .im-logo {
+    font-size: 1.25rem;
+  }
 }
 
 @media (max-width: 640px) {
-  .im-header-title {
-    @apply hidden;
+  .im-logo {
+    font-size: 1.125rem;
   }
 }
 
