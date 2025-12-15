@@ -80,7 +80,9 @@ describe("Admin Create Admin API", () => {
 
       // Mock: no organization or club memberships
       (prisma.membership.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.clubMembership as any).findMany = jest.fn().mockResolvedValue([]);
+      Object.assign(prisma.clubMembership, {
+        findMany: jest.fn().mockResolvedValue([])
+      });
 
       const request = new Request("http://localhost:3000/api/admin/admins/create", {
         method: "POST",
@@ -102,9 +104,11 @@ describe("Admin Create Admin API", () => {
 
       // Mock: user is a club admin
       (prisma.membership.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.clubMembership as any).findMany = jest.fn().mockResolvedValue([
-        { clubId: "club-123", role: ClubMembershipRole.CLUB_ADMIN },
-      ]);
+      Object.assign(prisma.clubMembership, {
+        findMany: jest.fn().mockResolvedValue([
+          { clubId: "club-123", role: ClubMembershipRole.CLUB_ADMIN },
+        ])
+      });
 
       const request = new Request("http://localhost:3000/api/admin/admins/create", {
         method: "POST",
@@ -382,7 +386,9 @@ describe("Admin Create Admin API", () => {
       (prisma.membership.findMany as jest.Mock).mockResolvedValue([
         { organizationId: "org-123", role: MembershipRole.ORGANIZATION_ADMIN },
       ]);
-      (prisma.clubMembership as any).findMany = jest.fn().mockResolvedValue([]);
+      Object.assign(prisma.clubMembership, {
+        findMany: jest.fn().mockResolvedValue([])
+      });
       
       (prisma.organization.findUnique as jest.Mock).mockResolvedValue({ id: "org-123", name: "Test Org" });
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
@@ -420,7 +426,9 @@ describe("Admin Create Admin API", () => {
       (prisma.membership.findMany as jest.Mock).mockResolvedValue([
         { organizationId: "org-456", role: MembershipRole.ORGANIZATION_ADMIN },
       ]);
-      (prisma.clubMembership as any).findMany = jest.fn().mockResolvedValue([]);
+      Object.assign(prisma.clubMembership, {
+        findMany: jest.fn().mockResolvedValue([])
+      });
 
       const request = new Request("http://localhost:3000/api/admin/admins/create", {
         method: "POST",
@@ -444,7 +452,9 @@ describe("Admin Create Admin API", () => {
       (prisma.membership.findMany as jest.Mock).mockResolvedValue([
         { organizationId: "org-456", role: MembershipRole.ORGANIZATION_ADMIN },
       ]);
-      (prisma.clubMembership as any).findMany = jest.fn().mockResolvedValue([]);
+      Object.assign(prisma.clubMembership, {
+        findMany: jest.fn().mockResolvedValue([])
+      });
       
       // Mock: club belongs to org-789 (different from user's org-456)
       (prisma.club.findUnique as jest.Mock).mockResolvedValue({

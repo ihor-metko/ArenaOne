@@ -19,15 +19,14 @@ import type { CreateAdminWizardConfig } from "@/types/adminWizard";
 export default function CreateClubAdminPage({
   params,
 }: {
-  params: Promise<{ clubId: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { clubId } = use(params);
+  const { id: clubId } = use(params);
   const router = useRouter();
   const { status } = useSession();
   const user = useUserStore((state) => state.user);
   const isHydrated = useUserStore((state) => state.isHydrated);
   const hasAnyRole = useUserStore((state) => state.hasAnyRole);
-  const isClubAdmin = useUserStore((state) => state.isClubAdmin);
   const isOrgAdmin = useUserStore((state) => state.isOrgAdmin);
   
   const [clubOrgId, setClubOrgId] = useState<string>("");
@@ -77,7 +76,7 @@ export default function CreateClubAdminPage({
     defaultOrgId: clubOrgId,
     defaultClubId: clubId,
     allowedRoles: ["CLUB_ADMIN"], // Only club admin role when creating from club context
-    onSuccess: (userId) => {
+    onSuccess: () => {
       router.push(`/admin/clubs/${clubId}`);
     },
     onCancel: () => {

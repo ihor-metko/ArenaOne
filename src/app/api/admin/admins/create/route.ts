@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     return authResult.response;
   }
 
-  const { userId, isRoot, adminType, managedIds } = authResult;
+  const { isRoot, adminType, managedIds } = authResult;
 
   try {
     const body = await request.json();

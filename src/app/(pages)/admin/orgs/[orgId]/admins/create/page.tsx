@@ -60,7 +60,7 @@ export default function CreateOrgAdminPage({
     context: "organization",
     defaultOrgId: orgId,
     allowedRoles: ["ORGANIZATION_ADMIN", "CLUB_ADMIN"],
-    onSuccess: (userId) => {
+    onSuccess: () => {
       router.push(`/admin/orgs/${orgId}/dashboard`);
     },
     onCancel: () => {

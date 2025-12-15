@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Button, Card } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
@@ -262,7 +262,7 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
           <Card className="im-wizard-section">
             <h2 className="im-wizard-section-title">User Details</h2>
             <p className="im-wizard-section-description">
-              Enter the admin's personal information.
+              Enter the admin&apos;s personal information.
             </p>
             <UserDataStep
               data={{

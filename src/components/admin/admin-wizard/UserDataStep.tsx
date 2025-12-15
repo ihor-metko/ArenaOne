@@ -55,7 +55,7 @@ export function UserDataStep({
           </span>
         )}
         <p className="im-field-hint">
-          We'll check if this email is already registered
+          We&apos;ll check if this email is already registered
         </p>
       </div>
 
