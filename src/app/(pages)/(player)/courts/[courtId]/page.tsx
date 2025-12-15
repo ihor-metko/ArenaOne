@@ -8,6 +8,7 @@ import { Card, Button, IMLink, Breadcrumbs } from "@/components/ui";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { formatPrice } from "@/utils/price";
+import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
 import type { Court, AvailabilitySlot, AvailabilityResponse, PriceTimelineResponse, PriceSegment } from "@/types/court";
 
 interface CourtWithClub extends Court {
@@ -276,6 +277,10 @@ export default function CourtDetailPage({
 
   const hasAvailableSlots = availability.some((slot) => slot.status !== "booked");
 
+  // Get image URL and validate
+  const imageUrl = getSupabaseStorageUrl(court.imageUrl);
+  const hasImage = isValidImageUrl(imageUrl);
+
   return (
     <main className="tm-court-page min-h-screen p-8">
       {/* Breadcrumbs */}
@@ -315,29 +320,69 @@ export default function CourtDetailPage({
         </div>
       )}
 
-      {/* Header with court info */}
-      <header className="tm-court-header mb-8">
-        <Card className="tm-court-info-card">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold">{court.name}</h1>
-              <div className="flex flex-wrap gap-2 mt-2">
+      {/* Court Image Section */}
+      {hasImage && (
+        <section className="tm-court-image-section mb-8">
+          <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden">
+            {/* Using img instead of Next.js Image to maintain consistency with existing CourtCard component styling */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl!}
+              alt={court.name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{court.name}</h1>
+              <div className="flex flex-wrap gap-2">
                 {court.type && (
-                  <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700">
+                  <span className="inline-block px-3 py-1 text-sm rounded-full bg-white/20 backdrop-blur-sm text-white border border-white/30">
                     {court.type}
                   </span>
                 )}
                 {court.surface && (
-                  <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700">
+                  <span className="inline-block px-3 py-1 text-sm rounded-full bg-white/20 backdrop-blur-sm text-white border border-white/30">
                     {court.surface}
                   </span>
                 )}
                 {court.indoor && (
-                  <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                  <span className="inline-block px-3 py-1 text-sm rounded-full bg-blue-500/80 backdrop-blur-sm text-white border border-blue-400/50">
                     {t("common.indoor")}
                   </span>
                 )}
               </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Header with court info - shown when no image or as additional info */}
+      <header className="tm-court-header mb-8">
+        <Card className="tm-court-info-card">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              {!hasImage && (
+                <>
+                  <h1 className="text-2xl font-bold">{court.name}</h1>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {court.type && (
+                      <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700">
+                        {court.type}
+                      </span>
+                    )}
+                    {court.surface && (
+                      <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700">
+                        {court.surface}
+                      </span>
+                    )}
+                    {court.indoor && (
+                      <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                        {t("common.indoor")}
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
             <div className="text-right">
               <p className="text-lg font-semibold">
