@@ -40,7 +40,7 @@
 
 .im-admin-org-image-placeholder {
   @apply w-full h-full flex items-center justify-center;
-  background: linear-gradient(135deg, var(--entity-color-organization) 0%, var(--entity-color-organization) 100%);
+  background-color: var(--entity-color-organization);
 }
 
 .im-admin-org-image-placeholder-text {

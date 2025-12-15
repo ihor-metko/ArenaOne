@@ -146,7 +146,7 @@ describe("AdminOrganizationCard", () => {
     };
     render(<AdminOrganizationCard organization={orgWithHeroImage} />);
     
-    const image = screen.getByAltText("Test Organization main image");
+    const image = screen.getByAltText("Hero image for Test Organization");
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute("src", expect.stringContaining("organizations/org-hero.jpg"));
   });
@@ -158,7 +158,7 @@ describe("AdminOrganizationCard", () => {
     };
     render(<AdminOrganizationCard organization={orgWithLogo} />);
     
-    const image = screen.getByAltText("Test Organization logo");
+    const image = screen.getByAltText("Logo for Test Organization");
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute("src", expect.stringContaining("organizations/org-logo.png"));
   });
@@ -179,9 +179,9 @@ describe("AdminOrganizationCard", () => {
     };
     render(<AdminOrganizationCard organization={orgWithBothImages} />);
     
-    const image = screen.getByAltText("Test Organization main image");
+    const image = screen.getByAltText("Hero image for Test Organization");
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute("src", expect.stringContaining("organizations/org-hero.jpg"));
-    expect(screen.queryByAltText("Test Organization logo")).not.toBeInTheDocument();
+    expect(screen.queryByAltText("Logo for Test Organization")).not.toBeInTheDocument();
   });
 });

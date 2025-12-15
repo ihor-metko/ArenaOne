@@ -72,14 +72,14 @@ export function AdminOrganizationCard({
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={mainImage}
-            alt={`${organization.name} main image`}
+            alt={`Hero image for ${organization.name}`}
             className="im-admin-org-hero-image"
           />
-        ) : hasLogo && logoUrl ? (
+        ) : hasLogo ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
-            src={logoUrl}
-            alt={`${organization.name} logo`}
+            src={logoUrl as string}
+            alt={`Logo for ${organization.name}`}
             className="im-admin-org-hero-image im-admin-org-hero-image--logo"
           />
         ) : (
