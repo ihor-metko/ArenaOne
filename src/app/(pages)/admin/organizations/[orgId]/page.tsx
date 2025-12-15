@@ -48,6 +48,16 @@ interface ClubPreview {
   createdAt: string;
 }
 
+interface ClubAdmin {
+  id: string;
+  userId: string;
+  userName: string | null;
+  userEmail: string;
+  clubId: string;
+  clubName: string;
+  createdAt: string;
+}
+
 interface BookingPreview {
   id: string;
   courtName: string;
