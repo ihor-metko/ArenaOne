@@ -29,6 +29,5 @@ import { useDeferredValue } from "react";
  * ```
  */
 export function useDeferredLoading(loading: boolean): boolean {
-  const deferredLoading = useDeferredValue(loading);
-  return deferredLoading;
+  return useDeferredValue(loading);
 }
