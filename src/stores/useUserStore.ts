@@ -333,7 +333,6 @@ export const useUserStore = create<UserState>()(
     {
       name: "user-store",
       storage: createJSONStorage(() => localStorage),
-      partialPersist: true,
       onRehydrateStorage: () => (state) => {
         // Mark as hydrated after rehydration completes
         if (state) {
