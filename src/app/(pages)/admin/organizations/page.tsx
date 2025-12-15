@@ -13,7 +13,7 @@ import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import { useUserStore } from "@/stores/useUserStore";
 import type { Organization } from "@/types/organization";
 import { SportType, SPORT_TYPE_OPTIONS } from "@/constants/sports";
-import { useListController, useDeferredLoading } from "@/hooks";
+import { useListController } from "@/hooks";
 import {
   ListControllerProvider,
   ListToolbar,
@@ -82,9 +82,6 @@ export default function AdminOrganizationsPage() {
     defaultPage: 1,
     defaultPageSize: 10,
   });
-
-  // Use deferred loading to prevent flicker on fast responses
-  const deferredLoading = useDeferredLoading(loading);
 
   // State for create organization modal
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -656,7 +653,7 @@ export default function AdminOrganizationsPage() {
             </div>
           )}
 
-          {deferredLoading ? (
+          {loading ? (
             <CardListSkeleton count={controller.pageSize > 10 ? 10 : controller.pageSize} variant="default" />
           ) : organizations.length === 0 ? (
             <div className="im-admin-organizations-empty">
