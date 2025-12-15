@@ -565,7 +565,7 @@ export default function AdminUsersPage() {
                       </td>
                       {/* Created at */}
                       <td className="im-td-date">
-                        <Tooltip content={user.createdAt ? formatDateTime(user.createdAt) : t("users.neverLoggedIn")}>
+                        <Tooltip content={user.createdAt ? formatDateTime(user.createdAt) : t("users.noCreationDate")}>
                           <div className="im-date-display">
                             <CalendarIcon />
                             <span>{formatDate(user.createdAt)}</span>
