@@ -49,10 +49,6 @@ export function ConfirmationModal({
 }: ConfirmationModalProps) {
   const t = useTranslations();
 
-  const handleConfirm = () => {
-    onConfirm();
-  };
-
   return (
     <Modal
       isOpen={isOpen}
@@ -80,7 +76,7 @@ export function ConfirmationModal({
           </Button>
           <Button
             variant={variant}
-            onClick={handleConfirm}
+            onClick={onConfirm}
             disabled={isProcessing}
           >
             {confirmText || t("confirmation.confirm")}
