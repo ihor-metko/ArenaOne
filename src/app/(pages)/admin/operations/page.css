@@ -41,7 +41,7 @@
 
 .im-club-operations-context {
   padding: 16px 20px;
-  background-color: var(--color-bg-tertiary, #f9fafb);
+  background-color: var(--rsp-card-bg);
   border-left: 3px solid var(--color-primary, #3b82f6);
   border-radius: 6px;
   font-size: 14px;
