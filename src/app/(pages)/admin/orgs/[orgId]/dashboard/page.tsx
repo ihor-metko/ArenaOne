@@ -9,7 +9,9 @@ import OrgHeader from "@/components/admin/OrgHeader";
 import KeyMetrics from "@/components/admin/KeyMetrics";
 import { Button } from "@/components/ui";
 import { MetricCardSkeleton } from "@/components/ui/skeletons";
+import { CreateAdminModal } from "@/components/admin/admin-wizard";
 import type { OrgDashboardResponse } from "@/app/api/orgs/[orgId]/dashboard/route";
+import type { CreateAdminWizardConfig } from "@/types/adminWizard";
 import "./OrgDashboard.css";
 
 /**
@@ -102,6 +104,7 @@ export default function OrgDashboardPage() {
   const [dashboardData, setDashboardData] = useState<OrgDashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isCreateAdminModalOpen, setIsCreateAdminModalOpen] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -215,13 +218,13 @@ export default function OrgDashboardPage() {
               <PlusIcon />
               <span>{t("orgDashboard.quickActions.createClub")}</span>
             </Link>
-            <Link
-              href={`/admin/orgs/${orgId}/admins/invite`}
+            <button
+              onClick={() => setIsCreateAdminModalOpen(true)}
               className="im-quick-action-btn im-quick-action-btn--secondary"
             >
               <UserPlusIcon />
               <span>{t("orgDashboard.quickActions.inviteAdmin")}</span>
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -259,6 +262,22 @@ export default function OrgDashboardPage() {
         </div>
       </section>
         </>
+      )}
+
+      {/* Create Admin Modal */}
+      {dashboardData && (
+        <CreateAdminModal
+          isOpen={isCreateAdminModalOpen}
+          onClose={() => setIsCreateAdminModalOpen(false)}
+          config={{
+            context: "organization",
+            defaultOrgId: orgId,
+            allowedRoles: ["ORGANIZATION_ADMIN", "CLUB_ADMIN"],
+            onSuccess: () => {
+              fetchDashboard();
+            },
+          } as CreateAdminWizardConfig}
+        />
       )}
     </main>
   );
