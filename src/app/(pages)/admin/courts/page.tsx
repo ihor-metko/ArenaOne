@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, Card, Modal, IMLink, PageHeader, Table } from "@/components/ui";
-import type { TableColumn } from "@/components/ui";
-import { TableSkeleton } from "@/components/ui/skeletons";
+import { Button, Modal, IMLink, PageHeader } from "@/components/ui";
+import { CardListSkeleton } from "@/components/ui/skeletons";
+import { CourtCard } from "@/components/courts/CourtCard";
 import { CourtForm, CourtFormData } from "@/components/admin/CourtForm";
 import type { AdminType } from "@/app/api/me/admin-status/route";
 import { useUserStore } from "@/stores/useUserStore";
@@ -335,103 +335,27 @@ export default function AdminCourtsPage() {
     },
   ], [t]);
 
-  // Define table columns
-  const columns: TableColumn<Court>[] = [
-    {
-      key: 'name',
-      header: t('common.name'),
-      sortable: true,
-      render: (court) => (
-        <div className="font-medium">{court.name}</div>
-      ),
-    },
-    {
-      key: 'organization',
-      header: t('common.organization'),
-      render: (court) => (
-        <div className="text-sm">{court.organization?.name || '-'}</div>
-      ),
-    },
-    {
-      key: 'club',
-      header: t('common.club'),
-      render: (court) => (
-        <div className="text-sm">{court.club.name}</div>
-      ),
-    },
-    {
-      key: 'sportType',
-      header: t('admin.courts.sport'),
-      render: (court) => (
-        <div className="text-sm">{court.sportType || '-'}</div>
-      ),
-    },
-    {
-      key: 'status',
-      header: t('common.status'),
-      render: (court) => (
-        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${court.isActive
-          ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-          : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
-          }`}>
-          {court.isActive ? t('admin.courts.active') : t('admin.courts.inactive')}
-        </span>
-      ),
-    },
-    {
-      key: 'bookingCount',
-      header: t('admin.clubs.bookings'),
-      sortable: true,
-      render: (court) => (
-        <div className="text-sm">{court.bookingCount}</div>
-      ),
-    },
-    {
-      key: 'createdAt',
-      header: t('common.created'),
-      sortable: true,
-      render: (court) => (
-        <div className="text-sm">{new Date(court.createdAt).toLocaleDateString()}</div>
-      ),
-    },
-    {
-      key: 'actions',
-      header: t('common.actions'),
-      render: (court) => (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push(`/admin/clubs/${court.club.id}/courts/${court.id}`)}
-            aria-label={t('common.viewItem', { name: court.name })}
-          >
-            {t('common.view')}
-          </Button>
-          {canEdit(adminStatus?.adminType) && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenEditModal(court)}
-              aria-label={t('common.editItem', { name: court.name })}
-            >
-              {t('common.edit')}
-            </Button>
-          )}
-          {canDelete(adminStatus?.adminType) && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenDeleteModal(court)}
-              aria-label={t('common.deleteItem', { name: court.name })}
-              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-            >
-              {t('common.delete')}
-            </Button>
-          )}
-        </div>
-      ),
-    },
-  ];
+  // Handle court card interactions
+  const handleViewDetails = (courtId: string) => {
+    const court = courts.find((c) => c.id === courtId);
+    if (court) {
+      router.push(`/admin/clubs/${court.club.id}/courts/${courtId}`);
+    }
+  };
+
+  const handleEditCourt = (courtId: string) => {
+    const court = courts.find((c) => c.id === courtId);
+    if (court) {
+      handleOpenEditModal(court);
+    }
+  };
+
+  const handleDeleteCourt = (courtId: string) => {
+    const court = courts.find((c) => c.id === courtId);
+    if (court) {
+      handleOpenDeleteModal(court);
+    }
+  };
 
   if (deferredLoading || isLoadingStore || !isHydrated) {
     return (
@@ -440,7 +364,7 @@ export default function AdminCourtsPage() {
           title={t("admin.courts.title")}
           description={t("admin.courts.subtitle")}
         />
-        <TableSkeleton columns={8} rows={10} />
+        <CardListSkeleton count={12} variant="default" />
       </main>
     );
   }
@@ -542,28 +466,38 @@ export default function AdminCourtsPage() {
             </div>
           )}
 
-          {/* Courts Table */}
+          {/* Courts Grid */}
           {deferredLoading ? (
-            <TableSkeleton columns={8} rows={10} />
+            <CardListSkeleton count={controller.pageSize > 12 ? 12 : controller.pageSize} variant="default" />
           ) : courts.length === 0 ? (
-            <Card>
-              <div className="py-8 text-center text-gray-500">
-                {t("admin.courts.noResultsMatch")}
-              </div>
-            </Card>
+            <div className="py-12 text-center" style={{ color: "var(--im-muted)" }}>
+              <p className="text-lg">
+                {controller.filters.searchQuery || controller.filters.clubFilter || controller.filters.statusFilter
+                  ? t("admin.courts.noResultsMatch")
+                  : t("admin.courts.noResults")}
+              </p>
+            </div>
           ) : (
-            <Table
-              columns={columns}
-              data={courts}
-              keyExtractor={(court) => court.id}
-              sortBy={controller.sortBy}
-              sortOrder={controller.sortOrder}
-              onSort={(key) => {
-                controller.setSortBy(key);
-              }}
-              emptyMessage={t("admin.courts.noResults")}
-              ariaLabel={t("admin.courts.title")}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {courts.map((court) => (
+                <CourtCard
+                  key={court.id}
+                  court={court}
+                  club={court.club}
+                  organization={court.organization || undefined}
+                  isActive={court.isActive}
+                  showBookButton={false}
+                  showViewSchedule={false}
+                  showViewDetails={false}
+                  showAvailabilitySummary={false}
+                  showDetailedAvailability={false}
+                  showLegend={false}
+                  onCardClick={handleViewDetails}
+                  onEdit={canEdit(adminStatus?.adminType) ? handleEditCourt : undefined}
+                  onDelete={canDelete(adminStatus?.adminType) ? handleDeleteCourt : undefined}
+                />
+              ))}
+            </div>
           )}
 
           {/* Pagination */}
