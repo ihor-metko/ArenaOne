@@ -66,7 +66,9 @@ export function ClubSelector<TFilters = Record<string, unknown>>({
       setIsInitialLoading(true);
       fetchClubsIfNeeded()
         .then(() => {
-          // Add a small delay to ensure smooth transition
+          // Brief delay to coordinate with CSS transition (not for animation timing).
+          // The CSS opacity transition handles the actual animation; this just ensures
+          // the state change happens after a minimum time to prevent instant flicker.
           setTimeout(() => setIsInitialLoading(false), 100);
         })
         .catch((error) => {
