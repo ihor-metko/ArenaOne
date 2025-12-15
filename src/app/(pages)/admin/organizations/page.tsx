@@ -46,6 +46,7 @@ type SortField = "name" | "createdAt" | "clubCount" | "adminCount";
 type SortDirection = "asc" | "desc";
 
 const ITEMS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
+const MAX_SKELETON_COUNT = 10; // Maximum number of skeletons to show during loading
 
 // Define filters interface for list controller
 interface OrganizationFilters {
@@ -641,7 +642,7 @@ export default function AdminOrganizationsPage() {
           )}
 
           {isLoading ? (
-            <CardListSkeleton count={controller.pageSize > 10 ? 10 : controller.pageSize} variant="default" />
+            <CardListSkeleton count={controller.pageSize > MAX_SKELETON_COUNT ? MAX_SKELETON_COUNT : controller.pageSize} variant="default" />
           ) : organizations.length === 0 ? (
             <div className="im-admin-organizations-empty">
               <p className="im-admin-organizations-empty-text">
