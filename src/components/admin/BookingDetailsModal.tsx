@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Modal, Button, Badge, Card } from "@/components/ui";
+import { Modal, Button, Card, BookingStatusBadge, ConfirmationModal } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
-import { calculateBookingStatus, toBookingStatus } from "@/utils/bookingStatus";
 import { formatDateTime, calculateDuration } from "@/utils/bookingFormatters";
 import type { AdminBookingDetailResponse } from "@/app/api/admin/bookings/[id]/route";
 import "./BookingDetailsModal.css";
@@ -18,31 +17,32 @@ interface BookingDetailsModalProps {
 
 /**
  * Booking Details Modal Component
- * 
+ *
  * Displays detailed information about a booking including:
  * - User information
  * - Court and club details
  * - Booking time and duration
  * - Payment information
  * - Dynamic status based on current time
- * 
+ *
  * Props:
  * - isOpen: Whether the modal is visible
  * - onClose: Callback when modal is closed
  * - bookingId: ID of the booking to display
  * - onBookingCancelled: Optional callback when booking is cancelled
  */
-export function BookingDetailsModal({ 
-  isOpen, 
-  onClose, 
+export function BookingDetailsModal({
+  isOpen,
+  onClose,
   bookingId,
-  onBookingCancelled 
+  onBookingCancelled
 }: BookingDetailsModalProps) {
   const t = useTranslations();
   const [booking, setBooking] = useState<AdminBookingDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [error, setError] = useState("");
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   // Fetch booking details when modal opens or booking ID changes
   useEffect(() => {
@@ -56,7 +56,7 @@ export function BookingDetailsModal({
 
       try {
         const response = await fetch(`/api/admin/bookings/${bookingId}`);
-        
+
         if (!response.ok) {
           if (response.status === 404) {
             throw new Error(t("adminBookings.bookingNotFound"));
@@ -79,13 +79,18 @@ export function BookingDetailsModal({
     fetchBookingDetails();
   }, [isOpen, bookingId, t]);
 
+  // Show cancel confirmation modal
+  const handleCancelClick = () => {
+    setShowCancelConfirm(true);
+  };
+
   // Handle booking cancellation
-  const handleCancelBooking = async () => {
+  const handleConfirmCancel = async () => {
     if (!booking) return;
-    if (!confirm(t("adminBookings.confirmCancel"))) return;
 
     setIsCancelling(true);
     setError("");
+    setShowCancelConfirm(false);
 
     try {
       const response = await fetch(`/api/admin/bookings/${booking.id}`, {
@@ -112,61 +117,21 @@ export function BookingDetailsModal({
     }
   };
 
-  // Calculate the display status using the correct logic
-  const getDisplayStatus = () => {
-    if (!booking) return "reserved";
-    
-    // Calculate dynamic status based on booking time and persistent status
-    const displayStatus = calculateBookingStatus(
-      booking.start,
-      booking.end,
-      toBookingStatus(booking.status)
-    );
-    
-    return displayStatus;
-  };
+  // For legacy bookings, we may only have 'status', so we'll display that
+  // For new bookings with dual-status, we'd need to update the API to return both fields
+  // For now, display the status as-is using the legacy format
 
-  // Get translated status label
-  const getStatusLabel = (status: string) => {
-    const statusLabels: Record<string, string> = {
-      pending: t("adminBookings.statusPending"),
-      paid: t("adminBookings.statusPaid"),
-      reserved: t("adminBookings.statusReserved"),
-      cancelled: t("adminBookings.statusCancelled"),
-      ongoing: t("adminBookings.statusOngoing"),
-      completed: t("adminBookings.statusCompleted"),
-      "no-show": t("adminBookings.statusNoShow"),
-    };
-    return statusLabels[status] || status.charAt(0).toUpperCase() + status.slice(1);
-  };
-
-  // Get badge variant for status
-  const getStatusBadgeVariant = (status: string): "success" | "error" | "warning" | "default" => {
-    switch (status) {
-      case "paid":
-      case "confirmed":
-        return "success";
-      case "cancelled":
-      case "no-show":
-        return "error";
-      case "ongoing":
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
-  // Check if booking can be cancelled
-  const canCancelBooking = () => {
+  // Check if booking can be cancelled based on the status
+  const canCancelCurrentBooking = () => {
     if (!booking) return false;
-    
-    const displayStatus = getDisplayStatus();
-    
+
+    // Legacy: Check the status field
     // Can't cancel if already cancelled or completed or no-show
-    if (displayStatus === "cancelled" || displayStatus === "completed" || displayStatus === "no-show") {
+    const status = booking.status.toLowerCase();
+    if (status === "cancelled" || status === "completed" || status === "no-show") {
       return false;
     }
-    
+
     return true;
   };
 
@@ -190,16 +155,6 @@ export function BookingDetailsModal({
         </div>
       ) : booking ? (
         <div className="im-booking-modal">
-          {/* Status Badge Header */}
-          <div className="im-booking-modal-status">
-            <Badge
-              variant={getStatusBadgeVariant(getDisplayStatus())}
-              size="medium"
-            >
-              {getStatusLabel(getDisplayStatus())}
-            </Badge>
-          </div>
-
           {/* User Information Card */}
           <Card className="im-booking-modal-card">
             <div className="im-booking-modal-card-header">
@@ -267,16 +222,22 @@ export function BookingDetailsModal({
               <h4 className="im-booking-modal-section-title">{t("adminBookings.bookingInfo")}</h4>
             </div>
             <div className="im-booking-modal-grid">
-              <div className="im-booking-modal-field im-booking-modal-field-wide">
-                <span className="im-booking-modal-label">{t("adminBookings.dateTime")}</span>
-                <span className="im-booking-modal-value im-booking-modal-value-time">
-                  {formatDateTime(booking.start)} — {formatDateTime(booking.end)}
+              <div className="im-booking-modal-field">
+                <span className="im-booking-modal-label">{t("adminBookings.bookingStatus")}</span>
+                <span className="im-booking-modal-value">
+                  <BookingStatusBadge status={booking.status} />
                 </span>
               </div>
               <div className="im-booking-modal-field">
                 <span className="im-booking-modal-label">{t("common.duration")}</span>
                 <span className="im-booking-modal-value">
                   {calculateDuration(booking.start, booking.end)} {t("common.minutes")}
+                </span>
+              </div>
+              <div className="im-booking-modal-field im-booking-modal-field-wide">
+                <span className="im-booking-modal-label">{t("adminBookings.dateTime")}</span>
+                <span className="im-booking-modal-value im-booking-modal-value-time">
+                  {formatDateTime(booking.start)} — {formatDateTime(booking.end)}
                 </span>
               </div>
               <div className="im-booking-modal-field">
@@ -303,10 +264,10 @@ export function BookingDetailsModal({
             <Button variant="outline" onClick={onClose}>
               {t("common.close")}
             </Button>
-            {canCancelBooking() && (
+            {canCancelCurrentBooking() && (
               <Button
                 variant="danger"
-                onClick={handleCancelBooking}
+                onClick={handleCancelClick}
                 disabled={isCancelling}
               >
                 {isCancelling ? t("adminBookings.cancelling") : t("adminBookings.cancelBooking")}
@@ -315,6 +276,35 @@ export function BookingDetailsModal({
           </div>
         </div>
       ) : null}
+
+      {/* Confirmation Modal for Cancellation */}
+      <ConfirmationModal
+        isOpen={showCancelConfirm}
+        onClose={() => setShowCancelConfirm(false)}
+        onConfirm={handleConfirmCancel}
+        title={t("adminBookings.cancelBooking")}
+        message={t("adminBookings.confirmCancel")}
+        confirmText={t("adminBookings.cancelBooking")}
+        variant="danger"
+        isProcessing={isCancelling}
+      >
+        {booking && (
+          <div className="im-booking-modal-cancel-details">
+            <div className="im-booking-modal-field">
+              <span className="im-booking-modal-label">{t("adminBookings.user")}</span>
+              <span className="im-booking-modal-value">{booking.userName || booking.userEmail}</span>
+            </div>
+            <div className="im-booking-modal-field">
+              <span className="im-booking-modal-label">{t("adminBookings.court")}</span>
+              <span className="im-booking-modal-value">{booking.courtName}</span>
+            </div>
+            <div className="im-booking-modal-field">
+              <span className="im-booking-modal-label">{t("adminBookings.dateTime")}</span>
+              <span className="im-booking-modal-value">{formatDateTime(booking.start)}</span>
+            </div>
+          </div>
+        )}
+      </ConfirmationModal>
     </Modal>
   );
 }
