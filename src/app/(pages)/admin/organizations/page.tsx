@@ -590,9 +590,10 @@ export default function AdminOrganizationsPage() {
 
 
 
-  const isLoadingData = !isHydrated || status === "loading" || loading;
+  // Combined loading state for consistent loading UI
+  const isLoading = !isHydrated || status === "loading" || loading;
 
-  if (isLoadingData) {
+  if (!isHydrated || status === "loading") {
     return (
       <main className="im-admin-organizations-page">
         <PageHeader
@@ -653,7 +654,7 @@ export default function AdminOrganizationsPage() {
             </div>
           )}
 
-          {loading ? (
+          {isLoading ? (
             <CardListSkeleton count={controller.pageSize > 10 ? 10 : controller.pageSize} variant="default" />
           ) : organizations.length === 0 ? (
             <div className="im-admin-organizations-empty">
