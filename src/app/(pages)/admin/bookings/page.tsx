@@ -211,23 +211,17 @@ export default function AdminBookingsPage() {
     ];
   };
 
-  // Show loading state while hydrating or while user store is loading
-  if (!isHydrated || isLoading) {
-    return (
-      <main className="im-admin-bookings-page">
-        <div className="im-admin-bookings-loading">
-          <div className="im-admin-bookings-loading-spinner" />
-          <span>{t("common.loading")}</span>
-        </div>
-      </main>
-    );
-  }
+  // Redirect if not logged in or not admin (only after hydration)
+  useEffect(() => {
+    if (isHydrated && (!isLoggedIn || !adminStatus?.isAdmin)) {
+      router.push("/auth/sign-in");
+    }
+  }, [isHydrated, isLoggedIn, adminStatus, router]);
 
-  // Only redirect after hydration is complete
-  if (!isLoggedIn || !adminStatus?.isAdmin) {
-    router.push("/auth/sign-in");
-    return null;
-  }
+  const isLoadingState = !isHydrated || isLoading;
+
+  // Check if should show content
+  const shouldShowContent = isHydrated && isLoggedIn && adminStatus?.isAdmin;
 
   const handleOpenBookingWizard = () => {
     setIsBookingWizardOpen(true);
@@ -322,6 +316,12 @@ export default function AdminBookingsPage() {
           description={t("adminBookings.subtitle")}
         />
 
+        {isLoadingState ? (
+          <section className="rsp-content">
+            <TableSkeleton rows={20} columns={7} showHeader />
+          </section>
+        ) : !shouldShowContent ? null : (
+          <>
         {/* List Controls Toolbar with consolidated filters */}
         <ListToolbar
           showReset
@@ -474,22 +474,28 @@ export default function AdminBookingsPage() {
         )}
 
         {/* Booking Detail Modal */}
-        <BookingDetailsModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          bookingId={selectedBookingId}
-          onBookingCancelled={handleBookingCancelled}
-        />
+        {shouldShowContent && (
+          <>
+            <BookingDetailsModal
+              isOpen={isModalOpen}
+              onClose={handleCloseModal}
+              bookingId={selectedBookingId}
+              onBookingCancelled={handleBookingCancelled}
+            />
 
-        {/* Admin Booking Wizard */}
-        {adminStatus?.isAdmin && adminStatus.adminType !== "none" && (
-          <AdminQuickBookingWizard
-            isOpen={isBookingWizardOpen}
-            onClose={handleCloseBookingWizard}
-            onBookingComplete={handleBookingComplete}
-            adminType={adminStatus.adminType}
-            managedIds={adminStatus.managedIds}
-          />
+            {/* Admin Booking Wizard */}
+            {adminStatus?.isAdmin && adminStatus.adminType !== "none" && (
+              <AdminQuickBookingWizard
+                isOpen={isBookingWizardOpen}
+                onClose={handleCloseBookingWizard}
+                onBookingComplete={handleBookingComplete}
+                adminType={adminStatus.adminType}
+                managedIds={adminStatus.managedIds}
+              />
+            )}
+          </>
+        )}
+          </>
         )}
       </main>
     </ListControllerProvider>
