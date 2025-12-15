@@ -9,6 +9,7 @@ import BookingsOverview from "@/components/admin/BookingsOverview";
 import { RegisteredUsersCard } from "@/components/admin/RegisteredUsersCard";
 import DashboardGraphs from "@/components/admin/DashboardGraphs";
 import DashboardShell from "@/components/admin/DashboardShell";
+import { DashboardPlaceholder } from "@/components/ui/skeletons";
 import type { UnifiedDashboardResponse } from "@/app/api/admin/unified-dashboard/route";
 import { fetchUnifiedDashboard } from "@/services/dashboard";
 import { useUserStore } from "@/stores/useUserStore";
@@ -182,14 +183,24 @@ export default function AdminDashboardPage() {
     return t("admin.dashboard.subtitle");
   };
 
-  // Show loading state while hydrating
-  if (!isHydrated || status === "loading") {
+  // Show skeleton while hydrating or loading
+  const isLoadingState = !isHydrated || status === "loading" || !dashboardData;
+
+  if (isLoadingState && !error) {
     return (
       <main className="im-root-dashboard-page">
-        <div className="im-admin-bookings-loading">
-          <div className="im-admin-bookings-loading-spinner" />
-          <span>{t("common.loading")}</span>
-        </div>
+        <PageHeader
+          title={t("admin.dashboard.title")}
+          description={t("admin.dashboard.subtitle")}
+        />
+        <section className="rsp-content">
+          <DashboardPlaceholder
+            metricCount={4}
+            showGraphs={true}
+            graphCount={2}
+            showHeader={false}
+          />
+        </section>
       </main>
     );
   }
@@ -208,10 +219,6 @@ export default function AdminDashboardPage() {
         </section>
       </main>
     );
-  }
-
-  if (!dashboardData) {
-    return null;
   }
 
   return (

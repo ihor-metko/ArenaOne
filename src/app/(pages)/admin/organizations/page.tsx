@@ -575,7 +575,9 @@ export default function AdminOrganizationsPage() {
 
 
 
-  if (!isHydrated || status === "loading" || loading) {
+  const isLoadingData = !isHydrated || status === "loading" || loading;
+
+  if (isLoadingData) {
     return (
       <main className="im-admin-organizations-page">
         <PageHeader
@@ -583,22 +585,7 @@ export default function AdminOrganizationsPage() {
           description={t("organizations.subtitle")}
         />
         <section className="rsp-content">
-          <div className="im-admin-orgs-grid">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={`org-skeleton-${i}`} className="im-admin-org-card-skeleton">
-                <div className="im-admin-org-card-skeleton-header" />
-                <div className="im-admin-org-card-skeleton-content">
-                  <div className="im-admin-org-card-skeleton-line" />
-                  <div className="im-admin-org-card-skeleton-line im-admin-org-card-skeleton-line--short" />
-                  <div className="im-admin-org-card-skeleton-line" />
-                </div>
-                <div className="im-admin-org-card-skeleton-actions">
-                  <div className="im-admin-org-card-skeleton-btn" />
-                  <div className="im-admin-org-card-skeleton-btn" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <CardListSkeleton count={6} variant="default" />
         </section>
       </main>
     );

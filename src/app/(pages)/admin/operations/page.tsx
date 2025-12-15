@@ -63,16 +63,18 @@ export default function OperationsListPage() {
   };
 
   // Loading state (include hydration)
-  if (!isHydrated || isLoadingUser || loadingClubs) {
+  const isLoadingState = !isHydrated || isLoadingUser || loadingClubs;
+
+  if (isLoadingState) {
     return (
       <main className="im-club-operations-page">
         <PageHeader
           title={t("operations.title") || "Operations"}
           description={t("operations.description") || "Manage club operations"}
         />
-        <div className="im-club-operations-loading">
+        <section className="rsp-content">
           <TableSkeleton rows={3} columns={3} />
-        </div>
+        </section>
       </main>
     );
   }
