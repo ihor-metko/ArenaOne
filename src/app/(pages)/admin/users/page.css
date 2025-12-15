@@ -896,8 +896,8 @@
   border-color: var(--im-primary-hover);
 }
 
-/* ===== Button Icon Styles ===== */
-.rsp-button svg {
+/* ===== Create User Button Icon Styles ===== */
+.im-create-user-btn svg {
   @apply w-5 h-5 mr-2;
 }
 

@@ -334,7 +334,7 @@ export default function AdminUsersPage() {
               resetLabel={t("users.clearFilters")}
               actionButton={
                 hasAnyRole(["ROOT_ADMIN", "ORGANIZATION_ADMIN"]) && (
-                  <Button onClick={handleOpenCreateUserModal} variant="primary" aria-label={t("users.createUser")}>
+                  <Button onClick={handleOpenCreateUserModal} variant="primary" aria-label={t("users.createUser")} className="im-create-user-btn">
                     <UserPlusIcon />
                     {t("users.createUser")}
                   </Button>
@@ -644,8 +644,8 @@ export default function AdminUsersPage() {
         title={t("users.createUser")}
       >
         <div className="im-modal-placeholder">
-          <p>{t("users.createUser")} form will be implemented here.</p>
-          <p>This is a placeholder for the user creation form.</p>
+          <p>{t("users.createUserPlaceholder")}</p>
+          <p>{t("users.createUserNote")}</p>
         </div>
       </Modal>
     </main>
