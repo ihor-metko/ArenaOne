@@ -324,9 +324,10 @@ export default function CourtDetailPage({
       {hasImage && (
         <section className="tm-court-image-section mb-8">
           <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-lg overflow-hidden">
+            {/* Using img instead of Next.js Image to maintain consistency with existing CourtCard component styling */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={imageUrl as string}
+              src={imageUrl!}
               alt={court.name}
               className="w-full h-full object-cover"
             />
@@ -360,25 +361,27 @@ export default function CourtDetailPage({
         <Card className="tm-court-info-card">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              {!hasImage && <h1 className="text-2xl font-bold">{court.name}</h1>}
               {!hasImage && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {court.type && (
-                    <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700">
-                      {court.type}
-                    </span>
-                  )}
-                  {court.surface && (
-                    <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700">
-                      {court.surface}
-                    </span>
-                  )}
-                  {court.indoor && (
-                    <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                      {t("common.indoor")}
-                    </span>
-                  )}
-                </div>
+                <>
+                  <h1 className="text-2xl font-bold">{court.name}</h1>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {court.type && (
+                      <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700">
+                        {court.type}
+                      </span>
+                    )}
+                    {court.surface && (
+                      <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-gray-200 dark:bg-gray-700">
+                        {court.surface}
+                      </span>
+                    )}
+                    {court.indoor && (
+                      <span className="tm-badge inline-block px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                        {t("common.indoor")}
+                      </span>
+                    )}
+                  </div>
+                </>
               )}
             </div>
             <div className="text-right">
