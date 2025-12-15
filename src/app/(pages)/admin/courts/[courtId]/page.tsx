@@ -19,11 +19,10 @@ import "./page.css";
 export default function CourtDetailPage({
   params,
 }: {
-  params: Promise<{ id: string; courtId: string }>;
+  params: Promise<{ courtId: string }>;
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [clubId, setClubId] = useState<string | null>(null);
   const [courtId, setCourtId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -32,15 +31,12 @@ export default function CourtDetailPage({
 
   // Use court store
   const loadingCourts = useCourtStore((state) => state.loadingCourts);
-  const updateCourtStore = useCourtStore((state) => state.updateCourt);
-  const deleteCourtStore = useCourtStore((state) => state.deleteCourt);
   
   // Local state for court - using store's CourtDetail type
   const [court, setCourt] = useState<StoreCourtDetail | null>(null);
 
   useEffect(() => {
     params.then((resolvedParams) => {
-      setClubId(resolvedParams.id);
       setCourtId(resolvedParams.courtId);
     });
   }, [params]);
@@ -48,10 +44,10 @@ export default function CourtDetailPage({
   const ensureCourtByIdFromStore = useCourtStore((state) => state.ensureCourtById);
   
   const fetchCourt = useCallback(async () => {
-    if (!clubId || !courtId) return;
+    if (!courtId) return;
 
     try {
-      const courtData = await ensureCourtByIdFromStore(courtId, { clubId });
+      const courtData = await ensureCourtByIdFromStore(courtId);
       setCourt(courtData);
     } catch (err) {
       if (err instanceof Error) {
@@ -66,20 +62,20 @@ export default function CourtDetailPage({
         setError("Failed to load court");
       }
     }
-  }, [ensureCourtByIdFromStore, clubId, courtId, router]);
+  }, [ensureCourtByIdFromStore, courtId, router]);
 
   useEffect(() => {
     if (status === "loading") return;
 
-    if (!session?.user || !session.user.isRoot) {
+    if (!session?.user) {
       router.push("/auth/sign-in");
       return;
     }
 
-    if (clubId && courtId) {
+    if (courtId) {
       fetchCourt();
     }
-  }, [session, status, router, clubId, courtId, fetchCourt]);
+  }, [session, status, router, courtId, fetchCourt]);
 
   const showToast = useCallback((type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -88,10 +84,21 @@ export default function CourtDetailPage({
 
   const handleBlockUpdate = useCallback(
     async (payload: Record<string, unknown>) => {
-      if (!clubId || !courtId) return;
+      if (!courtId || !court) return;
 
       try {
-        await updateCourtStore(clubId, courtId, payload);
+        // Update via new API route
+        const response = await fetch(`/api/admin/courts/${courtId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({ error: "Failed to save changes" }));
+          throw new Error(data.error || `HTTP ${response.status}`);
+        }
+
         // Refetch to get updated CourtDetail with full data
         await fetchCourt();
         showToast("success", "Changes saved successfully");
@@ -101,16 +108,24 @@ export default function CourtDetailPage({
         throw err;
       }
     },
-    [clubId, courtId, updateCourtStore, fetchCourt, showToast]
+    [courtId, court, fetchCourt, showToast]
   );
 
   const handleDelete = async () => {
-    if (!clubId || !courtId) return;
+    if (!courtId || !court) return;
 
     setSubmitting(true);
     try {
-      await deleteCourtStore(clubId, courtId);
-      router.push(`/admin/clubs/${clubId}/courts`);
+      const response = await fetch(`/api/admin/courts/${courtId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: "Failed to delete court" }));
+        throw new Error(data.error || `HTTP ${response.status}`);
+      }
+
+      router.push("/admin/courts");
     } catch (err) {
       showToast("error", err instanceof Error ? err.message : "Failed to delete court");
     } finally {
@@ -145,7 +160,7 @@ export default function CourtDetailPage({
             {error}
           </div>
           <div className="im-court-detail-error-back">
-            <IMLink href={`/admin/clubs/${clubId}/courts`}>← Back to Courts</IMLink>
+            <IMLink href="/admin/courts">← Back to Courts</IMLink>
           </div>
         </div>
       </main>
@@ -175,10 +190,8 @@ export default function CourtDetailPage({
             {/* Breadcrumbs */}
             <Breadcrumbs
               items={[
-                { label: "Admin", href: "/admin/clubs" },
-                { label: "Clubs", href: "/admin/clubs" },
-                { label: court.club?.name || "Club", href: `/admin/clubs/${clubId}` },
-                { label: "Courts", href: `/admin/clubs/${clubId}/courts` },
+                { label: "Admin", href: "/admin/courts" },
+                { label: "Courts", href: "/admin/courts" },
                 { label: court.name },
               ]}
               className="im-court-detail-breadcrumbs !mb-0"
@@ -222,7 +235,7 @@ export default function CourtDetailPage({
 
           {/* Preview Column */}
           <div className="im-court-detail-preview">
-            <CourtPreview court={court as unknown as Parameters<typeof CourtPreview>[0]['court']} clubId={clubId!} />
+            <CourtPreview court={court as unknown as Parameters<typeof CourtPreview>[0]['court']} clubId={court.clubId} />
           </div>
         </div>
       </div>
