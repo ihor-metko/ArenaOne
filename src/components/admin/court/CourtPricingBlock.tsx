@@ -30,7 +30,7 @@ function groupRulesByDay(rules: CourtPriceRule[]): Map<number | null, CourtPrice
   return grouped;
 }
 
-export function CourtPricingBlock({ court, clubId }: CourtPricingBlockProps) {
+export function CourtPricingBlock({ court }: CourtPricingBlockProps) {
   const hasRules = court.courtPriceRules && court.courtPriceRules.length > 0;
   const groupedRules = groupRulesByDay(court.courtPriceRules || []);
 

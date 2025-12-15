@@ -228,7 +228,7 @@ export default function CourtDetailPage({
           {/* Blocks Column */}
           <div className="im-court-detail-blocks">
             <CourtBasicBlock court={court as unknown as Parameters<typeof CourtBasicBlock>[0]['court']} onUpdate={handleBlockUpdate} />
-            <CourtPricingBlock court={court as unknown as Parameters<typeof CourtPricingBlock>[0]['court']} clubId={court.clubId} />
+            <CourtPricingBlock court={court as unknown as Parameters<typeof CourtPricingBlock>[0]['court']} />
             <CourtScheduleBlock court={court as unknown as Parameters<typeof CourtScheduleBlock>[0]['court']} />
             <CourtMetaBlock court={court as unknown as Parameters<typeof CourtMetaBlock>[0]['court']} />
           </div>
