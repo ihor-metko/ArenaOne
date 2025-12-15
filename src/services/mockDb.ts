@@ -3,6 +3,7 @@
 // See TODO_MOCK_CLEANUP.md for removal instructions.
 
 import type { User, Organization, Club, Court, Booking, Membership, ClubMembership, ClubBusinessHours, CourtPriceRule, Coach, ClubGallery, AuditLog, AdminNotification, Payment } from "@prisma/client";
+import { SportType } from "@/constants/sports";
 
 // ============================================================================
 // Mock Data State (mutable at runtime for testing flows)
@@ -155,7 +156,7 @@ export function initializeMockData() {
   // Create mock organizations
   mockOrganizations = [
     {
-      id: "64f3b281-c4cf-4fba-82a5-f4d20b0c7c29",
+      id: "org-1", // Changed from UUID for consistency with references
       name: "Padel Sports Inc",
       slug: "padel-sports-inc",
       contactEmail: "contact@padelsports.com",
@@ -204,10 +205,10 @@ export function initializeMockData() {
   // Create mock clubs
   mockClubs = [
     {
-      id: "6d47229c-280f-475e-bb81-2a0d47d36771",
+      id: "club-1", // Changed from UUID for consistency with court references
       name: "Downtown Padel Club",
       slug: "downtown-padel-club",
-      organizationId: "64f3b281-c4cf-4fba-82a5-f4d20b0c7c29",
+      organizationId: "org-1", // Changed from UUID for consistency
       createdById: "user-2",
       shortDescription: "Premier downtown location",
       longDescription: "Full-service padel facility in the heart of downtown",
@@ -1407,6 +1408,34 @@ export function createMockAuditLog(data: {
   };
   mockAuditLogs.push(auditLog);
   return auditLog;
+}
+
+export function createMockCourt(data: {
+  clubId: string;
+  name: string;
+  slug?: string | null;
+  type?: string | null;
+  surface?: string | null;
+  indoor?: boolean;
+  sportType?: SportType;
+  defaultPriceCents?: number;
+}): Court {
+  const court: Court = {
+    id: generateMockId("court"),
+    clubId: data.clubId,
+    name: data.name,
+    slug: data.slug || null,
+    type: data.type || null,
+    surface: data.surface || null,
+    indoor: data.indoor ?? false,
+    sportType: data.sportType || SportType.PADEL,
+    isActive: true,
+    defaultPriceCents: data.defaultPriceCents ?? 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  mockCourts.push(court);
+  return court;
 }
 
 export function updateMockCourt(id: string, data: Partial<Court>): Court | null {

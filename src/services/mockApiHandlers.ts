@@ -29,6 +29,7 @@ import {
   createMockClub,
   createMockOrganization,
   createMockUser,
+  createMockCourt,
   updateMockCourt,
   deleteMockCourt,
   updateMockNotification,
@@ -927,6 +928,61 @@ export async function mockUpdateCourtDetail(
 
   // Return the full court detail
   return mockGetCourtDetailById(courtId);
+}
+
+export async function mockCreateCourtForClub(
+  clubId: string,
+  data: {
+    name: string;
+    slug?: string | null;
+    type?: string | null;
+    surface?: string | null;
+    indoor?: boolean;
+    sportType?: string; // Accepts string from API, will validate
+    defaultPriceCents?: number;
+  }
+) {
+  // Verify club exists
+  const club = findClubById(clubId);
+  if (!club) {
+    throw new Error("Club not found");
+  }
+
+  // Import SportType for validation
+  const { SportType, isSupportedSport } = await import("@/constants/sports");
+  
+  // Validate and convert sportType
+  const validatedSportType = data.sportType && isSupportedSport(data.sportType) 
+    ? data.sportType as typeof SportType[keyof typeof SportType]
+    : SportType.PADEL;
+
+  // Create the court
+  const court = createMockCourt({
+    clubId,
+    name: data.name,
+    slug: data.slug,
+    type: data.type,
+    surface: data.surface,
+    indoor: data.indoor,
+    sportType: validatedSportType,
+    defaultPriceCents: data.defaultPriceCents,
+  });
+
+  // Return the court with basic fields
+  return {
+    id: court.id,
+    clubId: court.clubId,
+    name: court.name,
+    slug: court.slug,
+    type: court.type,
+    surface: court.surface,
+    indoor: court.indoor,
+    sportType: court.sportType,
+    isActive: court.isActive,
+    defaultPriceCents: court.defaultPriceCents,
+    createdAt: court.createdAt.toISOString(),
+    updatedAt: court.updatedAt.toISOString(),
+  };
 }
 
 export async function mockDeleteCourtDetail(courtId: string, clubId: string) {

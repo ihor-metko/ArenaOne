@@ -11,10 +11,12 @@ import {
   getMockOrganizations,
   createMockBooking,
   cancelMockBooking,
+  createMockCourt,
   findUserById,
   findClubById,
   isMockMode,
 } from "@/services/mockDb";
+import { SportType } from "@/constants/sports";
 
 describe("Mock Data Mode", () => {
   beforeEach(() => {
@@ -182,6 +184,32 @@ describe("Mock Data Mode", () => {
     it("should return false when cancelling non-existent booking", () => {
       const result = cancelMockBooking("non-existent-id");
       expect(result).toBe(false);
+    });
+
+    it("should create a new court", () => {
+      const clubs = getMockClubs();
+      const initialCourts = getMockCourts();
+
+      const newCourt = createMockCourt({
+        clubId: clubs[0].id,
+        name: "Test Court",
+        slug: "test-court",
+        type: "padel",
+        surface: "artificial_grass",
+        indoor: true,
+        sportType: SportType.PADEL,
+        defaultPriceCents: 5000,
+      });
+
+      expect(newCourt).toBeDefined();
+      expect(newCourt.id).toBeTruthy();
+      expect(newCourt.clubId).toBe(clubs[0].id);
+      expect(newCourt.name).toBe("Test Court");
+      expect(newCourt.indoor).toBe(true);
+      expect(newCourt.sportType).toBe(SportType.PADEL);
+
+      const updatedCourts = getMockCourts();
+      expect(updatedCourts.length).toBe(initialCourts.length + 1);
     });
   });
 
