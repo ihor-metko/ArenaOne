@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Modal, Button, Card, BookingStatusBadge, PaymentStatusBadge } from "@/components/ui";
+import { Modal, Button, Card, BookingStatusBadge } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import { formatDateTime, calculateDuration } from "@/utils/bookingFormatters";
-import { canCancelBooking } from "@/utils/bookingStatus";
 import type { AdminBookingDetailResponse } from "@/app/api/admin/bookings/[id]/route";
 import "./BookingDetailsModal.css";
 
