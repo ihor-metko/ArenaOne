@@ -97,26 +97,34 @@ export function useDropdownPosition({
   });
 
   // Set refs from props to Floating UI refs
-  if (isOpen) {
+  // This must happen during render to ensure refs are set before Floating UI calculates position
+  if (isOpen && triggerRef.current) {
     refs.setReference(triggerRef.current);
-    refs.setFloating(listboxRef?.current ?? null);
+    if (listboxRef?.current) {
+      refs.setFloating(listboxRef.current);
+    }
   }
 
   if (!isOpen) {
     return null;
   }
 
+  // Return null if coordinates are not yet available
+  if (x === null || y === null) {
+    return null;
+  }
+
   // Get trigger width for matchWidth functionality
   const triggerWidth = triggerRef.current?.getBoundingClientRect().width ?? 0;
-  const width = matchWidth ? triggerWidth : undefined;
+  const width = matchWidth ? triggerWidth : triggerWidth; // Always use trigger width for now
 
   // Determine simplified placement (top or bottom)
   const simplifiedPlacement = floatingPlacement?.startsWith("top") ? "top" : "bottom";
 
   return {
-    top: y ?? 0,
-    left: x ?? 0,
-    width: width ?? triggerWidth,
+    top: y,
+    left: x,
+    width,
     maxHeight,
     placement: simplifiedPlacement,
   };
