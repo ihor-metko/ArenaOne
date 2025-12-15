@@ -5,10 +5,10 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { PageHeader, Breadcrumbs, Badge, Card, Tooltip } from "@/components/ui";
+import { PageHeader, Badge, Card, Tooltip } from "@/components/ui";
 import { TableSkeleton, PageHeaderSkeleton } from "@/components/ui/skeletons";
 import { useListController, useDeferredLoading } from "@/hooks";
-import { 
+import {
   ListControllerProvider,
   ListToolbar,
   ListSearch,
@@ -208,7 +208,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     // Wait for hydration before checking auth
     if (!isHydrated) return;
-    
+
     if (status === "loading") return;
 
     // Check if user has any admin role (ROOT_ADMIN, ORGANIZATION_ADMIN, or CLUB_ADMIN)
@@ -308,98 +308,90 @@ export default function AdminUsersPage() {
       {/* No toast notifications needed */}
 
       <section className="rsp-content">
-        {!isLoadingData && (
-          <Breadcrumbs
-            items={[
-              { label: t("breadcrumbs.home"), href: "/" },
-              { label: t("breadcrumbs.admin"), href: "/admin/dashboard" },
-              { label: t("users.breadcrumb") },
-            ]}
-            className="mb-6"
-            ariaLabel={t("breadcrumbs.navigation")}
-          />
-        )}
-
         {/* Filters using list-controls components - consolidated toolbar */}
         {!isLoadingData && (
-        <ListControllerProvider controller={controller}>
-          <ListToolbar showReset resetLabel={t("users.clearFilters")}>
-            <ListSearch 
-              placeholder={t("users.searchPlaceholder")}
-              filterKey="searchQuery"
-            />
+          <ListControllerProvider controller={controller} className="mb-4">
+            <ListToolbar showReset resetLabel={t("users.clearFilters")}>
+              <div className="full-row flex w-full gap-4">
+                <ListSearch
+                  className="flex-1"
+                  placeholder={t("users.searchPlaceholder")}
+                  filterKey="searchQuery"
+                />
 
-            <QuickPresets
-              presets={[
-                {
-                  id: "active_last_30d",
-                  label: t("users.quickFilters.activeLast30d"),
-                  filters: { activeLast30d: true },
-                },
-                {
-                  id: "never_booked",
-                  label: t("users.quickFilters.neverBooked"),
-                  filters: { neverBooked: true },
-                },
-                {
-                  id: "show_only_admins",
-                  label: t("users.quickFilters.showOnlyAdmins"),
-                  filters: { showOnlyAdmins: true, showOnlyUsers: false },
-                },
-                {
-                  id: "show_only_users",
-                  label: t("users.quickFilters.showOnlyUsers"),
-                  filters: { showOnlyUsers: true, showOnlyAdmins: false },
-                },
-              ]}
-            />
-            
-            <OrgSelector
-              filterKey="organizationFilter"
-              label={t("users.filterByOrganization")}
-              placeholder={t("users.allOrganizations")}
-            />
-            
-            <ClubSelector
-              filterKey="clubFilter"
-              orgFilterKey="organizationFilter"
-              label={t("users.filterByClub")}
-              placeholder={t("users.allClubs")}
-            />
+                <QuickPresets
+                  className="flex-1"
+                  presets={[
+                    {
+                      id: "active_last_30d",
+                      label: t("users.quickFilters.activeLast30d"),
+                      filters: { activeLast30d: true },
+                    },
+                    {
+                      id: "show_only_admins",
+                      label: t("users.quickFilters.showOnlyAdmins"),
+                      filters: { showOnlyAdmins: true, showOnlyUsers: false },
+                    },
+                    {
+                      id: "show_only_users",
+                      label: t("users.quickFilters.showOnlyUsers"),
+                      filters: { showOnlyUsers: true, showOnlyAdmins: false },
+                    },
+                  ]}
+                />
+              </div>
 
-            <RoleFilter
-              filterKey="roleFilter"
-              label={t("users.filterByRole")}
-              roles={[
-                { value: "root_admin", label: t("users.roles.rootAdmin") },
-                { value: "organization_admin", label: t("users.roles.organizationAdmin") },
-                { value: "club_admin", label: t("users.roles.clubAdmin") },
-                { value: "user", label: t("users.roles.user") },
-              ]}
-            />
-            
-            <StatusFilter
-              filterKey="statusFilter"
-              label={t("users.filterByStatus")}
-              statuses={[
-                { value: "active", label: t("users.status.active") },
-                { value: "blocked", label: t("users.status.blocked") },
-                { value: "suspended", label: t("users.status.suspended") },
-                { value: "invited", label: t("users.status.invited") },
-                { value: "deleted", label: t("users.status.deleted") },
-              ]}
-            />
+              <div className="full-row flex w-full gap-4">
+                <OrgSelector
+                  filterKey="organizationFilter"
+                  label={t("users.filterByOrganization")}
+                  placeholder={t("users.allOrganizations")}
+                />
 
-            <DateRangeFilter
-              field={filters.dateRangeField}
-              label={t("users.dateRange.createdAt")}
-              fromKey="dateFrom"
-              toKey="dateTo"
-              fromLabel={t("users.dateRange.from")}
-              toLabel={t("users.dateRange.to")}
-            />
-          </ListToolbar>
-        </ListControllerProvider>
+                <ClubSelector
+                  filterKey="clubFilter"
+                  orgFilterKey="organizationFilter"
+                  label={t("users.filterByClub")}
+                  placeholder={t("users.allClubs")}
+                />
+
+                <RoleFilter
+                  filterKey="roleFilter"
+                  label={t("users.filterByRole")}
+                  roles={[
+                    { value: "root_admin", label: t("users.roles.rootAdmin") },
+                    { value: "organization_admin", label: t("users.roles.organizationAdmin") },
+                    { value: "club_admin", label: t("users.roles.clubAdmin") },
+                    { value: "user", label: t("users.roles.user") },
+                  ]}
+                />
+              </div>
+
+              <div className="full-row flex w-full gap-4">
+                <StatusFilter
+                  className="flex-1"
+                  filterKey="statusFilter"
+                  label={t("users.filterByStatus")}
+                  statuses={[
+                    { value: "active", label: t("users.status.active") },
+                    { value: "blocked", label: t("users.status.blocked") },
+                    { value: "suspended", label: t("users.status.suspended") },
+                    { value: "invited", label: t("users.status.invited") },
+                    { value: "deleted", label: t("users.status.deleted") },
+                  ]}
+                />
+
+                <DateRangeFilter
+                  field={filters.dateRangeField}
+                  label={t("users.dateRange.createdAt")}
+                  fromKey="dateFrom"
+                  toKey="dateTo"
+                  fromLabel={t("users.dateRange.from")}
+                  toLabel={t("users.dateRange.to")}
+                />
+              </div>
+            </ListToolbar>
+          </ListControllerProvider>
         )}
 
         {(error || errorKey) && (

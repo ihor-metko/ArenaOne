@@ -985,7 +985,7 @@
     "organizations": "Організації",
     "clubs": "Клуби",
     "courts": "Корти",
-    "users": "Управління користувачами",
+    "users": "Користувачі",
     "superAdmins": "Супер адміни",
     "analytics": "Аналітика",
     "admins": "Адміністратори",
@@ -1213,10 +1213,10 @@
       "member": "Учасник"
     },
     "quickFilters": {
-      "activeLast30d": "Активні (Останні 30д)",
+      "activeLast30d": "Активні за 30 днів",
       "neverBooked": "Ніколи не бронювали",
-      "showOnlyAdmins": "Показати тільки адмінів",
-      "showOnlyUsers": "Показати тільки користувачів"
+      "showOnlyAdmins": "Адміни",
+      "showOnlyUsers": "Користувачі"
     },
     "dateRange": {
       "createdAt": "Дата створення",
