@@ -23,7 +23,12 @@ function getEncryptionKey(): string {
   const key = process.env.ENCRYPTION_KEY;
   
   if (!key) {
-    // For development/testing only - in production this must be set
+    // In production, this must be set - fail fast
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("ENCRYPTION_KEY environment variable is required in production");
+    }
+    
+    // For development/testing only
     console.warn("ENCRYPTION_KEY not set, using default key. DO NOT USE IN PRODUCTION!");
     return "default-encryption-key-change-me-in-production-with-strong-key";
   }
@@ -78,7 +83,8 @@ export function encrypt(plaintext: string): string {
       ciphertext,
     ].join(":");
   } catch (error) {
-    console.error("Encryption error:", error);
+    // Log generic message to avoid exposing sensitive information
+    console.error("Encryption failed");
     throw new Error("Failed to encrypt data");
   }
 }
@@ -123,7 +129,8 @@ export function decrypt(encryptedData: string): string {
     
     return plaintext;
   } catch (error) {
-    console.error("Decryption error:", error);
+    // Log generic message to avoid exposing sensitive information
+    console.error("Decryption failed");
     throw new Error("Failed to decrypt data - data may be corrupted or tampered");
   }
 }

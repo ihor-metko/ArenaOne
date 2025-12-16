@@ -191,8 +191,10 @@ export async function createPaymentAccount(
   });
 
   if (existingAccount) {
+    const entityId = credentials.organizationId || credentials.clubId || "unknown";
+    const entityType = credentials.scope === PaymentAccountScope.ORGANIZATION ? "organization" : "club";
     throw new Error(
-      `A payment account for ${credentials.provider} at ${credentials.scope} level already exists`
+      `A payment account for ${credentials.provider} at ${credentials.scope} level already exists for ${entityType} ${entityId}`
     );
   }
 
