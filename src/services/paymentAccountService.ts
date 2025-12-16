@@ -108,6 +108,7 @@ export async function getPaymentAccountStatus(clubId: string): Promise<PaymentAc
       provider: true,
       scope: true,
       status: true,
+      verificationLevel: true,
       displayName: true,
     },
     orderBy: {
@@ -143,6 +144,7 @@ export async function getPaymentAccountStatus(clubId: string): Promise<PaymentAc
         provider: true,
         scope: true,
         status: true,
+        verificationLevel: true,
         displayName: true,
       },
       orderBy: {

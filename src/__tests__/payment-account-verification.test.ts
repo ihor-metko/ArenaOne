@@ -70,7 +70,7 @@ describe("Payment Account Verification", () => {
       (prisma.paymentAccount.findUnique as jest.Mock).mockResolvedValueOnce(mockAccount);
       (prisma.paymentAccount.update as jest.Mock).mockResolvedValueOnce({
         ...mockAccount,
-        status: PaymentAccountStatus.ACTIVE,
+        status: PaymentAccountStatus.TECHNICAL_OK,
         lastVerifiedAt: new Date(),
       });
 
@@ -95,7 +95,7 @@ describe("Payment Account Verification", () => {
       expect(prisma.paymentAccount.update).toHaveBeenCalledWith({
         where: { id: mockAccountId },
         data: expect.objectContaining({
-          status: PaymentAccountStatus.ACTIVE,
+          status: PaymentAccountStatus.TECHNICAL_OK,
           verificationError: undefined,
         }),
       });
@@ -185,11 +185,11 @@ describe("Payment Account Verification", () => {
 
       expect(result).toBeNull();
       
-      // Verify that status filter was applied
+      // Verify that verificationLevel filter was applied (now requires VERIFIED)
       expect(prisma.paymentAccount.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            status: PaymentAccountStatus.ACTIVE,
+            verificationLevel: "VERIFIED",
           }),
         })
       );
@@ -219,8 +219,8 @@ describe("Payment Account Verification", () => {
       expect(result).toBeNull();
     });
 
-    it("should only resolve ACTIVE payment accounts", async () => {
-      const mockActiveAccount = {
+    it("should only resolve VERIFIED payment accounts", async () => {
+      const mockVerifiedAccount = {
         id: mockAccountId,
         provider: PaymentProvider.WAYFORPAY,
         scope: PaymentAccountScope.CLUB,
@@ -229,10 +229,12 @@ describe("Payment Account Verification", () => {
         merchantId: encrypt(mockMerchantId),
         secretKey: encrypt(mockSecretKey),
         providerConfig: null,
-        status: PaymentAccountStatus.ACTIVE,
+        status: PaymentAccountStatus.VERIFIED,
+        verificationLevel: "VERIFIED",
         isActive: true,
-        displayName: "Active Account",
+        displayName: "Verified Account",
         lastVerifiedAt: new Date(),
+        lastRealVerifiedAt: new Date(),
         verificationError: null,
         createdById: "user-1",
         createdAt: new Date(),
@@ -240,7 +242,7 @@ describe("Payment Account Verification", () => {
         lastUpdatedBy: "user-1",
       };
 
-      (prisma.paymentAccount.findFirst as jest.Mock).mockResolvedValueOnce(mockActiveAccount);
+      (prisma.paymentAccount.findFirst as jest.Mock).mockResolvedValueOnce(mockVerifiedAccount);
 
       const result = await resolvePaymentAccountForBooking(mockClubId);
 
