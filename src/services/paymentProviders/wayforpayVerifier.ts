@@ -1,10 +1,10 @@
 /**
  * WayForPay Payment Provider Verifier
- * 
+ *
  * Verifies WayForPay merchant credentials using a secure test payment request.
  * This approach creates a minimal payment request (1 UAH) to validate credentials
  * without charging real money.
- * 
+ *
  * NOTE: WayForPay's CHECK_STATUS and TRANSACTION_LIST APIs are NOT reliable for
  * credential verification as they may return success even with invalid credentials.
  */
@@ -15,14 +15,14 @@ import crypto from "crypto";
 
 export class WayForPayVerifier implements PaymentProviderVerifier {
   provider = PaymentProvider.WAYFORPAY;
-  
+
   private readonly API_URL = "https://api.wayforpay.com/api";
-  
+
   // Test verification constants
   private readonly TEST_DOMAIN = "verification.test";
   private readonly TEST_EMAIL = "test@verification.test";
   private readonly TEST_PHONE = "380000000000";
-  
+
   // Response codes that indicate valid credentials (signature was accepted)
   // but may have other issues like insufficient funds, expired card, etc.
   private readonly VALID_CREDENTIAL_CODES = [
@@ -34,14 +34,14 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
     1100, // Order not found (expected for verification)
     1109, // Format error (but signature accepted)
   ];
-  
+
   /**
    * Verify WayForPay credentials using secure test payment request
-   * 
+   *
    * Creates a minimal test payment request (1 UAH) with test data.
    * The request validates credentials through signature verification.
    * No real payment is processed - this is purely for credential validation.
-   * 
+   *
    * @param merchantId - WayForPay merchant account
    * @param secretKey - WayForPay secret key
    * @param providerConfig - Optional additional configuration (unused for WayForPay)
@@ -54,7 +54,7 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
     providerConfig?: Record<string, unknown> | null
   ): Promise<ProviderVerificationResult> {
     const timestamp = new Date();
-    
+
     try {
       // Validate inputs
       if (!merchantId || typeof merchantId !== "string" || merchantId.trim() === "") {
@@ -65,7 +65,7 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           timestamp,
         };
       }
-      
+
       if (!secretKey || typeof secretKey !== "string" || secretKey.trim() === "") {
         return {
           success: false,
@@ -74,7 +74,7 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           timestamp,
         };
       }
-      
+
       // Create test payment request parameters
       // Using minimal amount (1 UAH) with test data
       const orderReference = `verify_${Date.now()}`;
@@ -85,7 +85,7 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
       const productName = "Verification";
       const productCount = "1";
       const productPrice = "1";
-      
+
       // Generate signature for PURCHASE request
       // Signature string: merchantAccount;merchantDomainName;orderReference;orderDate;amount;currency;productName;productCount;productPrice
       const signatureString = [
@@ -99,12 +99,12 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
         productCount,
         productPrice,
       ].join(";");
-      
+
       const signature = crypto
         .createHmac("md5", secretKey)
         .update(signatureString)
         .digest("hex");
-      
+
       // Make test payment request to verify credentials
       const response = await fetch(this.API_URL, {
         method: "POST",
@@ -129,10 +129,22 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           clientLastName: "Verification",
           clientEmail: this.TEST_EMAIL,
           clientPhone: this.TEST_PHONE,
+
+          apiVersion: 1,
+          buyer_ip_address: '127.0.0.1',
+          buyer_timezone: 'Europe/Kiev',
+          buyer_referrer: 'https://sandbox.local',
+          card_number: '4111111111111111',
+          card_exp_month: 12,
+          card_exp_year: 2028,
+          card_holder: 'Test User',
+          card_cvv: '123',
         }),
         signal: AbortSignal.timeout(10000), // 10 second timeout
       });
-      
+
+      console.log("[WayForPayVerifier] API response status:", response.status);
+
       if (!response.ok) {
         return {
           success: false,
@@ -141,9 +153,9 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           timestamp,
         };
       }
-      
+
       const data = await response.json();
-      
+
       // Check response for authentication/credential errors
       // reasonCode 1113 = Invalid signature (invalid credentials)
       if (data.reasonCode === 1113 || data.reasonCode === "1113") {
@@ -154,7 +166,7 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           timestamp,
         };
       }
-      
+
       // reasonCode 1101 = Merchant account not found or inactive
       if (data.reasonCode === 1101 || data.reasonCode === "1101") {
         return {
@@ -164,7 +176,7 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           timestamp,
         };
       }
-      
+
       // If we get invoiceUrl or paymentURL, credentials are definitely valid
       // (WayForPay generated payment URL, which requires valid credentials)
       if (data.invoiceUrl || data.paymentURL) {
@@ -173,12 +185,12 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           timestamp,
         };
       }
-      
+
       // Parse reasonCode (could be string or number)
-      const reasonCode = typeof data.reasonCode === "string" 
-        ? parseInt(data.reasonCode, 10) 
+      const reasonCode = typeof data.reasonCode === "string"
+        ? parseInt(data.reasonCode, 10)
         : data.reasonCode;
-      
+
       // Check if this is a known valid-credential response code
       if (reasonCode && this.VALID_CREDENTIAL_CODES.includes(reasonCode)) {
         return {
@@ -186,7 +198,7 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           timestamp,
         };
       }
-      
+
       // If we get here with a reasonCode we don't recognize, it's safer to fail
       // rather than accept potentially invalid credentials
       if (data.reasonCode) {
@@ -203,7 +215,7 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           timestamp,
         };
       }
-      
+
       // Unknown response format
       console.warn(
         "[WayForPayVerifier] Unexpected response format. Has reasonCode:",
@@ -217,16 +229,16 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
         errorCode: "UNEXPECTED_RESPONSE",
         timestamp,
       };
-      
+
     } catch (error) {
       console.error("[WayForPayVerifier] Verification error:", error);
-      
+
       let errorMessage = "Verification failed";
       let errorCode = "UNKNOWN_ERROR";
-      
+
       if (error instanceof Error) {
         errorMessage = error.message;
-        
+
         if (error.name === "AbortError" || error.message.includes("timeout")) {
           errorCode = "TIMEOUT";
           errorMessage = "Verification request timed out";
@@ -235,7 +247,7 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           errorMessage = "Network error during verification";
         }
       }
-      
+
       return {
         success: false,
         error: errorMessage,
