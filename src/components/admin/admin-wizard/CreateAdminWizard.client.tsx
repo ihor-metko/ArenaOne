@@ -49,7 +49,8 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
   const isLoadingOrgs = useOrganizationStore((state) => state.loading);
   const isLoadingClubs = useClubStore((state) => state.loadingClubs);
 
-  // Fetch clubs on mount
+  // Fetch clubs on mount to ensure the dropdown has data
+  // This is required for the Club dropdown to be populated when creating a Club Admin
   useEffect(() => {
     fetchClubsIfNeeded().catch((error) => {
       console.error("Failed to fetch clubs:", error);
@@ -63,6 +64,8 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
     slug: org.slug,
   }));
 
+  // Map clubs to options, preserving organizationId for filtering
+  // The organizationId is used in SelectContextStep to filter clubs by selected organization
   const clubOptions: ClubOption[] = clubs.map(club => ({
     id: club.id,
     name: club.name,
