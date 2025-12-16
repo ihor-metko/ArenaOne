@@ -23,6 +23,18 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
   private readonly TEST_EMAIL = "test@verification.test";
   private readonly TEST_PHONE = "380000000000";
   
+  // Response codes that indicate valid credentials (signature was accepted)
+  // but may have other issues like insufficient funds, expired card, etc.
+  private readonly VALID_CREDENTIAL_CODES = [
+    1001, // Order processing error (but signature accepted)
+    1002, // Transaction declined (but credentials valid)
+    1003, // Insufficient funds (but credentials valid)
+    1004, // Card expired (but credentials valid)
+    1005, // Incorrect CVV (but credentials valid)
+    1100, // Order not found (expected for verification)
+    1109, // Format error (but signature accepted)
+  ];
+  
   /**
    * Verify WayForPay credentials using secure test payment request
    * 
@@ -162,31 +174,13 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
         };
       }
       
-      // reasonCode 1109 = Format error (but signature was accepted)
-      // This means credentials are valid, just request format issue
-      if (data.reasonCode === 1109 || data.reasonCode === "1109") {
-        return {
-          success: true,
-          timestamp,
-        };
-      }
-      
-      // Known credential-valid response codes (WayForPay accepted our signature)
-      // These codes indicate various issues but NOT invalid credentials
-      const validCredentialCodes = [
-        1001, // Order processing error (but signature accepted)
-        1002, // Transaction declined (but credentials valid)
-        1003, // Insufficient funds (but credentials valid)
-        1004, // Card expired (but credentials valid)
-        1005, // Incorrect CVV (but credentials valid)
-        1100, // Order not found (expected for verification)
-      ];
-      
+      // Parse reasonCode (could be string or number)
       const reasonCode = typeof data.reasonCode === "string" 
         ? parseInt(data.reasonCode, 10) 
         : data.reasonCode;
-        
-      if (reasonCode && validCredentialCodes.includes(reasonCode)) {
+      
+      // Check if this is a known valid-credential response code
+      if (reasonCode && this.VALID_CREDENTIAL_CODES.includes(reasonCode)) {
         return {
           success: true,
           timestamp,
@@ -196,7 +190,12 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
       // If we get here with a reasonCode we don't recognize, it's safer to fail
       // rather than accept potentially invalid credentials
       if (data.reasonCode) {
-        console.warn("[WayForPayVerifier] Unknown reasonCode:", data.reasonCode, data);
+        console.warn(
+          "[WayForPayVerifier] Unknown reasonCode:",
+          data.reasonCode,
+          "reason:",
+          data.reason || "N/A"
+        );
         return {
           success: false,
           error: `Unknown response code: ${data.reasonCode} - ${data.reason || "Unknown error"}`,
@@ -206,7 +205,12 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
       }
       
       // Unknown response format
-      console.warn("[WayForPayVerifier] Unexpected response format:", data);
+      console.warn(
+        "[WayForPayVerifier] Unexpected response format. Has reasonCode:",
+        !!data.reasonCode,
+        "Has reason:",
+        !!data.reason
+      );
       return {
         success: false,
         error: "Unexpected API response format",

@@ -35,7 +35,7 @@ POST https://api.wayforpay.com/api
   transactionType: "PURCHASE",
   merchantAccount: merchantId,
   merchantAuthType: "SimpleSignature",
-  merchantDomainName: "arenaone.test",
+  merchantDomainName: "verification.test",
   orderReference: `verify_${Date.now()}`,
   orderDate: Math.floor(Date.now() / 1000),
   amount: "1",
@@ -47,7 +47,7 @@ POST https://api.wayforpay.com/api
   // Test customer data
   clientFirstName: "Test",
   clientLastName: "Verification",
-  clientEmail: "test@arenaone.verify",
+  clientEmail: "test@verification.test",
   clientPhone: "380000000000"
 }
 ```
