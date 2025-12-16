@@ -1665,6 +1665,12 @@ function generateSlug(name: string): string {
 export async function mockCreateOrganizationHandler(data: {
   name: string;
   slug?: string;
+  description?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  website?: string;
+  address?: string;
+  metadata?: Record<string, unknown>;
   supportedSports?: string[];
   createdById: string;
 }) {
@@ -1703,6 +1709,12 @@ export async function mockCreateOrganizationHandler(data: {
   const org = createMockOrganization({
     name: data.name.trim(),
     slug: finalSlug,
+    description: data.description,
+    contactEmail: data.contactEmail,
+    contactPhone: data.contactPhone,
+    website: data.website,
+    address: data.address,
+    metadata: data.metadata,
     createdById: data.createdById,
     supportedSports: data.supportedSports || ["PADEL"],
   });
