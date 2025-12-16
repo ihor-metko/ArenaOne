@@ -70,7 +70,7 @@ export default function OrganizationPaymentAccountsPage({
       // Check if user is organization admin/owner for this org
       const isOrgOwner =
         adminStatus.adminType === "root_admin" ||
-        (adminStatus.adminType === "organization_admin" && adminStatus.managedIds.includes(orgId));
+        (adminStatus.adminType === "organization_admin" && orgId !== null && adminStatus.managedIds.includes(orgId));
 
       if (!isOrgOwner) {
         router.push("/admin/dashboard");
