@@ -521,7 +521,7 @@ describe("AdminSidebar Component", () => {
       });
     });
 
-    it("Payment Accounts link points to organization payment accounts page", async () => {
+    it("Payment Accounts link points to unified payment accounts page", async () => {
       render(<AdminSidebar />);
       await waitFor(() => {
         expect(screen.getByRole("navigation", { name: /admin navigation/i })).toBeInTheDocument();
@@ -533,7 +533,7 @@ describe("AdminSidebar Component", () => {
       
       await waitFor(() => {
         const paymentAccountsLink = screen.getByRole("menuitem", { name: /Payment Accounts/i });
-        expect(paymentAccountsLink).toHaveAttribute("href", "/admin/organizations/org-1/payment-accounts");
+        expect(paymentAccountsLink).toHaveAttribute("href", "/admin/payment-accounts");
       });
     });
   });
@@ -642,7 +642,7 @@ describe("AdminSidebar Component", () => {
       });
     });
 
-    it("Payment Accounts link points to club payment accounts page", async () => {
+    it("Payment Accounts link points to unified payment accounts page", async () => {
       render(<AdminSidebar />);
       await waitFor(() => {
         expect(screen.getByRole("navigation", { name: /admin navigation/i })).toBeInTheDocument();
@@ -654,7 +654,7 @@ describe("AdminSidebar Component", () => {
       
       await waitFor(() => {
         const paymentAccountsLink = screen.getByRole("menuitem", { name: /Payment Accounts/i });
-        expect(paymentAccountsLink).toHaveAttribute("href", "/admin/clubs/club-1/payment-accounts");
+        expect(paymentAccountsLink).toHaveAttribute("href", "/admin/payment-accounts");
       });
     });
   });
