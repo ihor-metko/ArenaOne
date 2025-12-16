@@ -73,6 +73,7 @@ function formatDateLabel(dateStr: string, timeRange: TimeRange): string {
  * Returns graph data appropriate for the current user's admin role.
  * - Root Admin: Platform-wide data
  * - Organization Admin: Data for all managed organizations
+ * - Club Owner: Data for all owned clubs
  * - Club Admin: Data for all managed clubs
  * 
  * Query parameters:
@@ -140,8 +141,8 @@ export async function GET(request: Request): Promise<NextResponse<DashboardGraph
       };
 
 
-    } else if (adminType === "club_admin") {
-      // Filter by club
+    } else if (adminType === "club_owner" || adminType === "club_admin") {
+      // Filter by club for club owners and admins
       bookingsWhere.court = {
         clubId: {
           in: managedIds,

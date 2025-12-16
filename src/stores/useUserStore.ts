@@ -18,6 +18,7 @@ export interface User {
 export const ADMIN_TYPE = {
   ROOT: "root_admin",
   ORGANIZATION: "organization_admin",
+  CLUB_OWNER: "club_owner",
   CLUB: "club_admin",
   NONE: "none",
 } as const;
@@ -28,6 +29,7 @@ export const ADMIN_TYPE = {
 export const USER_ROLE = {
   ROOT_ADMIN: "ROOT_ADMIN",
   ORGANIZATION_ADMIN: "ORGANIZATION_ADMIN",
+  CLUB_OWNER: "CLUB_OWNER",
   CLUB_ADMIN: "CLUB_ADMIN",
 } as const;
 
@@ -60,6 +62,7 @@ interface UserState {
   // Admin checks
   isAdmin: () => boolean;
   isOrgAdmin: (orgId?: string) => boolean;
+  isClubOwner: (clubId?: string) => boolean;
   isClubAdmin: (clubId?: string) => boolean;
 }
 
@@ -172,6 +175,7 @@ export const useUserStore = create<UserState>()(
       const roleMap: Record<string, string> = {
         [ADMIN_TYPE.ROOT]: USER_ROLE.ROOT_ADMIN,
         [ADMIN_TYPE.ORGANIZATION]: USER_ROLE.ORGANIZATION_ADMIN,
+        [ADMIN_TYPE.CLUB_OWNER]: USER_ROLE.CLUB_OWNER,
         [ADMIN_TYPE.CLUB]: USER_ROLE.CLUB_ADMIN,
       };
       
@@ -235,6 +239,7 @@ export const useUserStore = create<UserState>()(
    * Supported admin roles:
    * - ROOT_ADMIN: Platform root administrator
    * - ORGANIZATION_ADMIN: Organization administrator
+   * - CLUB_OWNER: Club owner (can manage payment keys)
    * - CLUB_ADMIN: Club administrator
    * 
    * Note: This store only manages admin roles. Context-specific membership roles
@@ -295,6 +300,36 @@ export const useUserStore = create<UserState>()(
 
     // Check if user manages the specific organization
     return adminStatus.managedIds.includes(orgId);
+  },
+
+  /**
+   * Check if the current user is a club owner
+   * 
+   * @param clubId - Optional club ID to check if user is owner of that specific club
+   * @returns true if the user is a club owner (and of the specific club if provided), false otherwise
+   * 
+   * Note: Club owners have higher privileges than club admins and can manage payment keys.
+   */
+  isClubOwner: (clubId?: string) => {
+    const { adminStatus, user } = get();
+    
+    // Root admins have access to all clubs
+    if (user?.isRoot) {
+      return true;
+    }
+
+    // Check if user has club_owner role
+    if (adminStatus?.adminType !== "club_owner") {
+      return false;
+    }
+
+    // If no specific clubId is provided, just check if user is a club owner
+    if (!clubId) {
+      return true;
+    }
+
+    // Check if user owns the specific club
+    return adminStatus.managedIds.includes(clubId);
   },
 
   /**

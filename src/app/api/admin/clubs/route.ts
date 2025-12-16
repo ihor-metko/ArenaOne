@@ -57,8 +57,8 @@ export async function GET(request: Request) {
           in: authResult.managedIds,
         },
       };
-    } else if (authResult.adminType === "club_admin") {
-      // Club admin sees only their managed clubs
+    } else if (authResult.adminType === "club_owner" || authResult.adminType === "club_admin") {
+      // Club owner and club admin see only their managed clubs
       whereClause = {
         id: {
           in: authResult.managedIds,

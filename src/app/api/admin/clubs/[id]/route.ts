@@ -8,12 +8,16 @@ import { isMockMode, getMockClubs, getMockCourts, getMockCoaches, getMockBusines
  * Check if an admin has access to a specific club
  */
 async function canAccessClub(
-  adminType: "root_admin" | "organization_admin" | "club_admin",
+  adminType: "root_admin" | "organization_admin" | "club_owner" | "club_admin",
   managedIds: string[],
   clubId: string
 ): Promise<boolean> {
   if (adminType === "root_admin") {
     return true;
+  }
+
+  if (adminType === "club_owner") {
+    return managedIds.includes(clubId);
   }
 
   if (adminType === "club_admin") {
@@ -62,7 +66,7 @@ export async function GET(
       }
       
       // Check access permission for mock mode
-      if (authResult.adminType === "club_admin") {
+      if (authResult.adminType === "club_owner" || authResult.adminType === "club_admin") {
         if (!authResult.managedIds.includes(clubId)) {
           return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }

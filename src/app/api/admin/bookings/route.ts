@@ -50,6 +50,7 @@ export interface AdminBookingsListResponse {
  * Returns bookings based on the current user's admin role.
  * - Root Admin: All bookings across all organizations and clubs
  * - Organization Admin: All bookings for their organization only
+ * - Club Owner: All bookings for their owned club only
  * - Club Admin: All bookings for their assigned club only
  *
  * Query parameters:
@@ -113,6 +114,9 @@ export async function GET(
     if (adminType === "organization_admin") {
       // Organization admin sees bookings for clubs in their managed organizations
       clubWhere.organizationId = { in: managedIds };
+    } else if (adminType === "club_owner") {
+      // Club owner sees only bookings for their owned clubs
+      courtWhere.clubId = { in: managedIds };
     } else if (adminType === "club_admin") {
       // Club admin sees only bookings for their managed clubs
       courtWhere.clubId = { in: managedIds };
@@ -127,7 +131,7 @@ export async function GET(
 
     if (clubId) {
       // Validate club access based on role
-      if (adminType === "club_admin" && !managedIds.includes(clubId)) {
+      if ((adminType === "club_owner" || adminType === "club_admin") && !managedIds.includes(clubId)) {
         return NextResponse.json(
           { error: "Forbidden" },
           { status: 403 }
