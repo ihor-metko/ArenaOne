@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button, Card } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
@@ -44,9 +44,17 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
 
   // Get organizations and clubs from stores
   const organizations = useOrganizationStore((state) => state.getOrganizationsWithAutoFetch());
-  const clubs = useClubStore((state) => state.fetchClubsIfNeeded());
+  const clubs = useClubStore((state) => state.clubs);
+  const fetchClubsIfNeeded = useClubStore((state) => state.fetchClubsIfNeeded);
   const isLoadingOrgs = useOrganizationStore((state) => state.loading);
-  const isLoadingClubs = useClubStore((state) => state.loading);
+  const isLoadingClubs = useClubStore((state) => state.loadingClubs);
+
+  // Fetch clubs on mount
+  useEffect(() => {
+    fetchClubsIfNeeded().catch((error) => {
+      console.error("Failed to fetch clubs:", error);
+    });
+  }, [fetchClubsIfNeeded]);
 
   // Convert to options format
   const orgOptions: OrganizationOption[] = organizations.map(org => ({
