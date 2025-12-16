@@ -119,15 +119,17 @@ export async function POST(
       );
     }
 
+    // Determine if providerConfig is valid for inclusion
+    const hasValidProviderConfig = providerConfig && typeof providerConfig === "object" && !Array.isArray(providerConfig);
+
     // Create payment account credentials
-    // Only include providerConfig if it's a valid object (not null, not undefined)
     const credentials: PaymentAccountCredentials = {
       provider,
       scope: PaymentAccountScope.ORGANIZATION,
       organizationId,
       merchantId,
       secretKey,
-      ...(providerConfig && typeof providerConfig === "object" && !Array.isArray(providerConfig) ? { providerConfig } : {}),
+      ...(hasValidProviderConfig ? { providerConfig } : {}),
       displayName,
       isActive,
     };

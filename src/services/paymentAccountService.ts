@@ -174,10 +174,10 @@ export async function createPaymentAccount(
   }
 
   // Validate credentials before encryption
-  if (!credentials.merchantId || typeof credentials.merchantId !== "string") {
+  if (!credentials.merchantId || typeof credentials.merchantId !== "string" || credentials.merchantId.trim() === "") {
     throw new Error("merchantId must be a non-empty string");
   }
-  if (!credentials.secretKey || typeof credentials.secretKey !== "string") {
+  if (!credentials.secretKey || typeof credentials.secretKey !== "string" || credentials.secretKey.trim() === "") {
     throw new Error("secretKey must be a non-empty string");
   }
 
@@ -250,15 +250,15 @@ export async function updatePaymentAccount(
   };
 
   // Encrypt new credentials if provided
-  if (credentials.merchantId) {
-    if (typeof credentials.merchantId !== "string") {
-      throw new Error("merchantId must be a string");
+  if (credentials.merchantId !== undefined) {
+    if (typeof credentials.merchantId !== "string" || credentials.merchantId.trim() === "") {
+      throw new Error("merchantId must be a non-empty string");
     }
     updateData.merchantId = encrypt(credentials.merchantId);
   }
-  if (credentials.secretKey) {
-    if (typeof credentials.secretKey !== "string") {
-      throw new Error("secretKey must be a string");
+  if (credentials.secretKey !== undefined) {
+    if (typeof credentials.secretKey !== "string" || credentials.secretKey.trim() === "") {
+      throw new Error("secretKey must be a non-empty string");
     }
     updateData.secretKey = encrypt(credentials.secretKey);
   }
