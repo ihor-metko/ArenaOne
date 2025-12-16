@@ -53,7 +53,6 @@ describe("useClubStore", () => {
           status: "active", 
           createdAt: "2024-01-01",
           organizationId: "org-1",
-          organizationId: "org-1",
           courtCount: 5,
         },
         { 
@@ -65,7 +64,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-02",
-          organizationId: "org-2",
           organizationId: "org-2",
           courtCount: 3,
         },
@@ -105,7 +103,6 @@ describe("useClubStore", () => {
         status: "active", 
         tags: null,
         createdAt: "2024-01-01",
-          organizationId: "org-1",
         updatedAt: "2024-01-01",
         courts: [],
         coaches: [],
@@ -148,7 +145,6 @@ describe("useClubStore", () => {
         status: "active", 
         tags: null,
         createdAt: "2024-01-01",
-          organizationId: "org-1",
         updatedAt: "2024-01-01",
         courts: [],
         coaches: [],
@@ -203,8 +199,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-01",
-          organizationId: "org-1",
-          organizationId: "org-1",
           courtCount: 5,
         },
         { 
@@ -216,8 +210,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-02",
-          organizationId: "org-2",
-          organizationId: "org-2",
           courtCount: 3,
         },
       ];
@@ -250,7 +242,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-01",
-          organizationId: "org-1",
           courtCount: 5,
         },
       ];
@@ -337,7 +328,6 @@ describe("useClubStore", () => {
         status: "active", 
         tags: null,
         createdAt: "2024-01-01",
-          organizationId: "org-1",
         updatedAt: "2024-01-01",
         courts: [],
         coaches: [],
@@ -429,7 +419,6 @@ describe("useClubStore", () => {
             logo: null, 
             status: "active", 
             createdAt: "2024-01-01",
-          organizationId: "org-1",
           },
         ]);
       });
@@ -456,7 +445,6 @@ describe("useClubStore", () => {
 
     it("should handle create error", async () => {
       const payload = { 
-        organizationId: "org-1",
         name: "New Club",
         shortDescription: "Test",
         location: "Test Location" 
@@ -593,7 +581,6 @@ describe("useClubStore", () => {
           status: "active", 
           tags: null,
           createdAt: "2024-01-01",
-          organizationId: "org-1",
           updatedAt: "2024-01-01",
           courts: [],
           coaches: [],
@@ -731,7 +718,6 @@ describe("useClubStore", () => {
           status: "active", 
           tags: null,
           createdAt: "2024-01-01",
-          organizationId: "org-1",
           updatedAt: "2024-01-01",
           courts: [],
           coaches: [],
@@ -867,7 +853,6 @@ describe("useClubStore", () => {
           status: "active", 
           tags: null,
           createdAt: "2024-01-01",
-          organizationId: "org-1",
           updatedAt: "2024-01-01",
           courts: [],
           coaches: [],
@@ -900,7 +885,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-01",
-          organizationId: "org-1",
           courtCount: 5,
         },
       ];
@@ -934,7 +918,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-01",
-          organizationId: "org-1",
         },
       ];
 
@@ -965,7 +948,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-01",
-          organizationId: "org-1",
         },
       ];
 
@@ -979,7 +961,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-01",
-          organizationId: "org-1",
         },
         { 
           id: "2", 
@@ -990,7 +971,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-02",
-          organizationId: "org-2",
         },
       ];
 
@@ -1025,7 +1005,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-01",
-          organizationId: "org-1",
         },
       ];
 
@@ -1118,7 +1097,6 @@ describe("useClubStore", () => {
         status: "active", 
         tags: null,
         createdAt: "2024-01-01",
-          organizationId: "org-1",
         updatedAt: "2024-01-01",
         courts: [],
         coaches: [],
@@ -1172,7 +1150,6 @@ describe("useClubStore", () => {
         status: "active", 
         tags: null,
         createdAt: "2024-01-01",
-          organizationId: "org-1",
         updatedAt: "2024-01-01",
         courts: [],
         coaches: [],
@@ -1224,7 +1201,6 @@ describe("useClubStore", () => {
         status: "active", 
         tags: null,
         createdAt: "2024-01-01",
-          organizationId: "org-1",
         updatedAt: "2024-01-01",
         courts: [],
         coaches: [],
@@ -1285,7 +1261,6 @@ describe("useClubStore", () => {
         status: "active", 
         tags: null,
         createdAt: "2024-01-01",
-          organizationId: "org-1",
         updatedAt: "2024-01-01",
         courts: [],
         coaches: [],
@@ -1371,7 +1346,6 @@ describe("useClubStore", () => {
         status: "active", 
         tags: null,
         createdAt: "2024-01-01",
-          organizationId: "org-1",
         updatedAt: "2024-01-01",
         courts: [],
         coaches: [],
@@ -1406,7 +1380,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-01",
-          organizationId: "org-1",
         },
       ];
 
@@ -1435,7 +1408,6 @@ describe("useClubStore", () => {
         status: "active", 
         tags: null,
         createdAt: "2024-01-01",
-          organizationId: "org-1",
         updatedAt: "2024-01-01",
         courts: [],
         coaches: [],
@@ -1480,7 +1452,6 @@ describe("useClubStore", () => {
           logo: null, 
           status: "active", 
           createdAt: "2024-01-01",
-          organizationId: "org-1",
         },
       ];
 
