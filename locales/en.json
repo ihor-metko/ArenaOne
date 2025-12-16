@@ -1264,6 +1264,14 @@
         "createdOwnerFailed": "Organization created, but owner assignment failed: {message}",
         "created": "Organization created successfully!"
       }
+    },
+    "errors": {
+      "createFailed": "Failed to create organization",
+      "assignSuperAdminFailed": "Failed to assign SuperAdmin",
+      "fetchClubAdminsFailed": "Failed to fetch club admins",
+      "assignClubAdminFailed": "Failed to assign club admin",
+      "updateClubAdminFailed": "Failed to update club admin",
+      "removeClubAdminFailed": "Failed to remove club admin"
     }
   },
   "operations": {

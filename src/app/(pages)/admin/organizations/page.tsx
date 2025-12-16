@@ -366,7 +366,7 @@ export default function AdminOrganizationsPage() {
       setIsAssignModalOpen(true);
       fetchUsers();
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : "Failed to create organization");
+      setCreateError(err instanceof Error ? err.message : t("organizations.errors.createFailed"));
     } finally {
       setCreating(false);
     }
@@ -409,14 +409,14 @@ export default function AdminOrganizationsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to assign SuperAdmin");
+        throw new Error(data.error || t("organizations.errors.assignSuperAdminFailed"));
       }
 
       showToast(t("organizations.assignSuccess"), "success");
       handleCloseAssignModal();
       loadOrganizations();
     } catch (err) {
-      setAssignError(err instanceof Error ? err.message : "Failed to assign SuperAdmin");
+      setAssignError(err instanceof Error ? err.message : t("organizations.errors.assignSuperAdminFailed"));
     } finally {
       setAssigning(false);
     }
@@ -434,7 +434,7 @@ export default function AdminOrganizationsPage() {
 
       const response = await fetch(`/api/orgs/${orgId}/club-admins`);
       if (!response.ok) {
-        throw new Error("Failed to fetch club admins");
+        throw new Error(t("organizations.errors.fetchClubAdminsFailed"));
       }
       const data = await response.json();
       setClubAdmins(data);
@@ -557,14 +557,14 @@ export default function AdminOrganizationsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to assign club admin");
+        throw new Error(data.error || t("organizations.errors.assignClubAdminFailed"));
       }
 
       showToast(t("clubAdmins.assignSuccess"), "success");
       handleCloseAddClubAdminModal();
       fetchClubAdmins(clubAdminsOrg.id);
     } catch (err) {
-      setAddClubAdminError(err instanceof Error ? err.message : "Failed to assign club admin");
+      setAddClubAdminError(err instanceof Error ? err.message : t("organizations.errors.assignClubAdminFailed"));
     } finally {
       setAddingClubAdmin(false);
     }
@@ -606,14 +606,14 @@ export default function AdminOrganizationsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to update club admin");
+        throw new Error(data.error || t("organizations.errors.updateClubAdminFailed"));
       }
 
       showToast(t("clubAdmins.updateSuccess"), "success");
       handleCloseEditClubAdminModal();
       fetchClubAdmins(clubAdminsOrg.id);
     } catch (err) {
-      setEditClubAdminError(err instanceof Error ? err.message : "Failed to update club admin");
+      setEditClubAdminError(err instanceof Error ? err.message : t("organizations.errors.updateClubAdminFailed"));
     } finally {
       setEditingClubAdminSubmitting(false);
     }
@@ -651,14 +651,14 @@ export default function AdminOrganizationsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to remove club admin");
+        throw new Error(data.error || t("organizations.errors.removeClubAdminFailed"));
       }
 
       showToast(t("clubAdmins.removeSuccess"), "success");
       handleCloseRemoveClubAdminModal();
       fetchClubAdmins(clubAdminsOrg.id);
     } catch (err) {
-      setRemoveClubAdminError(err instanceof Error ? err.message : "Failed to remove club admin");
+      setRemoveClubAdminError(err instanceof Error ? err.message : t("organizations.errors.removeClubAdminFailed"));
     } finally {
       setRemovingClubAdminSubmitting(false);
     }

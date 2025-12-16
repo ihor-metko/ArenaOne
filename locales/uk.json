@@ -1193,6 +1193,14 @@
         "createdOwnerFailed": "Організацію створено, але призначення власника не вдалося: {message}",
         "created": "Організацію успішно створено!"
       }
+    },
+    "errors": {
+      "createFailed": "Не вдалося створити організацію",
+      "assignSuperAdminFailed": "Не вдалося призначити СуперАдміна",
+      "fetchClubAdminsFailed": "Не вдалося завантажити адмінів клубів",
+      "assignClubAdminFailed": "Не вдалося призначити адміна клубу",
+      "updateClubAdminFailed": "Не вдалося оновити адміна клубу",
+      "removeClubAdminFailed": "Не вдалося видалити адміна клубу"
     }
   },
   "operations": {
