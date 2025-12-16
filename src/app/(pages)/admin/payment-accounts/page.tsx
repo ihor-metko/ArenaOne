@@ -10,6 +10,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
 import type { MaskedPaymentAccount } from "@/types/paymentAccount";
+import { PaymentProvider } from "@/types/paymentAccount";
 import "./page.css";
 
 interface ClubWithAccounts {
@@ -209,6 +210,11 @@ export default function UnifiedPaymentAccountsPage() {
     if (!user) return;
 
     try {
+      // Prepare provider config for WayForPay
+      const providerConfig = formData.provider === PaymentProvider.WAYFORPAY && formData.merchantPassword
+        ? { merchantPassword: formData.merchantPassword }
+        : undefined;
+
       if (formMode === "add") {
         let url: string;
         if (selectedScope === "ORGANIZATION" && orgId) {
@@ -226,6 +232,7 @@ export default function UnifiedPaymentAccountsPage() {
             provider: formData.provider,
             merchantId: formData.merchantId,
             secretKey: formData.secretKey,
+            providerConfig,
             displayName: formData.displayName || null,
             isActive: formData.isActive,
           }),
@@ -253,6 +260,7 @@ export default function UnifiedPaymentAccountsPage() {
           body: JSON.stringify({
             merchantId: formData.merchantId,
             secretKey: formData.secretKey,
+            providerConfig,
             displayName: formData.displayName || null,
             isActive: formData.isActive,
           }),
