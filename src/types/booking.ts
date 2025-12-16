@@ -60,6 +60,8 @@ export interface BookingWithDetails extends Booking {
   courtName: string;
   clubId: string;
   clubName: string;
+  paymentAvailable?: boolean;
+  paymentProviders?: Array<'wayforpay' | 'liqpay'>;
 }
 
 /**
@@ -110,6 +112,8 @@ export interface CreateBookingResponse {
   price: number;
   bookingStatus: BookingStatus;
   paymentStatus: PaymentStatus;
+  paymentAvailable?: boolean;
+  paymentProviders?: Array<'wayforpay' | 'liqpay'>;
 }
 
 /**
@@ -118,4 +122,33 @@ export interface CreateBookingResponse {
 export interface UpdateBookingPayload {
   bookingStatus?: BookingStatus;
   paymentStatus?: PaymentStatus;
+}
+
+/**
+ * Payment availability information for a booking
+ */
+export interface BookingPaymentAvailability {
+  paymentAvailable: boolean;
+  paymentProviders?: Array<'wayforpay' | 'liqpay'>;
+}
+
+/**
+ * Payment intent request payload
+ */
+export interface CreatePaymentIntentRequest {
+  bookingId: string;
+}
+
+/**
+ * Payment intent response
+ * Contains provider-specific payment data without secrets
+ */
+export interface CreatePaymentIntentResponse {
+  provider: 'wayforpay' | 'liqpay';
+  paymentUrl?: string;
+  formData?: Record<string, unknown>;
+  merchantAccount?: string; // Masked merchant ID for display
+  amount: number;
+  currency: string;
+  orderReference: string;
 }
