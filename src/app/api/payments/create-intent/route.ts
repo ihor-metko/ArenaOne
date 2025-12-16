@@ -186,10 +186,11 @@ export async function POST(request: Request): Promise<NextResponse<CreatePayment
 
 /**
  * Mask merchant ID for display (show only last 4 characters)
+ * For IDs with 4 or fewer characters, show asterisks matching the length
  */
 function maskMerchantId(merchantId: string): string {
   if (merchantId.length <= 4) {
-    return "****";
+    return "*".repeat(merchantId.length);
   }
   return "****" + merchantId.slice(-4);
 }
@@ -222,10 +223,13 @@ function generateFormData(
   orderReference: string,
   booking: { id: string; user: { email: string; name: string | null } }
 ): Record<string, unknown> {
+  // Note: booking.price is stored in cents in the database
+  const amountInCurrencyUnits = (amount / 100).toFixed(2);
+  
   const baseData = {
     merchantAccount: merchantId,
     orderReference,
-    amount: (amount / 100).toFixed(2), // Convert cents to currency units
+    amount: amountInCurrencyUnits,
     currency,
     orderDate: new Date().getTime(),
     productName: `Booking ${booking.id}`,
@@ -235,9 +239,13 @@ function generateFormData(
 
   switch (provider) {
     case PaymentProvider.WAYFORPAY:
+      // Verify NEXTAUTH_URL is set for payment processing
+      if (!process.env.NEXTAUTH_URL) {
+        throw new Error("NEXTAUTH_URL environment variable must be set for payment processing");
+      }
       return {
         ...baseData,
-        merchantDomainName: process.env.NEXTAUTH_URL || "https://arenaone.com",
+        merchantDomainName: process.env.NEXTAUTH_URL,
         // Note: In production, merchantSignature would be generated here using secretKey
         // merchantSignature: generateSignature(...)
       };
