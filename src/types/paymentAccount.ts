@@ -22,13 +22,22 @@ export enum PaymentAccountScope {
 }
 
 /**
- * Payment account status - represents verification state
+ * Payment account status - represents technical verification state
  */
 export enum PaymentAccountStatus {
-  PENDING = "PENDING",    // Credentials saved but not yet verified
-  ACTIVE = "ACTIVE",      // Credentials verified and payments allowed
-  INVALID = "INVALID",    // Credentials failed verification
-  DISABLED = "DISABLED",  // Manually disabled by owner
+  PENDING = "PENDING",           // Credentials saved but not yet verified
+  TECHNICAL_OK = "TECHNICAL_OK", // Credentials technically verified (sandbox/API test)
+  VERIFIED = "VERIFIED",         // Real payment verification completed successfully
+  INVALID = "INVALID",           // Credentials failed verification
+  DISABLED = "DISABLED",         // Manually disabled by owner
+}
+
+/**
+ * Payment account verification level - tracks real payment verification
+ */
+export enum PaymentAccountVerificationLevel {
+  NOT_VERIFIED = "NOT_VERIFIED", // No real payment verification completed
+  VERIFIED = "VERIFIED",         // Real payment verification completed and validated
 }
 
 /**
@@ -50,12 +59,14 @@ export interface PaymentAccount {
   providerConfig: string | null;  // Encrypted JSON for additional provider settings
   
   // Status and metadata
-  status: PaymentAccountStatus;  // Verification status
+  status: PaymentAccountStatus;  // Technical verification status
+  verificationLevel: PaymentAccountVerificationLevel;  // Real payment verification level
   isActive: boolean;             // Manual enable/disable (deprecated)
   displayName: string | null;    // Optional friendly name for UI
   
   // Verification tracking
-  lastVerifiedAt: Date | null;   // Last successful verification timestamp
+  lastVerifiedAt: Date | null;   // Last successful technical verification timestamp
+  lastRealVerifiedAt: Date | null;   // Last successful real payment verification timestamp
   verificationError: string | null;  // Last verification error message
   
   // Audit fields
@@ -75,12 +86,14 @@ export interface MaskedPaymentAccount extends Record<string, unknown> {
   scope: PaymentAccountScope;
   organizationId: string | null;
   clubId: string | null;
-  status: PaymentAccountStatus;  // Verification status
+  status: PaymentAccountStatus;  // Technical verification status
+  verificationLevel: PaymentAccountVerificationLevel;  // Real payment verification level
   isActive: boolean;             // Manual enable/disable (deprecated)
   displayName: string | null;
   isConfigured: boolean;         // Whether credentials are set
   lastUpdated: Date;
-  lastVerifiedAt: Date | null;   // Last successful verification
+  lastVerifiedAt: Date | null;   // Last successful technical verification
+  lastRealVerifiedAt: Date | null;   // Last successful real payment verification
   verificationError: string | null;  // Last verification error
 }
 
@@ -106,10 +119,11 @@ export interface PaymentAccountCredentials {
  */
 export interface PaymentAccountAvailability {
   isConfigured: boolean;
-  isAvailable: boolean;  // True only if status is ACTIVE
+  isAvailable: boolean;  // True only if verificationLevel is VERIFIED
   provider: PaymentProvider | null;
   scope: PaymentAccountScope | null;
   status: PaymentAccountStatus | null;
+  verificationLevel: PaymentAccountVerificationLevel | null;
   displayName: string | null;
 }
 
@@ -149,10 +163,51 @@ export function isPaymentAccountStatus(value: unknown): value is PaymentAccountS
 }
 
 /**
- * Verification result for a payment account
+ * Type guard to check if a value is a valid PaymentAccountVerificationLevel
+ */
+export function isPaymentAccountVerificationLevel(value: unknown): value is PaymentAccountVerificationLevel {
+  return typeof value === "string" && Object.values(PaymentAccountVerificationLevel).includes(value as PaymentAccountVerificationLevel);
+}
+
+/**
+ * Verification result for a payment account (technical verification)
  */
 export interface VerificationResult {
   success: boolean;
   error?: string;
   timestamp: Date;
+}
+
+/**
+ * Verification payment intent for real payment verification
+ */
+export interface VerificationPayment {
+  id: string;
+  paymentAccountId: string;
+  orderReference: string;
+  amount: number;
+  currency: string;
+  status: "pending" | "completed" | "failed" | "expired";
+  transactionId: string | null;
+  authCode: string | null;
+  cardPan: string | null;
+  cardType: string | null;
+  signatureValid: boolean | null;
+  callbackData: string | null;
+  errorMessage: string | null;
+  initiatedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+  completedAt: Date | null;
+}
+
+/**
+ * Response from initiating a real payment verification
+ */
+export interface VerificationPaymentIntent {
+  id: string;
+  orderReference: string;
+  checkoutUrl: string;
+  amount: number;
+  currency: string;
 }

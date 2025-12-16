@@ -14,6 +14,7 @@ import {
   PaymentProvider,
   PaymentAccountScope,
   PaymentAccountStatus,
+  PaymentAccountVerificationLevel,
   PaymentAccount,
   MaskedPaymentAccount,
   PaymentAccountCredentials,
@@ -40,12 +41,13 @@ export async function resolvePaymentAccountForBooking(
   clubId: string,
   provider?: PaymentProvider
 ): Promise<ResolvedPaymentAccount | null> {
-  // Step 1: Try to find active club-level payment account with ACTIVE status
+  // Step 1: Try to find active club-level payment account with VERIFIED verificationLevel
+  // Only accounts that have completed real payment verification can be used
   const clubPaymentAccount = await prisma.paymentAccount.findFirst({
     where: {
       clubId,
       scope: PaymentAccountScope.CLUB,
-      status: PaymentAccountStatus.ACTIVE, // Only allow ACTIVE accounts
+      verificationLevel: "VERIFIED", // Only allow VERIFIED accounts (real payment verification)
       ...(provider && { provider }),
     },
     orderBy: {
@@ -72,7 +74,7 @@ export async function resolvePaymentAccountForBooking(
     where: {
       organizationId: club.organizationId,
       scope: PaymentAccountScope.ORGANIZATION,
-      status: PaymentAccountStatus.ACTIVE, // Only allow ACTIVE accounts
+      verificationLevel: "VERIFIED", // Only allow VERIFIED accounts (real payment verification)
       ...(provider && { provider }),
     },
     orderBy: {
@@ -116,10 +118,11 @@ export async function getPaymentAccountStatus(clubId: string): Promise<PaymentAc
   if (clubAccount) {
     return {
       isConfigured: true,
-      isAvailable: clubAccount.status === PaymentAccountStatus.ACTIVE,
+      isAvailable: clubAccount.verificationLevel === "VERIFIED",
       provider: clubAccount.provider as PaymentProvider,
       scope: clubAccount.scope as PaymentAccountScope,
       status: clubAccount.status as PaymentAccountStatus,
+      verificationLevel: clubAccount.verificationLevel as PaymentAccountVerificationLevel,
       displayName: clubAccount.displayName,
     };
   }
@@ -150,10 +153,11 @@ export async function getPaymentAccountStatus(clubId: string): Promise<PaymentAc
     if (orgAccount) {
       return {
         isConfigured: true,
-        isAvailable: orgAccount.status === PaymentAccountStatus.ACTIVE,
+        isAvailable: orgAccount.verificationLevel === "VERIFIED",
         provider: orgAccount.provider as PaymentProvider,
         scope: orgAccount.scope as PaymentAccountScope,
         status: orgAccount.status as PaymentAccountStatus,
+        verificationLevel: orgAccount.verificationLevel as PaymentAccountVerificationLevel,
         displayName: orgAccount.displayName,
       };
     }
@@ -165,6 +169,7 @@ export async function getPaymentAccountStatus(clubId: string): Promise<PaymentAc
     provider: null,
     scope: null,
     status: null,
+    verificationLevel: null,
     displayName: null,
   };
 }
@@ -449,11 +454,13 @@ function maskPaymentAccount(account: unknown): MaskedPaymentAccount {
     organizationId: acc.organizationId,
     clubId: acc.clubId,
     status: acc.status as PaymentAccountStatus,
+    verificationLevel: acc.verificationLevel as PaymentAccountVerificationLevel,
     isActive: acc.isActive,
     displayName: acc.displayName,
     isConfigured: true,
     lastUpdated: acc.updatedAt,
     lastVerifiedAt: acc.lastVerifiedAt,
+    lastRealVerifiedAt: acc.lastRealVerifiedAt,
     verificationError: acc.verificationError,
   };
 }
@@ -495,11 +502,11 @@ export async function verifyPaymentAccount(id: string): Promise<VerificationResu
   };
 
   if (result.success) {
-    updateData.status = PaymentAccountStatus.ACTIVE;
+    updateData.status = PaymentAccountStatus.TECHNICAL_OK; // Technical verification passed
     updateData.lastVerifiedAt = result.timestamp;
     updateData.verificationError = undefined;
     
-    console.log(`[PaymentAccountService] Account ${id} verified successfully`);
+    console.log(`[PaymentAccountService] Account ${id} technically verified successfully`);
   } else {
     updateData.status = PaymentAccountStatus.INVALID;
     updateData.verificationError = result.error || "Verification failed";

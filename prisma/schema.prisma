@@ -44,12 +44,19 @@ enum PaymentAccountScope {
   CLUB          // Payment account belongs to specific club
 }
 
-// Payment account status - represents verification state
+// Payment account status - represents technical verification state
 enum PaymentAccountStatus {
-  PENDING   // Credentials saved but not yet verified
-  ACTIVE    // Credentials verified and payments allowed
-  INVALID   // Credentials failed verification
-  DISABLED  // Manually disabled by owner
+  PENDING      // Credentials saved but not yet verified
+  TECHNICAL_OK // Credentials technically verified (sandbox/API test)
+  VERIFIED     // Real payment verification completed successfully
+  INVALID      // Credentials failed verification
+  DISABLED     // Manually disabled by owner
+}
+
+// Payment account verification level - tracks real payment verification
+enum PaymentAccountVerificationLevel {
+  NOT_VERIFIED // No real payment verification completed
+  VERIFIED     // Real payment verification completed and validated
 }
 
 model User {
@@ -456,13 +463,15 @@ model PaymentAccount {
   providerConfig String?               @db.Text
   
   // Status and metadata
-  status         PaymentAccountStatus  @default(PENDING) // Verification status
-  isActive       Boolean               @default(true)    // Manual enable/disable (deprecated in favor of status)
-  displayName    String?               // Optional friendly name for UI
+  status              PaymentAccountStatus             @default(PENDING) // Technical verification status
+  verificationLevel   PaymentAccountVerificationLevel  @default(NOT_VERIFIED) // Real payment verification level
+  isActive            Boolean                          @default(true)    // Manual enable/disable (deprecated in favor of status)
+  displayName         String?                          // Optional friendly name for UI
   
   // Verification tracking
-  lastVerifiedAt DateTime?             // Last successful verification timestamp
-  verificationError String?            // Last verification error message (if any)
+  lastVerifiedAt      DateTime?             // Last successful technical verification timestamp
+  lastRealVerifiedAt  DateTime?             // Last successful real payment verification timestamp
+  verificationError   String?               // Last verification error message (if any)
   
   // Audit fields
   createdById    String                // User who created this payment account
@@ -474,10 +483,55 @@ model PaymentAccount {
   organization   Organization?         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   club           Club?                 @relation(fields: [clubId], references: [id], onDelete: Cascade)
   
+  // Relations
+  verificationPayments VerificationPayment[] // Verification payment intents
+  
   @@unique([provider, scope, organizationId, clubId])
   @@index([organizationId])
   @@index([clubId])
   @@index([provider, scope])
   @@index([status])
+  @@index([verificationLevel])
   @@index([isActive])
+}
+
+// Verification payment intent - tracks real payment verification attempts
+model VerificationPayment {
+  id                String         @id @default(uuid())
+  paymentAccountId  String         // Payment account being verified
+  paymentAccount    PaymentAccount @relation(fields: [paymentAccountId], references: [id], onDelete: Cascade)
+  
+  // Payment details
+  orderReference    String         @unique // Unique order reference for WayForPay
+  amount            Int            // Amount in minor units (e.g., 100 = 1 UAH)
+  currency          String         @default("UAH")
+  
+  // Status tracking
+  status            String         @default("pending") // "pending", "completed", "failed", "expired"
+  
+  // WayForPay response data (when available)
+  transactionId     String?        // WayForPay transaction ID
+  authCode          String?        // Authorization code
+  cardPan           String?        // Masked card number
+  cardType          String?        // Card type (Visa, MasterCard, etc.)
+  
+  // Signature validation
+  signatureValid    Boolean?       // Whether the callback signature was valid
+  
+  // Callback data (JSON)
+  callbackData      String?        @db.Text // Full callback payload for audit
+  
+  // Error tracking
+  errorMessage      String?        @db.Text // Error message if verification failed
+  
+  // Audit fields
+  initiatedBy       String         // User who initiated the verification
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  completedAt       DateTime?      // When the payment was completed/failed
+  
+  @@index([paymentAccountId])
+  @@index([orderReference])
+  @@index([status])
+  @@index([createdAt])
 }
