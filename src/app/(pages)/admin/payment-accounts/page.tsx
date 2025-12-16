@@ -95,6 +95,7 @@ export default function UnifiedPaymentAccountsPage() {
   }, [isOrgOwner, orgId, fetchClubsByOrganization]);
 
   const organization = organizations.find((org) => org.id === orgId);
+  const assignedClubName = adminStatus?.assignedClub?.name;
 
   const fetchAccounts = useCallback(async () => {
     setLoading(true);
@@ -142,7 +143,7 @@ export default function UnifiedPaymentAccountsPage() {
         
         setClubAccounts([{
           clubId: clubId,
-          clubName: adminStatus?.assignedClub?.name || "Club",
+          clubName: assignedClubName || t("admin.club"),
           accounts: clubData.paymentAccounts || [],
           isExpanded: true,
         }]);
@@ -161,7 +162,7 @@ export default function UnifiedPaymentAccountsPage() {
     } finally {
       setLoading(false);
     }
-  }, [isOrgOwner, isClubAdmin, orgId, clubId, clubs, adminStatus]);
+  }, [isOrgOwner, isClubAdmin, orgId, clubId, clubs, assignedClubName, t]);
 
   useEffect(() => {
     if ((orgId || clubId) && isLoggedIn && !isLoadingStore) {
@@ -318,7 +319,7 @@ export default function UnifiedPaymentAccountsPage() {
   };
 
   if (isLoadingStore || (!orgId && !clubId)) {
-    return <div className="im-loading">Loading...</div>;
+    return <div className="im-loading">{t("common.loading")}</div>;
   }
 
   const breadcrumbs = [
