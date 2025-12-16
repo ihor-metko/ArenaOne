@@ -46,6 +46,8 @@ export function SelectContextStep({
   }));
 
   // Filter clubs by selected organization
+  // When an organization is selected, only show clubs belonging to that organization
+  // This ensures the Club Admin can only be assigned to clubs within the selected organization
   const filteredClubOptions = data.organizationId
     ? clubOptions.filter(club => {
         const clubData = clubs.find(c => c.id === club.value);

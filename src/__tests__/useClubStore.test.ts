@@ -46,6 +46,7 @@ describe("useClubStore", () => {
         { 
           id: "1", 
           name: "Club 1", 
+          organizationId: "org-1",
           location: "Location 1", 
           contactInfo: null, 
           openingHours: null, 
@@ -57,6 +58,7 @@ describe("useClubStore", () => {
         { 
           id: "2", 
           name: "Club 2", 
+          organizationId: "org-1",
           location: "Location 2", 
           contactInfo: null, 
           openingHours: null, 
@@ -191,6 +193,7 @@ describe("useClubStore", () => {
         { 
           id: "1", 
           name: "Club 1", 
+          organizationId: "org-test",
           location: "Location 1", 
           contactInfo: null, 
           openingHours: null, 
@@ -202,6 +205,7 @@ describe("useClubStore", () => {
         { 
           id: "2", 
           name: "Club 2", 
+          organizationId: "org-test",
           location: "Location 2", 
           contactInfo: null, 
           openingHours: null, 
@@ -234,6 +238,7 @@ describe("useClubStore", () => {
         { 
           id: "1", 
           name: "Club 1", 
+          organizationId: "org-test",
           location: "Location 1", 
           contactInfo: null, 
           openingHours: null, 
@@ -385,6 +390,7 @@ describe("useClubStore", () => {
       const mockNewClub = { 
         id: "3", 
         name: "New Club", 
+          organizationId: "org-test",
         location: "Test Location", 
         contactInfo: null,
         openingHours: null,
@@ -411,6 +417,7 @@ describe("useClubStore", () => {
           { 
             id: "1", 
             name: "Club 1", 
+          organizationId: "org-test",
             location: "Location 1", 
             contactInfo: null, 
             openingHours: null, 
@@ -475,6 +482,7 @@ describe("useClubStore", () => {
       const mockUpdatedClub = { 
         id: "1", 
         name: "Updated Club", 
+          organizationId: "org-test",
         location: "Location 1", 
         contactInfo: null,
         openingHours: null,
@@ -496,6 +504,7 @@ describe("useClubStore", () => {
           { 
             id: "1", 
             name: "Club 1", 
+          organizationId: "org-test",
             location: "Location 1", 
             contactInfo: null, 
             openingHours: null, 
@@ -506,6 +515,7 @@ describe("useClubStore", () => {
           { 
             id: "2", 
             name: "Club 2", 
+          organizationId: "org-test",
             location: "Location 2", 
             contactInfo: null, 
             openingHours: null, 
@@ -538,6 +548,7 @@ describe("useClubStore", () => {
       const mockUpdatedClub = { 
         id: "1", 
         name: "Updated Current Club", 
+          organizationId: "org-test",
         location: "Location 1",
         contactInfo: null,
         openingHours: null,
@@ -591,6 +602,7 @@ describe("useClubStore", () => {
           { 
             id: "1", 
             name: "Club 1", 
+          organizationId: "org-test",
             location: "Location 1", 
             contactInfo: null, 
             openingHours: null, 
@@ -646,6 +658,7 @@ describe("useClubStore", () => {
           { 
             id: "1", 
             name: "Club 1", 
+          organizationId: "org-test",
             location: "Location 1", 
             contactInfo: null, 
             openingHours: null, 
@@ -656,6 +669,7 @@ describe("useClubStore", () => {
           { 
             id: "2", 
             name: "Club 2", 
+          organizationId: "org-test",
             location: "Location 2", 
             contactInfo: null, 
             openingHours: null, 
@@ -728,6 +742,7 @@ describe("useClubStore", () => {
           { 
             id: "1", 
             name: "Club 1", 
+          organizationId: "org-test",
             location: "Location 1", 
             contactInfo: null, 
             openingHours: null, 
@@ -776,6 +791,7 @@ describe("useClubStore", () => {
           { 
             id: "1", 
             name: "Club 1", 
+          organizationId: "org-test",
             location: "Location 1", 
             contactInfo: null, 
             openingHours: null, 
@@ -786,6 +802,7 @@ describe("useClubStore", () => {
           { 
             id: "2", 
             name: "Club 2", 
+          organizationId: "org-test",
             location: "Location 2", 
             contactInfo: null, 
             openingHours: null, 
@@ -809,6 +826,7 @@ describe("useClubStore", () => {
           { 
             id: "1", 
             name: "Club 1", 
+          organizationId: "org-test",
             location: "Location 1", 
             contactInfo: null, 
             openingHours: null, 
@@ -878,6 +896,7 @@ describe("useClubStore", () => {
         { 
           id: "1", 
           name: "Club 1", 
+          organizationId: "org-test",
           location: "Location 1", 
           contactInfo: null, 
           openingHours: null, 
@@ -911,6 +930,7 @@ describe("useClubStore", () => {
         { 
           id: "1", 
           name: "Club 1", 
+          organizationId: "org-test",
           location: "Location 1", 
           contactInfo: null, 
           openingHours: null, 
@@ -941,6 +961,7 @@ describe("useClubStore", () => {
         { 
           id: "1", 
           name: "Club 1", 
+          organizationId: "org-test",
           location: "Location 1", 
           contactInfo: null, 
           openingHours: null, 
@@ -954,6 +975,7 @@ describe("useClubStore", () => {
         { 
           id: "1", 
           name: "Club 1 Updated", 
+          organizationId: "org-test",
           location: "Location 1", 
           contactInfo: null, 
           openingHours: null, 
@@ -964,6 +986,7 @@ describe("useClubStore", () => {
         { 
           id: "2", 
           name: "Club 2", 
+          organizationId: "org-test",
           location: "Location 2", 
           contactInfo: null, 
           openingHours: null, 
@@ -998,6 +1021,7 @@ describe("useClubStore", () => {
         { 
           id: "1", 
           name: "Club 1", 
+          organizationId: "org-test",
           location: "Location 1", 
           contactInfo: null, 
           openingHours: null, 
@@ -1373,6 +1397,7 @@ describe("useClubStore", () => {
         { 
           id: "1", 
           name: "Club 1", 
+          organizationId: "org-test",
           location: "Location 1", 
           contactInfo: null, 
           openingHours: null, 
@@ -1445,6 +1470,7 @@ describe("useClubStore", () => {
         { 
           id: "1", 
           name: "Club 1", 
+          organizationId: "org-test",
           location: "Location 1", 
           contactInfo: null, 
           openingHours: null, 
