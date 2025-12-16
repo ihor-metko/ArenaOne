@@ -1,5 +1,16 @@
 /**
  * @jest-environment node
+ * 
+ * Tests for /api/admin/users endpoint - Role-based access control
+ * 
+ * This test suite verifies that the admin users simple list endpoint properly
+ * enforces role-scoped access control:
+ * - Root Admin: Returns all users (no scope filtering)
+ * - Organization Admin: Returns only users from clubs in their organization(s)
+ * - Club Admin/Owner: Returns only users from their specific club(s)
+ * - Regular Users: Returns 403 Forbidden
+ * 
+ * The endpoint is used for user selection in admin workflows (e.g., quick booking wizard).
  */
 
 // Mock Prisma

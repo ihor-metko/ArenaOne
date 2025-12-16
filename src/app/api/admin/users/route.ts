@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
     // Build where conditions
     const whereConditions: Prisma.UserWhereInput[] = [
-      { isRoot: false }, // Exclude root admins
+      { isRoot: false }, // Exclude root users from results
     ];
 
     // Apply search filter if provided
