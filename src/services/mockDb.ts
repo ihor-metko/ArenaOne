@@ -1277,17 +1277,24 @@ export function createMockOrganization(data: {
   name: string;
   createdById: string;
   slug?: string;
+  description?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  website?: string;
+  address?: string;
+  metadata?: Record<string, unknown>;
   supportedSports?: string[];
 }): Organization {
   const org: Organization = {
     id: generateMockId("org"),
     name: data.name,
     slug: data.slug || data.name.toLowerCase().replace(/\s+/g, "-"),
-    contactEmail: null,
-    contactPhone: null,
-    website: null,
-    address: null,
-    metadata: null,
+    description: data.description || null,
+    contactEmail: data.contactEmail || null,
+    contactPhone: data.contactPhone || null,
+    website: data.website || null,
+    address: data.address || null,
+    metadata: data.metadata || null,
     supportedSports: data.supportedSports || ["PADEL"],
     createdById: data.createdById,
     archivedAt: null,

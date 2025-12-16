@@ -135,7 +135,17 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { name, slug, supportedSports } = body;
+    const { 
+      name, 
+      slug, 
+      description,
+      contactEmail,
+      contactPhone,
+      website,
+      address,
+      metadata,
+      supportedSports 
+    } = body;
 
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
     if (isMockMode()) {
@@ -144,6 +154,12 @@ export async function POST(request: Request) {
         const result = await mockCreateOrganizationHandler({
           name,
           slug,
+          description,
+          contactEmail,
+          contactPhone,
+          website,
+          address,
+          metadata,
           supportedSports,
           createdById: authResult.userId,
         });
@@ -183,6 +199,12 @@ export async function POST(request: Request) {
       data: {
         name: name.trim(),
         slug: finalSlug,
+        description: description?.trim() || null,
+        contactEmail: contactEmail?.trim() || null,
+        contactPhone: contactPhone?.trim() || null,
+        website: website?.trim() || null,
+        address: address?.trim() || null,
+        metadata: metadata ? JSON.stringify(metadata) : null,
         createdById: authResult.userId,
         supportedSports: supportedSports || ["PADEL"],
       },
