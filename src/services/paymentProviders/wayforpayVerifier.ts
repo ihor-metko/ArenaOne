@@ -18,6 +18,11 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
   
   private readonly API_URL = "https://api.wayforpay.com/api";
   
+  // Test verification constants
+  private readonly TEST_DOMAIN = "verification.test";
+  private readonly TEST_EMAIL = "test@verification.test";
+  private readonly TEST_PHONE = "380000000000";
+  
   /**
    * Verify WayForPay credentials using secure test payment request
    * 
@@ -64,7 +69,7 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
       const orderDate = Math.floor(Date.now() / 1000);
       const amount = "1";
       const currency = "UAH";
-      const merchantDomainName = "arenaone.test";
+      const merchantDomainName = this.TEST_DOMAIN;
       const productName = "Verification";
       const productCount = "1";
       const productPrice = "1";
@@ -110,8 +115,8 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
           // Test customer data - no real user interaction
           clientFirstName: "Test",
           clientLastName: "Verification",
-          clientEmail: "test@arenaone.verify",
-          clientPhone: "380000000000",
+          clientEmail: this.TEST_EMAIL,
+          clientPhone: this.TEST_PHONE,
         }),
         signal: AbortSignal.timeout(10000), // 10 second timeout
       });
@@ -148,6 +153,15 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
         };
       }
       
+      // If we get invoiceUrl or paymentURL, credentials are definitely valid
+      // (WayForPay generated payment URL, which requires valid credentials)
+      if (data.invoiceUrl || data.paymentURL) {
+        return {
+          success: true,
+          timestamp,
+        };
+      }
+      
       // reasonCode 1109 = Format error (but signature was accepted)
       // This means credentials are valid, just request format issue
       if (data.reasonCode === 1109 || data.reasonCode === "1109") {
@@ -157,19 +171,36 @@ export class WayForPayVerifier implements PaymentProviderVerifier {
         };
       }
       
-      // If we get a response with reasonCode or reason field and it's not a credential error,
-      // consider credentials valid (API accepted our signature)
-      if (data.reason || data.reasonCode) {
+      // Known credential-valid response codes (WayForPay accepted our signature)
+      // These codes indicate various issues but NOT invalid credentials
+      const validCredentialCodes = [
+        1001, // Order processing error (but signature accepted)
+        1002, // Transaction declined (but credentials valid)
+        1003, // Insufficient funds (but credentials valid)
+        1004, // Card expired (but credentials valid)
+        1005, // Incorrect CVV (but credentials valid)
+        1100, // Order not found (expected for verification)
+      ];
+      
+      const reasonCode = typeof data.reasonCode === "string" 
+        ? parseInt(data.reasonCode, 10) 
+        : data.reasonCode;
+        
+      if (reasonCode && validCredentialCodes.includes(reasonCode)) {
         return {
           success: true,
           timestamp,
         };
       }
       
-      // If we get invoiceUrl or paymentURL, credentials are definitely valid
-      if (data.invoiceUrl || data.paymentURL) {
+      // If we get here with a reasonCode we don't recognize, it's safer to fail
+      // rather than accept potentially invalid credentials
+      if (data.reasonCode) {
+        console.warn("[WayForPayVerifier] Unknown reasonCode:", data.reasonCode, data);
         return {
-          success: true,
+          success: false,
+          error: `Unknown response code: ${data.reasonCode} - ${data.reason || "Unknown error"}`,
+          errorCode: "UNKNOWN_RESPONSE_CODE",
           timestamp,
         };
       }
