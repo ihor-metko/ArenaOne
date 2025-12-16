@@ -5,6 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Card, Button } from "@/components/ui";
 
+// Polling configuration
+const MAX_POLLING_ATTEMPTS = 30; // Maximum number of polling attempts (30 x 2s = 60 seconds)
+const POLLING_INTERVAL_MS = 2000; // Poll every 2 seconds
+
 /**
  * Verification Return Page
  * 
@@ -64,8 +68,8 @@ export default function VerificationReturnPage() {
           setStatus("pending");
           setPollingCount(prev => prev + 1);
           
-          // Stop polling after 30 attempts (30 seconds)
-          if (pollingCount >= 30) {
+          // Stop polling after maximum attempts
+          if (pollingCount >= MAX_POLLING_ATTEMPTS) {
             setStatus("pending");
             setMessage("Verification is taking longer than expected. Please check back later.");
           }
@@ -80,12 +84,12 @@ export default function VerificationReturnPage() {
     // Initial poll
     pollStatus();
 
-    // Set up polling interval (every 2 seconds)
+    // Set up polling interval
     const pollInterval = setInterval(() => {
       if (status === "loading" || status === "pending") {
         pollStatus();
       }
-    }, 2000);
+    }, POLLING_INTERVAL_MS);
 
     // Cleanup
     return () => {
@@ -120,7 +124,7 @@ export default function VerificationReturnPage() {
               </div>
               <h2 style={{ marginBottom: "1rem" }}>Waiting for Payment Confirmation...</h2>
               <p className="im-text-muted">
-                {pollingCount < 30 
+                {pollingCount < MAX_POLLING_ATTEMPTS
                   ? "Your payment is being processed. This may take a few moments."
                   : "Verification is taking longer than expected. The payment may have been completed but the confirmation is delayed. Please check your payment accounts page in a few minutes."}
               </p>

@@ -58,8 +58,7 @@ export async function GET(
           displayName: verificationPayment.paymentAccount.displayName,
           provider: verificationPayment.paymentAccount.provider,
           scope: verificationPayment.paymentAccount.scope,
-          // Include verification level to check if account is now verified
-          verificationLevel: (verificationPayment.paymentAccount as any).verificationLevel,
+          verificationLevel: verificationPayment.paymentAccount.verificationLevel,
         },
       },
     });

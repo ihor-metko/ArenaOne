@@ -140,9 +140,9 @@ async function generateWayForPayCheckoutUrl(
     serviceUrl: `${baseUrl}/api/webhooks/wayforpay/verification`,
   };
 
-  // For WayForPay, we need to POST to their checkout page
-  // We'll create a form and submit it, or return a URL with params
-  // For simplicity, we'll use the API to get a payment URL
+  // Use CREATE_INVOICE transaction type to generate a payment URL/invoice
+  // This is preferred for verification as it creates a hosted payment page
+  // without requiring direct card details in the API call
   const response = await fetch("https://api.wayforpay.com/api", {
     method: "POST",
     headers: {
@@ -169,9 +169,14 @@ async function generateWayForPayCheckoutUrl(
     return data.paymentURL;
   }
 
-  // If no direct URL, we might need to use the widget
-  // For now, throw an error
-  throw new Error(`Failed to get checkout URL from WayForPay: ${JSON.stringify(data)}`);
+  // If no direct URL was provided, the API response may contain error information
+  // Log the error for debugging but don't expose sensitive data in the exception
+  console.error("[WayForPay] Failed to get checkout URL. API response:", {
+    reasonCode: data.reasonCode,
+    reason: data.reason,
+  });
+  
+  throw new Error(`Failed to generate WayForPay checkout URL. Please check your merchant credentials.`);
 }
 
 /**
@@ -328,6 +333,7 @@ export async function getVerificationPayment(id: string) {
           displayName: true,
           provider: true,
           scope: true,
+          verificationLevel: true,
         },
       },
     },
