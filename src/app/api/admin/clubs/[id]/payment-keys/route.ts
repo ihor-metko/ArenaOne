@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAnyAdmin, requireClubOwner } from "@/lib/requireRole";
-import { ClubMembershipRole } from "@/constants/roles";
+import { requireAnyAdmin } from "@/lib/requireRole";
 
 /**
  * Check if an admin can manage payment keys for a specific club
@@ -122,22 +121,25 @@ export async function PUT(
       );
     }
 
-    // Validate keys (basic validation - adjust as needed)
-    if (wayforpayKey !== undefined && wayforpayKey !== null && typeof wayforpayKey !== "string") {
-      return NextResponse.json(
-        { error: "Invalid WayForPay key format" },
-        { status: 400 }
-      );
-    }
+    // Helper to validate payment key format
+    const validateKey = (key: unknown, keyName: string) => {
+      if (key !== undefined && key !== null && typeof key !== "string") {
+        return NextResponse.json(
+          { error: `Invalid ${keyName} key format` },
+          { status: 400 }
+        );
+      }
+      return null;
+    };
 
-    if (liqpayKey !== undefined && liqpayKey !== null && typeof liqpayKey !== "string") {
-      return NextResponse.json(
-        { error: "Invalid LiqPay key format" },
-        { status: 400 }
-      );
-    }
+    // Validate keys
+    const wayforpayError = validateKey(wayforpayKey, "WayForPay");
+    if (wayforpayError) return wayforpayError;
 
-    // Update club payment keys
+    const liqpayError = validateKey(liqpayKey, "LiqPay");
+    if (liqpayError) return liqpayError;
+
+    // Build update data
     const updateData: { wayforpayKey?: string | null; liqpayKey?: string | null } = {};
     if (wayforpayKey !== undefined) {
       updateData.wayforpayKey = wayforpayKey;

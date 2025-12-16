@@ -326,6 +326,8 @@ export async function requireOrganizationAdmin(
  * Helper function to require club owner access.
  * Convenience wrapper around requireRole for club context.
  * 
+ * Root admins are automatically granted access regardless of the allowed roles.
+ * 
  * @param clubId - The club ID to check access for
  * @param allowedRoles - Optional custom allowed roles (defaults to CLUB_OWNER only)
  * @returns Promise resolving to authorized status with user info or error response
