@@ -33,6 +33,7 @@ export enum MembershipRole {
  * These define the user's role within a club context.
  */
 export enum ClubMembershipRole {
+  CLUB_OWNER = "CLUB_OWNER",
   CLUB_ADMIN = "CLUB_ADMIN",
   MEMBER = "MEMBER",
 }
@@ -72,6 +73,15 @@ export function isValidClubMembershipRole(role: unknown): role is ClubMembership
  */
 export function isOrganizationAdmin(role: MembershipRole): boolean {
   return role === MembershipRole.ORGANIZATION_ADMIN;
+}
+
+/**
+ * Check if a user is a club owner based on their club membership.
+ * @param role - The club membership role to check
+ * @returns true if the role is CLUB_OWNER
+ */
+export function isClubOwner(role: ClubMembershipRole): boolean {
+  return role === ClubMembershipRole.CLUB_OWNER;
 }
 
 /**

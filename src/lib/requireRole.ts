@@ -323,6 +323,29 @@ export async function requireOrganizationAdmin(
 }
 
 /**
+ * Helper function to require club owner access.
+ * Convenience wrapper around requireRole for club context.
+ * 
+ * @param clubId - The club ID to check access for
+ * @param allowedRoles - Optional custom allowed roles (defaults to CLUB_OWNER only)
+ * @returns Promise resolving to authorized status with user info or error response
+ * 
+ * @example
+ * const authResult = await requireClubOwner(clubId);
+ * if (!authResult.authorized) return authResult.response;
+ */
+export async function requireClubOwner(
+  clubId: string,
+  allowedRoles: ClubMembershipRole[] = [ClubMembershipRole.CLUB_OWNER]
+): Promise<RoleCheckResult> {
+  return requireRole({
+    contextType: "club",
+    contextId: clubId,
+    allowedRoles,
+  });
+}
+
+/**
  * Helper function to require club admin access.
  * Convenience wrapper around requireRole for club context.
  * 
@@ -407,7 +430,7 @@ export async function requireRoleLegacy(
 /**
  * Admin type enumeration for the unified admin check.
  */
-export type AdminType = "root_admin" | "organization_admin" | "club_admin";
+export type AdminType = "root_admin" | "organization_admin" | "club_owner" | "club_admin";
 
 /**
  * Success result type for any admin check.
@@ -419,6 +442,7 @@ export interface AnyAdminCheckSuccess {
   adminType: AdminType;
   /**
    * For organization admins, the organization IDs they manage.
+   * For club owners, the club IDs they own.
    * For club admins, the club IDs they manage.
    * For root admins, this is empty (they have access to all).
    */
@@ -444,6 +468,7 @@ export type AnyAdminCheckResult = AnyAdminCheckSuccess | AnyAdminCheckFailure;
  * This function checks for:
  * - Root Admin: user.isRoot = true
  * - Organization Admin: Has ORGANIZATION_ADMIN role in any Membership
+ * - Club Owner: Has CLUB_OWNER role in any ClubMembership
  * - Club Admin: Has CLUB_ADMIN role in any ClubMembership
  * 
  * Use this function when you need to allow access to any type of admin
@@ -505,6 +530,27 @@ export async function requireAnyAdmin(
       isRoot: false,
       adminType: "organization_admin",
       managedIds: organizationMemberships.map((m) => m.organizationId),
+    };
+  }
+
+  // Check if user is a club owner (higher privilege than club admin)
+  const clubOwnerMemberships = await prisma.clubMembership.findMany({
+    where: {
+      userId,
+      role: ClubMembershipRole.CLUB_OWNER,
+    },
+    select: {
+      clubId: true,
+    },
+  });
+
+  if (clubOwnerMemberships.length > 0) {
+    return {
+      authorized: true,
+      userId,
+      isRoot: false,
+      adminType: "club_owner",
+      managedIds: clubOwnerMemberships.map((m) => m.clubId),
     };
   }
 

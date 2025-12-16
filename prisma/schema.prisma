@@ -18,6 +18,7 @@ enum MembershipRole {
 }
 
 enum ClubMembershipRole {
+  CLUB_OWNER
   CLUB_ADMIN
   MEMBER
 }
@@ -169,6 +170,8 @@ model Club {
   status           String           @default("active") // "active", "draft", "suspended"
   tags             String?          // JSON array of tags
   supportedSports  SportType[]      @default([PADEL]) // Sports supported by this club
+  wayforpayKey     String?          // Encrypted WayForPay payment key (Club Owner only)
+  liqpayKey        String?          // Encrypted LiqPay payment key (Club Owner only)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @default(now()) @updatedAt
   courts           Court[]
