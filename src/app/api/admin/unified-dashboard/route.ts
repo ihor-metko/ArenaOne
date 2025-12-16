@@ -59,9 +59,10 @@ export interface UnifiedDashboardResponse {
  * Returns dashboard data appropriate for the current user's admin role.
  * - Root Admin: Platform-wide statistics
  * - Organization Admin: Metrics for all managed organizations
+ * - Club Owner: Metrics for all owned clubs
  * - Club Admin: Metrics for all managed clubs
  *
- * Access: Any admin role (root, organization admin, or club admin)
+ * Access: Any admin role (root, organization admin, club owner, or club admin)
  */
 export async function GET(
   request: Request
@@ -215,8 +216,8 @@ export async function GET(
       return NextResponse.json(response);
     }
 
-    if (adminType === "club_admin") {
-      // Fetch metrics for each managed club
+    if (adminType === "club_owner" || adminType === "club_admin") {
+      // Fetch metrics for each owned/managed club
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
