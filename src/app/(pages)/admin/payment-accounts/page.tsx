@@ -10,6 +10,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
 import type { MaskedPaymentAccount } from "@/types/paymentAccount";
+import { PaymentProvider } from "@/types/paymentAccount";
 import "./page.css";
 
 interface ClubWithAccounts {
@@ -210,7 +211,7 @@ export default function UnifiedPaymentAccountsPage() {
 
     try {
       // Prepare provider config for WayForPay
-      const providerConfig = formData.provider === "WAYFORPAY" && formData.merchantPassword
+      const providerConfig = formData.provider === PaymentProvider.WAYFORPAY && formData.merchantPassword
         ? { merchantPassword: formData.merchantPassword }
         : undefined;
 
