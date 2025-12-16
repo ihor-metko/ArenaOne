@@ -54,6 +54,8 @@ export interface CreateOrganizationPayload {
   contactPhone?: string;
   website?: string;
   address?: string;
+  logo?: string;
+  heroImage?: string;
   metadata?: Record<string, unknown>;
   supportedSports?: SportType[];
 }
@@ -68,6 +70,8 @@ export interface UpdateOrganizationPayload {
   contactPhone?: string | null;
   website?: string | null;
   address?: string | null;
+  logo?: string | null;
+  heroImage?: string | null;
   metadata?: Record<string, unknown> | null;
   supportedSports?: SportType[];
 }

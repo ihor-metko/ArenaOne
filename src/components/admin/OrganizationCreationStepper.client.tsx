@@ -280,14 +280,6 @@ export function OrganizationCreationStepper() {
         metadata.socialLinks = socialLinks;
       }
 
-      // Add images to metadata
-      if (formData.logo) {
-        metadata.logo = formData.logo.url || formData.logo.preview;
-      }
-      if (formData.heroImage) {
-        metadata.heroImage = formData.heroImage.url || formData.heroImage.preview;
-      }
-
       // Prepare data for submission
       const submitData = {
         name: formData.name.trim(),
@@ -297,6 +289,8 @@ export function OrganizationCreationStepper() {
         contactEmail: formData.contactEmail.trim() || undefined,
         contactPhone: formData.contactPhone.trim() || undefined,
         website: formData.website.trim() || undefined,
+        logo: formData.logo ? (formData.logo.url || formData.logo.preview) : undefined,
+        heroImage: formData.heroImage ? (formData.heroImage.url || formData.heroImage.preview) : undefined,
         metadata,
       };
 
