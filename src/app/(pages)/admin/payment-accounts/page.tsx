@@ -209,6 +209,11 @@ export default function UnifiedPaymentAccountsPage() {
     if (!user) return;
 
     try {
+      // Prepare provider config for WayForPay
+      const providerConfig = formData.provider === "WAYFORPAY" && formData.merchantPassword
+        ? { merchantPassword: formData.merchantPassword }
+        : undefined;
+
       if (formMode === "add") {
         let url: string;
         if (selectedScope === "ORGANIZATION" && orgId) {
@@ -226,6 +231,7 @@ export default function UnifiedPaymentAccountsPage() {
             provider: formData.provider,
             merchantId: formData.merchantId,
             secretKey: formData.secretKey,
+            providerConfig,
             displayName: formData.displayName || null,
             isActive: formData.isActive,
           }),
@@ -253,6 +259,7 @@ export default function UnifiedPaymentAccountsPage() {
           body: JSON.stringify({
             merchantId: formData.merchantId,
             secretKey: formData.secretKey,
+            providerConfig,
             displayName: formData.displayName || null,
             isActive: formData.isActive,
           }),
