@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Button, Input, Select, Modal } from "@/components/ui";
+import { Button, Input, Modal } from "@/components/ui";
 import { PaymentProvider, MaskedPaymentAccount } from "@/types/paymentAccount";
 import "./PaymentAccountForm.css";
 
@@ -124,20 +124,21 @@ export function PaymentAccountForm({
           <label htmlFor="provider" className="im-label">
             {t("form.provider")} <span className="im-required">*</span>
           </label>
-          <Select
+          <select
             id="provider"
             name="provider"
             value={formData.provider}
             onChange={handleInputChange}
             disabled={mode === "edit"}
             required
+            className="im-select-native"
           >
             {providerOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </Select>
+          </select>
           {mode === "edit" && (
             <small className="im-field-hint">{t("form.providerCannotChange")}</small>
           )}

@@ -86,3 +86,31 @@
 .im-form-actions button {
   min-width: 100px;
 }
+
+.im-select-native {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  background: var(--im-bg-secondary);
+  border: 1px solid var(--im-border);
+  border-radius: 0.5rem;
+  color: var(--im-text-primary);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.im-select-native:hover:not(:disabled) {
+  border-color: var(--im-accent);
+}
+
+.im-select-native:focus {
+  outline: none;
+  border-color: var(--im-accent);
+  box-shadow: 0 0 0 3px rgba(var(--im-accent-rgb), 0.1);
+}
+
+.im-select-native:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--im-bg-tertiary);
+}

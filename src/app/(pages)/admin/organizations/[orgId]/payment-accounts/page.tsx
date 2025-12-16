@@ -69,8 +69,8 @@ export default function OrganizationPaymentAccountsPage({
     if (adminStatus?.isAdmin) {
       // Check if user is organization admin/owner for this org
       const isOrgOwner =
-        adminStatus.isRoot ||
-        (adminStatus.type === "organization_admin" && adminStatus.organizationId === orgId);
+        adminStatus.adminType === "root_admin" ||
+        (adminStatus.adminType === "organization_admin" && adminStatus.managedIds.includes(orgId));
 
       if (!isOrgOwner) {
         router.push("/admin/dashboard");
@@ -233,7 +233,7 @@ export default function OrganizationPaymentAccountsPage({
       
       <PageHeader
         title={t("paymentAccount.pageTitle.organization")}
-        subtitle={organization?.name || ""}
+        description={organization?.name || ""}
       />
 
       {error && <div className="im-error-banner">{error}</div>}

@@ -237,7 +237,7 @@ export default function ClubPaymentAccountsPage({
       
       <PageHeader
         title={t("paymentAccount.pageTitle.club")}
-        subtitle={currentClub?.name || ""}
+        description={currentClub?.name || ""}
       />
 
       {error && <div className="im-error-banner">{error}</div>}

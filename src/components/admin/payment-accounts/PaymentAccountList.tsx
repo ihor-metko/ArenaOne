@@ -110,7 +110,7 @@ export function PaymentAccountList({
         </Button>
       </div>
 
-      <Table
+      <Table<MaskedPaymentAccount>
         columns={columns}
         data={accounts}
         keyExtractor={(account) => account.id}
