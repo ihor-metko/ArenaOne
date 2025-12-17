@@ -83,6 +83,7 @@ interface OrgDetail {
   logo: string | null;
   heroImage: string | null;
   metadata?: Record<string, unknown> | null;
+  isPublic: boolean;
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -208,7 +209,7 @@ export default function OrganizationDetailPage() {
 
       // Update the store's currentOrg with the fetched data (avoid redundant API call)
       // Extract Organization-compatible fields from the full org detail response
-      const { id, name, slug, createdAt, updatedAt, archivedAt, contactEmail, contactPhone, website, address } = data;
+      const { id, name, slug, createdAt, updatedAt, archivedAt, contactEmail, contactPhone, website, address, isPublic } = data;
       setCurrentOrg({
         id,
         name,
@@ -220,6 +221,7 @@ export default function OrganizationDetailPage() {
         contactPhone,
         website,
         address,
+        isPublic,
       });
     } catch {
       setError(t("orgDetail.failedToLoad"));
@@ -634,6 +636,13 @@ export default function OrganizationDetailPage() {
           logoUrl={null}
           imageAlt={`${org.name} banner`}
           logoAlt={`${org.name} logo`}
+          status={
+            org.archivedAt
+              ? { label: t("common.archived"), variant: 'archived' }
+              : (org.isPublic ?? true)
+                ? { label: t("common.published"), variant: 'published' }
+                : { label: t("common.unpublished"), variant: 'draft' }
+          }
         />
       )}
 

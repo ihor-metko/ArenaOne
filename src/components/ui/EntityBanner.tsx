@@ -69,6 +69,14 @@ export interface EntityBannerProps {
   logoAlt?: string;
   
   /**
+   * Status badge (optional) - displays a status indicator
+   */
+  status?: {
+    label: string;
+    variant: 'published' | 'draft' | 'active' | 'inactive' | 'archived';
+  } | null;
+  
+  /**
    * Custom CSS class for the banner container
    */
   className?: string;
@@ -86,6 +94,7 @@ export function EntityBanner({
   logoUrl,
   imageAlt,
   logoAlt,
+  status,
   className = "",
 }: EntityBannerProps) {
   // Memoize validation to avoid unnecessary calls on each render
@@ -124,6 +133,11 @@ export function EntityBanner({
           />
         )}
         <h1 className="rsp-club-hero-name">{title}</h1>
+        {status && (
+          <span className={`rsp-entity-status-badge rsp-entity-status-badge--${status.variant}`}>
+            {status.label}
+          </span>
+        )}
         {subtitle && (
           <p className="rsp-club-hero-short-desc">{subtitle}</p>
         )}
