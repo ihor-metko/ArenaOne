@@ -101,7 +101,7 @@ export function OrganizationCreationStepper() {
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
       setFormData((prev) => ({ ...prev, [name]: value }));
-      
+
       // Clear error for this field
       if (fieldErrors[name]) {
         setFieldErrors((prev) => {
@@ -236,8 +236,8 @@ export function OrganizationCreationStepper() {
       return;
     }
 
-    if (!formData.country.trim() || !formData.city.trim() || !formData.street.trim() || 
-        !formData.latitude.trim() || !formData.longitude.trim()) {
+    if (!formData.country.trim() || !formData.city.trim() || !formData.street.trim() ||
+      !formData.latitude.trim() || !formData.longitude.trim()) {
       setError(t("errors.addressRequired"));
       setCurrentStep(2);
       return;
@@ -261,7 +261,7 @@ export function OrganizationCreationStepper() {
         formData.country.trim()
       ].filter(Boolean); // Remove empty strings
       const fullAddress = addressParts.join(", ");
-      
+
       // Prepare metadata with social links and location
       const metadata: Record<string, unknown> = {
         country: formData.country.trim(),
@@ -275,7 +275,7 @@ export function OrganizationCreationStepper() {
       if (formData.facebook.trim()) socialLinks.facebook = formData.facebook.trim();
       if (formData.instagram.trim()) socialLinks.instagram = formData.instagram.trim();
       if (formData.linkedin.trim()) socialLinks.linkedin = formData.linkedin.trim();
-      
+
       if (Object.keys(socialLinks).length > 0) {
         metadata.socialLinks = socialLinks;
       }
@@ -336,7 +336,7 @@ export function OrganizationCreationStepper() {
           // Organization was created, but owner assignment failed
           const ownerMessage = ownerErr instanceof Error ? ownerErr.message : t("errors.assignOwnerFailed");
           showToast("error", t("success.createdOwnerFailed", { message: ownerMessage }));
-          
+
           // Still redirect to the organization page
           setTimeout(() => {
             router.push(`/admin/organizations/${organization.id}`);
@@ -353,7 +353,7 @@ export function OrganizationCreationStepper() {
       }, 1500);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("errors.createFailed");
-      
+
       // Check for slug conflict
       if (message.includes("slug")) {
         setFieldErrors({ slug: t("errors.slugInUse") });
@@ -362,7 +362,7 @@ export function OrganizationCreationStepper() {
       } else {
         setError(message);
       }
-      
+
       showToast("error", message);
     } finally {
       setIsSubmitting(false);
@@ -372,15 +372,6 @@ export function OrganizationCreationStepper() {
   const handleCancel = () => {
     router.push("/admin/organizations");
   };
-
-  // Cleanup debounce timer on unmount
-  useEffect(() => {
-    return () => {
-      if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-      }
-    };
-  }, [searchDebounceTimer]);
 
   // State for user search in step 5
   const [userSearchQuery, setUserSearchQuery] = useState("");
@@ -413,19 +404,28 @@ export function OrganizationCreationStepper() {
 
   const handleUserSearchChange = useCallback((query: string) => {
     setUserSearchQuery(query);
-    
+
     // Clear existing timer
     if (searchDebounceTimer) {
       clearTimeout(searchDebounceTimer);
     }
-    
+
     // Set new timer for debounced search
     const timer = setTimeout(() => {
       searchUsers(query);
     }, 300);
-    
+
     setSearchDebounceTimer(timer);
   }, [searchDebounceTimer, searchUsers]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+      }
+    };
+  }, [searchDebounceTimer]);
 
   // Render step content
   const renderStepContent = () => {
@@ -803,9 +803,9 @@ export function OrganizationCreationStepper() {
                           <span className="im-stepper-field-hint">{t("searching")}</span>
                         )}
                         {userSearchResults.length > 0 && (
-                          <div style={{ 
-                            marginTop: "0.5rem", 
-                            border: "1px solid var(--rsp-border)", 
+                          <div style={{
+                            marginTop: "0.5rem",
+                            border: "1px solid var(--rsp-border)",
                             borderRadius: "0.375rem",
                             maxHeight: "200px",
                             overflowY: "auto"
