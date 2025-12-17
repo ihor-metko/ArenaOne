@@ -530,11 +530,11 @@ export default function OrganizationDetailPage() {
 
       showToast(t("orgDetail.updateSuccess"), "success");
       setIsEditingBasicInfo(false);
-      fetchOrgDetail();
     } catch (err) {
       setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
     } finally {
       setEditing(false);
+      fetchOrgDetail();
     }
   };
 
@@ -565,11 +565,11 @@ export default function OrganizationDetailPage() {
 
       showToast(t("orgDetail.updateSuccess"), "success");
       setIsEditingAddress(false);
-      fetchOrgDetail();
     } catch (err) {
       setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
     } finally {
       setEditing(false);
+      fetchOrgDetail();
     }
   };
 
@@ -595,11 +595,11 @@ export default function OrganizationDetailPage() {
 
       showToast(t("orgDetail.updateSuccess"), "success");
       setIsEditingContacts(false);
-      fetchOrgDetail();
     } catch (err) {
       setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
     } finally {
       setEditing(false);
+      fetchOrgDetail();
     }
   };
 
@@ -644,11 +644,11 @@ export default function OrganizationDetailPage() {
 
       showToast(t("orgDetail.updateSuccess"), "success");
       setIsEditModalOpen(false);
-      fetchOrgDetail();
     } catch (err) {
       setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
     } finally {
       setEditing(false);
+      fetchOrgDetail();
     }
   };
 
