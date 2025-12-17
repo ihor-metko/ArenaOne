@@ -278,7 +278,10 @@ export default function ClubOperationsPage() {
             <Button onClick={handleBackToList} variant="outline">
               {t("operations.backToList")}
             </Button>
-            <Button onClick={handleCreateBooking}>
+            <Button 
+              onClick={handleCreateBooking}
+              disabled={courts.length === 0 || loadingCourts}
+            >
               {t("operations.newBooking")}
             </Button>
           </>
