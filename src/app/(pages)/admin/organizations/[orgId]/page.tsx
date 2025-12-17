@@ -136,10 +136,8 @@ export default function OrganizationDetailPage() {
     setTimeout(() => setToast(null), 5000);
   };
 
-  // Stepper modal states for editing
-  const [isEditingBasicInfo, setIsEditingBasicInfo] = useState(false);
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [isEditingContacts, setIsEditingContacts] = useState(false);
+  // Unified edit modal state
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [editError, setEditError] = useState("");
   const [editing, setEditing] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -342,22 +340,16 @@ export default function OrganizationDetailPage() {
   //   return () => clearTimeout(timer);
   // }, [userSearch, isReassignModalOpen, reassignMode, fetchUsers]);
 
-  // Handler for opening edit modals
-  const handleOpenBasicInfoEdit = () => {
+  // Handler for opening unified edit modal
+  const handleOpenDetailsEdit = () => {
     if (!org) return;
-    setBasicInfoData({
-      name: org.name,
-      slug: org.slug,
-      description: org.description || "",
-    });
-    setFieldErrors({});
-    setEditError("");
-    setIsEditingBasicInfo(true);
-  };
-
-  const handleOpenAddressEdit = () => {
-    if (!org) return;
-    const metadata = org.metadata as { country?: string; street?: string; latitude?: number; longitude?: number } | null;
+    const metadata = org.metadata as { 
+      country?: string; 
+      street?: string; 
+      latitude?: number; 
+      longitude?: number;
+      socialLinks?: { facebook?: string; instagram?: string; linkedin?: string };
+    } | null;
 
     // Parse address to extract components
     const addressParts = org.address?.split(", ") || [];
@@ -365,6 +357,13 @@ export default function OrganizationDetailPage() {
     const city = addressParts.length > 1 ? addressParts[1] : "";
     const postalCode = addressParts.length > 2 ? addressParts[2] : "";
     const country = metadata?.country || (addressParts.length > 3 ? addressParts[3] : "");
+    const socialLinks = metadata?.socialLinks || {};
+
+    setBasicInfoData({
+      name: org.name,
+      slug: org.slug,
+      description: org.description || "",
+    });
 
     setAddressData({
       country,
@@ -374,15 +373,6 @@ export default function OrganizationDetailPage() {
       latitude: metadata?.latitude?.toString() || "",
       longitude: metadata?.longitude?.toString() || "",
     });
-    setFieldErrors({});
-    setEditError("");
-    setIsEditingAddress(true);
-  };
-
-  const handleOpenContactsEdit = () => {
-    if (!org) return;
-    const metadata = org.metadata as { socialLinks?: { facebook?: string; instagram?: string; linkedin?: string } } | null;
-    const socialLinks = metadata?.socialLinks || {};
 
     setContactsData({
       contactEmail: org.contactEmail || "",
@@ -392,9 +382,10 @@ export default function OrganizationDetailPage() {
       instagram: socialLinks.instagram || "",
       linkedin: socialLinks.linkedin || "",
     });
+
     setFieldErrors({});
     setEditError("");
-    setIsEditingContacts(true);
+    setIsEditingDetails(true);
   };
 
   // Handle form field changes
@@ -434,35 +425,8 @@ export default function OrganizationDetailPage() {
     }
   };
 
-  // Save handlers for each section
-  const handleSaveBasicInfo = async () => {
-    setEditError("");
-    setEditing(true);
-
-    try {
-      const payload: Record<string, unknown> = {
-        name: basicInfoData.name,
-        slug: basicInfoData.slug,
-      };
-
-      // Add description if the org has a description field (checking if it's directly available)
-      if (basicInfoData.description !== undefined) {
-        (payload as { description?: string }).description = basicInfoData.description;
-      }
-
-      await updateOrganization(orgId, payload);
-
-      showToast(t("orgDetail.updateSuccess"), "success");
-      setIsEditingBasicInfo(false);
-      fetchOrgDetail();
-    } catch (err) {
-      setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
-    } finally {
-      setEditing(false);
-    }
-  };
-
-  const handleSaveAddress = async () => {
+  // Unified save handler for all details
+  const handleSaveDetails = async () => {
     setEditError("");
     setEditing(true);
 
@@ -476,49 +440,33 @@ export default function OrganizationDetailPage() {
       ].filter(Boolean);
       const fullAddress = addressParts.join(", ");
 
-      await updateOrganization(orgId, {
-        address: fullAddress,
-        metadata: {
-          ...(org?.metadata as object || {}),
-          country: addressData.country.trim(),
-          street: addressData.street.trim(),
-          latitude: parseFloat(addressData.latitude),
-          longitude: parseFloat(addressData.longitude),
-        },
-      });
-
-      showToast(t("orgDetail.updateSuccess"), "success");
-      setIsEditingAddress(false);
-      fetchOrgDetail();
-    } catch (err) {
-      setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
-    } finally {
-      setEditing(false);
-    }
-  };
-
-  const handleSaveContacts = async () => {
-    setEditError("");
-    setEditing(true);
-
-    try {
+      // Build social links
       const socialLinks: Record<string, string> = {};
       if (contactsData.facebook.trim()) socialLinks.facebook = contactsData.facebook.trim();
       if (contactsData.instagram.trim()) socialLinks.instagram = contactsData.instagram.trim();
       if (contactsData.linkedin.trim()) socialLinks.linkedin = contactsData.linkedin.trim();
 
+      // Combine all updates into one payload
       await updateOrganization(orgId, {
+        name: basicInfoData.name,
+        slug: basicInfoData.slug,
+        description: basicInfoData.description || null,
+        address: fullAddress,
         contactEmail: contactsData.contactEmail.trim() || null,
         contactPhone: contactsData.contactPhone.trim() || null,
         website: contactsData.website.trim() || null,
         metadata: {
           ...(org?.metadata as object || {}),
+          country: addressData.country.trim(),
+          street: addressData.street.trim(),
+          latitude: addressData.latitude ? parseFloat(addressData.latitude) : undefined,
+          longitude: addressData.longitude ? parseFloat(addressData.longitude) : undefined,
           socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
         },
       });
 
       showToast(t("orgDetail.updateSuccess"), "success");
-      setIsEditingContacts(false);
+      setIsEditingDetails(false);
       fetchOrgDetail();
     } catch (err) {
       setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
@@ -819,6 +767,25 @@ export default function OrganizationDetailPage() {
                   ? { label: t("common.published"), variant: 'published' }
                   : { label: t("common.unpublished"), variant: 'draft' }
             }
+            actions={
+              !org.archivedAt ? (
+                <Button
+                  variant={org.isPublic ? "outline" : "primary"}
+                  size="small"
+                  onClick={handleTogglePublication}
+                  disabled={isTogglingPublication}
+                  className="rsp-entity-banner-toggle-btn"
+                >
+                  {isTogglingPublication 
+                    ? t("common.processing") 
+                    : org.isPublic 
+                      ? t("orgDetail.unpublish") 
+                      : t("orgDetail.publish")
+                  }
+                </Button>
+              ) : null
+            }
+            onEdit={!org.archivedAt ? handleOpenDetailsEdit : undefined}
           />
           {!org.archivedAt && (
             <div className="im-banner-actions">
@@ -836,19 +803,6 @@ export default function OrganizationDetailPage() {
               >
                 {org.heroImage ? t("orgDetail.updateBanner") : t("orgDetail.addBanner")}
               </Button>
-              <Button
-                variant={org.isPublic ? "outline" : "primary"}
-                size="small"
-                onClick={handleTogglePublication}
-                disabled={isTogglingPublication}
-              >
-                {isTogglingPublication 
-                  ? t("common.processing") 
-                  : org.isPublic 
-                    ? t("orgDetail.unpublish") 
-                    : t("orgDetail.publish")
-                }
-              </Button>
             </div>
           )}
         </>
@@ -861,53 +815,6 @@ export default function OrganizationDetailPage() {
         )}
 
         <section className="im-org-detail-content">
-          {/* Organization Overview Block */}
-          {loadingOrg ? (
-            <OrgInfoCardSkeleton items={6} className="im-org-detail-content--full" />
-          ) : org && (
-            <div className="im-section-card im-org-detail-content--full">
-              <div className="im-section-header">
-                <div className="im-section-icon im-section-icon--info">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="16" x2="12" y2="12" />
-                    <line x1="12" y1="8" x2="12.01" y2="8" />
-                  </svg>
-                </div>
-                <h2 className="im-section-title">{t("orgDetail.overview")}</h2>
-              </div>
-              <div className="im-org-info-grid">
-                {org.description && (
-                  <div className="im-org-info-item im-org-info-item--full">
-                    <span className="im-org-info-label">{t("orgDetail.description")}</span>
-                    <span className="im-org-info-value">{org.description}</span>
-                  </div>
-                )}
-                {org.address && (
-                  <div className="im-org-info-item im-org-info-item--full">
-                    <span className="im-org-info-label">{t("common.address")}</span>
-                    <span className="im-org-info-value">{org.address}</span>
-                  </div>
-                )}
-                <div className="im-org-info-item">
-                  <span className="im-org-info-label">{t("orgDetail.createdAt")}</span>
-                  <span className="im-org-info-value">{new Date(org.createdAt).toLocaleDateString()}</span>
-                </div>
-                <div className="im-org-info-item">
-                  <span className="im-org-info-label">{t("orgDetail.status")}</span>
-                  <span className="im-org-info-value">
-                    {org.archivedAt 
-                      ? t("common.archived") 
-                      : org.isPublic 
-                        ? t("common.published") 
-                        : t("common.unpublished")
-                    }
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Organization Owner Section */}
           {loadingOrg ? (
             <OrgInfoCardSkeleton items={3} className="im-org-detail-content--full" />
@@ -967,162 +874,7 @@ export default function OrganizationDetailPage() {
             </div>
           )}
 
-          {/* Basic Information Block */}
-          {loadingOrg ? (
-            <OrgInfoCardSkeleton items={4} className="im-org-detail-content--full" />
-          ) : org && (
-            <div className="im-section-card im-org-detail-content--full">
-              <div className="im-section-header">
-                <div className="im-section-icon im-section-icon--info">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10 9 9 9 8 9" />
-                  </svg>
-                </div>
-                <h2 className="im-section-title">{t("orgDetail.basicInformation")}</h2>
-                {!org.archivedAt && (
-                  <div className="im-section-actions">
-                    <Button
-                      variant="outline"
-                      size="small"
-                      onClick={handleOpenBasicInfoEdit}
-                    >
-                      {t("common.edit")}
-                    </Button>
-                  </div>
-                )}
-              </div>
-              <div className="im-org-info-grid">
-                <div className="im-org-info-item">
-                  <span className="im-org-info-label">{t("orgDetail.name")}</span>
-                  <span className="im-org-info-value">{org.name}</span>
-                </div>
-                <div className="im-org-info-item">
-                  <span className="im-org-info-label">{t("orgDetail.slug")}</span>
-                  <span className="im-org-info-value">{org.slug}</span>
-                </div>
-                <div className="im-org-info-item im-org-info-item--full">
-                  <span className="im-org-info-label">{t("orgDetail.description")}</span>
-                  <span className="im-org-info-value">{org.description || t("orgDetail.noDescription")}</span>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* Address Block */}
-          {loadingOrg ? (
-            <OrgInfoCardSkeleton items={3} className="im-org-detail-content--full" />
-          ) : org && (
-            <div className="im-section-card im-org-detail-content--full">
-              <div className="im-section-header">
-                <div className="im-section-icon im-section-icon--location">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
-                </div>
-                <h2 className="im-section-title">{t("orgDetail.address")}</h2>
-                {!org.archivedAt && (
-                  <div className="im-section-actions">
-                    <Button
-                      variant="outline"
-                      size="small"
-                      onClick={handleOpenAddressEdit}
-                    >
-                      {t("common.edit")}
-                    </Button>
-                  </div>
-                )}
-              </div>
-              <div className="im-org-info-grid">
-                <div className="im-org-info-item im-org-info-item--full">
-                  <span className="im-org-info-label">{t("common.address")}</span>
-                  <span className="im-org-info-value">{org.address || t("orgDetail.noAddress")}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Contacts & Social Links Block */}
-          {loadingOrg ? (
-            <OrgInfoCardSkeleton items={5} className="im-org-detail-content--full" />
-          ) : org && (
-            <div className="im-section-card im-org-detail-content--full">
-              <div className="im-section-header">
-                <div className="im-section-icon im-section-icon--contact">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                  </svg>
-                </div>
-                <h2 className="im-section-title">{t("orgDetail.contactsAndSocial")}</h2>
-                {!org.archivedAt && (
-                  <div className="im-section-actions">
-                    <Button
-                      variant="outline"
-                      size="small"
-                      onClick={handleOpenContactsEdit}
-                    >
-                      {t("common.edit")}
-                    </Button>
-                  </div>
-                )}
-              </div>
-              <div className="im-org-info-grid">
-                {org.contactEmail && (
-                  <div className="im-org-info-item">
-                    <span className="im-org-info-label">{t("common.email")}</span>
-                    <span className="im-org-info-value">{org.contactEmail}</span>
-                  </div>
-                )}
-                {org.contactPhone && (
-                  <div className="im-org-info-item">
-                    <span className="im-org-info-label">{t("orgDetail.phone")}</span>
-                    <span className="im-org-info-value">{org.contactPhone}</span>
-                  </div>
-                )}
-                {org.website && (
-                  <div className="im-org-info-item im-org-info-item--full">
-                    <span className="im-org-info-label">{t("orgDetail.website")}</span>
-                    <span className="im-org-info-value">
-                      <a href={org.website} target="_blank" rel="noopener noreferrer">
-                        {org.website}
-                      </a>
-                    </span>
-                  </div>
-                )}
-                {(org.metadata as { socialLinks?: Record<string, string> })?.socialLinks && (
-                  <div className="im-org-info-item im-org-info-item--full">
-                    <span className="im-org-info-label">{t("orgDetail.socialLinks")}</span>
-                    <div className="im-social-links">
-                      {((org.metadata as { socialLinks?: Record<string, string> })?.socialLinks?.facebook) && (
-                        <a href={(org.metadata as { socialLinks?: Record<string, string> }).socialLinks!.facebook} target="_blank" rel="noopener noreferrer" className="im-social-link">
-                          Facebook
-                        </a>
-                      )}
-                      {((org.metadata as { socialLinks?: Record<string, string> })?.socialLinks?.instagram) && (
-                        <a href={(org.metadata as { socialLinks?: Record<string, string> }).socialLinks!.instagram} target="_blank" rel="noopener noreferrer" className="im-social-link">
-                          Instagram
-                        </a>
-                      )}
-                      {((org.metadata as { socialLinks?: Record<string, string> })?.socialLinks?.linkedin) && (
-                        <a href={(org.metadata as { socialLinks?: Record<string, string> }).socialLinks!.linkedin} target="_blank" rel="noopener noreferrer" className="im-social-link">
-                          LinkedIn
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                )}
-                {!org.contactEmail && !org.contactPhone && !org.website && !(org.metadata as { socialLinks?: Record<string, string> })?.socialLinks && (
-                  <div className="im-org-info-item im-org-info-item--full">
-                    <span className="im-org-info-value">{t("orgDetail.noContactInfo")}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Key Metrics */}
           {loadingOrg ? (
@@ -1357,82 +1109,51 @@ export default function OrganizationDetailPage() {
           )}
         </section>
 
-        {/* Basic Info Edit Modal */}
+        {/* Unified Edit Details Modal */}
         <Modal
-          isOpen={isEditingBasicInfo}
-          onClose={() => setIsEditingBasicInfo(false)}
-          title={t("orgDetail.editBasicInfo")}
+          isOpen={isEditingDetails}
+          onClose={() => setIsEditingDetails(false)}
+          title={t("orgDetail.editDetails")}
         >
           {editError && (
             <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm mb-4">
               {editError}
             </div>
           )}
-          <BasicInfoStep
-            formData={basicInfoData}
-            fieldErrors={fieldErrors}
-            isSubmitting={editing}
-            onChange={handleBasicInfoChange}
-          />
-          <div className="flex justify-end gap-2 mt-4">
-            <Button type="button" variant="outline" onClick={() => setIsEditingBasicInfo(false)} disabled={editing}>
-              {t("common.cancel")}
-            </Button>
-            <Button onClick={handleSaveBasicInfo} disabled={editing}>
-              {editing ? t("common.processing") : t("common.save")}
-            </Button>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-md font-semibold mb-3">{t("orgDetail.basicInformation")}</h3>
+              <BasicInfoStep
+                formData={basicInfoData}
+                fieldErrors={fieldErrors}
+                isSubmitting={editing}
+                onChange={handleBasicInfoChange}
+              />
+            </div>
+            <div>
+              <h3 className="text-md font-semibold mb-3">{t("orgDetail.address")}</h3>
+              <AddressStep
+                formData={addressData}
+                fieldErrors={fieldErrors}
+                isSubmitting={editing}
+                onChange={handleAddressChange}
+              />
+            </div>
+            <div>
+              <h3 className="text-md font-semibold mb-3">{t("orgDetail.contactsAndSocial")}</h3>
+              <ContactsStep
+                formData={contactsData}
+                fieldErrors={fieldErrors}
+                isSubmitting={editing}
+                onChange={handleContactsChange}
+              />
+            </div>
           </div>
-        </Modal>
-
-        {/* Address Edit Modal */}
-        <Modal
-          isOpen={isEditingAddress}
-          onClose={() => setIsEditingAddress(false)}
-          title={t("orgDetail.editAddress")}
-        >
-          {editError && (
-            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm mb-4">
-              {editError}
-            </div>
-          )}
-          <AddressStep
-            formData={addressData}
-            fieldErrors={fieldErrors}
-            isSubmitting={editing}
-            onChange={handleAddressChange}
-          />
           <div className="flex justify-end gap-2 mt-4">
-            <Button type="button" variant="outline" onClick={() => setIsEditingAddress(false)} disabled={editing}>
+            <Button type="button" variant="outline" onClick={() => setIsEditingDetails(false)} disabled={editing}>
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleSaveAddress} disabled={editing}>
-              {editing ? t("common.processing") : t("common.save")}
-            </Button>
-          </div>
-        </Modal>
-
-        {/* Contacts Edit Modal */}
-        <Modal
-          isOpen={isEditingContacts}
-          onClose={() => setIsEditingContacts(false)}
-          title={t("orgDetail.editContacts")}
-        >
-          {editError && (
-            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm mb-4">
-              {editError}
-            </div>
-          )}
-          <ContactsStep
-            formData={contactsData}
-            fieldErrors={fieldErrors}
-            isSubmitting={editing}
-            onChange={handleContactsChange}
-          />
-          <div className="flex justify-end gap-2 mt-4">
-            <Button type="button" variant="outline" onClick={() => setIsEditingContacts(false)} disabled={editing}>
-              {t("common.cancel")}
-            </Button>
-            <Button onClick={handleSaveContacts} disabled={editing}>
+            <Button onClick={handleSaveDetails} disabled={editing}>
               {editing ? t("common.processing") : t("common.save")}
             </Button>
           </div>
