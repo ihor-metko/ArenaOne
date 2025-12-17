@@ -1342,7 +1342,12 @@
     "coach": "Coach",
     "createdAt": "Created At",
     "cancelling": "Cancelling...",
-    "cancelBooking": "Cancel Booking"
+    "cancelBooking": "Cancel Booking",
+    "currentClub": "Current Club",
+    "calendarView": "Calendar View",
+    "listView": "List View",
+    "newBooking": "New Booking",
+    "pageDescription": "View and manage bookings, courts, and schedules"
   },
   "users": {
     "title": "User Management",
