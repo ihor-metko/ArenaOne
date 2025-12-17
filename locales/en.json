@@ -1279,7 +1279,9 @@
       "reassignOwnerFailed": "Failed to reassign owner",
       "archiveFailed": "Failed to archive organization",
       "deleteFailed": "Failed to delete organization",
-      "fetchFailed": "Failed to fetch organization"
+      "fetchFailed": "Failed to fetch organization",
+      "changeOwnerFailed": "Failed to change owner",
+      "userRequired": "Please select a user"
     },
     "imageAlt": {
       "heroImage": "Hero image for {name}",
@@ -1594,7 +1596,28 @@
     "totalUpcoming": "Total Upcoming",
     "upcomingBookings": "Next 10 Upcoming Bookings",
     "noBookings": "No upcoming bookings scheduled.",
-    "viewAllBookings": "View All Bookings"
+    "viewAllBookings": "View All Bookings",
+    "overview": "Organization Overview",
+    "organizationOwner": "Organization Owner",
+    "changeOwner": "Change Owner",
+    "assignOwner": "Assign Owner",
+    "noOwnerAssigned": "No owner assigned",
+    "ownerChanged": "Owner changed successfully",
+    "changeOwnerWarning": "This will set a new primary owner for the organization. The user must already be a SuperAdmin of this organization.",
+    "basicInformation": "Basic Information",
+    "editBasicInfo": "Edit Basic Information",
+    "name": "Name",
+    "description": "Description",
+    "noDescription": "No description provided",
+    "address": "Address",
+    "editAddress": "Edit Address",
+    "noAddress": "No address specified",
+    "contactsAndSocial": "Contacts & Social Links",
+    "editContacts": "Edit Contacts",
+    "socialLinks": "Social Links",
+    "noContactInfo": "No contact information provided",
+    "status": "Status",
+    "noName": "No name"
   },
   "unifiedDashboard": {
     "organizationTitle": "Organization Dashboard",

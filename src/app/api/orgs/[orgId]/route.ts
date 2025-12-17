@@ -207,6 +207,7 @@ export async function GET(
       id: organization.id,
       name: organization.name,
       slug: organization.slug,
+      description: organization.description,
       contactEmail: organization.contactEmail,
       contactPhone: organization.contactPhone,
       website: organization.website,
@@ -259,7 +260,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, slug, contactEmail, contactPhone, website, address, logo, heroImage, metadata } = body;
+    const { name, slug, description, contactEmail, contactPhone, website, address, logo, heroImage, metadata } = body;
 
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
     if (isMockMode()) {
@@ -343,6 +344,7 @@ export async function PUT(
     const updateData: {
       name?: string;
       slug?: string;
+      description?: string | null;
       contactEmail?: string | null;
       contactPhone?: string | null;
       website?: string | null;
@@ -354,6 +356,7 @@ export async function PUT(
 
     if (name !== undefined) updateData.name = name.trim();
     if (slug !== undefined || name !== undefined) updateData.slug = finalSlug;
+    if (description !== undefined) updateData.description = description?.trim() || null;
     if (contactEmail !== undefined) updateData.contactEmail = contactEmail?.trim() || null;
     if (contactPhone !== undefined) updateData.contactPhone = contactPhone?.trim() || null;
     if (website !== undefined) updateData.website = website?.trim() || null;
@@ -399,6 +402,7 @@ export async function PUT(
       id: updatedOrganization.id,
       name: updatedOrganization.name,
       slug: updatedOrganization.slug,
+      description: updatedOrganization.description,
       contactEmail: updatedOrganization.contactEmail,
       contactPhone: updatedOrganization.contactPhone,
       website: updatedOrganization.website,
