@@ -105,7 +105,7 @@ export function QuickCreateModal({
         clubId,
       });
 
-      showToast(t("operations.bookingCreated") || "Booking created successfully", {
+      showToast(t("operations.bookingCreated"), {
         type: "success",
       });
 
@@ -131,7 +131,7 @@ export function QuickCreateModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t("operations.quickCreate") || "Quick Create Booking"}
+      title={t("operations.quickCreate")}
     >
       <form onSubmit={handleSubmit} className="im-quick-create-form">
         {error && (
@@ -143,7 +143,7 @@ export function QuickCreateModal({
         {/* Court selection */}
         <div className="im-quick-create-field">
           <label htmlFor="court" className="im-quick-create-label">
-            {t("operations.court") || "Court"}
+            {t("operations.court")}
           </label>
           <Select
             id="court"
@@ -152,7 +152,7 @@ export function QuickCreateModal({
             required
             options={courts.map((court) => ({
               value: court.id,
-              label: `${court.name}${court.indoor !== undefined ? ` (${court.indoor ? "Indoor" : "Outdoor"})` : ""}`,
+              label: `${court.name}${court.indoor !== undefined ? ` (${court.indoor ? t("operations.indoor") : t("operations.outdoor")})` : ""}`,
             }))}
           />
         </div>
@@ -160,7 +160,7 @@ export function QuickCreateModal({
         {/* Start time */}
         <div className="im-quick-create-field">
           <label htmlFor="startTime" className="im-quick-create-label">
-            {t("operations.startTime") || "Start Time"}
+            {t("operations.startTime")}
           </label>
           <Input
             id="startTime"
@@ -174,7 +174,7 @@ export function QuickCreateModal({
         {/* Duration */}
         <div className="im-quick-create-field">
           <label htmlFor="duration" className="im-quick-create-label">
-            {t("operations.duration") || "Duration (minutes)"}
+            {t("operations.duration")}
           </label>
           <Select
             id="duration"
@@ -193,7 +193,7 @@ export function QuickCreateModal({
         {/* User email */}
         <div className="im-quick-create-field">
           <label htmlFor="userEmail" className="im-quick-create-label">
-            {t("operations.userEmail") || "User Email"}
+            {t("operations.userEmail")}
           </label>
           <Input
             id="userEmail"
@@ -204,7 +204,7 @@ export function QuickCreateModal({
             required
           />
           <p className="im-quick-create-hint">
-            {t("operations.userEmailHint") || "Enter the email of the user to book for"}
+            {t("operations.userEmailHint")}
           </p>
         </div>
 
@@ -212,18 +212,18 @@ export function QuickCreateModal({
         {selectedCourt && (
           <div className="im-quick-create-summary">
             <h4 className="im-quick-create-summary-title">
-              {t("operations.bookingSummary") || "Booking Summary"}
+              {t("operations.bookingSummary")}
             </h4>
             <div className="im-quick-create-summary-content">
               <div>
-                <strong>{t("operations.court") || "Court"}:</strong> {selectedCourt.name}
+                <strong>{t("operations.court")}:</strong> {selectedCourt.name}
               </div>
               <div>
-                <strong>{t("operations.startTime") || "Start"}:</strong>{" "}
+                <strong>{t("operations.startTime")}:</strong>{" "}
                 {new Date(selectedStartTime).toLocaleString()}
               </div>
               <div>
-                <strong>{t("operations.duration") || "Duration"}:</strong> {duration} minutes
+                <strong>{t("operations.duration")}:</strong> {duration} {t("common.minutes")}
               </div>
             </div>
           </div>
@@ -232,12 +232,12 @@ export function QuickCreateModal({
         {/* Actions */}
         <div className="im-quick-create-actions">
           <Button type="button" variant="outline" onClick={onClose}>
-            {t("common.cancel") || "Cancel"}
+            {t("common.cancel")}
           </Button>
           <Button type="submit" variant="primary" disabled={isSubmitting}>
             {isSubmitting
-              ? t("operations.creating") || "Creating..."
-              : t("operations.createBooking") || "Create Booking"}
+              ? t("operations.creating")
+              : t("operations.createBooking")}
           </Button>
         </div>
       </form>

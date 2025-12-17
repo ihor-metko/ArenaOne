@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import type { Court } from "@/types/court";
 import type { OperationsBooking } from "@/types/booking";
 import { BookingBlock } from "./BookingBlock";
@@ -40,6 +41,8 @@ export function DayCalendar({
   onBookingClick,
   onSlotClick,
 }: DayCalendarProps) {
+  const t = useTranslations();
+  
   // Generate time slots
   const timeSlots = useMemo(() => {
     const slots: { hour: number; minute: number; label: string }[] = [];
@@ -80,12 +83,12 @@ export function DayCalendar({
       <div className="im-day-calendar-grid">
         {/* Header row with court names */}
         <div className="im-day-calendar-header">
-          <div className="im-day-calendar-time-header">Time</div>
+          <div className="im-day-calendar-time-header">{t("operations.time")}</div>
           {courts.map((court) => (
             <div key={court.id} className="im-day-calendar-court-header">
               <div className="im-day-calendar-court-name">{court.name}</div>
               <div className="im-day-calendar-court-type">
-                {court.indoor !== undefined ? (court.indoor ? "Indoor" : "Outdoor") : "Court"}
+                {court.indoor !== undefined ? (court.indoor ? t("operations.indoor") : t("operations.outdoor")) : t("operations.court")}
                 {court.type && ` • ${court.type}`}
               </div>
             </div>
@@ -145,7 +148,7 @@ export function DayCalendar({
       {/* Empty state */}
       {courts.length === 0 && (
         <div className="im-day-calendar-empty">
-          <p>No courts available for this club.</p>
+          <p>{t("operations.noCourtsCalendar")}</p>
         </div>
       )}
     </div>
