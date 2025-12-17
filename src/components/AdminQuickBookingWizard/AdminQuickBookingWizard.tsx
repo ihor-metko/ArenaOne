@@ -24,7 +24,7 @@ import {
   getVisibleSteps,
   getNextStepId,
   getPreviousStepId,
-  getFirstVisibleStepId,
+  getFirstUnfilledStepId,
   calculateEndTime,
 } from "./types";
 import "./AdminQuickBookingWizard.css";
@@ -47,7 +47,7 @@ export function AdminQuickBookingWizard({
   const orgError = useOrganizationStore((state) => state.error);
 
   const [state, setState] = useState<WizardState>(() => {
-    const firstStepId = getFirstVisibleStepId(adminType, predefinedData);
+    const firstStepId = getFirstUnfilledStepId(adminType, predefinedData);
     return {
       currentStep: firstStepId,
       adminType,
@@ -102,7 +102,7 @@ export function AdminQuickBookingWizard({
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
-      const firstStepId = getFirstVisibleStepId(adminType, predefinedData);
+      const firstStepId = getFirstUnfilledStepId(adminType, predefinedData);
       setState({
         currentStep: firstStepId,
         adminType,
