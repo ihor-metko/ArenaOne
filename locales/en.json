@@ -49,6 +49,8 @@
     "language": "Language",
     "published": "Published",
     "draft": "Draft",
+    "unpublished": "Unpublished",
+    "archived": "Archived",
     "previous": "Previous",
     "next": "Next",
     "clearFilters": "Clear filters",

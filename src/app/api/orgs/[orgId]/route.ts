@@ -215,6 +215,7 @@ export async function GET(
       logo: organization.logo,
       heroImage: organization.heroImage,
       metadata: organization.metadata ? JSON.parse(organization.metadata) : null,
+      isPublic: organization.isPublic,
       archivedAt: organization.archivedAt,
       createdAt: organization.createdAt,
       updatedAt: organization.updatedAt,
@@ -412,6 +413,7 @@ export async function PUT(
       metadata: updatedOrganization.metadata
         ? JSON.parse(updatedOrganization.metadata)
         : null,
+      isPublic: updatedOrganization.isPublic,
       archivedAt: updatedOrganization.archivedAt,
       createdAt: updatedOrganization.createdAt,
       updatedAt: updatedOrganization.updatedAt,

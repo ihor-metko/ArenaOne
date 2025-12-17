@@ -49,6 +49,8 @@
     "language": "Мова",
     "published": "Опубліковано",
     "draft": "Чернетка",
+    "unpublished": "Неопубліковано",
+    "archived": "Архівовано",
     "courts": "Корти",
     "events": "Події",
     "settings": "Налаштування",
