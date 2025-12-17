@@ -207,7 +207,12 @@ export default function ClubOperationsPage() {
     // Open modal with no pre-filled data (user will select court and time)
     const now = new Date();
     // Round to next half hour
-    now.setMinutes(now.getMinutes() >= 30 ? 60 : 30, 0, 0);
+    if (now.getMinutes() >= 30) {
+      now.setHours(now.getHours() + 1);
+      now.setMinutes(0, 0, 0);
+    } else {
+      now.setMinutes(30, 0, 0);
+    }
     
     if (courts.length > 0) {
       setQuickCreateData({
@@ -379,7 +384,7 @@ export default function ClubOperationsPage() {
           </div>
         </div>
       ) : (
-        /* List view - Show only bookings list */
+        // List view - Show only bookings list
         <div className="im-club-operations-list-view">
           <TodayBookingsList
             bookings={bookings}
