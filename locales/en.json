@@ -34,6 +34,8 @@
     "time": "Time",
     "duration": "Duration",
     "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
     "minutes": "minutes",
     "days": "days",
     "perHour": "/ hour",
