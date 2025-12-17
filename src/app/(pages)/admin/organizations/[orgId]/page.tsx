@@ -192,8 +192,10 @@ export default function OrganizationDetailPage() {
   // Image upload modals
   const [isEditingLogo, setIsEditingLogo] = useState(false);
   const [isEditingBanner, setIsEditingBanner] = useState(false);
-  const [logoData, setLogoData] = useState<string | null>(null);
-  const [bannerData, setBannerData] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageUploadError, setImageUploadError] = useState("");
 
@@ -622,16 +624,54 @@ export default function OrganizationDetailPage() {
   // Image upload handlers
   const handleOpenLogoEdit = () => {
     if (!org) return;
-    setLogoData(org.logo || null);
+    setLogoFile(null);
+    setLogoPreview(org.logo || null);
     setImageUploadError("");
     setIsEditingLogo(true);
   };
 
   const handleOpenBannerEdit = () => {
     if (!org) return;
-    setBannerData(org.heroImage || null);
+    setBannerFile(null);
+    setBannerPreview(org.heroImage || null);
     setImageUploadError("");
     setIsEditingBanner(true);
+  };
+
+  const handleLogoChange = (dataUrl: string | null) => {
+    setLogoPreview(dataUrl);
+    // Extract file from ImageUpload if available (we'll need to modify ImageUpload to also return the file)
+    // For now, we'll handle this by converting the data URL back to a file when saving
+  };
+
+  const handleBannerChange = (dataUrl: string | null) => {
+    setBannerPreview(dataUrl);
+    // Extract file from ImageUpload if available
+  };
+
+  const uploadImageFile = async (file: File, imageType: 'logo' | 'heroImage'): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", imageType);
+
+    const response = await fetch(`/api/admin/organizations/${orgId}/images`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Upload failed");
+    }
+
+    const result = await response.json();
+    return result.url;
+  };
+
+  const dataUrlToFile = async (dataUrl: string, filename: string): Promise<File> => {
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
   };
 
   const handleSaveLogo = async () => {
@@ -639,7 +679,28 @@ export default function OrganizationDetailPage() {
     setUploadingImage(true);
 
     try {
-      await updateOrganization(orgId, { logo: logoData });
+      let logoUrl: string | null = null;
+
+      if (logoPreview && logoPreview !== org?.logo) {
+        // New image selected - upload it
+        if (logoPreview.startsWith("data:")) {
+          // Convert data URL to file and upload
+          const file = await dataUrlToFile(logoPreview, "logo.jpg");
+          logoUrl = await uploadImageFile(file, "logo");
+        } else {
+          // Existing URL - keep it
+          logoUrl = logoPreview;
+        }
+      } else if (!logoPreview) {
+        // Image removed
+        logoUrl = null;
+      }
+
+      // Only update if there's a change
+      if (logoUrl !== undefined && logoUrl !== org?.logo) {
+        await updateOrganization(orgId, { logo: logoUrl });
+      }
+
       showToast(t("orgDetail.logoUpdateSuccess"), "success");
       setIsEditingLogo(false);
       fetchOrgDetail();
@@ -655,7 +716,28 @@ export default function OrganizationDetailPage() {
     setUploadingImage(true);
 
     try {
-      await updateOrganization(orgId, { heroImage: bannerData });
+      let bannerUrl: string | null = null;
+
+      if (bannerPreview && bannerPreview !== org?.heroImage) {
+        // New image selected - upload it
+        if (bannerPreview.startsWith("data:")) {
+          // Convert data URL to file and upload
+          const file = await dataUrlToFile(bannerPreview, "banner.jpg");
+          bannerUrl = await uploadImageFile(file, "heroImage");
+        } else {
+          // Existing URL - keep it
+          bannerUrl = bannerPreview;
+        }
+      } else if (!bannerPreview) {
+        // Image removed
+        bannerUrl = null;
+      }
+
+      // Only update if there's a change
+      if (bannerUrl !== undefined && bannerUrl !== org?.heroImage) {
+        await updateOrganization(orgId, { heroImage: bannerUrl });
+      }
+
       showToast(t("orgDetail.bannerUpdateSuccess"), "success");
       setIsEditingBanner(false);
       fetchOrgDetail();
@@ -1477,9 +1559,9 @@ export default function OrganizationDetailPage() {
             </div>
           )}
           <ImageUpload
-            currentImage={logoData}
+            currentImage={logoPreview}
             label={t("orgDetail.organizationLogo")}
-            onChange={setLogoData}
+            onChange={handleLogoChange}
             isLoading={uploadingImage}
             aspectRatio="1:1"
             maxSizeMB={5}
@@ -1506,9 +1588,9 @@ export default function OrganizationDetailPage() {
             </div>
           )}
           <ImageUpload
-            currentImage={bannerData}
+            currentImage={bannerPreview}
             label={t("orgDetail.organizationBanner")}
-            onChange={setBannerData}
+            onChange={handleBannerChange}
             isLoading={uploadingImage}
             aspectRatio="16:9"
             maxSizeMB={5}
