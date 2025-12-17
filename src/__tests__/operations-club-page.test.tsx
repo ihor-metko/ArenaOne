@@ -109,6 +109,11 @@ jest.mock("@/components/ui", () => ({
   Input: ({ value, onChange }: { value: string; onChange: (e: any) => void }) => (
     <input data-testid="input" value={value} onChange={onChange} />
   ),
+  Card: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div data-testid="card" className={className}>
+      {children}
+    </div>
+  ),
 }));
 
 jest.mock("@/components/ui/skeletons", () => ({
@@ -118,8 +123,11 @@ jest.mock("@/components/ui/skeletons", () => ({
 jest.mock("@/components/club-operations", () => ({
   DayCalendar: () => <div data-testid="day-calendar">Calendar</div>,
   TodayBookingsList: () => <div data-testid="today-bookings">Today&apos;s Bookings</div>,
-  QuickCreateModal: () => null,
   BookingDetailModal: () => null,
+}));
+
+jest.mock("@/components/AdminQuickBookingWizard", () => ({
+  AdminQuickBookingWizard: () => null,
 }));
 
 import ClubOperationsPage from "@/app/(pages)/admin/operations/[clubId]/page";
