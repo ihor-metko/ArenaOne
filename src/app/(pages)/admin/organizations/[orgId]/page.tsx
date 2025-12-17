@@ -118,7 +118,6 @@ export default function OrganizationDetailPage() {
 
   // Use Zustand store
   const updateOrganization = useOrganizationStore((state) => state.updateOrganization);
-  const deleteOrganization = useOrganizationStore((state) => state.deleteOrganization);
   const setCurrentOrg = useOrganizationStore((state) => state.setCurrentOrg);
 
   const [org, setOrg] = useState<OrgDetail | null>(null);
@@ -176,16 +175,7 @@ export default function OrganizationDetailPage() {
   const [changeOwnerError, setChangeOwnerError] = useState("");
   const [changingOwner, setChangingOwner] = useState(false);
 
-  // Archive modal
-  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
-  const [archiveError, setArchiveError] = useState("");
-  const [archiving, setArchiving] = useState(false);
 
-  // Delete modal
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deleteConfirmSlug, setDeleteConfirmSlug] = useState("");
-  const [deleteError, setDeleteError] = useState("");
-  const [deleting, setDeleting] = useState(false);
 
   // Image upload modals
   const [isEditingLogo, setIsEditingLogo] = useState(false);
@@ -520,52 +510,7 @@ export default function OrganizationDetailPage() {
     }
   };
 
-  // Archive handlers
-  const handleArchive = async () => {
-    setArchiveError("");
-    setArchiving(true);
 
-    try {
-      const response = await fetch(`/api/orgs/${orgId}/archive`, {
-        method: "POST",
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || t("organizations.errors.archiveFailed"));
-      }
-
-      showToast(t("orgDetail.archiveSuccess"), "success");
-      setIsArchiveModalOpen(false);
-      fetchOrgDetail();
-    } catch (err) {
-      setArchiveError(err instanceof Error ? err.message : t("organizations.errors.archiveFailed"));
-    } finally {
-      setArchiving(false);
-    }
-  };
-
-  // Delete handlers
-  const handleDelete = async () => {
-    if (!org || deleteConfirmSlug.toLowerCase() !== org.slug.toLowerCase()) {
-      setDeleteError(t("orgDetail.slugMismatch"));
-      return;
-    }
-
-    setDeleteError("");
-    setDeleting(true);
-
-    try {
-      await deleteOrganization(orgId, org.slug);
-
-      showToast(t("orgDetail.deleteSuccess"), "success");
-      router.push("/admin/organizations");
-    } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : t("organizations.errors.deleteFailed"));
-    } finally {
-      setDeleting(false);
-    }
-  };
 
   // Image upload handlers
   const handleOpenLogoEdit = () => {
