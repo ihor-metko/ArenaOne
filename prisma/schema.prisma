@@ -90,6 +90,8 @@ model Organization {
   contactPhone String?
   website     String?
   address     String?
+  logo        String?      // Organization logo image URL
+  heroImage   String?      // Organization banner/hero image URL
   metadata    String?      @db.Text // JSON string for additional metadata
   supportedSports SportType[] @default([PADEL]) // Sports supported by this organization
   createdById String

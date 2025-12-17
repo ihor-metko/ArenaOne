@@ -211,6 +211,8 @@ export async function GET(
       contactPhone: organization.contactPhone,
       website: organization.website,
       address: organization.address,
+      logo: organization.logo,
+      heroImage: organization.heroImage,
       metadata: organization.metadata ? JSON.parse(organization.metadata) : null,
       archivedAt: organization.archivedAt,
       createdAt: organization.createdAt,
@@ -257,7 +259,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, slug, contactEmail, contactPhone, website, address, metadata } = body;
+    const { name, slug, contactEmail, contactPhone, website, address, logo, heroImage, metadata } = body;
 
     // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
     if (isMockMode()) {
@@ -345,6 +347,8 @@ export async function PUT(
       contactPhone?: string | null;
       website?: string | null;
       address?: string | null;
+      logo?: string | null;
+      heroImage?: string | null;
       metadata?: string | null;
     } = {};
 
@@ -354,6 +358,8 @@ export async function PUT(
     if (contactPhone !== undefined) updateData.contactPhone = contactPhone?.trim() || null;
     if (website !== undefined) updateData.website = website?.trim() || null;
     if (address !== undefined) updateData.address = address?.trim() || null;
+    if (logo !== undefined) updateData.logo = logo?.trim() || null;
+    if (heroImage !== undefined) updateData.heroImage = heroImage?.trim() || null;
     if (metadata !== undefined) {
       updateData.metadata = metadata ? JSON.stringify(metadata) : null;
     }
@@ -397,6 +403,8 @@ export async function PUT(
       contactPhone: updatedOrganization.contactPhone,
       website: updatedOrganization.website,
       address: updatedOrganization.address,
+      logo: updatedOrganization.logo,
+      heroImage: updatedOrganization.heroImage,
       metadata: updatedOrganization.metadata
         ? JSON.parse(updatedOrganization.metadata)
         : null,

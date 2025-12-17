@@ -107,6 +107,8 @@ export async function GET(request: Request) {
         superAdmins,
         // Keep backward compatibility - superAdmin field contains the primary owner or first admin
         superAdmin: superAdmins.find((a) => a.isPrimaryOwner) || superAdmins[0] || null,
+        logo: org.logo,
+        heroImage: org.heroImage,
       };
     });
 
@@ -143,6 +145,8 @@ export async function POST(request: Request) {
       contactPhone,
       website,
       address,
+      logo,
+      heroImage,
       metadata,
       supportedSports 
     } = body;
@@ -204,6 +208,8 @@ export async function POST(request: Request) {
         contactPhone: contactPhone?.trim() || null,
         website: website?.trim() || null,
         address: address?.trim() || null,
+        logo: logo?.trim() || null,
+        heroImage: heroImage?.trim() || null,
         metadata: metadata ? JSON.stringify(metadata) : null,
         createdById: authResult.userId,
         supportedSports: supportedSports || ["PADEL"],
@@ -229,6 +235,8 @@ export async function POST(request: Request) {
         createdBy: organization.createdBy,
         superAdmin: null,
         supportedSports: organization.supportedSports,
+        logo: organization.logo,
+        heroImage: organization.heroImage,
       },
       { status: 201 }
     );
