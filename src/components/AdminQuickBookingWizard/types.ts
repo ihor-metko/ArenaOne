@@ -164,8 +164,16 @@ export const ADMIN_WIZARD_STEPS: WizardStepConfig[] = [
   {
     id: 3,
     label: "dateTime", // Step 3: Select Date & Time (check availability first)
-    shouldShow: (_, predefinedData) => 
-      !predefinedData?.date || !predefinedData?.startTime || !predefinedData?.duration,
+    shouldShow: (_, predefinedData) => {
+      // Always show date/time step when in club context (org and club preselected)
+      // This ensures it's the first visible step on Operations page
+      const isClubContext = predefinedData?.organizationId && predefinedData?.clubId;
+      if (isClubContext) {
+        return true;
+      }
+      // For general booking flow, show if any date/time field is missing
+      return !predefinedData?.date || !predefinedData?.startTime || !predefinedData?.duration;
+    },
   },
   {
     id: 4,
