@@ -99,9 +99,15 @@ export async function GET(request: Request) {
       whereClause.AND = conditions;
     }
 
+    // Only show published clubs from published organizations
+    whereClause.isPublic = true;
+    whereClause.organization = {
+      isPublic: true,
+    };
+
     // Fetch clubs with optional filtering
     const clubs = await prisma.club.findMany({
-      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+      where: whereClause,
       orderBy: popular === "true" ? { createdAt: "desc" } : { createdAt: "desc" },
       take: limit ? parseInt(limit, 10) : undefined,
       select: {
@@ -116,6 +122,12 @@ export async function GET(request: Request) {
         heroImage: true,
         tags: true,
         createdAt: true,
+        isPublic: true,
+        organization: {
+          select: {
+            isPublic: true,
+          },
+        },
         courts: {
           select: {
             id: true,
