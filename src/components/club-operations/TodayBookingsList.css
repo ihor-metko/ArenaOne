@@ -158,38 +158,38 @@
 }
 
 /* Dark mode */
-:root[data-theme="dark"] .im-today-bookings-list {
+.dark .im-today-bookings-list {
   background-color: var(--color-bg-secondary, #1f2937);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-:root[data-theme="dark"] .im-today-bookings-header {
+.dark .im-today-bookings-header {
   background-color: var(--color-bg-primary, #111827);
   border-bottom-color: var(--color-border, #374151);
 }
 
-:root[data-theme="dark"] .im-today-bookings-title {
+.dark .im-today-bookings-title {
   color: var(--color-text-primary, #f9fafb);
 }
 
-:root[data-theme="dark"] .im-today-bookings-count {
+.dark .im-today-bookings-count {
   background-color: var(--color-bg-tertiary, #374151);
   color: var(--color-text-secondary, #9ca3af);
 }
 
-:root[data-theme="dark"] .im-today-booking-item {
+.dark .im-today-booking-item {
   background-color: var(--color-bg-tertiary, #111827);
   border-color: var(--color-border, #374151);
 }
 
-:root[data-theme="dark"] .im-today-booking-time {
+.dark .im-today-booking-time {
   color: var(--color-text-primary, #f9fafb);
 }
 
-:root[data-theme="dark"] .im-today-booking-customer {
+.dark .im-today-booking-customer {
   color: var(--color-text-secondary, #9ca3af);
 }
 
-:root[data-theme="dark"] .im-today-booking-price {
+.dark .im-today-booking-price {
   color: var(--color-text-primary, #f9fafb);
 }

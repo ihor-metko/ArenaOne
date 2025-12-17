@@ -142,39 +142,39 @@
 }
 
 /* Dark mode */
-:root[data-theme="dark"] .im-club-operations-label,
-:root[data-theme="dark"] .im-club-operations-date-label {
+.dark .im-club-operations-label,
+.dark .im-club-operations-date-label {
   color: var(--color-text-primary, #f9fafb);
 }
 
-:root[data-theme="dark"] .im-club-operations-error-banner {
+.dark .im-club-operations-error-banner {
   background-color: rgba(239, 68, 68, 0.15);
   border-color: #ef4444;
   color: #fecaca;
 }
 
-:root[data-theme="dark"] .im-club-operations-empty {
+.dark .im-club-operations-empty {
   background-color: var(--color-bg-secondary, #1f2937);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-:root[data-theme="dark"] .im-club-operations-empty h3 {
+.dark .im-club-operations-empty h3 {
   color: var(--color-text-primary, #f9fafb);
 }
 
-:root[data-theme="dark"] .im-club-operations-empty p {
+.dark .im-club-operations-empty p {
   color: var(--color-text-secondary, #9ca3af);
 }
 
-:root[data-theme="dark"] .im-club-operations-error h2 {
+.dark .im-club-operations-error h2 {
   color: var(--color-text-primary, #f9fafb);
 }
 
-:root[data-theme="dark"] .im-club-operations-instruction {
+.dark .im-club-operations-instruction {
   color: var(--color-text-primary, #f9fafb);
 }
 
-:root[data-theme="dark"] .im-club-operations-context {
+.dark .im-club-operations-context {
   background-color: var(--color-bg-tertiary, #1f2937);
   border-left-color: var(--color-primary, #3b82f6);
   color: var(--color-text-secondary, #9ca3af);
