@@ -414,6 +414,162 @@
   @apply mt-4 w-full;
 }
 
+/* ===== Organization Overview Block ===== */
+.im-org-overview-block {
+  @apply flex gap-6 items-start;
+}
+
+.im-org-logo {
+  @apply flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden;
+  border: 2px solid var(--im-border);
+}
+
+.im-org-logo img {
+  @apply w-full h-full object-cover;
+}
+
+.im-org-overview-content {
+  @apply flex-1;
+}
+
+.im-org-overview-name {
+  @apply text-2xl font-bold mb-2;
+  color: var(--im-foreground);
+}
+
+.im-org-overview-description {
+  @apply text-sm mb-4 leading-relaxed;
+  color: var(--im-muted);
+}
+
+.im-org-overview-meta {
+  @apply flex flex-wrap gap-4;
+}
+
+.im-org-overview-meta-item {
+  @apply flex items-center gap-2 text-sm;
+  color: var(--im-muted);
+}
+
+.im-org-overview-meta-item svg {
+  @apply w-4 h-4 flex-shrink-0;
+}
+
+.im-icon {
+  @apply w-4 h-4;
+}
+
+/* ===== Organization Owner Section ===== */
+.im-section-icon--owner {
+  background-color: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.dark .im-section-icon--owner {
+  background-color: rgba(249, 115, 22, 0.25);
+  color: #fb923c;
+}
+
+.im-section-icon--location {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.dark .im-section-icon--location {
+  background-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.im-section-icon--contact {
+  background-color: rgba(6, 182, 212, 0.15);
+  color: #06b6d4;
+}
+
+.dark .im-section-icon--contact {
+  background-color: rgba(6, 182, 212, 0.25);
+  color: #22d3ee;
+}
+
+.im-owner-info {
+  @apply flex items-center gap-4 p-4 rounded-lg;
+  background-color: var(--im-background);
+  border: 1px solid var(--im-border);
+}
+
+.im-owner-avatar {
+  @apply flex items-center justify-center w-16 h-16 rounded-full flex-shrink-0;
+  background-color: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.dark .im-owner-avatar {
+  background-color: rgba(249, 115, 22, 0.25);
+  color: #fb923c;
+}
+
+.im-owner-avatar svg {
+  @apply w-8 h-8;
+}
+
+.im-owner-details {
+  @apply flex-1;
+}
+
+.im-owner-name {
+  @apply text-lg font-semibold mb-1;
+  color: var(--im-foreground);
+}
+
+.im-owner-email {
+  @apply text-sm mb-2;
+  color: var(--im-muted);
+}
+
+.im-owner-role-badge {
+  @apply inline-block text-xs font-semibold px-3 py-1.5 rounded-full uppercase tracking-wide;
+  background-color: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.dark .im-owner-role-badge {
+  background-color: rgba(249, 115, 22, 0.25);
+  color: #fb923c;
+}
+
+.im-owner-empty-state {
+  @apply flex flex-col items-center justify-center py-12;
+}
+
+.im-empty-icon {
+  @apply w-16 h-16 mb-4;
+  color: var(--im-muted);
+  opacity: 0.3;
+}
+
+.im-owner-empty-state p {
+  @apply text-sm mb-4;
+  color: var(--im-muted);
+}
+
+/* ===== Social Links ===== */
+.im-social-links {
+  @apply flex flex-wrap gap-2;
+}
+
+.im-social-link {
+  @apply inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full;
+  background-color: var(--im-background);
+  border: 1px solid var(--im-border);
+  color: var(--im-foreground);
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.im-social-link:hover {
+  border-color: var(--im-primary);
+  transform: translateY(-1px);
+}
+
 /* ===== Admins Section ===== */
 .im-admins-section {
   @apply mb-5;

@@ -8,6 +8,7 @@ import { Button, Input, Modal, PageHeader, EntityBanner, MetricCardSkeleton, Org
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import OrganizationAdminsTable from "@/components/admin/OrganizationAdminsTable";
+import { BasicInfoStep, AddressStep, ContactsStep } from "@/components/admin/OrganizationSteps";
 import type { AdminBookingResponse } from "@/app/api/admin/bookings/route";
 
 import "./page.css";
@@ -74,10 +75,14 @@ interface OrgDetail {
   id: string;
   name: string;
   slug: string;
+  description?: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
   website: string | null;
   address: string | null;
+  logo: string | null;
+  heroImage: string | null;
+  metadata?: Record<string, unknown> | null;
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -130,28 +135,47 @@ export default function OrganizationDetailPage() {
     setTimeout(() => setToast(null), 5000);
   };
 
-  // Edit modal
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editSlug, setEditSlug] = useState("");
-  const [editContactEmail, setEditContactEmail] = useState("");
-  const [editContactPhone, setEditContactPhone] = useState("");
-  const [editWebsite, setEditWebsite] = useState("");
-  const [editAddress, setEditAddress] = useState("");
+  // Stepper modal states for editing
+  const [isEditingBasicInfo, setIsEditingBasicInfo] = useState(false);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [isEditingContacts, setIsEditingContacts] = useState(false);
   const [editError, setEditError] = useState("");
   const [editing, setEditing] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Reassign owner modal
-  const [isReassignModalOpen, setIsReassignModalOpen] = useState(false);
-  const [reassignMode, setReassignMode] = useState<"existing" | "new">("existing");
+  // Form data for each section
+  const [basicInfoData, setBasicInfoData] = useState({
+    name: "",
+    slug: "",
+    description: "",
+  });
+
+  const [addressData, setAddressData] = useState({
+    country: "",
+    city: "",
+    postalCode: "",
+    street: "",
+    latitude: "",
+    longitude: "",
+  });
+
+  const [contactsData, setContactsData] = useState({
+    contactEmail: "",
+    contactPhone: "",
+    website: "",
+    facebook: "",
+    instagram: "",
+    linkedin: "",
+  });
+
+  // Change owner modal
+  const [isChangeOwnerModalOpen, setIsChangeOwnerModalOpen] = useState(false);
   const simpleUsers = useAdminUsersStore((state) => state.simpleUsers);
   const fetchSimpleUsers = useAdminUsersStore((state) => state.fetchSimpleUsers);
   const [userSearch, setUserSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [newOwnerName, setNewOwnerName] = useState("");
-  const [newOwnerEmail, setNewOwnerEmail] = useState("");
-  const [reassignError, setReassignError] = useState("");
-  const [reassigning, setReassigning] = useState(false);
+  const [changeOwnerError, setChangeOwnerError] = useState("");
+  const [changingOwner, setChangingOwner] = useState(false);
 
   // Archive modal
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
@@ -305,36 +329,115 @@ export default function OrganizationDetailPage() {
     return () => clearTimeout(timer);
   }, [userSearch, isReassignModalOpen, reassignMode, fetchUsers]);
 
-  // Edit handlers
-  const handleOpenEditModal = () => {
+  // Handler for opening edit modals
+  const handleOpenBasicInfoEdit = () => {
     if (!org) return;
-    setEditName(org.name);
-    setEditSlug(org.slug);
-    setEditContactEmail(org.contactEmail || "");
-    setEditContactPhone(org.contactPhone || "");
-    setEditWebsite(org.website || "");
-    setEditAddress(org.address || "");
+    setBasicInfoData({
+      name: org.name,
+      slug: org.slug,
+      description: org.description || "",
+    });
+    setFieldErrors({});
     setEditError("");
-    setIsEditModalOpen(true);
+    setIsEditingBasicInfo(true);
   };
 
-  const handleEditOrg = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleOpenAddressEdit = () => {
+    if (!org) return;
+    const metadata = org.metadata as { country?: string; street?: string; latitude?: number; longitude?: number } | null;
+    
+    // Parse address to extract components
+    const addressParts = org.address?.split(", ") || [];
+    const street = metadata?.street || addressParts[0] || "";
+    const city = addressParts.length > 1 ? addressParts[1] : "";
+    const postalCode = addressParts.length > 2 ? addressParts[2] : "";
+    const country = metadata?.country || (addressParts.length > 3 ? addressParts[3] : "");
+
+    setAddressData({
+      country,
+      city,
+      postalCode,
+      street,
+      latitude: metadata?.latitude?.toString() || "",
+      longitude: metadata?.longitude?.toString() || "",
+    });
+    setFieldErrors({});
+    setEditError("");
+    setIsEditingAddress(true);
+  };
+
+  const handleOpenContactsEdit = () => {
+    if (!org) return;
+    const metadata = org.metadata as { socialLinks?: { facebook?: string; instagram?: string; linkedin?: string } } | null;
+    const socialLinks = metadata?.socialLinks || {};
+    
+    setContactsData({
+      contactEmail: org.contactEmail || "",
+      contactPhone: org.contactPhone || "",
+      website: org.website || "",
+      facebook: socialLinks.facebook || "",
+      instagram: socialLinks.instagram || "",
+      linkedin: socialLinks.linkedin || "",
+    });
+    setFieldErrors({});
+    setEditError("");
+    setIsEditingContacts(true);
+  };
+
+  // Handle form field changes
+  const handleBasicInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setBasicInfoData((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setAddressData((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleContactsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setContactsData((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  // Save handlers for each section
+  const handleSaveBasicInfo = async () => {
     setEditError("");
     setEditing(true);
 
     try {
       await updateOrganization(orgId, {
-        name: editName,
-        slug: editSlug,
-        contactEmail: editContactEmail,
-        contactPhone: editContactPhone,
-        website: editWebsite,
-        address: editAddress,
+        name: basicInfoData.name,
+        slug: basicInfoData.slug,
+        metadata: {
+          ...(org?.metadata as object || {}),
+          description: basicInfoData.description,
+        },
       });
 
       showToast(t("orgDetail.updateSuccess"), "success");
-      setIsEditModalOpen(false);
+      setIsEditingBasicInfo(false);
       fetchOrgDetail();
     } catch (err) {
       setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
@@ -343,47 +446,113 @@ export default function OrganizationDetailPage() {
     }
   };
 
-  // Reassign owner handlers
-  const handleOpenReassignModal = () => {
-    setReassignMode("existing");
+  const handleSaveAddress = async () => {
+    setEditError("");
+    setEditing(true);
+
+    try {
+      // Build full address from components
+      const addressParts = [
+        addressData.street.trim(),
+        addressData.city.trim(),
+        addressData.postalCode.trim(),
+        addressData.country.trim()
+      ].filter(Boolean);
+      const fullAddress = addressParts.join(", ");
+
+      await updateOrganization(orgId, {
+        address: fullAddress,
+        metadata: {
+          ...(org?.metadata as object || {}),
+          country: addressData.country.trim(),
+          street: addressData.street.trim(),
+          latitude: parseFloat(addressData.latitude),
+          longitude: parseFloat(addressData.longitude),
+        },
+      });
+
+      showToast(t("orgDetail.updateSuccess"), "success");
+      setIsEditingAddress(false);
+      fetchOrgDetail();
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
+    } finally {
+      setEditing(false);
+    }
+  };
+
+  const handleSaveContacts = async () => {
+    setEditError("");
+    setEditing(true);
+
+    try {
+      const socialLinks: Record<string, string> = {};
+      if (contactsData.facebook.trim()) socialLinks.facebook = contactsData.facebook.trim();
+      if (contactsData.instagram.trim()) socialLinks.instagram = contactsData.instagram.trim();
+      if (contactsData.linkedin.trim()) socialLinks.linkedin = contactsData.linkedin.trim();
+
+      await updateOrganization(orgId, {
+        contactEmail: contactsData.contactEmail.trim() || null,
+        contactPhone: contactsData.contactPhone.trim() || null,
+        website: contactsData.website.trim() || null,
+        metadata: {
+          ...(org?.metadata as object || {}),
+          socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
+        },
+      });
+
+      showToast(t("orgDetail.updateSuccess"), "success");
+      setIsEditingContacts(false);
+      fetchOrgDetail();
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
+    } finally {
+      setEditing(false);
+    }
+  };
+
+  // Change owner handlers
+  const handleOpenChangeOwnerModal = () => {
     setUserSearch("");
     setSelectedUserId("");
-    setNewOwnerName("");
-    setNewOwnerEmail("");
-    setReassignError("");
-    setIsReassignModalOpen(true);
+    setChangeOwnerError("");
+    setIsChangeOwnerModalOpen(true);
     fetchUsers();
   };
 
-  const handleReassignOwner = async (e: React.FormEvent) => {
+  const handleChangeOwner = async (e: React.FormEvent) => {
     e.preventDefault();
-    setReassignError("");
-    setReassigning(true);
+    if (!selectedUserId) {
+      setChangeOwnerError(t("organizations.errors.userRequired"));
+      return;
+    }
+
+    setChangeOwnerError("");
+    setChangingOwner(true);
 
     try {
-      const payload =
-        reassignMode === "new"
-          ? { email: newOwnerEmail, name: newOwnerName }
-          : { userId: selectedUserId };
-
-      const response = await fetch(`/api/orgs/${orgId}/reassign-superadmin`, {
-        method: "POST",
+      const response = await fetch(`/api/admin/organizations/set-owner`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ 
+          organizationId: orgId, 
+          userId: selectedUserId 
+        }),
       });
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || t("organizations.errors.reassignOwnerFailed"));
+        throw new Error(data.error || t("organizations.errors.changeOwnerFailed"));
       }
 
-      showToast(t("orgDetail.ownerReassigned"), "success");
-      setIsReassignModalOpen(false);
+      showToast(t("orgDetail.ownerChanged"), "success");
+      setIsChangeOwnerModalOpen(false);
       fetchOrgDetail();
+      fetchAdmins();
     } catch (err) {
-      setReassignError(err instanceof Error ? err.message : t("organizations.errors.reassignOwnerFailed"));
+      setChangeOwnerError(err instanceof Error ? err.message : t("organizations.errors.changeOwnerFailed"));
     } finally {
-      setReassigning(false);
+      setChangingOwner(false);
     }
   };
 
@@ -483,14 +652,8 @@ export default function OrganizationDetailPage() {
             }
             actions={
               <div className="im-org-detail-header-actions">
-                <Button variant="outline" onClick={handleOpenEditModal} disabled={!!org.archivedAt}>
-                  {t("common.edit")}
-                </Button>
                 {isRoot && (
                   <>
-                    <Button variant="outline" onClick={handleOpenReassignModal} disabled={!!org.archivedAt}>
-                      {t("orgDetail.reassignOwner")}
-                    </Button>
                     {!org.archivedAt && (
                       <Button variant="outline" onClick={() => setIsArchiveModalOpen(true)}>
                         {t("orgDetail.archive")}
@@ -512,7 +675,7 @@ export default function OrganizationDetailPage() {
         )}
 
         <section className="im-org-detail-content">
-          {/* Organization Info Card */}
+          {/* Organization Overview Block */}
           {loadingOrg ? (
             <OrgInfoCardSkeleton items={6} className="im-org-detail-content--full" />
           ) : org && (
@@ -525,31 +688,212 @@ export default function OrganizationDetailPage() {
                     <line x1="12" y1="8" x2="12.01" y2="8" />
                   </svg>
                 </div>
-                <h2 className="im-section-title">{t("orgDetail.info")}</h2>
+                <h2 className="im-section-title">{t("orgDetail.overview")}</h2>
+              </div>
+              <div className="im-org-overview-block">
+                {org.logo && (
+                  <div className="im-org-logo">
+                    <img src={org.logo} alt={`${org.name} logo`} />
+                  </div>
+                )}
+                <div className="im-org-overview-content">
+                  <h3 className="im-org-overview-name">{org.name}</h3>
+                  {org.description && (
+                    <p className="im-org-overview-description">{org.description}</p>
+                  )}
+                  <div className="im-org-overview-meta">
+                    {org.address && (
+                      <div className="im-org-overview-meta-item">
+                        <svg className="im-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        <span>{org.address}</span>
+                      </div>
+                    )}
+                    <div className="im-org-overview-meta-item">
+                      <svg className="im-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                      <span>{t("orgDetail.createdAt")}: {new Date(org.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <div className="im-org-overview-meta-item">
+                      <svg className="im-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6v6l4 2" />
+                      </svg>
+                      <span>{t("orgDetail.status")}: {org.archivedAt ? t("common.inactive") : t("common.active")}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Organization Owner Section */}
+          {loadingOrg ? (
+            <OrgInfoCardSkeleton items={3} className="im-org-detail-content--full" />
+          ) : org && (
+            <div className="im-section-card im-org-detail-content--full">
+              <div className="im-section-header">
+                <div className="im-section-icon im-section-icon--owner">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </div>
+                <h2 className="im-section-title">{t("orgDetail.organizationOwner")}</h2>
+                {!org.archivedAt && (
+                  <div className="im-section-actions">
+                    <Button
+                      variant="outline"
+                      size="small"
+                      onClick={handleOpenChangeOwnerModal}
+                    >
+                      {org.primaryOwner ? t("orgDetail.changeOwner") : t("orgDetail.assignOwner")}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              {org.primaryOwner ? (
+                <div className="im-owner-info">
+                  <div className="im-owner-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
+                  <div className="im-owner-details">
+                    <h4 className="im-owner-name">{org.primaryOwner.name || t("orgDetail.noName")}</h4>
+                    <p className="im-owner-email">{org.primaryOwner.email}</p>
+                    <span className="im-owner-role-badge">{t("orgDetail.organizationOwner")}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="im-owner-empty-state">
+                  <svg className="im-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  <p>{t("orgDetail.noOwnerAssigned")}</p>
+                  <Button
+                    variant="outline"
+                    size="small"
+                    onClick={handleOpenChangeOwnerModal}
+                    disabled={!!org.archivedAt}
+                  >
+                    {t("orgDetail.assignOwner")}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Basic Information Block */}
+          {loadingOrg ? (
+            <OrgInfoCardSkeleton items={4} className="im-org-detail-content--full" />
+          ) : org && (
+            <div className="im-section-card im-org-detail-content--full">
+              <div className="im-section-header">
+                <div className="im-section-icon im-section-icon--info">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
+                </div>
+                <h2 className="im-section-title">{t("orgDetail.basicInformation")}</h2>
+                {!org.archivedAt && (
+                  <div className="im-section-actions">
+                    <Button
+                      variant="outline"
+                      size="small"
+                      onClick={handleOpenBasicInfoEdit}
+                    >
+                      {t("common.edit")}
+                    </Button>
+                  </div>
+                )}
               </div>
               <div className="im-org-info-grid">
+                <div className="im-org-info-item">
+                  <span className="im-org-info-label">{t("orgDetail.name")}</span>
+                  <span className="im-org-info-value">{org.name}</span>
+                </div>
                 <div className="im-org-info-item">
                   <span className="im-org-info-label">{t("orgDetail.slug")}</span>
                   <span className="im-org-info-value">{org.slug}</span>
                 </div>
-                <div className="im-org-info-item">
-                  <span className="im-org-info-label">{t("orgDetail.createdBy")}</span>
-                  <span className="im-org-info-value">
-                    {org.createdBy.name || org.createdBy.email}
-                  </span>
+                <div className="im-org-info-item im-org-info-item--full">
+                  <span className="im-org-info-label">{t("orgDetail.description")}</span>
+                  <span className="im-org-info-value">{org.description || t("orgDetail.noDescription")}</span>
                 </div>
-                <div className="im-org-info-item">
-                  <span className="im-org-info-label">{t("orgDetail.createdAt")}</span>
-                  <span className="im-org-info-value">
-                    {new Date(org.createdAt).toLocaleDateString()}
-                  </span>
+              </div>
+            </div>
+          )}
+
+          {/* Address Block */}
+          {loadingOrg ? (
+            <OrgInfoCardSkeleton items={3} className="im-org-detail-content--full" />
+          ) : org && (
+            <div className="im-section-card im-org-detail-content--full">
+              <div className="im-section-header">
+                <div className="im-section-icon im-section-icon--location">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
                 </div>
-                <div className="im-org-info-item">
-                  <span className="im-org-info-label">{t("orgDetail.lastUpdated")}</span>
-                  <span className="im-org-info-value">
-                    {new Date(org.updatedAt).toLocaleDateString()}
-                  </span>
+                <h2 className="im-section-title">{t("orgDetail.address")}</h2>
+                {!org.archivedAt && (
+                  <div className="im-section-actions">
+                    <Button
+                      variant="outline"
+                      size="small"
+                      onClick={handleOpenAddressEdit}
+                    >
+                      {t("common.edit")}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="im-org-info-grid">
+                <div className="im-org-info-item im-org-info-item--full">
+                  <span className="im-org-info-label">{t("common.address")}</span>
+                  <span className="im-org-info-value">{org.address || t("orgDetail.noAddress")}</span>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Contacts & Social Links Block */}
+          {loadingOrg ? (
+            <OrgInfoCardSkeleton items={5} className="im-org-detail-content--full" />
+          ) : org && (
+            <div className="im-section-card im-org-detail-content--full">
+              <div className="im-section-header">
+                <div className="im-section-icon im-section-icon--contact">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                </div>
+                <h2 className="im-section-title">{t("orgDetail.contactsAndSocial")}</h2>
+                {!org.archivedAt && (
+                  <div className="im-section-actions">
+                    <Button
+                      variant="outline"
+                      size="small"
+                      onClick={handleOpenContactsEdit}
+                    >
+                      {t("common.edit")}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="im-org-info-grid">
                 {org.contactEmail && (
                   <div className="im-org-info-item">
                     <span className="im-org-info-label">{t("common.email")}</span>
@@ -563,7 +907,7 @@ export default function OrganizationDetailPage() {
                   </div>
                 )}
                 {org.website && (
-                  <div className="im-org-info-item">
+                  <div className="im-org-info-item im-org-info-item--full">
                     <span className="im-org-info-label">{t("orgDetail.website")}</span>
                     <span className="im-org-info-value">
                       <a href={org.website} target="_blank" rel="noopener noreferrer">
@@ -572,10 +916,31 @@ export default function OrganizationDetailPage() {
                     </span>
                   </div>
                 )}
-                {org.address && (
+                {(org.metadata as { socialLinks?: Record<string, string> })?.socialLinks && (
                   <div className="im-org-info-item im-org-info-item--full">
-                    <span className="im-org-info-label">{t("common.address")}</span>
-                    <span className="im-org-info-value">{org.address}</span>
+                    <span className="im-org-info-label">{t("orgDetail.socialLinks")}</span>
+                    <div className="im-social-links">
+                      {((org.metadata as { socialLinks?: Record<string, string> })?.socialLinks?.facebook) && (
+                        <a href={(org.metadata as { socialLinks?: Record<string, string> }).socialLinks!.facebook} target="_blank" rel="noopener noreferrer" className="im-social-link">
+                          Facebook
+                        </a>
+                      )}
+                      {((org.metadata as { socialLinks?: Record<string, string> })?.socialLinks?.instagram) && (
+                        <a href={(org.metadata as { socialLinks?: Record<string, string> }).socialLinks!.instagram} target="_blank" rel="noopener noreferrer" className="im-social-link">
+                          Instagram
+                        </a>
+                      )}
+                      {((org.metadata as { socialLinks?: Record<string, string> })?.socialLinks?.linkedin) && (
+                        <a href={(org.metadata as { socialLinks?: Record<string, string> }).socialLinks!.linkedin} target="_blank" rel="noopener noreferrer" className="im-social-link">
+                          LinkedIn
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {!org.contactEmail && !org.contactPhone && !org.website && !(org.metadata as { socialLinks?: Record<string, string> })?.socialLinks && (
+                  <div className="im-org-info-item im-org-info-item--full">
+                    <span className="im-org-info-value">{t("orgDetail.noContactInfo")}</span>
                   </div>
                 )}
               </div>
@@ -815,157 +1180,142 @@ export default function OrganizationDetailPage() {
           )}
         </section>
 
-        {/* Edit Modal */}
+        {/* Basic Info Edit Modal */}
         <Modal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          title={t("orgDetail.editOrg")}
+          isOpen={isEditingBasicInfo}
+          onClose={() => setIsEditingBasicInfo(false)}
+          title={t("orgDetail.editBasicInfo")}
         >
-          <form onSubmit={handleEditOrg} className="space-y-4">
-            {editError && (
-              <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm">
-                {editError}
-              </div>
-            )}
-            <Input
-              label={t("organizations.orgName")}
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              required
-            />
-            <Input
-              label={t("organizations.orgSlug")}
-              value={editSlug}
-              onChange={(e) => setEditSlug(e.target.value)}
-            />
-            <Input
-              label={t("common.email")}
-              type="email"
-              value={editContactEmail}
-              onChange={(e) => setEditContactEmail(e.target.value)}
-            />
-            <Input
-              label={t("orgDetail.phone")}
-              value={editContactPhone}
-              onChange={(e) => setEditContactPhone(e.target.value)}
-            />
-            <Input
-              label={t("orgDetail.website")}
-              value={editWebsite}
-              onChange={(e) => setEditWebsite(e.target.value)}
-            />
-            <Input
-              label={t("common.address")}
-              value={editAddress}
-              onChange={(e) => setEditAddress(e.target.value)}
-            />
-            <div className="flex justify-end gap-2 mt-4">
-              <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                {t("common.cancel")}
-              </Button>
-              <Button type="submit" disabled={editing}>
-                {editing ? t("common.processing") : t("common.save")}
-              </Button>
+          {editError && (
+            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm mb-4">
+              {editError}
             </div>
-          </form>
+          )}
+          <BasicInfoStep
+            formData={basicInfoData}
+            fieldErrors={fieldErrors}
+            isSubmitting={editing}
+            onChange={handleBasicInfoChange}
+          />
+          <div className="flex justify-end gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setIsEditingBasicInfo(false)} disabled={editing}>
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleSaveBasicInfo} disabled={editing}>
+              {editing ? t("common.processing") : t("common.save")}
+            </Button>
+          </div>
         </Modal>
 
-        {/* Reassign Owner Modal */}
+        {/* Address Edit Modal */}
         <Modal
-          isOpen={isReassignModalOpen}
-          onClose={() => setIsReassignModalOpen(false)}
-          title={t("orgDetail.reassignOwner")}
+          isOpen={isEditingAddress}
+          onClose={() => setIsEditingAddress(false)}
+          title={t("orgDetail.editAddress")}
         >
-          <form onSubmit={handleReassignOwner} className="space-y-4">
-            {reassignError && (
+          {editError && (
+            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm mb-4">
+              {editError}
+            </div>
+          )}
+          <AddressStep
+            formData={addressData}
+            fieldErrors={fieldErrors}
+            isSubmitting={editing}
+            onChange={handleAddressChange}
+          />
+          <div className="flex justify-end gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setIsEditingAddress(false)} disabled={editing}>
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleSaveAddress} disabled={editing}>
+              {editing ? t("common.processing") : t("common.save")}
+            </Button>
+          </div>
+        </Modal>
+
+        {/* Contacts Edit Modal */}
+        <Modal
+          isOpen={isEditingContacts}
+          onClose={() => setIsEditingContacts(false)}
+          title={t("orgDetail.editContacts")}
+        >
+          {editError && (
+            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm mb-4">
+              {editError}
+            </div>
+          )}
+          <ContactsStep
+            formData={contactsData}
+            fieldErrors={fieldErrors}
+            isSubmitting={editing}
+            onChange={handleContactsChange}
+          />
+          <div className="flex justify-end gap-2 mt-4">
+            <Button type="button" variant="outline" onClick={() => setIsEditingContacts(false)} disabled={editing}>
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleSaveContacts} disabled={editing}>
+              {editing ? t("common.processing") : t("common.save")}
+            </Button>
+          </div>
+        </Modal>
+
+        {/* Change Owner Modal */}
+        <Modal
+          isOpen={isChangeOwnerModalOpen}
+          onClose={() => setIsChangeOwnerModalOpen(false)}
+          title={t("orgDetail.changeOwner")}
+        >
+          <form onSubmit={handleChangeOwner} className="space-y-4">
+            {changeOwnerError && (
               <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm">
-                {reassignError}
+                {changeOwnerError}
               </div>
             )}
 
-            <p className="im-reassign-warning">{t("orgDetail.reassignWarning")}</p>
+            <p className="im-reassign-warning">{t("orgDetail.changeOwnerWarning")}</p>
 
-            <div className="im-assign-mode-tabs">
-              <button
-                type="button"
-                className={`im-assign-mode-tab ${reassignMode === "existing" ? "im-assign-mode-tab--active" : ""}`}
-                onClick={() => setReassignMode("existing")}
-              >
-                {t("organizations.existingUser")}
-              </button>
-              <button
-                type="button"
-                className={`im-assign-mode-tab ${reassignMode === "new" ? "im-assign-mode-tab--active" : ""}`}
-                onClick={() => setReassignMode("new")}
-              >
-                {t("organizations.newUser")}
-              </button>
+            <Input
+              label={t("organizations.searchUsers")}
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+              placeholder={t("organizations.searchUsersPlaceholder")}
+            />
+            <div className="im-user-list">
+              {simpleUsers.length === 0 ? (
+                <p className="im-user-list-empty">{t("organizations.noUsersFound")}</p>
+              ) : (
+                simpleUsers.map((user) => (
+                  <label
+                    key={user.id}
+                    className={`im-user-option ${selectedUserId === user.id ? "im-user-option--selected" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="userId"
+                      value={user.id}
+                      checked={selectedUserId === user.id}
+                      onChange={(e) => setSelectedUserId(e.target.value)}
+                    />
+                    <span className="im-user-info">
+                      <span className="im-user-name">{user.name || user.email}</span>
+                      <span className="im-user-email">{user.email}</span>
+                    </span>
+                  </label>
+                ))
+              )}
             </div>
 
-            {reassignMode === "existing" ? (
-              <>
-                <Input
-                  label={t("organizations.searchUsers")}
-                  value={userSearch}
-                  onChange={(e) => setUserSearch(e.target.value)}
-                  placeholder={t("organizations.searchUsersPlaceholder")}
-                />
-                <div className="im-user-list">
-                  {simpleUsers.length === 0 ? (
-                    <p className="im-user-list-empty">{t("organizations.noUsersFound")}</p>
-                  ) : (
-                    simpleUsers.map((user) => (
-                      <label
-                        key={user.id}
-                        className={`im-user-option ${selectedUserId === user.id ? "im-user-option--selected" : ""}`}
-                      >
-                        <input
-                          type="radio"
-                          name="userId"
-                          value={user.id}
-                          checked={selectedUserId === user.id}
-                          onChange={(e) => setSelectedUserId(e.target.value)}
-                        />
-                        <span className="im-user-info">
-                          <span className="im-user-name">{user.name || user.email}</span>
-                          <span className="im-user-email">{user.email}</span>
-                        </span>
-                      </label>
-                    ))
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <Input
-                  label={t("common.name")}
-                  value={newOwnerName}
-                  onChange={(e) => setNewOwnerName(e.target.value)}
-                  required
-                />
-                <Input
-                  label={t("common.email")}
-                  type="email"
-                  value={newOwnerEmail}
-                  onChange={(e) => setNewOwnerEmail(e.target.value)}
-                  required
-                />
-              </>
-            )}
-
             <div className="flex justify-end gap-2 mt-4">
-              <Button type="button" variant="outline" onClick={() => setIsReassignModalOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsChangeOwnerModalOpen(false)}>
                 {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
-                disabled={
-                  reassigning ||
-                  (reassignMode === "existing" && !selectedUserId) ||
-                  (reassignMode === "new" && (!newOwnerName || !newOwnerEmail))
-                }
+                disabled={changingOwner || !selectedUserId}
               >
-                {reassigning ? t("common.processing") : t("orgDetail.reassign")}
+                {changingOwner ? t("common.processing") : t("orgDetail.changeOwner")}
               </Button>
             </div>
           </form>
