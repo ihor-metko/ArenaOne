@@ -94,6 +94,11 @@ export async function GET(
     const club = await prisma.club.findUnique({
       where: { id: clubId },
       include: {
+        organization: {
+          select: {
+            isPublic: true,
+          },
+        },
         courts: {
           select: {
             id: true,
@@ -124,6 +129,11 @@ export async function GET(
     });
 
     if (!club) {
+      return NextResponse.json({ error: "Club not found" }, { status: 404 });
+    }
+
+    // Check visibility: club must be public AND organization must be public
+    if (!club.isPublic || !club.organization.isPublic) {
       return NextResponse.json({ error: "Club not found" }, { status: 404 });
     }
 
