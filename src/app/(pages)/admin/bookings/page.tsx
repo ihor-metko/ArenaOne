@@ -234,38 +234,46 @@ export default function AdminBookingsPage() {
     let predefinedData: PredefinedData | undefined = undefined;
 
     if (adminStatus) {
-      if (adminStatus.adminType === "club_admin" && adminStatus.managedIds.length > 0) {
-        // For Club Admin: Preselect the first managed club and fetch its organization
-        const clubId = adminStatus.managedIds[0];
-        
-        // Ensure clubs are loaded
-        await fetchClubsIfNeeded();
-        
-        // Find the club in the clubs array
-        const club = clubs.find(c => c.id === clubId);
-        
-        if (club) {
+      try {
+        // Fetch clubs once at the beginning if needed
+        if (adminStatus.adminType === "club_admin" || adminStatus.adminType === "organization_admin") {
+          await fetchClubsIfNeeded();
+        }
+
+        if (adminStatus.adminType === "club_admin" && adminStatus.managedIds.length > 0) {
+          // For Club Admin: Preselect the first managed club and fetch its organization
+          const clubId = adminStatus.managedIds[0];
+          
+          // Find the club in the clubs array
+          const club = clubs.find(c => c.id === clubId);
+          
+          if (club) {
+            predefinedData = {
+              organizationId: club.organizationId,
+              clubId: club.id,
+            };
+          } else {
+            console.warn(`Club with id ${clubId} not found in clubs list`);
+          }
+        } else if (adminStatus.adminType === "organization_admin" && adminStatus.managedIds.length > 0) {
+          // For Organization Admin: Preselect the organization
+          const organizationId = adminStatus.managedIds[0];
           predefinedData = {
-            organizationId: club.organizationId,
-            clubId: club.id,
+            organizationId,
           };
+          
+          // If they manage only one club in this organization, preselect it too
+          const managedClubs = clubs.filter(c => c.organizationId === organizationId);
+          
+          if (managedClubs.length === 1) {
+            predefinedData.clubId = managedClubs[0].id;
+          }
         }
-      } else if (adminStatus.adminType === "organization_admin" && adminStatus.managedIds.length > 0) {
-        // For Organization Admin: Preselect the organization
-        const organizationId = adminStatus.managedIds[0];
-        predefinedData = {
-          organizationId,
-        };
-        
-        // If they manage only one club in this organization, preselect it too
-        await fetchClubsIfNeeded();
-        const managedClubs = clubs.filter(c => c.organizationId === organizationId);
-        
-        if (managedClubs.length === 1) {
-          predefinedData.clubId = managedClubs[0].id;
-        }
+        // For root_admin, don't preselect anything (current behavior)
+      } catch (error) {
+        console.error("Error fetching clubs for wizard preselection:", error);
+        // Continue with no predefined data if fetch fails
       }
-      // For root_admin, don't preselect anything (current behavior)
     }
 
     setWizardPredefinedData(predefinedData);
