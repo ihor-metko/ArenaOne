@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, Input, Modal, PageHeader, EntityBanner, MetricCardSkeleton, OrgInfoCardSkeleton, ClubsPreviewSkeleton, TableSkeleton, BookingsPreviewSkeleton, IMLink } from "@/components/ui";
+import { Button, Input, Modal, EntityBanner, MetricCardSkeleton, OrgInfoCardSkeleton, ClubsPreviewSkeleton, TableSkeleton, BookingsPreviewSkeleton } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import OrganizationAdminsTable from "@/components/admin/OrganizationAdminsTable";
@@ -320,14 +320,14 @@ export default function OrganizationDetailPage() {
   }, [session, status, router, fetchOrgDetail, fetchAdmins, fetchBookingsPreview]);
 
   // Debounced user search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isReassignModalOpen && reassignMode === "existing") {
-        fetchUsers(userSearch);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [userSearch, isReassignModalOpen, reassignMode, fetchUsers]);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     if (isReassignModalOpen && reassignMode === "existing") {
+  //       fetchUsers(userSearch);
+  //     }
+  //   }, 300);
+  //   return () => clearTimeout(timer);
+  // }, [userSearch, isReassignModalOpen, reassignMode, fetchUsers]);
 
   // Handler for opening edit modals
   const handleOpenBasicInfoEdit = () => {
@@ -345,7 +345,7 @@ export default function OrganizationDetailPage() {
   const handleOpenAddressEdit = () => {
     if (!org) return;
     const metadata = org.metadata as { country?: string; street?: string; latitude?: number; longitude?: number } | null;
-    
+
     // Parse address to extract components
     const addressParts = org.address?.split(", ") || [];
     const street = metadata?.street || addressParts[0] || "";
@@ -370,7 +370,7 @@ export default function OrganizationDetailPage() {
     if (!org) return;
     const metadata = org.metadata as { socialLinks?: { facebook?: string; instagram?: string; linkedin?: string } } | null;
     const socialLinks = metadata?.socialLinks || {};
-    
+
     setContactsData({
       contactEmail: org.contactEmail || "",
       contactPhone: org.contactPhone || "",
@@ -537,9 +537,9 @@ export default function OrganizationDetailPage() {
       const response = await fetch(`/api/admin/organizations/set-owner`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          organizationId: orgId, 
-          userId: selectedUserId 
+        body: JSON.stringify({
+          organizationId: orgId,
+          userId: selectedUserId
         }),
       });
 
@@ -638,40 +638,6 @@ export default function OrganizationDetailPage() {
       )}
 
       <div className="rsp-club-content">
-        {loadingOrg ? (
-          <div className="im-page-header-skeleton mb-8">
-            <div className="im-skeleton h-8 w-64 rounded mb-3" />
-            <div className="im-skeleton h-5 w-96 rounded" />
-          </div>
-        ) : org && (
-          <PageHeader
-            title={org.name}
-            description={
-              org.archivedAt
-                ? t("orgDetail.archived")
-                : org.primaryOwner
-                  ? `${t("orgDetail.slug")}: ${org.slug} | ${t("orgDetail.superAdmin")}: ${org.primaryOwner.name || org.primaryOwner.email}`
-                  : org.slug
-            }
-            actions={
-              <div className="im-org-detail-header-actions">
-                {isRoot && (
-                  <>
-                    {!org.archivedAt && (
-                      <Button variant="outline" onClick={() => setIsArchiveModalOpen(true)}>
-                        {t("orgDetail.archive")}
-                      </Button>
-                    )}
-                    <Button variant="danger" onClick={() => setIsDeleteModalOpen(true)}>
-                      {t("common.delete")}
-                    </Button>
-                  </>
-                )}
-              </div>
-            }
-          />
-        )}
-
         {/* Toast */}
         {toast && (
           <div className={`im-toast im-toast--${toast.type}`}>{toast.message}</div>
