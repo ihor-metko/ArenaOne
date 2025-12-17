@@ -231,5 +231,55 @@ describe("Organization Detail Page - Banner Component", () => {
       // Should show placeholder since no image
       expect(screen.getByText("M")).toBeInTheDocument();
     });
+
+    it("renders status badge when provided", () => {
+      const { container } = render(
+        <EntityBanner
+          title="Test Organization"
+          status={{ label: "Published", variant: "published" }}
+        />
+      );
+
+      expect(screen.getByText("Published")).toBeInTheDocument();
+      const statusBadge = container.querySelector(".rsp-entity-status-badge--published");
+      expect(statusBadge).toBeInTheDocument();
+    });
+
+    it("renders draft status badge", () => {
+      const { container } = render(
+        <EntityBanner
+          title="Test Organization"
+          status={{ label: "Unpublished", variant: "draft" }}
+        />
+      );
+
+      expect(screen.getByText("Unpublished")).toBeInTheDocument();
+      const statusBadge = container.querySelector(".rsp-entity-status-badge--draft");
+      expect(statusBadge).toBeInTheDocument();
+    });
+
+    it("renders archived status badge", () => {
+      const { container } = render(
+        <EntityBanner
+          title="Test Organization"
+          status={{ label: "Archived", variant: "archived" }}
+        />
+      );
+
+      expect(screen.getByText("Archived")).toBeInTheDocument();
+      const statusBadge = container.querySelector(".rsp-entity-status-badge--archived");
+      expect(statusBadge).toBeInTheDocument();
+    });
+
+    it("does not render status badge when not provided", () => {
+      const { container } = render(
+        <EntityBanner
+          title="Test Organization"
+        />
+      );
+
+      const statusBadge = container.querySelector(".rsp-entity-status-badge");
+      expect(statusBadge).not.toBeInTheDocument();
+    });
   });
 });
