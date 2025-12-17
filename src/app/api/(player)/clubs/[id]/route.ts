@@ -128,12 +128,8 @@ export async function GET(
       },
     });
 
-    if (!club) {
-      return NextResponse.json({ error: "Club not found" }, { status: 404 });
-    }
-
-    // Check visibility: club must be public AND organization must be public
-    if (!club.isPublic || !club.organization.isPublic) {
+    // Check if club exists and is visible (club must be public AND organization must be public)
+    if (!club || !club.isPublic || !club.organization.isPublic) {
       return NextResponse.json({ error: "Club not found" }, { status: 404 });
     }
 
