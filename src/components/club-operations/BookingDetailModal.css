@@ -87,38 +87,38 @@
 }
 
 /* Dark mode */
-:root[data-theme="dark"] .im-booking-detail-section {
+.dark .im-booking-detail-section {
   border-bottom-color: var(--color-border, #374151);
 }
 
-:root[data-theme="dark"] .im-booking-detail-section-title {
+.dark .im-booking-detail-section-title {
   color: var(--color-text-primary, #f9fafb);
 }
 
-:root[data-theme="dark"] .im-booking-detail-label {
+.dark .im-booking-detail-label {
   color: var(--color-text-secondary, #9ca3af);
 }
 
-:root[data-theme="dark"] .im-booking-detail-value {
+.dark .im-booking-detail-value {
   color: var(--color-text-primary, #f9fafb);
 }
 
-:root[data-theme="dark"] .im-booking-detail-status--pending {
+.dark .im-booking-detail-status--pending {
   background-color: rgba(251, 191, 36, 0.15);
   color: #fde68a;
 }
 
-:root[data-theme="dark"] .im-booking-detail-status--paid {
+.dark .im-booking-detail-status--paid {
   background-color: rgba(16, 185, 129, 0.15);
   color: #6ee7b7;
 }
 
-:root[data-theme="dark"] .im-booking-detail-status--reserved {
+.dark .im-booking-detail-status--reserved {
   background-color: rgba(59, 130, 246, 0.15);
   color: #93c5fd;
 }
 
-:root[data-theme="dark"] .im-booking-detail-status--cancelled {
+.dark .im-booking-detail-status--cancelled {
   background-color: rgba(156, 163, 175, 0.1);
   color: #9ca3af;
 }

@@ -139,52 +139,52 @@
 }
 
 /* Dark mode */
-:root[data-theme="dark"] .im-day-calendar {
+.dark .im-day-calendar {
   background-color: var(--color-bg-secondary, #1f2937);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-:root[data-theme="dark"] .im-day-calendar-header {
+.dark .im-day-calendar-header {
   background-color: var(--color-bg-primary, #111827);
   border-bottom-color: var(--color-border, #374151);
 }
 
-:root[data-theme="dark"] .im-day-calendar-time-header,
-:root[data-theme="dark"] .im-day-calendar-court-header {
+.dark .im-day-calendar-time-header,
+.dark .im-day-calendar-court-header {
   border-right-color: var(--color-border, #374151);
 }
 
-:root[data-theme="dark"] .im-day-calendar-court-name {
+.dark .im-day-calendar-court-name {
   color: var(--color-text-primary, #f9fafb);
 }
 
-:root[data-theme="dark"] .im-day-calendar-court-type {
+.dark .im-day-calendar-court-type {
   color: var(--color-text-secondary, #9ca3af);
 }
 
-:root[data-theme="dark"] .im-day-calendar-time-column {
+.dark .im-day-calendar-time-column {
   background-color: var(--color-bg-primary, #111827);
   border-right-color: var(--color-border, #374151);
 }
 
-:root[data-theme="dark"] .im-day-calendar-time-slot {
+.dark .im-day-calendar-time-slot {
   border-bottom-color: var(--color-border-light, #374151);
 }
 
-:root[data-theme="dark"] .im-day-calendar-time-label {
+.dark .im-day-calendar-time-label {
   color: var(--color-text-secondary, #9ca3af);
 }
 
-:root[data-theme="dark"] .im-day-calendar-court-column {
+.dark .im-day-calendar-court-column {
   background-color: var(--color-bg-secondary, #1f2937);
   border-right-color: var(--color-border, #374151);
 }
 
-:root[data-theme="dark"] .im-day-calendar-slot {
+.dark .im-day-calendar-slot {
   border-bottom-color: var(--color-border-light, #374151);
 }
 
-:root[data-theme="dark"] .im-day-calendar-slot:hover {
+.dark .im-day-calendar-slot:hover {
   background-color: var(--color-hover-bg, #374151);
 }
 
