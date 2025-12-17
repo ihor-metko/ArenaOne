@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { PageHeader, Button, type TableColumn, BookingStatusBadge, PaymentStatusBadge } from "@/components/ui";
 import { TableSkeleton } from "@/components/ui/skeletons";
 import { useUserStore } from "@/stores/useUserStore";
+import { useClubStore } from "@/stores/useClubStore";
 import { AdminQuickBookingWizard } from "@/components/AdminQuickBookingWizard";
 import { BookingDetailsModal } from "@/components/admin/BookingDetailsModal";
 import { formatDateTime, calculateDuration, getInitials } from "@/utils/bookingFormatters";
@@ -23,6 +24,7 @@ import {
   PaginationControls,
 } from "@/components/list-controls";
 import type { AdminBookingsListResponse, AdminBookingResponse } from "@/app/api/admin/bookings/route";
+import type { PredefinedData } from "@/components/AdminQuickBookingWizard/types";
 import "./AdminBookings.css";
 
 // Define filters interface
@@ -84,6 +86,10 @@ export default function AdminBookingsPage() {
 
   // Admin Booking Wizard state
   const [isBookingWizardOpen, setIsBookingWizardOpen] = useState(false);
+  const [wizardPredefinedData, setWizardPredefinedData] = useState<PredefinedData | undefined>(undefined);
+
+  // Club store to fetch club details when needed
+  const { clubs, fetchClubsIfNeeded } = useClubStore();
 
   // Fetch bookings
   const fetchBookings = useCallback(async () => {
@@ -223,12 +229,60 @@ export default function AdminBookingsPage() {
   // Check if should show content
   const shouldShowContent = isHydrated && isLoggedIn && adminStatus?.isAdmin;
 
-  const handleOpenBookingWizard = () => {
+  const handleOpenBookingWizard = async () => {
+    // Determine predefined data based on admin context
+    let predefinedData: PredefinedData | undefined = undefined;
+
+    if (adminStatus) {
+      try {
+        // Fetch clubs once at the beginning if needed
+        if (adminStatus.adminType === "club_admin" || adminStatus.adminType === "organization_admin") {
+          await fetchClubsIfNeeded();
+        }
+
+        if (adminStatus.adminType === "club_admin" && adminStatus.managedIds.length > 0) {
+          // For Club Admin: Preselect the first managed club and fetch its organization
+          const clubId = adminStatus.managedIds[0];
+          
+          // Find the club in the clubs array
+          const club = clubs.find(c => c.id === clubId);
+          
+          if (club) {
+            predefinedData = {
+              organizationId: club.organizationId,
+              clubId: club.id,
+            };
+          } else {
+            console.warn(`Club with id ${clubId} not found in clubs list`);
+          }
+        } else if (adminStatus.adminType === "organization_admin" && adminStatus.managedIds.length > 0) {
+          // For Organization Admin: Preselect the organization
+          const organizationId = adminStatus.managedIds[0];
+          predefinedData = {
+            organizationId,
+          };
+          
+          // If they manage only one club in this organization, preselect it too
+          const managedClubs = clubs.filter(c => c.organizationId === organizationId);
+          
+          if (managedClubs.length === 1) {
+            predefinedData.clubId = managedClubs[0].id;
+          }
+        }
+        // For root_admin, don't preselect anything (current behavior)
+      } catch (error) {
+        console.error("Error fetching clubs for wizard preselection:", error);
+        // Continue with no predefined data if fetch fails
+      }
+    }
+
+    setWizardPredefinedData(predefinedData);
     setIsBookingWizardOpen(true);
   };
 
   const handleCloseBookingWizard = () => {
     setIsBookingWizardOpen(false);
+    setWizardPredefinedData(undefined);
   };
 
   const handleBookingComplete = async () => {
@@ -489,6 +543,7 @@ export default function AdminBookingsPage() {
                 isOpen={isBookingWizardOpen}
                 onClose={handleCloseBookingWizard}
                 onBookingComplete={handleBookingComplete}
+                predefinedData={wizardPredefinedData}
                 adminType={adminStatus.adminType}
                 managedIds={adminStatus.managedIds}
               />
