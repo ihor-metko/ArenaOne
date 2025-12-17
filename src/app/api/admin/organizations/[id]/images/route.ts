@@ -91,8 +91,9 @@ export async function POST(
         );
       }
 
-      // Store the relative path returned by Supabase (e.g., "organizations/{organizationId}/{uuid}.jpg")
-      // The getSupabaseStorageUrl utility will convert this to a full URL
+      // uploadResult.path contains the relative path (e.g., "organizations/{organizationId}/{uuid}.jpg")
+      // Store this relative path in the database
+      // The getSupabaseStorageUrl utility will convert it to a full URL when needed
       imageUrl = uploadResult.path;
     } else {
       // Development fallback: store as mock URL

@@ -295,8 +295,10 @@ export function OrganizationCreationStepper() {
       const organization = await createOrganization(submitData);
 
       // Upload images after organization is created
+      // Note: heroImage is validated as required before submission (see validation above)
+      // But we only upload if a file was selected (not an existing URL)
       try {
-        // Upload heroImage (required)
+        // Upload heroImage if a new file was selected
         if (formData.heroImage?.file) {
           const heroFormData = new FormData();
           heroFormData.append("file", formData.heroImage.file);
@@ -313,7 +315,7 @@ export function OrganizationCreationStepper() {
           }
         }
 
-        // Upload logo (optional)
+        // Upload logo if a new file was selected (optional)
         if (formData.logo?.file) {
           const logoFormData = new FormData();
           logoFormData.append("file", formData.logo.file);
