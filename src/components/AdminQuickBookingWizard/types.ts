@@ -1,8 +1,18 @@
 /**
  * Types for AdminQuickBookingWizard
  * 
- * This wizard supports multi-step booking flow for admins:
- * - RootAdmin: All steps including organization selection
+ * This wizard supports multi-step booking flow for admins with context-aware behavior:
+ * 
+ * Context-Aware Flow:
+ * - When both organizationId and clubId are preselected (e.g., Operations page):
+ *   Organization and club steps are hidden, and dateTime is always the first visible step.
+ *   This allows users to adjust date/time even when clicking a calendar slot.
+ * 
+ * - When starting from general pages (e.g., Bookings page):
+ *   Steps are shown based on admin role and available context.
+ * 
+ * Admin Role Behavior:
+ * - RootAdmin: All steps including organization selection (unless preselected)
  * - SuperAdmin (OrgAdmin): All steps except organization (preselected)
  * - ClubAdmin: Skips organization and club selection (preselected)
  */
@@ -166,7 +176,9 @@ export const ADMIN_WIZARD_STEPS: WizardStepConfig[] = [
     label: "dateTime", // Step 3: Select Date & Time (check availability first)
     shouldShow: (_, predefinedData) => {
       // Always show date/time step when in club context (org and club preselected)
-      // This ensures it's the first visible step on Operations page
+      // This ensures it's the first visible step on Operations page, even when
+      // clicking a calendar slot (which prefills date/time/courtId).
+      // This allows users to adjust the time if needed before selecting a court.
       const isClubContext = predefinedData?.organizationId && predefinedData?.clubId;
       if (isClubContext) {
         return true;
