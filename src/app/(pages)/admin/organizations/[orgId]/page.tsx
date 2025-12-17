@@ -192,8 +192,6 @@ export default function OrganizationDetailPage() {
   // Image upload modals
   const [isEditingLogo, setIsEditingLogo] = useState(false);
   const [isEditingBanner, setIsEditingBanner] = useState(false);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -624,7 +622,7 @@ export default function OrganizationDetailPage() {
   // Image upload handlers
   const handleOpenLogoEdit = () => {
     if (!org) return;
-    setLogoFile(null);
+    // Initialize with current logo URL (not data URL)
     setLogoPreview(org.logo || null);
     setImageUploadError("");
     setIsEditingLogo(true);
@@ -632,7 +630,7 @@ export default function OrganizationDetailPage() {
 
   const handleOpenBannerEdit = () => {
     if (!org) return;
-    setBannerFile(null);
+    // Initialize with current banner URL (not data URL)
     setBannerPreview(org.heroImage || null);
     setImageUploadError("");
     setIsEditingBanner(true);
@@ -684,28 +682,30 @@ export default function OrganizationDetailPage() {
     try {
       let logoUrl: string | null | undefined = undefined;
 
-      if (logoPreview && logoPreview !== org?.logo) {
-        // New image selected - upload it
-        if (logoPreview.startsWith("data:")) {
-          // Convert data URL to file and upload
-          // NOTE: This is a temporary workaround. Ideally, ImageUpload should return
-          // both the preview data URL and the original File object to avoid conversion overhead.
-          // Extract MIME type from data URL
-          const mimeMatch = logoPreview.match(/^data:([^;]+);/);
-          const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
-          const file = await dataUrlToFile(logoPreview, mimeType);
-          logoUrl = await uploadImageFile(file, "logo");
-        } else {
-          // Existing URL - keep it
-          logoUrl = logoPreview;
-        }
-      } else if (!logoPreview) {
+      // Check if preview is a new data URL (indicating a new upload)
+      const isNewUpload = logoPreview && logoPreview.startsWith("data:");
+      // Check if image was removed
+      const isRemoved = !logoPreview && org?.logo;
+
+      if (isNewUpload) {
+        // New image selected - convert data URL to file and upload
+        // NOTE: This is a temporary workaround. Ideally, ImageUpload should return
+        // both the preview data URL and the original File object to avoid conversion overhead.
+        // Extract MIME type from data URL
+        const mimeMatch = logoPreview.match(/^data:([^;]+);/);
+        const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+        const file = await dataUrlToFile(logoPreview, mimeType);
+        logoUrl = await uploadImageFile(file, "logo");
+      } else if (isRemoved) {
         // Image removed
         logoUrl = null;
+      } else if (logoPreview !== org?.logo) {
+        // Existing URL changed (shouldn't happen, but handle it)
+        logoUrl = logoPreview;
       }
 
       // Only update if there's a change
-      if (logoUrl !== undefined && logoUrl !== org?.logo) {
+      if (logoUrl !== undefined) {
         await updateOrganization(orgId, { logo: logoUrl });
       }
 
@@ -726,28 +726,30 @@ export default function OrganizationDetailPage() {
     try {
       let bannerUrl: string | null | undefined = undefined;
 
-      if (bannerPreview && bannerPreview !== org?.heroImage) {
-        // New image selected - upload it
-        if (bannerPreview.startsWith("data:")) {
-          // Convert data URL to file and upload
-          // NOTE: This is a temporary workaround. Ideally, ImageUpload should return
-          // both the preview data URL and the original File object to avoid conversion overhead.
-          // Extract MIME type from data URL
-          const mimeMatch = bannerPreview.match(/^data:([^;]+);/);
-          const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
-          const file = await dataUrlToFile(bannerPreview, mimeType);
-          bannerUrl = await uploadImageFile(file, "heroImage");
-        } else {
-          // Existing URL - keep it
-          bannerUrl = bannerPreview;
-        }
-      } else if (!bannerPreview) {
+      // Check if preview is a new data URL (indicating a new upload)
+      const isNewUpload = bannerPreview && bannerPreview.startsWith("data:");
+      // Check if image was removed
+      const isRemoved = !bannerPreview && org?.heroImage;
+
+      if (isNewUpload) {
+        // New image selected - convert data URL to file and upload
+        // NOTE: This is a temporary workaround. Ideally, ImageUpload should return
+        // both the preview data URL and the original File object to avoid conversion overhead.
+        // Extract MIME type from data URL
+        const mimeMatch = bannerPreview.match(/^data:([^;]+);/);
+        const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+        const file = await dataUrlToFile(bannerPreview, mimeType);
+        bannerUrl = await uploadImageFile(file, "heroImage");
+      } else if (isRemoved) {
         // Image removed
         bannerUrl = null;
+      } else if (bannerPreview !== org?.heroImage) {
+        // Existing URL changed (shouldn't happen, but handle it)
+        bannerUrl = bannerPreview;
       }
 
       // Only update if there's a change
-      if (bannerUrl !== undefined && bannerUrl !== org?.heroImage) {
+      if (bannerUrl !== undefined) {
         await updateOrganization(orgId, { heroImage: bannerUrl });
       }
 
