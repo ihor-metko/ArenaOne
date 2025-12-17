@@ -66,6 +66,7 @@ export interface CreateOrganizationPayload {
 export interface UpdateOrganizationPayload {
   name?: string;
   slug?: string;
+  description?: string | null;
   contactEmail?: string | null;
   contactPhone?: string | null;
   website?: string | null;

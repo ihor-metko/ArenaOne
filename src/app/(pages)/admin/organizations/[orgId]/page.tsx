@@ -427,14 +427,17 @@ export default function OrganizationDetailPage() {
     setEditing(true);
 
     try {
-      await updateOrganization(orgId, {
+      const payload: Record<string, unknown> = {
         name: basicInfoData.name,
         slug: basicInfoData.slug,
-        metadata: {
-          ...(org?.metadata as object || {}),
-          description: basicInfoData.description,
-        },
-      });
+      };
+
+      // Add description if the org has a description field (checking if it's directly available)
+      if (basicInfoData.description !== undefined) {
+        (payload as { description?: string }).description = basicInfoData.description;
+      }
+
+      await updateOrganization(orgId, payload);
 
       showToast(t("orgDetail.updateSuccess"), "success");
       setIsEditingBasicInfo(false);
