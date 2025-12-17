@@ -64,37 +64,37 @@
 }
 
 /* Dark mode adjustments */
-.dark .im-booking-block--success {
+:root[data-theme="dark"] .im-booking-block--success {
   background-color: rgba(16, 185, 129, 0.15);
   border-color: #10b981;
   color: #6ee7b7;
 }
 
-.dark .im-booking-block--warning {
+:root[data-theme="dark"] .im-booking-block--warning {
   background-color: rgba(251, 191, 36, 0.15);
   border-color: #fbbf24;
   color: #fde68a;
 }
 
-.dark .im-booking-block--danger {
+:root[data-theme="dark"] .im-booking-block--danger {
   background-color: rgba(239, 68, 68, 0.15);
   border-color: #ef4444;
   color: #f87171;
 }
 
-.dark .im-booking-block--neutral {
+:root[data-theme="dark"] .im-booking-block--neutral {
   background-color: rgba(156, 163, 175, 0.1);
   border-color: #6b7280;
   color: #9ca3af;
 }
 
-.dark .im-booking-block--info {
+:root[data-theme="dark"] .im-booking-block--info {
   background-color: rgba(59, 130, 246, 0.15);
   border-color: #3b82f6;
   color: #93c5fd;
 }
 
-.dark .im-booking-block--active {
+:root[data-theme="dark"] .im-booking-block--active {
   background-color: rgba(20, 184, 166, 0.2);
   border-color: rgb(45, 212, 191);
   color: rgb(45, 212, 191);

@@ -69,8 +69,8 @@ export default function OperationsListPage() {
     return (
       <main className="im-club-operations-page">
         <PageHeader
-          title={t("operations.title") || "Operations"}
-          description={t("operations.description") || "Manage club operations"}
+          title={t("operations.title")}
+          description={t("operations.description")}
         />
         <section className="rsp-content">
           <TableSkeleton rows={3} columns={3} />
@@ -90,12 +90,12 @@ export default function OperationsListPage() {
     return (
       <main className="im-club-operations-page">
         <PageHeader
-          title={t("operations.title") || "Operations"}
-          description={t("operations.description") || "Manage club operations"}
+          title={t("operations.title")}
+          description={t("operations.description")}
         />
         <div className="im-club-operations-error">
-          <h2>{t("operations.noClubAssigned") || "No Club Assigned"}</h2>
-          <p>{t("operations.noClubAssignedDescription") || "You don't have a club assigned yet. Please contact your administrator."}</p>
+          <h2>{t("operations.noClubAssigned")}</h2>
+          <p>{t("operations.noClubAssignedDescription")}</p>
         </div>
       </main>
     );
@@ -104,19 +104,19 @@ export default function OperationsListPage() {
   return (
     <main className="im-club-operations-page">
       <PageHeader
-        title={t("operations.title") || "Operations"}
-        description={t("operations.description") || "Manage club operations"}
+        title={t("operations.title")}
+        description={t("operations.description")}
       />
       
       {/* Club selection */}
       <div className="im-club-operations-club-selection-container">
         <p className="im-club-operations-instruction">
-          {t("operations.selectClubInstruction") || "Please select a club to view its operations."}
+          {t("operations.selectClubInstruction")}
         </p>
         
         {/* Context block explaining what happens after selection */}
         <div className="im-club-operations-context">
-          {t("operations.selectionContext") || "After selecting a club, you will be able to view the calendar, manage bookings, check court availability, and perform other operational actions."}
+          {t("operations.selectionContext")}
         </div>
         
         {/* value is intentionally empty string - this is the list page, no club is pre-selected */}

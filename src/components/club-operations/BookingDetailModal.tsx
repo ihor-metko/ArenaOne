@@ -39,7 +39,7 @@ export function BookingDetailModal({
   }
 
   const handleCancel = async () => {
-    if (!confirm(t("operations.confirmCancel") || "Are you sure you want to cancel this booking?")) {
+    if (!confirm(t("operations.confirmCancel"))) {
       return;
     }
 
@@ -47,7 +47,7 @@ export function BookingDetailModal({
 
     try {
       await cancelBooking(booking.id);
-      showToast(t("operations.bookingCancelled") || "Booking cancelled successfully", {
+      showToast(t("operations.bookingCancelled"), {
         type: "success",
       });
       onSuccess();
@@ -81,18 +81,18 @@ export function BookingDetailModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t("operations.bookingDetails") || "Booking Details"}
+      title={t("operations.bookingDetails")}
     >
       <div className="im-booking-detail">
         {/* User Information */}
         <div className="im-booking-detail-section">
           <h4 className="im-booking-detail-section-title">
-            {t("operations.userInfo") || "User Information"}
+            {t("operations.userInfo")}
           </h4>
           <div className="im-booking-detail-grid">
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("common.name") || "Name"}
+                {t("common.name")}
               </span>
               <span className="im-booking-detail-value">
                 {booking.userName || "—"}
@@ -100,7 +100,7 @@ export function BookingDetailModal({
             </div>
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("common.email") || "Email"}
+                {t("common.email")}
               </span>
               <span className="im-booking-detail-value">{booking.userEmail}</span>
             </div>
@@ -110,18 +110,18 @@ export function BookingDetailModal({
         {/* Court Information */}
         <div className="im-booking-detail-section">
           <h4 className="im-booking-detail-section-title">
-            {t("operations.courtInfo") || "Court Information"}
+            {t("operations.courtInfo")}
           </h4>
           <div className="im-booking-detail-grid">
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("operations.court") || "Court"}
+                {t("operations.court")}
               </span>
               <span className="im-booking-detail-value">{booking.courtName}</span>
             </div>
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("operations.sportType") || "Sport Type"}
+                {t("operations.sportType")}
               </span>
               <span className="im-booking-detail-value">{booking.sportType}</span>
             </div>
@@ -131,12 +131,12 @@ export function BookingDetailModal({
         {/* Booking Details */}
         <div className="im-booking-detail-section">
           <h4 className="im-booking-detail-section-title">
-            {t("operations.bookingInfo") || "Booking Information"}
+            {t("operations.bookingInfo")}
           </h4>
           <div className="im-booking-detail-grid">
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("operations.startTime") || "Start Time"}
+                {t("operations.startTime")}
               </span>
               <span className="im-booking-detail-value">
                 {formatDateTime(booking.start)}
@@ -144,7 +144,7 @@ export function BookingDetailModal({
             </div>
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("operations.endTime") || "End Time"}
+                {t("operations.endTime")}
               </span>
               <span className="im-booking-detail-value">
                 {formatDateTime(booking.end)}
@@ -152,15 +152,15 @@ export function BookingDetailModal({
             </div>
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("common.duration") || "Duration"}
+                {t("common.duration")}
               </span>
               <span className="im-booking-detail-value">
-                {calculateDuration()} {t("common.minutes") || "minutes"}
+                {calculateDuration()} {t("common.minutes")}
               </span>
             </div>
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("adminBookings.bookingStatus") || "Booking Status"}
+                {t("adminBookings.bookingStatus")}
               </span>
               <span className="im-booking-detail-value">
                 <BookingStatusBadge status={booking.bookingStatus} />
@@ -168,7 +168,7 @@ export function BookingDetailModal({
             </div>
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("adminBookings.paymentStatus") || "Payment Status"}
+                {t("adminBookings.paymentStatus")}
               </span>
               <span className="im-booking-detail-value">
                 <PaymentStatusBadge status={booking.paymentStatus} />
@@ -176,7 +176,7 @@ export function BookingDetailModal({
             </div>
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("common.price") || "Price"}
+                {t("common.price")}
               </span>
               <span className="im-booking-detail-value">
                 {formatPrice(booking.price)}
@@ -185,14 +185,14 @@ export function BookingDetailModal({
             {booking.coachName && (
               <div className="im-booking-detail-item">
                 <span className="im-booking-detail-label">
-                  {t("operations.coach") || "Coach"}
+                  {t("operations.coach")}
                 </span>
                 <span className="im-booking-detail-value">{booking.coachName}</span>
               </div>
             )}
             <div className="im-booking-detail-item">
               <span className="im-booking-detail-label">
-                {t("operations.createdAt") || "Created At"}
+                {t("operations.createdAt")}
               </span>
               <span className="im-booking-detail-value">
                 {formatDateTime(booking.createdAt)}
@@ -204,7 +204,7 @@ export function BookingDetailModal({
         {/* Actions */}
         <div className="im-booking-detail-actions">
           <Button variant="outline" onClick={onClose}>
-            {t("common.close") || "Close"}
+            {t("common.close")}
           </Button>
           {canCancelBooking(booking.bookingStatus) && (
             <Button
@@ -213,8 +213,8 @@ export function BookingDetailModal({
               disabled={isCancelling}
             >
               {isCancelling
-                ? t("operations.cancelling") || "Cancelling..."
-                : t("operations.cancelBooking") || "Cancel Booking"}
+                ? t("operations.cancelling")
+                : t("operations.cancelBooking")}
             </Button>
           )}
         </div>

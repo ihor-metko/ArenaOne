@@ -109,7 +109,7 @@ export function OperationsClubCardSelector({
     return (
       <div className={`im-operations-club-selector ${className}`}>
         <div className="im-operations-club-selector-empty">
-          <p>{t("operations.noClubsAvailable") || "No clubs available"}</p>
+          <p>{t("operations.noClubsAvailable")}</p>
         </div>
       </div>
     );
@@ -129,13 +129,13 @@ export function OperationsClubCardSelector({
               role="button"
               tabIndex={0}
               aria-pressed={isSelected}
-              aria-label={`${t("operations.selectClub") || "Select club"}: ${club.name}${isSelected ? ` (${t("common.selected") || "selected"})` : ""}`}
+              aria-label={`${t("operations.selectClub")}: ${club.name}${isSelected ? ` (${t("common.selected")})` : ""}`}
             >
               <AdminClubCard 
                 club={club} 
                 showOrganization={showOrganization}
                 actionButton={{
-                  label: t("operations.selectClub") || "Select Club",
+                  label: t("operations.selectClub"),
                   onClick: (e) => {
                     e.stopPropagation();
                     handleCardClick(club.id);

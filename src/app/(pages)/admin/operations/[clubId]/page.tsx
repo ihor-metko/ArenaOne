@@ -222,10 +222,10 @@ export default function ClubOperationsPage() {
     return (
       <main className="im-club-operations-page">
         <div className="im-club-operations-error">
-          <h2>{t("operations.accessDenied") || "Access Denied"}</h2>
-          <p>{t("operations.accessDeniedDescription") || "You don't have permission to access this club's operations."}</p>
+          <h2>{t("operations.accessDenied")}</h2>
+          <p>{t("operations.accessDeniedDescription")}</p>
           <Button onClick={handleBackToList}>
-            {t("operations.backToList") || "Back to Operations"}
+            {t("operations.backToList")}
           </Button>
         </div>
       </main>
@@ -237,9 +237,9 @@ export default function ClubOperationsPage() {
     return (
       <main className="im-club-operations-page">
         <div className="im-club-operations-error">
-          <h2>{t("operations.clubNotFound") || "Club not found"}</h2>
+          <h2>{t("operations.clubNotFound")}</h2>
           <Button onClick={handleBackToList}>
-            {t("operations.backToList") || "Back to Operations"}
+            {t("operations.backToList")}
           </Button>
         </div>
       </main>
@@ -249,15 +249,15 @@ export default function ClubOperationsPage() {
   return (
     <main className="im-club-operations-page">
       <PageHeader
-        title={t("operations.title") || "Operations"}
+        title={t("operations.title")}
         description={club?.name || "Loading..."}
         actions={
           <>
             <Button onClick={handleBackToList} variant="outline">
-              {t("operations.backToList") || "Back to List"}
+              {t("operations.backToList")}
             </Button>
             <Button onClick={handleToday} variant="outline">
-              {t("operations.today") || "Today"}
+              {t("operations.today")}
             </Button>
           </>
         }
@@ -268,7 +268,7 @@ export default function ClubOperationsPage() {
         {/* Date picker */}
         <div className="im-club-operations-date-picker">
           <label htmlFor="date" className="im-club-operations-date-label">
-            {t("operations.selectDate") || "Date"}
+            {t("operations.selectDate")}
           </label>
           <Input
             id="date"
@@ -296,10 +296,9 @@ export default function ClubOperationsPage() {
             </div>
           ) : courts.length === 0 ? (
             <div className="im-club-operations-empty">
-              <h3>{t("operations.noCourts") || "No courts available"}</h3>
+              <h3>{t("operations.noCourts")}</h3>
               <p>
-                {t("operations.noCourtsDescription") ||
-                  "This club has no courts configured yet."}
+                {t("operations.noCourtsDescription")}
               </p>
             </div>
           ) : (

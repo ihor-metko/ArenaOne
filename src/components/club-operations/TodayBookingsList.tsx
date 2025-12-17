@@ -47,10 +47,10 @@ export function TodayBookingsList({
     <div className="im-today-bookings-list">
       <div className="im-today-bookings-header">
         <h3 className="im-today-bookings-title">
-          {t("operations.todayBookings") || "Today's Bookings"}
+          {t("operations.todayBookings")}
         </h3>
         <div className="im-today-bookings-count">
-          {bookings.length} {bookings.length === 1 ? "booking" : "bookings"}
+          {bookings.length} {bookings.length === 1 ? t("operations.booking") : t("operations.bookings")}
         </div>
       </div>
 
@@ -74,7 +74,7 @@ export function TodayBookingsList({
             <line x1="3" y1="10" x2="21" y2="10" />
           </svg>
           <p className="im-today-bookings-empty-text">
-            {t("operations.noBookingsToday") || "No bookings for this day"}
+            {t("operations.noBookingsToday")}
           </p>
         </div>
       ) : (
@@ -103,7 +103,7 @@ export function TodayBookingsList({
                   size="small"
                   onClick={() => onViewBooking(booking)}
                 >
-                  {t("common.view") || "View"}
+                  {t("common.view")}
                 </Button>
                 {canCancelBooking(booking.bookingStatus) && (
                   <Button
@@ -111,12 +111,12 @@ export function TodayBookingsList({
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm(t("operations.confirmCancel") || "Cancel this booking?")) {
+                      if (confirm(t("operations.confirmCancel"))) {
                         onCancelBooking(booking.id);
                       }
                     }}
                   >
-                    {t("common.cancel") || "Cancel"}
+                    {t("common.cancel")}
                   </Button>
                 )}
               </div>
