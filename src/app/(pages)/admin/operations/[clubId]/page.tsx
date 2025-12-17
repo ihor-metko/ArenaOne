@@ -11,9 +11,9 @@ import { useBookingStore } from "@/stores/useBookingStore";
 import {
   DayCalendar,
   TodayBookingsList,
-  QuickCreateModal,
   BookingDetailModal,
 } from "@/components/club-operations";
+import { AdminQuickBookingWizard } from "@/components/AdminQuickBookingWizard";
 import type { OperationsBooking } from "@/types/booking";
 import { TableSkeleton } from "@/components/ui/skeletons";
 import "../page.css";
@@ -65,10 +65,14 @@ export default function ClubOperationsPage() {
     return today.toISOString().split("T")[0];
   });
   const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
-  const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
-  const [quickCreateData, setQuickCreateData] = useState<{
-    courtId: string;
-    startTime: Date;
+  const [isBookingWizardOpen, setIsBookingWizardOpen] = useState(false);
+  const [wizardPredefinedData, setWizardPredefinedData] = useState<{
+    organizationId?: string;
+    clubId: string;
+    courtId?: string;
+    date?: string;
+    startTime?: string;
+    duration?: number;
   } | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<OperationsBooking | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -167,9 +171,23 @@ export default function ClubOperationsPage() {
 
   // Handle slot click (create new booking)
   const handleSlotClick = useCallback((courtId: string, startTime: Date) => {
-    setQuickCreateData({ courtId, startTime });
-    setIsQuickCreateOpen(true);
-  }, []);
+    // Extract date and time from startTime
+    const date = startTime.toISOString().split('T')[0];
+    const timeStr = `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`;
+    
+    // Get organization ID from club
+    const organizationId = club?.organizationId;
+    
+    setWizardPredefinedData({
+      organizationId,
+      clubId,
+      courtId,
+      date,
+      startTime: timeStr,
+      duration: 60, // Default to 60 minutes
+    });
+    setIsBookingWizardOpen(true);
+  }, [clubId, club]);
 
   // Handle booking click (view details)
   const handleBookingClick = useCallback((booking: OperationsBooking) => {
@@ -202,25 +220,17 @@ export default function ClubOperationsPage() {
     router.push("/admin/operations");
   };
 
-  // Open quick create modal without pre-filled data
+  // Open booking wizard without pre-filled data (except club and org)
   const handleCreateBooking = () => {
-    // Open modal with no pre-filled data (user will select court and time)
-    const now = new Date();
-    // Round UP to next 30-minute slot (e.g., 10:15 -> 10:30, 10:45 -> 11:00)
-    if (now.getMinutes() >= 30) {
-      now.setHours(now.getHours() + 1);
-      now.setMinutes(0, 0, 0);
-    } else {
-      now.setMinutes(30, 0, 0);
-    }
+    // Get organization ID from club
+    const organizationId = club?.organizationId;
     
-    if (courts.length > 0) {
-      setQuickCreateData({
-        courtId: courts[0].id,
-        startTime: now,
-      });
-      setIsQuickCreateOpen(true);
-    }
+    setWizardPredefinedData({
+      organizationId,
+      clubId,
+      // Don't prefill court, date, or time - let user select
+    });
+    setIsBookingWizardOpen(true);
   };
 
   // Loading state
@@ -280,7 +290,7 @@ export default function ClubOperationsPage() {
             </Button>
             <Button 
               onClick={handleCreateBooking}
-              disabled={courts.length === 0 || loadingCourts}
+              disabled={loadingCourts}
             >
               {t("operations.newBooking")}
             </Button>
@@ -404,19 +414,18 @@ export default function ClubOperationsPage() {
         </div>
       )}
 
-      {/* Quick Create Modal */}
-      {quickCreateData && clubId && (
-        <QuickCreateModal
-          isOpen={isQuickCreateOpen}
+      {/* Admin Quick Booking Wizard */}
+      {adminStatus?.isAdmin && adminStatus.adminType !== "none" && (
+        <AdminQuickBookingWizard
+          isOpen={isBookingWizardOpen}
           onClose={() => {
-            setIsQuickCreateOpen(false);
-            setQuickCreateData(null);
+            setIsBookingWizardOpen(false);
+            setWizardPredefinedData(null);
           }}
-          clubId={clubId}
-          courtId={quickCreateData.courtId}
-          startTime={quickCreateData.startTime}
-          courts={courts}
-          onSuccess={handleBookingSuccess}
+          onBookingComplete={handleBookingSuccess}
+          predefinedData={wizardPredefinedData || undefined}
+          adminType={adminStatus.adminType}
+          managedIds={adminStatus.managedIds}
         />
       )}
 

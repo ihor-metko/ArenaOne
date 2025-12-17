@@ -123,7 +123,6 @@ jest.mock("@/components/ui/skeletons", () => ({
 jest.mock("@/components/club-operations", () => ({
   DayCalendar: () => <div data-testid="day-calendar">Calendar</div>,
   TodayBookingsList: () => <div data-testid="today-bookings">Today's Bookings</div>,
-  QuickCreateModal: () => null,
   BookingDetailModal: () => null,
   OperationsClubSelector: ({ value, onChange, disabled }: { value: string; onChange: (v: string) => void; disabled?: boolean }) => (
     <div data-testid="club-selector">
