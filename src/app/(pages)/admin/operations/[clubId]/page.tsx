@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { PageHeader, Button, Input } from "@/components/ui";
+import { PageHeader, Button, Input, Card } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
 import { useClubStore } from "@/stores/useClubStore";
 import { useCourtStore } from "@/stores/useCourtStore";
@@ -64,6 +64,7 @@ export default function ClubOperationsPage() {
     const today = new Date();
     return today.toISOString().split("T")[0];
   });
+  const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
   const [quickCreateData, setQuickCreateData] = useState<{
     courtId: string;
@@ -201,6 +202,27 @@ export default function ClubOperationsPage() {
     router.push("/admin/operations");
   };
 
+  // Open quick create modal without pre-filled data
+  const handleCreateBooking = () => {
+    // Open modal with no pre-filled data (user will select court and time)
+    const now = new Date();
+    // Round UP to next 30-minute slot (e.g., 10:15 -> 10:30, 10:45 -> 11:00)
+    if (now.getMinutes() >= 30) {
+      now.setHours(now.getHours() + 1);
+      now.setMinutes(0, 0, 0);
+    } else {
+      now.setMinutes(30, 0, 0);
+    }
+    
+    if (courts.length > 0) {
+      setQuickCreateData({
+        courtId: courts[0].id,
+        startTime: now,
+      });
+      setIsQuickCreateOpen(true);
+    }
+  };
+
   // Loading state
   if (isLoadingUser || loadingClub) {
     return (
@@ -250,18 +272,50 @@ export default function ClubOperationsPage() {
     <main className="im-club-operations-page">
       <PageHeader
         title={t("operations.title")}
-        description={club?.name || "Loading..."}
+        description={t("operations.pageDescription")}
         actions={
           <>
             <Button onClick={handleBackToList} variant="outline">
               {t("operations.backToList")}
             </Button>
-            <Button onClick={handleToday} variant="outline">
-              {t("operations.today")}
+            <Button 
+              onClick={handleCreateBooking}
+              disabled={courts.length === 0 || loadingCourts}
+            >
+              {t("operations.newBooking")}
             </Button>
           </>
         }
       />
+
+      {/* Club Information Block */}
+      <Card className="im-club-operations-club-block">
+        <div className="im-club-operations-club-info">
+          <div className="im-club-operations-club-details">
+            <div className="im-club-operations-club-label">{t("operations.currentClub")}</div>
+            <div className="im-club-operations-club-name">{club?.name || "Loading..."}</div>
+          </div>
+          <div className="im-club-operations-view-actions">
+            {/* View Switcher */}
+            <div className="im-club-operations-view-switcher">
+              <Button
+                onClick={() => setViewMode("calendar")}
+                variant={viewMode === "calendar" ? "primary" : "outline"}
+                size="small"
+              >
+                {t("operations.calendarView")}
+              </Button>
+              <Button
+                onClick={() => setViewMode("list")}
+                variant={viewMode === "list" ? "primary" : "outline"}
+                size="small"
+              >
+                {t("operations.listView")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Controls - Date picker */}
       <div className="im-club-operations-controls">
@@ -277,6 +331,9 @@ export default function ClubOperationsPage() {
             onChange={handleDateChange}
           />
         </div>
+        <Button onClick={handleToday} variant="outline" size="small">
+          {t("operations.today")}
+        </Button>
       </div>
 
       {/* Error message */}
@@ -287,33 +344,51 @@ export default function ClubOperationsPage() {
       )}
 
       {/* Main content - Calendar and List */}
-      <div className="im-club-operations-content">
-        {/* Calendar view */}
-        <div className="im-club-operations-calendar">
-          {loadingCourts || loadingBookings ? (
-            <div className="im-club-operations-loading">
-              <TableSkeleton rows={10} columns={3} />
-            </div>
-          ) : courts.length === 0 ? (
-            <div className="im-club-operations-empty">
-              <h3>{t("operations.noCourts")}</h3>
-              <p>
-                {t("operations.noCourtsDescription")}
-              </p>
-            </div>
-          ) : (
-            <DayCalendar
-              courts={courts}
-              bookings={bookings}
-              selectedDate={selectedDate}
-              onBookingClick={handleBookingClick}
-              onSlotClick={handleSlotClick}
-            />
-          )}
-        </div>
+      {viewMode === "calendar" ? (
+        <div className="im-club-operations-content">
+          {/* Calendar view */}
+          <div className="im-club-operations-calendar">
+            {loadingCourts || loadingBookings ? (
+              <div className="im-club-operations-loading">
+                <TableSkeleton rows={10} columns={3} />
+              </div>
+            ) : courts.length === 0 ? (
+              <div className="im-club-operations-empty">
+                <h3>{t("operations.noCourts")}</h3>
+                <p>
+                  {t("operations.noCourtsDescription")}
+                </p>
+              </div>
+            ) : (
+              <DayCalendar
+                courts={courts}
+                bookings={bookings}
+                selectedDate={selectedDate}
+                onBookingClick={handleBookingClick}
+                onSlotClick={handleSlotClick}
+              />
+            )}
+          </div>
 
-        {/* Today's bookings list */}
-        <div className="im-club-operations-sidebar">
+          {/* Today's bookings list */}
+          <div className="im-club-operations-sidebar">
+            <TodayBookingsList
+              bookings={bookings}
+              onViewBooking={handleBookingClick}
+              onCancelBooking={(bookingId) => {
+                // Find booking and use store's cancel method
+                const booking = bookings.find((b) => b.id === bookingId);
+                if (booking) {
+                  handleBookingClick(booking);
+                }
+              }}
+              loading={loadingBookings}
+            />
+          </div>
+        </div>
+      ) : (
+        // List view - Show only bookings list
+        <div className="im-club-operations-list-view">
           <TodayBookingsList
             bookings={bookings}
             onViewBooking={handleBookingClick}
@@ -327,7 +402,7 @@ export default function ClubOperationsPage() {
             loading={loadingBookings}
           />
         </div>
-      </div>
+      )}
 
       {/* Quick Create Modal */}
       {quickCreateData && clubId && (

@@ -11,11 +11,62 @@
   max-width: 1800px;
 }
 
+.im-club-operations-club-block {
+  width: 100%;
+}
+
+.im-club-operations-club-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.im-club-operations-club-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.im-club-operations-club-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.im-club-operations-club-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary, #111827);
+  margin: 0;
+}
+
+.im-club-operations-view-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.im-club-operations-view-switcher {
+  display: flex;
+  gap: 8px;
+}
+
 .im-club-operations-controls {
   display: flex;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.im-club-operations-list-view {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .im-club-operations-club-selector {
@@ -142,6 +193,14 @@
 }
 
 /* Dark mode */
+.dark .im-club-operations-club-label {
+  color: var(--color-text-secondary, #9ca3af);
+}
+
+.dark .im-club-operations-club-name {
+  color: var(--color-text-primary, #f9fafb);
+}
+
 .dark .im-club-operations-label,
 .dark .im-club-operations-date-label {
   color: var(--color-text-primary, #f9fafb);
