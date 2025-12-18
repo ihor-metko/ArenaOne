@@ -176,13 +176,13 @@ export function AdminQuickBookingWizard({
               const fetchOrganizations = useOrganizationStore.getState().fetchOrganizations;
 
               // First try to get from current store state
-              let org = getOrganizationById(predefinedData.organizationId);
+              let org = getOrganizationById(predefinedData.organizationId!);
               
               // If not in store, fetch organizations first
               if (!org) {
                 try {
                   await fetchOrganizations();
-                  org = useOrganizationStore.getState().getOrganizationById(predefinedData.organizationId);
+                  org = useOrganizationStore.getState().getOrganizationById(predefinedData.organizationId!);
                 } catch (error) {
                   // Handle error silently as the organization might not be accessible
                 }
@@ -203,29 +203,28 @@ export function AdminQuickBookingWizard({
         predefinedData?.clubId
           ? (async () => {
               const getClubById = useClubStore.getState().getClubById;
-              const ensureClubById = useClubStore.getState().ensureClubById;
+              const fetchClubsIfNeeded = useClubStore.getState().fetchClubsIfNeeded;
 
               try {
                 // Try to get from current store state first
-                let club = getClubById(predefinedData.clubId);
+                let club = getClubById(predefinedData.clubId!);
                 
-                // If not in store, fetch the specific club
+                // If not in store, fetch clubs to populate the store
                 if (!club) {
-                  const clubDetail = await ensureClubById(predefinedData.clubId);
-                  // Map ClubDetail to WizardClub format
-                  return {
-                    id: clubDetail.id,
-                    name: clubDetail.name,
-                    organizationId: clubDetail.organizationId,
-                  } as WizardClub;
+                  await fetchClubsIfNeeded();
+                  club = useClubStore.getState().getClubById(predefinedData.clubId!);
                 }
 
-                // Map existing club to WizardClub format
-                return {
-                  id: club.id,
-                  name: club.name,
-                  organizationId: club.organizationId,
-                } as WizardClub;
+                // If we found the club, map it to WizardClub format
+                if (club) {
+                  return {
+                    id: club.id,
+                    name: club.name,
+                    organizationId: club.organizationId,
+                    organizationName: club.organization?.name,
+                  } as WizardClub;
+                }
+                return null;
               } catch (error) {
                 // Handle error silently as the club might not be accessible
                 return null;
