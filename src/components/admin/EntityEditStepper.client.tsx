@@ -28,7 +28,6 @@ interface EntityEditStepperProps {
   isOpen: boolean;
   onClose: () => void;
   entityData: EntityData;
-  entityType?: "organization" | "club" | "court";
   onSave: (data: {
     name: string;
     slug: string;

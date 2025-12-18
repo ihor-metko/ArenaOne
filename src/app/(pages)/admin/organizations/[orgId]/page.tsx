@@ -929,7 +929,6 @@ export default function OrganizationDetailPage() {
             isOpen={isEditingDetails}
             onClose={() => setIsEditingDetails(false)}
             entityData={org}
-            entityType="organization"
             onSave={handleStepperSave}
           />
         )}
