@@ -8,7 +8,6 @@
 .rsp-modal {
   max-height: 90vh;
   max-width: 95vw;
-  width: 100%;
   @apply relative rounded-lg shadow-lg;
   background-color: var(--rsp-card-bg);
   display: flex;
