@@ -51,7 +51,7 @@ export async function GET(request: Request) {
     if (isMockMode()) {
       return NextResponse.json(
         await mockGetCourts({
-          adminType: authResult.adminType,
+          adminType: authResult.adminType === "club_owner" ? "club_admin" : authResult.adminType,
           managedIds: authResult.managedIds,
           filters: {
             search,
