@@ -26,6 +26,7 @@ import {
   WizardClub,
   WizardUser,
   WizardCourt,
+  WizardStepDateTime,
   getTodayDateString,
   getFirstVisibleStepId,
 } from "./types";
@@ -462,7 +463,7 @@ export function AdminQuickBookingWizard({
   }, [state.stepUser.newUserName, state.stepUser.newUserEmail, createUser]);
 
   const handleDateTimeChange = useCallback(
-    (data: Partial<typeof state.stepDateTime>) => {
+    (data: Partial<WizardStepDateTime>) => {
       setState((prev) => {
         // If court is predefined, keep it; otherwise, clear it
         const shouldKeepCourt = predefinedData?.courtId && prev.stepCourt.selectedCourtId === predefinedData.courtId;
