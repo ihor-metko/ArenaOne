@@ -42,7 +42,7 @@ export function AdminQuickBookingWizard({
 }: AdminQuickBookingWizardProps) {
   const t = useTranslations();
 
-  const { predefinedOrganization, predefinedClub } = useWizardPredefinedData({
+  const { predefinedOrganization, predefinedClub, predefinedCourt } = useWizardPredefinedData({
     isOpen,
     predefinedData,
   });
@@ -203,9 +203,28 @@ export function AdminQuickBookingWizard({
     }
   }, [isOpen, adminType, predefinedData]);
 
-  // 🔹 Ініціалізація predefinedOrganization та predefinedClub з автоматичним переходом на крок
+  // 🔹 Ініціалізація predefinedOrganization, predefinedClub та predefinedCourt з автоматичним переходом на крок
   useEffect(() => {
-    if (predefinedOrganization && predefinedClub) {
+    if (predefinedOrganization && predefinedClub && predefinedCourt) {
+      setState((prev) => ({
+        ...prev,
+        stepOrganization: {
+          selectedOrganizationId: predefinedOrganization.id,
+          selectedOrganization: predefinedOrganization,
+        },
+        stepClub: {
+          selectedClubId: predefinedClub.id,
+          selectedClub: predefinedClub,
+        },
+        stepCourt: {
+          selectedCourtId: predefinedCourt.id,
+          selectedCourt: predefinedCourt,
+        },
+        availableClubs: [predefinedClub],
+        availableCourts: [predefinedCourt],
+        currentStep: 3, // автоматичний перехід на DateTime (which allows confirmation/adjustment)
+      }));
+    } else if (predefinedOrganization && predefinedClub) {
       setState((prev) => ({
         ...prev,
         stepOrganization: {
@@ -229,7 +248,7 @@ export function AdminQuickBookingWizard({
         currentStep: 2, // перехід на Club
       }));
     }
-  }, [predefinedOrganization, predefinedClub]);
+  }, [predefinedOrganization, predefinedClub, predefinedCourt]);
 
   // 🔹 Синхронізація даних хуків до state
   useEffect(() => {
@@ -277,6 +296,50 @@ export function AdminQuickBookingWizard({
       bookingId,
     }));
   }, [isSubmitting, submitError, isComplete, bookingId]);
+
+  // 🔹 Fetch price for predefined court when date/time changes
+  useEffect(() => {
+    const fetchPredefinedCourtPrice = async () => {
+      const court = state.stepCourt.selectedCourt;
+      const { date, startTime, duration } = state.stepDateTime;
+      
+      // Only fetch if we have a court and it's from predefined data (no priceCents yet)
+      if (court && predefinedData?.courtId && court.priceCents === undefined) {
+        try {
+          const priceResponse = await fetch(
+            `/api/courts/${court.id}/price-timeline?date=${date}`
+          );
+          
+          if (priceResponse.ok) {
+            const priceData = await priceResponse.json();
+            const segment = priceData.timeline.find(
+              (seg: { start: string; end: string; priceCents: number }) =>
+                startTime >= seg.start && startTime < seg.end
+            );
+            
+            const priceCents = segment
+              ? Math.round((segment.priceCents / MINUTES_PER_HOUR) * duration)
+              : Math.round((court.defaultPriceCents / MINUTES_PER_HOUR) * duration);
+            
+            setState((prev) => ({
+              ...prev,
+              stepCourt: {
+                ...prev.stepCourt,
+                selectedCourt: {
+                  ...court,
+                  priceCents,
+                },
+              },
+            }));
+          }
+        } catch {
+          // Ignore price fetch errors, will use default price calculation
+        }
+      }
+    };
+
+    fetchPredefinedCourtPrice();
+  }, [state.stepCourt.selectedCourt, state.stepDateTime, predefinedData?.courtId]);
 
   // 🔹 Хендлери для степів
   const handleSelectOrganization = useCallback((org: WizardOrganization) => {
