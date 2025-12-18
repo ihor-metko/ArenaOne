@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import { calculateBookingStatus, toBookingStatus } from "@/utils/bookingStatus";
 import { getIO } from "@/lib/socket-instance";
+import { emitBookingUpdated } from "@/lib/websocket";
 import type { BookingEventPayload } from "@/lib/websocket";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode } from "@/services/mockDb";
@@ -387,7 +388,6 @@ export async function PATCH(
         };
         
         // Use helper function for consistent event emission
-        const { emitBookingUpdated } = await import("@/lib/websocket");
         emitBookingUpdated(io, updatedBooking.clubId, eventPayload);
       }
 
@@ -487,7 +487,6 @@ export async function PATCH(
     };
     
     // Use helper function for consistent event emission
-    const { emitBookingUpdated } = await import("@/lib/websocket");
     emitBookingUpdated(io, updatedBooking.court.club.id, eventPayload);
 
     const response: AdminBookingDetailResponse = {

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import { isSupportedSport } from "@/constants/sports";
 import { getIO } from "@/lib/socket-instance";
+import { emitCourtAvailabilityChanged } from "@/lib/websocket";
 import type { CourtAvailabilityEventPayload } from "@/lib/websocket";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode } from "@/services/mockDb";
@@ -193,7 +194,6 @@ export async function PATCH(
           };
           
           // Use helper function for consistent event emission
-          const { emitCourtAvailabilityChanged } = await import("@/lib/websocket");
           emitCourtAvailabilityChanged(io, court.clubId, eventPayload);
         }
         
@@ -356,7 +356,6 @@ export async function PATCH(
       };
       
       // Use helper function for consistent event emission
-      const { emitCourtAvailabilityChanged } = await import("@/lib/websocket");
       emitCourtAvailabilityChanged(io, updatedCourt.club.id, eventPayload);
     }
 
@@ -412,7 +411,6 @@ export async function DELETE(
         };
         
         // Use helper function for consistent event emission
-        const { emitCourtAvailabilityChanged } = await import("@/lib/websocket");
         emitCourtAvailabilityChanged(io, court.clubId, eventPayload);
         
         return new NextResponse(null, { status: 204 });
@@ -470,7 +468,6 @@ export async function DELETE(
     };
     
     // Use helper function for consistent event emission
-    const { emitCourtAvailabilityChanged } = await import("@/lib/websocket");
     emitCourtAvailabilityChanged(io, existingCourt.club.id, eventPayload);
 
     return new NextResponse(null, { status: 204 });

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import { getIO } from "@/lib/socket-instance";
+import { emitBookingCreated } from "@/lib/websocket";
 import type { BookingEventPayload } from "@/lib/websocket";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode, findCourtById, findClubById, findUserById, getMockBookings } from "@/services/mockDb";
@@ -147,7 +148,6 @@ export async function POST(request: Request) {
       };
       
       // Use helper function for consistent event emission
-      const { emitBookingCreated } = await import("@/lib/websocket");
       emitBookingCreated(io, club.id, eventPayload);
 
       return NextResponse.json(
@@ -352,7 +352,6 @@ export async function POST(request: Request) {
     };
     
     // Use helper function for consistent event emission
-    const { emitBookingCreated } = await import("@/lib/websocket");
     emitBookingCreated(io, booking.court.club.id, eventPayload);
 
     return NextResponse.json(

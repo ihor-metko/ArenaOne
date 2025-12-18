@@ -111,8 +111,6 @@ export function initSocketServer(httpServer: HTTPServer): SocketIOServer {
   return io;
 }
 
-
-
 /**
  * Emit booking created event to club room
  */
