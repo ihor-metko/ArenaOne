@@ -463,14 +463,21 @@ export function AdminQuickBookingWizard({
 
   const handleDateTimeChange = useCallback(
     (data: Partial<typeof state.stepDateTime>) => {
-      setState((prev) => ({
-        ...prev,
-        stepDateTime: { ...prev.stepDateTime, ...data },
-        stepCourt: { selectedCourtId: null, selectedCourt: null },
-        availableCourts: [],
-      }));
+      setState((prev) => {
+        // If court is predefined, keep it; otherwise, clear it
+        const shouldKeepCourt = predefinedData?.courtId && prev.stepCourt.selectedCourtId === predefinedData.courtId;
+        
+        return {
+          ...prev,
+          stepDateTime: { ...prev.stepDateTime, ...data },
+          stepCourt: shouldKeepCourt 
+            ? prev.stepCourt 
+            : { selectedCourtId: null, selectedCourt: null },
+          availableCourts: shouldKeepCourt ? prev.availableCourts : [],
+        };
+      });
     },
-    []
+    [predefinedData?.courtId]
   );
 
   const handleSelectCourt = useCallback((court: WizardCourt) => {
