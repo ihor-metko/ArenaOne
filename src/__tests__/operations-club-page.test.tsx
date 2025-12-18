@@ -124,10 +124,21 @@ jest.mock("@/components/club-operations", () => ({
   DayCalendar: () => <div data-testid="day-calendar">Calendar</div>,
   TodayBookingsList: () => <div data-testid="today-bookings">Today&apos;s Bookings</div>,
   BookingDetailModal: () => null,
+  ConnectionStatusIndicator: () => <div data-testid="connection-status">Connected</div>,
 }));
 
 jest.mock("@/components/AdminQuickBookingWizard", () => ({
   AdminQuickBookingWizard: () => null,
+}));
+
+// Mock WebSocket hook
+jest.mock("@/hooks/useOperationsWebSocket", () => ({
+  useOperationsWebSocket: () => ({
+    isConnected: true,
+    isConnecting: false,
+    error: null,
+    subscribedClubId: "club-1",
+  }),
 }));
 
 import ClubOperationsPage from "@/app/(pages)/admin/operations/[clubId]/page";
@@ -254,7 +265,7 @@ describe("ClubOperationsPage", () => {
       });
     });
 
-    it("should start polling for bookings", async () => {
+    it("should NOT start polling when using WebSocket", async () => {
       mockUserStore.isLoggedIn = true;
       mockUserStore.isLoading = false;
       mockUserStore.adminStatus = {
@@ -279,9 +290,13 @@ describe("ClubOperationsPage", () => {
 
       render(<ClubOperationsPage />);
 
+      // With WebSocket enabled, polling should NOT be started
       await waitFor(() => {
-        expect(mockBookingStore.startPolling).toHaveBeenCalled();
+        expect(mockBookingStore.fetchBookingsForDay).toHaveBeenCalled();
       });
+      
+      // Verify polling was NOT started (WebSocket replaces polling)
+      expect(mockBookingStore.startPolling).not.toHaveBeenCalled();
     });
   });
 

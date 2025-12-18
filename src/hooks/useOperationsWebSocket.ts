@@ -131,43 +131,86 @@ export function useOperationsWebSocket(
    * Handle booking created event
    */
   const handleBookingCreated = useCallback((data: BookingEventPayload) => {
+    // Validate payload - check presence and type
+    if (!data || typeof data.id !== 'string' || !data.id || typeof data.clubId !== 'string' || !data.clubId) {
+      console.warn("[Operations WebSocket] Invalid booking created payload:", data);
+      return;
+    }
+    
+    // Filter by active club - ignore events from other clubs
+    if (clubId && data.clubId !== clubId) {
+      console.log("[Operations WebSocket] Ignoring booking created event from different club:", data.clubId);
+      return;
+    }
+    
     console.log("[Operations WebSocket] Booking created:", data.id);
     
     // Convert to OperationsBooking and add to store
     const booking = convertToOperationsBooking(data);
     addBookingFromEvent(booking);
-  }, [addBookingFromEvent]);
+  }, [addBookingFromEvent, clubId]);
 
   /**
    * Handle booking updated event
    */
   const handleBookingUpdated = useCallback((data: BookingEventPayload) => {
+    // Validate payload - check presence and type
+    if (!data || typeof data.id !== 'string' || !data.id || typeof data.clubId !== 'string' || !data.clubId) {
+      console.warn("[Operations WebSocket] Invalid booking updated payload:", data);
+      return;
+    }
+    
+    // Filter by active club - ignore events from other clubs
+    if (clubId && data.clubId !== clubId) {
+      console.log("[Operations WebSocket] Ignoring booking updated event from different club:", data.clubId);
+      return;
+    }
+    
     console.log("[Operations WebSocket] Booking updated:", data.id);
     
     // Convert to OperationsBooking and update in store
     const booking = convertToOperationsBooking(data);
     updateBookingFromEvent(booking);
-  }, [updateBookingFromEvent]);
+  }, [updateBookingFromEvent, clubId]);
 
   /**
    * Handle booking deleted event
    */
   const handleBookingDeleted = useCallback((data: { id: string; clubId: string }) => {
+    // Validate payload - check presence and type
+    if (!data || typeof data.id !== 'string' || !data.id || typeof data.clubId !== 'string' || !data.clubId) {
+      console.warn("[Operations WebSocket] Invalid booking deleted payload:", data);
+      return;
+    }
+    
+    // Filter by active club - ignore events from other clubs
+    if (clubId && data.clubId !== clubId) {
+      console.log("[Operations WebSocket] Ignoring booking deleted event from different club:", data.clubId);
+      return;
+    }
+    
     console.log("[Operations WebSocket] Booking deleted:", data.id);
     
-    // Use store's remove method if available, otherwise update the bookings array
-    if (removeBookingFromEvent) {
-      removeBookingFromEvent(data.id);
-    } else {
-      // Fallback: trigger a refetch
-      useBookingStore.getState().invalidateBookings();
-    }
-  }, [removeBookingFromEvent]);
+    // Use store's remove method
+    removeBookingFromEvent(data.id);
+  }, [removeBookingFromEvent, clubId]);
 
   /**
    * Handle court availability event
    */
   const handleCourtAvailability = useCallback((data: CourtAvailabilityEventPayload) => {
+    // Validate payload - check presence and type
+    if (!data || typeof data.clubId !== 'string' || !data.clubId || typeof data.courtId !== 'string' || !data.courtId) {
+      console.warn("[Operations WebSocket] Invalid court availability payload:", data);
+      return;
+    }
+    
+    // Filter by active club - ignore events from other clubs
+    if (clubId && data.clubId !== clubId) {
+      console.log("[Operations WebSocket] Ignoring court availability event from different club:", data.clubId);
+      return;
+    }
+    
     console.log("[Operations WebSocket] Court availability changed:", data.courtId);
     
     // Invalidate court cache to trigger refetch
@@ -176,7 +219,7 @@ export function useOperationsWebSocket(
     
     // Also invalidate bookings to refresh the calendar
     useBookingStore.getState().invalidateBookings();
-  }, [invalidateCourts]);
+  }, [invalidateCourts, clubId]);
 
   /**
    * WebSocket event handlers
@@ -193,6 +236,9 @@ export function useOperationsWebSocket(
     onDisconnect: () => {
       console.log("[Operations WebSocket] Disconnected");
       onConnectionChange?.(false);
+    },
+    onError: (error: Error) => {
+      console.error("[Operations WebSocket] Error:", error);
     },
   }), [
     handleBookingCreated,

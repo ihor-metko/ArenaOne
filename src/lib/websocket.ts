@@ -41,6 +41,7 @@ export interface BookingEventPayload {
   bookingStatus?: string;
   paymentStatus?: string;
   price: number;
+  coachId?: string | null;
 }
 
 export interface CourtAvailabilityEventPayload {
