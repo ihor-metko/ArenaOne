@@ -341,7 +341,9 @@ export function AdminQuickBookingWizard({
     };
 
     fetchPredefinedCourtPrice();
-  }, [state.stepCourt.selectedCourt, state.stepDateTime, predefinedData?.courtId]);
+    // Only trigger when date or startTime changes, not duration (duration doesn't affect price timeline)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.stepCourt.selectedCourt, state.stepDateTime.date, state.stepDateTime.startTime, predefinedData?.courtId]);
 
   // 🔹 Хендлери для степів
   const handleSelectOrganization = useCallback((org: WizardOrganization) => {
