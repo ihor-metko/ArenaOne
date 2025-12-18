@@ -30,7 +30,7 @@ import { useBookingStore } from "@/stores/useBookingStore";
 import { useCourtStore } from "@/stores/useCourtStore";
 import { useUserStore } from "@/stores/useUserStore";
 import type { BookingEventPayload, CourtAvailabilityEventPayload } from "@/lib/websocket";
-import type { OperationsBooking } from "@/types/booking";
+import type { OperationsBooking, BookingStatus, PaymentStatus } from "@/types/booking";
 
 /**
  * Options for useOperationsWebSocket
@@ -52,9 +52,11 @@ export interface UseOperationsWebSocketReturn {
 }
 
 /**
- * Convert BookingEventPayload to OperationsBooking
+ * Convert BookingEventPayload to partial OperationsBooking for store update
  */
-function convertToOperationsBooking(payload: BookingEventPayload): OperationsBooking {
+function convertToOperationsBooking(
+  payload: BookingEventPayload
+): Partial<OperationsBooking> & { id: string } {
   return {
     id: payload.id,
     userId: payload.userId,
@@ -63,14 +65,11 @@ function convertToOperationsBooking(payload: BookingEventPayload): OperationsBoo
     end: payload.end,
     price: payload.price,
     // Use bookingStatus if available, otherwise fall back to status
-    bookingStatus: payload.bookingStatus || payload.status || "Active",
-    paymentStatus: payload.paymentStatus || "Unpaid",
-    // Optional fields
+    bookingStatus: (payload.bookingStatus || payload.status || "Active") as BookingStatus,
+    paymentStatus: (payload.paymentStatus || "Unpaid") as PaymentStatus,
+    // Optional fields - these will be merged with existing data in the store
     coachId: null,
-    sportType: "Tennis" as const, // Default, will be overridden by actual data
-    paymentId: null,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   };
 }
 
