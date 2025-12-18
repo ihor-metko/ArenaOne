@@ -56,7 +56,7 @@ const ITEMS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
 const MAX_SKELETON_COUNT = 10; // Maximum number of skeletons to show during loading
 
 // Define filters interface for list controller
-interface OrganizationFilters {
+interface OrganizationFilters extends Record<string, unknown> {
   searchQuery: string;
   sportTypeFilter: string;
   statusFilter: string;

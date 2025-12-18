@@ -28,7 +28,7 @@ import type { PredefinedData } from "@/components/AdminQuickBookingWizard/types"
 import "./AdminBookings.css";
 
 // Define filters interface
-interface BookingFilters {
+interface BookingFilters extends Record<string, unknown> {
   searchQuery: string;
   organizationFilter: string;
   clubFilter: string;

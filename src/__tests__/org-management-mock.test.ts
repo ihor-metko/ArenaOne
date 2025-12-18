@@ -16,7 +16,6 @@ import {
   restoreMockOrganization,
   deleteMockOrganization,
   createMockMembership,
-  updateMockMembership,
   findMembershipByUserAndOrg,
   getMockUsers,
 } from "@/services/mockDb";
@@ -493,7 +492,7 @@ describe("Organization Management Mock Handlers", () => {
       const newOwner = users[1];
 
       // Set up initial state
-      const oldMembership = createMockMembership({
+      createMockMembership({
         userId: oldOwner.id,
         organizationId: org!.id,
         role: "ORGANIZATION_ADMIN",

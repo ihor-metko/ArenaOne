@@ -11,7 +11,6 @@ import crypto from "crypto";
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
 const SALT_LENGTH = 64;
-const TAG_LENGTH = 16;
 const KEY_LENGTH = 32;
 const ITERATIONS = 100000;
 
@@ -82,7 +81,7 @@ export function encrypt(plaintext: string): string {
       authTag.toString("base64"),
       ciphertext,
     ].join(":");
-  } catch (error) {
+  } catch {
     // Log generic message to avoid exposing sensitive information
     console.error("Encryption failed");
     throw new Error("Failed to encrypt data");
@@ -128,7 +127,7 @@ export function decrypt(encryptedData: string): string {
     plaintext += decipher.final("utf8");
     
     return plaintext;
-  } catch (error) {
+  } catch {
     // Log generic message to avoid exposing sensitive information
     console.error("Decryption failed");
     throw new Error("Failed to decrypt data - data may be corrupted or tampered");

@@ -150,7 +150,7 @@ describe("ConfirmationModal", () => {
   });
 
   it("should render with danger variant by default", () => {
-    const { container } = render(
+    render(
       <ConfirmationModal
         isOpen={true}
         onClose={mockOnClose}
@@ -164,7 +164,7 @@ describe("ConfirmationModal", () => {
   });
 
   it("should render with primary variant when specified", () => {
-    const { container } = render(
+    render(
       <ConfirmationModal
         isOpen={true}
         onClose={mockOnClose}

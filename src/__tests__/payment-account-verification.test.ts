@@ -165,16 +165,6 @@ describe("Payment Account Verification", () => {
 
   describe("Payment resolution with status", () => {
     it("should not resolve PENDING payment accounts", async () => {
-      const mockPendingAccount = {
-        id: mockAccountId,
-        provider: PaymentProvider.WAYFORPAY,
-        scope: PaymentAccountScope.CLUB,
-        clubId: mockClubId,
-        organizationId: null,
-        status: PaymentAccountStatus.PENDING,
-        isActive: true,
-      };
-
       // No active account found (PENDING is filtered out)
       (prisma.paymentAccount.findFirst as jest.Mock).mockResolvedValueOnce(null);
       (prisma.club.findUnique as jest.Mock).mockResolvedValueOnce({

@@ -28,7 +28,8 @@ export class LiqPayVerifier implements PaymentProviderVerifier {
   async verify(
     merchantId: string,
     secretKey: string,
-    providerConfig?: Record<string, unknown> | null
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _providerConfig?: Record<string, unknown> | null
   ): Promise<ProviderVerificationResult> {
     const timestamp = new Date();
     

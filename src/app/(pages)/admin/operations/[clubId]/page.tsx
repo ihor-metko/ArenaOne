@@ -178,11 +178,7 @@ export default function ClubOperationsPage() {
     const date = startTime.toISOString().split('T')[0];
     const timeStr = `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`;
     
-    // Get organization ID from club
-    const organizationId = club?.organizationId;
-    
     setWizardPredefinedData({
-      organizationId,
       clubId,
       courtId,
       date,
@@ -223,13 +219,9 @@ export default function ClubOperationsPage() {
     router.push("/admin/operations");
   };
 
-  // Open booking wizard without pre-filled data (except club and org)
+  // Open booking wizard without pre-filled data (except club)
   const handleCreateBooking = () => {
-    // Get organization ID from club
-    const organizationId = club?.organizationId;
-    
     setWizardPredefinedData({
-      organizationId,
       clubId,
       // Don't prefill court, date, or time - let user select
     });

@@ -8,7 +8,6 @@ import {
   getSportConfig,
   PADEL_CONFIG,
   TENNIS_CONFIG,
-  SQUASH_CONFIG,
 } from "@/constants/sports";
 
 describe("Sport-Specific Availability", () => {

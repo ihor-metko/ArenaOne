@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireClubAdmin } from "@/lib/requireRole";
+import { Prisma } from "@prisma/client";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode } from "@/services/mockDb";
 import { mockGetCourts, mockCreateCourtForClub } from "@/services/mockApiHandlers";
@@ -64,7 +65,7 @@ export async function GET(
     }
 
     // Build where clause - filter by this specific club
-    const whereClause: any = {
+    const whereClause: Prisma.CourtWhereInput = {
       clubId,
     };
 
@@ -85,7 +86,7 @@ export async function GET(
     // "all" status shows both active and inactive
 
     // Build orderBy clause
-    let orderBy: any = { createdAt: "desc" };
+    let orderBy: Prisma.CourtOrderByWithRelationInput = { createdAt: "desc" };
     
     if (sortBy === "name") {
       orderBy = { name: sortOrder as "asc" | "desc" };

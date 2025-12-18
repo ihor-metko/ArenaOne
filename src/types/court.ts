@@ -8,7 +8,7 @@ export interface Court {
   type?: string | null;
   surface?: string | null;
   indoor: boolean;
-  sportType?: SportType;
+  sportType?: SportType | null;
   defaultPriceCents: number;
   imageUrl?: string | null;
   createdAt?: string;
@@ -21,7 +21,7 @@ export interface Court {
 export interface CourtWithClubInfo extends Court {
   clubId: string;
   isActive?: boolean;
-  sportType?: SportType;
+  sportType?: SportType | null;
   club: {
     id: string;
     name: string;

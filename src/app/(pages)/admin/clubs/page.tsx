@@ -22,7 +22,7 @@ import { SPORT_TYPE_OPTIONS } from "@/constants/sports";
 import "@/components/admin/AdminClubCard.css";
 
 // Define filters interface
-interface ClubFilters {
+interface ClubFilters extends Record<string, unknown> {
   searchQuery: string;
   organizationFilter: string;
   selectedCity: string;

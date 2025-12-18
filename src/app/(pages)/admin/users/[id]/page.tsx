@@ -148,7 +148,6 @@ export default function UserDetailPage() {
   const blockUserFromStore = useAdminUsersStore((state) => state.blockUser);
   const unblockUserFromStore = useAdminUsersStore((state) => state.unblockUser);
   const loading = useAdminUsersStore((state) => state.loadingDetail);
-  const storeError = useAdminUsersStore((state) => state.detailError);
   
   const [user, setUser] = useState<AdminUserDetail | null>(null);
   const [error, setError] = useState("");

@@ -257,7 +257,7 @@ export default function OrganizationDetailPage() {
             userEmail: b.userEmail,
             start: b.start,
             end: b.end,
-            status: b.status,
+            status: b.bookingStatus,
             sportType: b.sportType,
           })),
           summary: {

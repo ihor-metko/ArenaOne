@@ -9,7 +9,6 @@ interface BookingBlockProps {
   onClick: (booking: OperationsBooking) => void;
   startHour: number;
   endHour: number;
-  slotMinutes: number;
 }
 
 /**
@@ -29,7 +28,6 @@ export function BookingBlock({
   onClick,
   startHour,
   endHour,
-  slotMinutes,
 }: BookingBlockProps) {
   const startTime = new Date(booking.start);
   const endTime = new Date(booking.end);

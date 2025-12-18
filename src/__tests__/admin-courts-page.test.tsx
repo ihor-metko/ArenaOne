@@ -4,7 +4,6 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, waitFor } from "@testing-library/react";
 import { useListController } from "@/hooks/useListController";
 
 // Mock hooks
@@ -132,7 +131,7 @@ describe("Admin Courts Page - List Controls Integration", () => {
 
   it("should initialize list controller with correct entity key and filters", () => {
     // Call useListController as it would be called in the courts page
-    const controller = useListController({
+    useListController({
       entityKey: "courts",
       defaultFilters: {
         searchQuery: "",
