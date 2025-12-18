@@ -8,7 +8,7 @@ import { Button, Input, Modal, EntityBanner, MetricCardSkeleton, OrgInfoCardSkel
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import OrganizationAdminsTable from "@/components/admin/OrganizationAdminsTable";
-import { BasicInfoStep, AddressStep, ContactsStep } from "@/components/admin/OrganizationSteps";
+import { EntityEditStepper } from "@/components/admin/EntityEditStepper.client";
 import type { AdminBookingResponse } from "@/app/api/admin/bookings/route";
 
 import "./page.css";
@@ -137,36 +137,8 @@ export default function OrganizationDetailPage() {
     setTimeout(() => setToast(null), 5000);
   };
 
-  // Unified edit modal state
+  // Edit modal state
   const [isEditingDetails, setIsEditingDetails] = useState(false);
-  const [editError, setEditError] = useState("");
-  const [editing, setEditing] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-  // Form data for each section
-  const [basicInfoData, setBasicInfoData] = useState({
-    name: "",
-    slug: "",
-    description: "",
-  });
-
-  const [addressData, setAddressData] = useState({
-    country: "",
-    city: "",
-    postalCode: "",
-    street: "",
-    latitude: "",
-    longitude: "",
-  });
-
-  const [contactsData, setContactsData] = useState({
-    contactEmail: "",
-    contactPhone: "",
-    website: "",
-    facebook: "",
-    instagram: "",
-    linkedin: "",
-  });
 
   // Change owner modal
   const [isChangeOwnerModalOpen, setIsChangeOwnerModalOpen] = useState(false);
@@ -330,145 +302,73 @@ export default function OrganizationDetailPage() {
   //   return () => clearTimeout(timer);
   // }, [userSearch, isReassignModalOpen, reassignMode, fetchUsers]);
 
-  // Handler for opening unified edit modal
+  // Handler for opening edit modal
   const handleOpenDetailsEdit = () => {
-    if (!org) return;
-    const metadata = org.metadata as { 
-      country?: string; 
-      street?: string; 
-      latitude?: number; 
-      longitude?: number;
-      socialLinks?: { facebook?: string; instagram?: string; linkedin?: string };
-    } | null;
-
-    // Parse address to extract components
-    const addressParts = org.address?.split(", ") || [];
-    const street = metadata?.street || addressParts[0] || "";
-    const city = addressParts.length > 1 ? addressParts[1] : "";
-    const postalCode = addressParts.length > 2 ? addressParts[2] : "";
-    const country = metadata?.country || (addressParts.length > 3 ? addressParts[3] : "");
-    const socialLinks = metadata?.socialLinks || {};
-
-    setBasicInfoData({
-      name: org.name,
-      slug: org.slug,
-      description: org.description || "",
-    });
-
-    setAddressData({
-      country,
-      city,
-      postalCode,
-      street,
-      latitude: metadata?.latitude?.toString() || "",
-      longitude: metadata?.longitude?.toString() || "",
-    });
-
-    setContactsData({
-      contactEmail: org.contactEmail || "",
-      contactPhone: org.contactPhone || "",
-      website: org.website || "",
-      facebook: socialLinks.facebook || "",
-      instagram: socialLinks.instagram || "",
-      linkedin: socialLinks.linkedin || "",
-    });
-
-    setFieldErrors({});
-    setEditError("");
     setIsEditingDetails(true);
   };
 
-  // Handle form field changes
-  const handleBasicInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setBasicInfoData((prev) => ({ ...prev, [name]: value }));
-    if (fieldErrors[name]) {
-      setFieldErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setAddressData((prev) => ({ ...prev, [name]: value }));
-    if (fieldErrors[name]) {
-      setFieldErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleContactsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setContactsData((prev) => ({ ...prev, [name]: value }));
-    if (fieldErrors[name]) {
-      setFieldErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  // Helper to safely parse coordinate values
-  const parseCoordinate = (value: string): number | undefined => {
-    if (!value || !value.trim()) return undefined;
-    const parsed = parseFloat(value);
-    return !isNaN(parsed) ? parsed : undefined;
-  };
-
-  // Unified save handler for all details
-  const handleSaveDetails = async () => {
-    setEditError("");
-    setEditing(true);
-
+  // Stepper save handler for editing entity details with images
+  const handleStepperSave = async (data: {
+    name: string;
+    slug: string;
+    description: string | null;
+    address: string;
+    metadata: Record<string, unknown>;
+    logo?: File | null;
+    heroImage?: File | null;
+  }) => {
     try {
-      // Build full address from components
-      const addressParts = [
-        addressData.street.trim(),
-        addressData.city.trim(),
-        addressData.postalCode.trim(),
-        addressData.country.trim()
-      ].filter(Boolean);
-      const fullAddress = addressParts.join(", ");
-
-      // Build social links
-      const socialLinks: Record<string, string> = {};
-      if (contactsData.facebook.trim()) socialLinks.facebook = contactsData.facebook.trim();
-      if (contactsData.instagram.trim()) socialLinks.instagram = contactsData.instagram.trim();
-      if (contactsData.linkedin.trim()) socialLinks.linkedin = contactsData.linkedin.trim();
-
-      // Combine all updates into one payload
+      // Update organization details first
       await updateOrganization(orgId, {
-        name: basicInfoData.name,
-        slug: basicInfoData.slug,
-        description: basicInfoData.description || null,
-        address: fullAddress,
-        contactEmail: contactsData.contactEmail.trim() || null,
-        contactPhone: contactsData.contactPhone.trim() || null,
-        website: contactsData.website.trim() || null,
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
+        address: data.address,
         metadata: {
           ...(org?.metadata as object || {}),
-          country: addressData.country.trim(),
-          street: addressData.street.trim(),
-          latitude: parseCoordinate(addressData.latitude),
-          longitude: parseCoordinate(addressData.longitude),
-          socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
+          ...data.metadata,
         },
       });
 
+      // Upload images if new files were provided
+      if (data.logo) {
+        const logoFormData = new FormData();
+        logoFormData.append("file", data.logo);
+        logoFormData.append("type", "logo");
+
+        const logoResponse = await fetch(`/api/admin/organizations/${orgId}/images`, {
+          method: "POST",
+          body: logoFormData,
+        });
+
+        if (!logoResponse.ok) {
+          const errorData = await logoResponse.json();
+          throw new Error(errorData.error || t("organizations.errors.imageUploadFailed"));
+        }
+      }
+
+      if (data.heroImage) {
+        const heroFormData = new FormData();
+        heroFormData.append("file", data.heroImage);
+        heroFormData.append("type", "heroImage");
+
+        const heroResponse = await fetch(`/api/admin/organizations/${orgId}/images`, {
+          method: "POST",
+          body: heroFormData,
+        });
+
+        if (!heroResponse.ok) {
+          const errorData = await heroResponse.json();
+          throw new Error(errorData.error || t("organizations.errors.imageUploadFailed"));
+        }
+      }
+
       showToast(t("orgDetail.updateSuccess"), "success");
-      setIsEditingDetails(false);
       fetchOrgDetail();
     } catch (err) {
-      setEditError(err instanceof Error ? err.message : t("organizations.errors.updateFailed"));
-    } finally {
-      setEditing(false);
+      const message = err instanceof Error ? err.message : t("organizations.errors.updateFailed");
+      showToast(message, "error");
+      throw err; // Re-throw to let the stepper handle the error
     }
   };
 
@@ -1002,55 +902,15 @@ export default function OrganizationDetailPage() {
 
         </section>
 
-        {/* Unified Edit Details Modal */}
-        <Modal
-          isOpen={isEditingDetails}
-          onClose={() => setIsEditingDetails(false)}
-          title={t("common.edit")}
-        >
-          {editError && (
-            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm mb-4">
-              {editError}
-            </div>
-          )}
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-md font-semibold mb-3">{t("orgDetail.basicInformation")}</h3>
-              <BasicInfoStep
-                formData={basicInfoData}
-                fieldErrors={fieldErrors}
-                isSubmitting={editing}
-                onChange={handleBasicInfoChange}
-              />
-            </div>
-            <div>
-              <h3 className="text-md font-semibold mb-3">{t("orgDetail.address")}</h3>
-              <AddressStep
-                formData={addressData}
-                fieldErrors={fieldErrors}
-                isSubmitting={editing}
-                onChange={handleAddressChange}
-              />
-            </div>
-            <div>
-              <h3 className="text-md font-semibold mb-3">{t("orgDetail.contactsAndSocial")}</h3>
-              <ContactsStep
-                formData={contactsData}
-                fieldErrors={fieldErrors}
-                isSubmitting={editing}
-                onChange={handleContactsChange}
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button type="button" variant="outline" onClick={() => setIsEditingDetails(false)} disabled={editing}>
-              {t("common.cancel")}
-            </Button>
-            <Button onClick={handleSaveDetails} disabled={editing}>
-              {editing ? t("common.processing") : t("common.save")}
-            </Button>
-          </div>
-        </Modal>
+        {/* Entity Edit Stepper Modal */}
+        {org && (
+          <EntityEditStepper
+            isOpen={isEditingDetails}
+            onClose={() => setIsEditingDetails(false)}
+            entityData={org}
+            onSave={handleStepperSave}
+          />
+        )}
 
         {/* Change Owner Modal */}
         <Modal
