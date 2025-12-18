@@ -68,6 +68,11 @@ interface BookingState {
   startPolling: (clubId: string, date: string, intervalMs?: number) => void;
   stopPolling: () => void;
 
+  // WebSocket event handlers
+  addBookingFromEvent: (booking: Partial<OperationsBooking> & { id: string }) => void;
+  updateBookingFromEvent: (booking: Partial<OperationsBooking> & { id: string }) => void;
+  removeBookingFromEvent: (bookingId: string) => void;
+
   // Selectors
   getBookingById: (id: string) => OperationsBooking | undefined;
   getBookingsByCourtId: (courtId: string) => OperationsBooking[];
@@ -258,6 +263,53 @@ export const useBookingStore = create<BookingState>((set, get) => ({
       clearInterval(state.pollingTimeoutId);
       set({ pollingInterval: null, pollingTimeoutId: null });
     }
+  },
+
+  // WebSocket event handlers
+  addBookingFromEvent: (booking: Partial<OperationsBooking> & { id: string }) => {
+    set((state) => {
+      // Check if booking already exists
+      const existingIndex = state.bookings.findIndex((b) => b.id === booking.id);
+      
+      if (existingIndex >= 0) {
+        // Update existing booking by merging
+        const newBookings = [...state.bookings];
+        newBookings[existingIndex] = { ...newBookings[existingIndex], ...booking };
+        return { bookings: newBookings };
+      } else {
+        // For new bookings from WebSocket, we might not have all required fields
+        // Trigger a refetch to get complete booking data
+        console.warn("[Booking Store] New booking detected, triggering refetch to get complete data");
+        get().invalidateBookings();
+        // Return current state - the refetch will update it
+        return state;
+      }
+    });
+  },
+
+  updateBookingFromEvent: (booking: Partial<OperationsBooking> & { id: string }) => {
+    set((state) => {
+      const existingIndex = state.bookings.findIndex((b) => b.id === booking.id);
+      
+      if (existingIndex >= 0) {
+        // Update existing booking by merging new data with existing
+        const newBookings = [...state.bookings];
+        newBookings[existingIndex] = { ...newBookings[existingIndex], ...booking };
+        return { bookings: newBookings };
+      } else {
+        // Booking not found in current view, trigger refetch
+        console.warn("[Booking Store] Booking not found for update, triggering refetch");
+        get().invalidateBookings();
+        // Return current state - the refetch will update it
+        return state;
+      }
+    });
+  },
+
+  removeBookingFromEvent: (bookingId: string) => {
+    set((state) => ({
+      bookings: state.bookings.filter((b) => b.id !== bookingId),
+    }));
   },
 
   // Selectors

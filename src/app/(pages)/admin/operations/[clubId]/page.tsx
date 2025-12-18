@@ -8,10 +8,12 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useClubStore } from "@/stores/useClubStore";
 import { useCourtStore } from "@/stores/useCourtStore";
 import { useBookingStore } from "@/stores/useBookingStore";
+import { useOperationsWebSocket } from "@/hooks/useOperationsWebSocket";
 import {
   DayCalendar,
   TodayBookingsList,
   BookingDetailModal,
+  ConnectionStatusIndicator,
 } from "@/components/club-operations";
 import { AdminQuickBookingWizard } from "@/components/AdminQuickBookingWizard";
 import type { OperationsBooking } from "@/types/booking";
@@ -32,9 +34,10 @@ const DEFAULT_BOOKING_DURATION = 60;
  * - Click empty slots to create bookings
  * - Click bookings to view details and cancel
  * - Side panel with today's bookings list
- * - Auto-refresh via short-polling (15-30s)
+ * - Real-time updates via WebSocket (no polling)
  * - Date picker to view different days
  * - Access control based on user's admin role and permissions
+ * - Connection status indicator
  */
 export default function ClubOperationsPage() {
   const t = useTranslations();
@@ -56,8 +59,6 @@ export default function ClubOperationsPage() {
   const {
     bookings,
     fetchBookingsForDay,
-    startPolling,
-    stopPolling,
     loading: loadingBookings,
     error: bookingsError,
   } = useBookingStore();
@@ -153,24 +154,25 @@ export default function ClubOperationsPage() {
     }
   }, [clubId, ensureClubById, fetchCourtsIfNeeded]);
 
-  // Load bookings for selected date
+  // WebSocket connection for real-time updates
+  const {
+    isConnected: wsConnected,
+    isConnecting: wsConnecting,
+    error: wsError,
+  } = useOperationsWebSocket({
+    clubId,
+    enabled: true,
+  });
+
+  // Load bookings for selected date (initial fetch)
   useEffect(() => {
     if (clubId && selectedDate) {
       fetchBookingsForDay(clubId, selectedDate).catch(console.error);
     }
   }, [clubId, selectedDate, fetchBookingsForDay]);
 
-  // Start polling when page is active
-  useEffect(() => {
-    if (!clubId || !selectedDate) return;
-
-    // Start polling every 15 seconds
-    startPolling(clubId, selectedDate, 15000);
-
-    return () => {
-      stopPolling();
-    };
-  }, [clubId, selectedDate, startPolling, stopPolling]);
+  // Note: Polling is disabled when WebSocket is used
+  // WebSocket will handle real-time updates automatically via useOperationsWebSocket hook
 
   // Handle slot click (create new booking)
   const handleSlotClick = useCallback((courtId: string, startTime: Date) => {
@@ -329,6 +331,13 @@ export default function ClubOperationsPage() {
           </div>
         </div>
       </Card>
+
+      {/* WebSocket Connection Status */}
+      <ConnectionStatusIndicator
+        isConnected={wsConnected}
+        isConnecting={wsConnecting}
+        error={wsError}
+      />
 
       {/* Controls - Date picker */}
       <div className="im-club-operations-controls">
