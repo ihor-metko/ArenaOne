@@ -68,6 +68,11 @@ interface BookingState {
   startPolling: (clubId: string, date: string, intervalMs?: number) => void;
   stopPolling: () => void;
 
+  // WebSocket event handlers
+  addBookingFromEvent: (booking: OperationsBooking) => void;
+  updateBookingFromEvent: (booking: OperationsBooking) => void;
+  removeBookingFromEvent: (bookingId: string) => void;
+
   // Selectors
   getBookingById: (id: string) => OperationsBooking | undefined;
   getBookingsByCourtId: (courtId: string) => OperationsBooking[];
@@ -258,6 +263,46 @@ export const useBookingStore = create<BookingState>((set, get) => ({
       clearInterval(state.pollingTimeoutId);
       set({ pollingInterval: null, pollingTimeoutId: null });
     }
+  },
+
+  // WebSocket event handlers
+  addBookingFromEvent: (booking: OperationsBooking) => {
+    set((state) => {
+      // Check if booking already exists
+      const existingIndex = state.bookings.findIndex((b) => b.id === booking.id);
+      
+      if (existingIndex >= 0) {
+        // Update existing booking
+        const newBookings = [...state.bookings];
+        newBookings[existingIndex] = booking;
+        return { bookings: newBookings };
+      } else {
+        // Add new booking
+        return { bookings: [...state.bookings, booking] };
+      }
+    });
+  },
+
+  updateBookingFromEvent: (booking: OperationsBooking) => {
+    set((state) => {
+      const existingIndex = state.bookings.findIndex((b) => b.id === booking.id);
+      
+      if (existingIndex >= 0) {
+        // Update existing booking
+        const newBookings = [...state.bookings];
+        newBookings[existingIndex] = { ...newBookings[existingIndex], ...booking };
+        return { bookings: newBookings };
+      } else {
+        // Booking not found, add it
+        return { bookings: [...state.bookings, booking] };
+      }
+    });
+  },
+
+  removeBookingFromEvent: (bookingId: string) => {
+    set((state) => ({
+      bookings: state.bookings.filter((b) => b.id !== bookingId),
+    }));
   },
 
   // Selectors
