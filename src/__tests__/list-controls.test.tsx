@@ -1,12 +1,11 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { act } from "react";
-import { useListController } from "@/hooks/useListController";
 import type { UseListControllerReturn } from "@/hooks/useListController";
 
 // Mock UI components before importing list-controls
 jest.mock("@/components/ui", () => ({
   Card: ({ children, className }: any) => <div className={className}>{children}</div>,
-  Button: ({ children, onClick, disabled, variant, size, className, ...props }: any) => (
+  Button: ({ children, onClick, disabled, className, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} className={className} {...props}>
       {children}
     </button>
@@ -654,9 +653,6 @@ describe("SortSelect", () => {
 
     render(<SortSelect controller={controller} options={options} />);
 
-    // Simulate selecting "name-asc" option
-    const onChange = controller.setSortBy as jest.Mock;
-    
     // This would be triggered by Select component's onChange
     act(() => {
       controller.setSortBy("name");

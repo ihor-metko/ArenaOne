@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import { Prisma } from "@prisma/client";
-import { MembershipRole } from "@/constants/roles";
 
 /**
  * Supported user roles for filtering.
@@ -47,7 +46,7 @@ export async function GET(request: Request) {
     return authResult.response;
   }
 
-  const { userId, isRoot, adminType, managedIds } = authResult;
+  const { isRoot, adminType, managedIds } = authResult;
 
   try {
     const { searchParams } = new URL(request.url);

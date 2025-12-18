@@ -4,7 +4,6 @@
 
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import { act } from "react";
 
 // Mock next/navigation
 const mockPush = jest.fn();
@@ -122,14 +121,13 @@ jest.mock("@/components/ui/skeletons", () => ({
 
 jest.mock("@/components/club-operations", () => ({
   DayCalendar: () => <div data-testid="day-calendar">Calendar</div>,
-  TodayBookingsList: () => <div data-testid="today-bookings">Today's Bookings</div>,
+  TodayBookingsList: () => <div data-testid="today-bookings">Today&apos;s Bookings</div>,
   BookingDetailModal: () => null,
-  OperationsClubSelector: ({ value, onChange, disabled }: { value: string; onChange: (v: string) => void; disabled?: boolean }) => (
+  OperationsClubSelector: ({ value, disabled }: { value: string; onChange: (v: string) => void; disabled?: boolean }) => (
     <div data-testid="club-selector">
       <select
         data-testid="club-select"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
       >
         <option value="">Select a club</option>
@@ -138,7 +136,7 @@ jest.mock("@/components/club-operations", () => ({
       </select>
     </div>
   ),
-  OperationsClubCardSelector: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+  OperationsClubCardSelector: () => (
     <div data-testid="club-selector">
       <div data-testid="club-card-selector">Club Card Selector</div>
     </div>

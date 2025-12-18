@@ -207,7 +207,7 @@ export function OrganizationCreationStepper() {
         setCurrentStep((prev) => prev + 1);
       }
     }
-  }, [currentStep, validateStep]);
+  }, [currentStep, validateStep, STEPS.length]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 1) {

@@ -205,7 +205,7 @@ export default function AdminDashboardPage() {
     );
   }
 
-  if (error) {
+  if (error || !dashboardData) {
     return (
       <main className="im-root-dashboard-page">
         <PageHeader
@@ -214,7 +214,7 @@ export default function AdminDashboardPage() {
         />
         <section className="rsp-content">
           <div className="im-root-dashboard-error">
-            <p>{error}</p>
+            <p>{error || t("common.noData")}</p>
           </div>
         </section>
       </main>

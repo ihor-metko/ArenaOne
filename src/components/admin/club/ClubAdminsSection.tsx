@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button, Modal, Input } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
@@ -66,7 +66,7 @@ export function ClubAdminsSection({
   const canManageClubAdmins = hasAnyRole(["ROOT_ADMIN", "ORGANIZATION_ADMIN"]);
 
   // Fetch club admins
-  const fetchClubAdmins = async () => {
+  const fetchClubAdmins = useCallback(async () => {
     setLoading(true);
     setError("");
     
@@ -88,13 +88,11 @@ export function ClubAdminsSection({
     } finally {
       setLoading(false);
     }
-  };
+  }, [clubId, t]);
 
   useEffect(() => {
     fetchClubAdmins();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    // fetchClubAdmins is defined inline and changes on every render, but we only want to refetch when clubId changes
-  }, [clubId]);
+  }, [fetchClubAdmins]);
 
   // Handle add club admin
   const handleOpenAddModal = async () => {

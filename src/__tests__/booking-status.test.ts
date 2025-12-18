@@ -7,7 +7,6 @@ import {
   isTerminalStatus,
   toBookingStatus,
 } from "@/utils/bookingStatus";
-import type { BookingStatus } from "@/types/booking";
 
 describe("Booking Status Utilities", () => {
   describe("calculateBookingStatus", () => {

@@ -8,10 +8,10 @@ import type { UseListControllerReturn } from "@/hooks/useListController";
  * This allows filter controls, pagination, and sort components to access
  * the same controller without prop drilling.
  */
-export const ListControllerContext = createContext<UseListControllerReturn | null>(null);
+export const ListControllerContext = createContext<UseListControllerReturn<Record<string, unknown>> | null>(null);
 
-interface ListControllerProviderProps {
-  controller: UseListControllerReturn;
+interface ListControllerProviderProps<TFilters extends Record<string, unknown> = Record<string, unknown>> {
+  controller: UseListControllerReturn<TFilters>;
   children: ReactNode;
 }
 
@@ -29,9 +29,12 @@ interface ListControllerProviderProps {
  * </ListControllerProvider>
  * ```
  */
-export function ListControllerProvider({ controller, children }: ListControllerProviderProps) {
+export function ListControllerProvider<TFilters extends Record<string, unknown> = Record<string, unknown>>({ 
+  controller, 
+  children 
+}: ListControllerProviderProps<TFilters>) {
   return (
-    <ListControllerContext.Provider value={controller}>
+    <ListControllerContext.Provider value={controller as UseListControllerReturn<Record<string, unknown>>}>
       {children}
     </ListControllerContext.Provider>
   );

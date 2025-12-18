@@ -148,7 +148,6 @@ export default function UserDetailPage() {
   const blockUserFromStore = useAdminUsersStore((state) => state.blockUser);
   const unblockUserFromStore = useAdminUsersStore((state) => state.unblockUser);
   const loading = useAdminUsersStore((state) => state.loadingDetail);
-  const storeError = useAdminUsersStore((state) => state.detailError);
   
   const [user, setUser] = useState<AdminUserDetail | null>(null);
   const [error, setError] = useState("");
@@ -237,12 +236,12 @@ export default function UserDetailPage() {
     }
   };
 
-  const formatDate = (dateString: string | null | undefined) => {
+  const formatDate = (dateString: string | Date | null | undefined) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString();
   };
 
-  const formatDateTime = (dateString: string | null | undefined) => {
+  const formatDateTime = (dateString: string | Date | null | undefined) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleString();
   };
@@ -362,7 +361,7 @@ export default function UserDetailPage() {
             { label: t("breadcrumbs.home"), href: "/" },
             { label: t("breadcrumbs.admin"), href: "/admin/dashboard" },
             { label: t("users.breadcrumb"), href: "/admin/users" },
-            { label: user.name || user.email },
+            { label: user.name || user.email || t("users.unknownUser") },
           ]}
           className="mb-6"
           ariaLabel={t("breadcrumbs.navigation")}
@@ -406,7 +405,7 @@ export default function UserDetailPage() {
               )}
             </div>
             <div className="im-user-header-actions">
-              {user.allowedActions.canBlock && !isUserBlocked && !user.isRoot && (
+              {user.allowedActions?.canBlock && !isUserBlocked && !user.isRoot && (
                 <Button
                   variant="outline"
                   onClick={() => setBlockModalOpen(true)}
@@ -416,7 +415,7 @@ export default function UserDetailPage() {
                   {t("users.actions.block")}
                 </Button>
               )}
-              {user.allowedActions.canUnblock && isUserBlocked && (
+              {user.allowedActions?.canUnblock && isUserBlocked && (
                 <Button
                   variant="outline"
                   onClick={() => setUnblockModalOpen(true)}
@@ -525,7 +524,7 @@ export default function UserDetailPage() {
                   <div key={booking.id} className="im-booking-item">
                     <div className="im-booking-info">
                       <span className="im-booking-venue">
-                        {booking.court.club.name} - {booking.court.name}
+                        {booking.court.club?.name || t("common.unknown")} - {booking.court.name}
                       </span>
                       <span className="im-booking-date">{formatDateTime(booking.start)}</span>
                     </div>
@@ -644,7 +643,7 @@ export default function UserDetailPage() {
             <LockIcon />
           </div>
           <p className="im-confirm-message">
-            {t("userDetail.blockModal.message", { name: user.name || user.email })}
+            {t("userDetail.blockModal.message", { name: user.name || user.email || t("users.unknownUser") })}
           </p>
           {user.viewScope === "root" && (
             <div className="im-confirm-input">
@@ -693,7 +692,7 @@ export default function UserDetailPage() {
             <UnlockIcon />
           </div>
           <p className="im-confirm-message">
-            {t("userDetail.unblockModal.message", { name: user.name || user.email })}
+            {t("userDetail.unblockModal.message", { name: user.name || user.email || t("users.unknownUser") })}
           </p>
           <div className="im-modal-footer">
             <Button variant="outline" onClick={() => setUnblockModalOpen(false)}>

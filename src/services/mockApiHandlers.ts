@@ -170,8 +170,8 @@ export async function mockGetBookings(params: {
       organizationName: organization?.name || null,
       start: booking.start.toISOString(),
       end: booking.end.toISOString(),
-      bookingStatus: booking.bookingStatus as any,
-      paymentStatus: booking.paymentStatus as any,
+      bookingStatus: booking.bookingStatus,
+      paymentStatus: booking.paymentStatus,
       price: booking.price,
       sportType: booking.sportType || "PADEL",
       coachId: booking.coachId,
@@ -1639,7 +1639,7 @@ export async function mockMarkAllNotificationsAsRead() {
 // ============================================================================
 
 import { simulateLatency, checkErrorSimulation } from "./mockConfig";
-import type { Organization, Membership } from "@prisma/client";
+import type { Organization } from "@prisma/client";
 
 /**
  * Helper to generate slug from name

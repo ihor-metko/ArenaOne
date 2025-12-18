@@ -2,6 +2,9 @@
 // This module provides configuration utilities for mock API error simulation
 // See TODO_MOCK_CLEANUP.md for removal instructions.
 
+import fs from "fs";
+import path from "path";
+
 export type ErrorType =
   | "none"
   | "duplicate_slug"
@@ -65,13 +68,6 @@ export function loadMockConfig(): MockConfig {
   }
 
   try {
-    // Use require for synchronous loading of Node.js modules
-    // This is intentional for server-side only code
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const fs = require("fs");
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const path = require("path");
-
     const configPath = path.join(process.cwd(), "mocks", "config", "org-management-mock.json");
     
     // Check if file exists

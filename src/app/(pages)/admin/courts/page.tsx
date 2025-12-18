@@ -8,7 +8,9 @@ import { CardListSkeleton } from "@/components/ui/skeletons";
 import { CourtCard } from "@/components/courts/CourtCard";
 import type { AdminType } from "@/app/api/me/admin-status/route";
 import { useUserStore } from "@/stores/useUserStore";
-import { SPORT_TYPE_OPTIONS } from "@/constants/sports";
+import { SPORT_TYPE_OPTIONS, type SportType } from "@/constants/sports";
+import type { Club } from "@/types/club";
+import type { Organization } from "@/types/organization";
 import { useListController, useDeferredLoading } from "@/hooks";
 import {
   ListControllerProvider,
@@ -29,7 +31,7 @@ interface Court {
   surface: string | null;
   indoor: boolean;
   /** Sport type (e.g., padel, tennis, squash) - used for filtering courts by sport */
-  sportType: string | null;
+  sportType: SportType | null;
   isActive: boolean;
   defaultPriceCents: number;
   createdAt: string;
@@ -45,16 +47,8 @@ interface Court {
   bookingCount: number;
 }
 
-interface PaginationInfo {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasMore: boolean;
-}
-
 // Define filters interface
-interface CourtFilters {
+interface CourtFilters extends Record<string, unknown> {
   searchQuery: string;
   organizationFilter: string;
   clubFilter: string;
@@ -79,13 +73,6 @@ export default function AdminCourtsPage() {
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   const isLoadingStore = useUserStore((state) => state.isLoading);
   const isHydrated = useUserStore((state) => state.isHydrated);
-  const [pagination, setPagination] = useState<PaginationInfo>({
-    page: 1,
-    limit: 25,
-    total: 0,
-    totalPages: 0,
-    hasMore: false,
-  });
 
   // Use list controller hook for persistent filters
   const controller = useListController<CourtFilters>({
@@ -138,7 +125,6 @@ export default function AdminCourtsPage() {
       const data = await response.json();
 
       setCourts(data.courts);
-      setPagination(data.pagination);
       setError("");
     } catch {
       setError(t("admin.courts.noResults"));
@@ -156,7 +142,7 @@ export default function AdminCourtsPage() {
         controller.setSortOrder("desc");
       }
     }
-  }, [controller.filters.primeTimeFilter, controller.sortBy, controller.sortOrder, controller.setSortBy, controller.setSortOrder]);
+  }, [controller]);
 
   useEffect(() => {
     // Wait for hydration before checking auth
@@ -279,7 +265,6 @@ export default function AdminCourtsPage() {
           {/* List Toolbar with Filters */}
           <ListToolbar
             showReset
-            resetLabel={t("common.clearFilters")}
             actionButton={
               canCreate(adminStatus?.adminType) ? (
                 <IMLink href="/admin/courts/new" asButton variant="primary">
@@ -381,8 +366,8 @@ export default function AdminCourtsPage() {
                 <CourtCard
                   key={court.id}
                   court={court}
-                  club={court.club}
-                  organization={court.organization || undefined}
+                  club={court.club as unknown as Club}
+                  organization={court.organization ? court.organization as unknown as Organization : undefined}
                   isActive={court.isActive}
                   showBookButton={false}
                   showViewSchedule={false}

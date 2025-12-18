@@ -10,7 +10,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
 import type { MaskedPaymentAccount } from "@/types/paymentAccount";
-import { PaymentProvider, PaymentAccountStatus, PaymentAccountVerificationLevel } from "@/types/paymentAccount";
+import { PaymentAccountStatus } from "@/types/paymentAccount";
 import "./page.css";
 
 interface ClubWithAccounts {
@@ -20,7 +20,7 @@ interface ClubWithAccounts {
   isExpanded: boolean;
 }
 
-interface PaymentAccountStatus {
+interface PaymentAccountConfigStatus {
   isConfigured: boolean;
   provider: string | null;
   scope: "ORGANIZATION" | "CLUB" | null;
@@ -43,7 +43,7 @@ export default function UnifiedPaymentAccountsPage() {
 
   const [organizationAccounts, setOrganizationAccounts] = useState<MaskedPaymentAccount[]>([]);
   const [clubAccounts, setClubAccounts] = useState<ClubWithAccounts[]>([]);
-  const [paymentStatus, setPaymentStatus] = useState<PaymentAccountStatus | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentAccountConfigStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

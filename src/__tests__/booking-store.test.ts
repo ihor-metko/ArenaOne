@@ -91,7 +91,7 @@ describe("useBookingStore", () => {
       await act(async () => {
         try {
           await useBookingStore.getState().fetchBookingsForDay("club-1", "2024-01-15");
-        } catch (error) {
+        } catch {
           // Expected error
         }
       });

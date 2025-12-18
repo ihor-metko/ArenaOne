@@ -2,7 +2,7 @@
  * Tests for useAdminUsersStore
  */
 
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import type { AdminUser, AdminUserDetail, AdminUsersListResponse } from "@/types/adminUser";
 
@@ -194,7 +194,7 @@ describe("useAdminUsersStore", () => {
       await act(async () => {
         try {
           await result.current.fetchUsers();
-        } catch (error) {
+        } catch {
           // Expected to throw
         }
       });
@@ -336,7 +336,7 @@ describe("useAdminUsersStore", () => {
       await act(async () => {
         try {
           await result.current.fetchUserById("1");
-        } catch (error) {
+        } catch {
           // Expected to throw
         }
       });

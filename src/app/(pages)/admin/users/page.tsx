@@ -101,7 +101,7 @@ function UserPlusIcon() {
 }
 
 // Define filters interface
-interface UserFilters {
+interface UserFilters extends Record<string, unknown> {
   searchQuery: string;
   roleFilter: string;
   statusFilter: string;
@@ -360,7 +360,6 @@ export default function AdminUsersPage() {
           <ListControllerProvider controller={controller} className="mb-4">
             <ListToolbar 
               showReset 
-              resetLabel={t("users.clearFilters")}
               actionButton={
                 hasAnyRole(["ROOT_ADMIN", "ORGANIZATION_ADMIN"]) && (
                   <Button onClick={handleOpenCreateAdminModal} variant="primary" aria-label={t("users.createUser")} className="im-create-user-btn">
