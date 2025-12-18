@@ -131,8 +131,8 @@ export function useOperationsWebSocket(
    * Handle booking created event
    */
   const handleBookingCreated = useCallback((data: BookingEventPayload) => {
-    // Validate payload
-    if (!data || !data.id || !data.clubId) {
+    // Validate payload - check presence and type
+    if (!data || typeof data.id !== 'string' || !data.id || typeof data.clubId !== 'string' || !data.clubId) {
       console.warn("[Operations WebSocket] Invalid booking created payload:", data);
       return;
     }
@@ -154,8 +154,8 @@ export function useOperationsWebSocket(
    * Handle booking updated event
    */
   const handleBookingUpdated = useCallback((data: BookingEventPayload) => {
-    // Validate payload
-    if (!data || !data.id || !data.clubId) {
+    // Validate payload - check presence and type
+    if (!data || typeof data.id !== 'string' || !data.id || typeof data.clubId !== 'string' || !data.clubId) {
       console.warn("[Operations WebSocket] Invalid booking updated payload:", data);
       return;
     }
@@ -177,8 +177,8 @@ export function useOperationsWebSocket(
    * Handle booking deleted event
    */
   const handleBookingDeleted = useCallback((data: { id: string; clubId: string }) => {
-    // Validate payload
-    if (!data || !data.id || !data.clubId) {
+    // Validate payload - check presence and type
+    if (!data || typeof data.id !== 'string' || !data.id || typeof data.clubId !== 'string' || !data.clubId) {
       console.warn("[Operations WebSocket] Invalid booking deleted payload:", data);
       return;
     }
@@ -199,8 +199,8 @@ export function useOperationsWebSocket(
    * Handle court availability event
    */
   const handleCourtAvailability = useCallback((data: CourtAvailabilityEventPayload) => {
-    // Validate payload
-    if (!data || !data.clubId || !data.courtId) {
+    // Validate payload - check presence and type
+    if (!data || typeof data.clubId !== 'string' || !data.clubId || typeof data.courtId !== 'string' || !data.courtId) {
       console.warn("[Operations WebSocket] Invalid court availability payload:", data);
       return;
     }

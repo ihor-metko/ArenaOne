@@ -274,7 +274,8 @@ export const useBookingStore = create<BookingState>((set, get) => ({
     const now = Date.now();
     
     set((state) => {
-      // Check for stale events - reject events older than 5 seconds from the last known event for this booking
+      // Check for stale events - reject events with timestamps earlier than the last processed event for this booking
+      // This prevents out-of-order event delivery from network delays/race conditions
       const lastTimestamp = state._lastEventTimestamp[booking.id] || 0;
       if (now < lastTimestamp) {
         console.warn("[Booking Store] Ignoring stale booking created event:", booking.id);
@@ -296,6 +297,8 @@ export const useBookingStore = create<BookingState>((set, get) => ({
       } else {
         // New booking - trigger refetch to get complete data with user/court names
         // WebSocket events don't include display fields, so we need a full fetch
+        // Note: This may cause brief additional API calls when bookings are created rapidly,
+        // but ensures the UI has complete data for display (names, images, etc.)
         console.log("[Booking Store] New booking detected, triggering refetch:", booking.id);
         get().invalidateBookings();
         return { 
