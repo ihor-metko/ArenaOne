@@ -156,7 +156,7 @@ export function EntityBanner({
   const effectiveStatus = useMemo(() => {
     if (status) return status;
     if (isArchived) return { label: 'Archived', variant: 'archived' as const };
-    if (isPublished !== undefined && isPublished !== null) {
+    if (isPublished != null) {
       return isPublished 
         ? { label: 'Published', variant: 'published' as const }
         : { label: 'Unpublished', variant: 'draft' as const };
@@ -165,7 +165,7 @@ export function EntityBanner({
   }, [status, isArchived, isPublished]);
   
   // Determine if we should show the publish/unpublish button
-  const showPublishButton = !isArchived && isPublished !== undefined && isPublished !== null && onTogglePublish;
+  const showPublishButton = !isArchived && isPublished != null && onTogglePublish;
 
   return (
     <section className={`rsp-club-hero ${className}`} data-testid="entity-banner">
