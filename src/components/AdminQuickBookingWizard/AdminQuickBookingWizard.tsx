@@ -305,7 +305,8 @@ export function AdminQuickBookingWizard({
       const { date, startTime, duration } = state.stepDateTime;
       
       // Only fetch if we have a court and it's from predefined data (no priceCents yet)
-      if (court && predefinedData?.courtId && court.priceCents === undefined) {
+      // Use != null to check for both null and undefined (allows 0 as a valid price)
+      if (court && predefinedData?.courtId && court.priceCents == null) {
         try {
           const priceResponse = await fetch(
             `/api/courts/${court.id}/price-timeline?date=${date}`

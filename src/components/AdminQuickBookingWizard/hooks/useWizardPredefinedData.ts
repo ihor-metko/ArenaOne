@@ -49,12 +49,15 @@ export function useWizardPredefinedData({
           // Initialize organization if predefined
           predefinedData?.organizationId
             ? (async () => {
+                const organizationId = predefinedData.organizationId;
+                if (!organizationId) return null;
+
                 const orgStore = useOrganizationStore.getState();
                 const getOrganizationById = orgStore.getOrganizationById;
                 const fetchOrganizations = orgStore.fetchOrganizations;
 
                 // First try to get from current store state
-                let org = getOrganizationById(predefinedData.organizationId!);
+                let org = getOrganizationById(organizationId);
 
                 // If not in store, fetch organizations first
                 if (!org) {
@@ -62,7 +65,7 @@ export function useWizardPredefinedData({
                     await fetchOrganizations();
                     org = useOrganizationStore
                       .getState()
-                      .getOrganizationById(predefinedData.organizationId!);
+                      .getOrganizationById(organizationId);
                   } catch {
                     // Handle error silently as the organization might not be accessible
                   }
@@ -75,18 +78,21 @@ export function useWizardPredefinedData({
           // Initialize club if predefined
           predefinedData?.clubId
             ? (async () => {
+                const clubId = predefinedData.clubId;
+                if (!clubId) return null;
+
                 const clubStore = useClubStore.getState();
                 const getClubById = clubStore.getClubById;
                 const fetchClubsIfNeeded = clubStore.fetchClubsIfNeeded;
 
                 try {
                   // Try to get from current store state first
-                  let club = getClubById(predefinedData.clubId!);
+                  let club = getClubById(clubId);
 
                   // If not in store, fetch clubs to populate the store
                   if (!club) {
                     await fetchClubsIfNeeded();
-                    club = useClubStore.getState().getClubById(predefinedData.clubId!);
+                    club = useClubStore.getState().getClubById(clubId);
                   }
 
                   return club || null;
@@ -100,13 +106,16 @@ export function useWizardPredefinedData({
           // Initialize court if predefined
           predefinedData?.courtId
             ? (async () => {
+                const courtId = predefinedData.courtId;
+                if (!courtId) return null;
+
                 const courtStore = useCourtStore.getState();
                 const ensureCourtById = courtStore.ensureCourtById;
 
                 try {
                   // Fetch court details using clubId if available
                   const court = await ensureCourtById(
-                    predefinedData.courtId!,
+                    courtId,
                     { clubId: predefinedData.clubId }
                   );
 
