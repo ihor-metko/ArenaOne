@@ -22,6 +22,10 @@ interface UseWizardPredefinedDataReturn {
 /**
  * Helper to synchronously get predefined data from stores
  * This avoids the async flicker by checking the store immediately
+ * 
+ * Note: This uses Zustand's `getState()` method, which is NOT a React hook.
+ * It's safe to call outside of React components/hooks. It synchronously
+ * accesses the current state without subscribing to changes.
  */
 function getPredefinedDataFromStores(predefinedData?: PredefinedData): {
   organization: WizardOrganization | null;
@@ -33,16 +37,19 @@ function getPredefinedDataFromStores(predefinedData?: PredefinedData): {
   let court: WizardCourt | null = null;
 
   if (predefinedData?.organizationId) {
+    // getState() is a Zustand method, not a React hook
     const orgStore = useOrganizationStore.getState();
     organization = orgStore.getOrganizationById(predefinedData.organizationId) || null;
   }
 
   if (predefinedData?.clubId) {
+    // getState() is a Zustand method, not a React hook
     const clubStore = useClubStore.getState();
     club = clubStore.getClubById(predefinedData.clubId) || null;
   }
 
   if (predefinedData?.courtId) {
+    // getState() is a Zustand method, not a React hook
     const courtStore = useCourtStore.getState();
     const courtDetail = courtStore.courtsById[predefinedData.courtId];
     if (courtDetail) {
@@ -210,7 +217,11 @@ export function useWizardPredefinedData({
     };
 
     initializePredefinedData();
-  }, [isOpen, hasInitialized, predefinedData?.organizationId, predefinedData?.clubId, predefinedData?.courtId, predefinedOrganization, predefinedClub, predefinedCourt]);
+    // Note: We intentionally exclude predefinedOrganization, predefinedClub, predefinedCourt
+    // from dependencies to avoid feedback loops. The effect only runs once per modal open
+    // controlled by hasInitialized flag.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, hasInitialized, predefinedData?.organizationId, predefinedData?.clubId, predefinedData?.courtId]);
 
   // Reset when modal closes  
   useEffect(() => {
