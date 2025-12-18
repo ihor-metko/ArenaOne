@@ -643,7 +643,7 @@ export default function UserDetailPage() {
             <LockIcon />
           </div>
           <p className="im-confirm-message">
-            {t("userDetail.blockModal.message", { name: user.name || user.email })}
+            {t("userDetail.blockModal.message", { name: user.name || user.email || t("users.unknownUser") })}
           </p>
           {user.viewScope === "root" && (
             <div className="im-confirm-input">
@@ -692,7 +692,7 @@ export default function UserDetailPage() {
             <UnlockIcon />
           </div>
           <p className="im-confirm-message">
-            {t("userDetail.unblockModal.message", { name: user.name || user.email })}
+            {t("userDetail.unblockModal.message", { name: user.name || user.email || t("users.unknownUser") })}
           </p>
           <div className="im-modal-footer">
             <Button variant="outline" onClick={() => setUnblockModalOpen(false)}>
