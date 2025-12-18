@@ -28,6 +28,10 @@ interface StepConfig {
   label: string;
 }
 
+// Step component props interface
+// NOTE: formData is typed as `unknown` to support different data structures per step.
+// Individual step components should cast formData to their expected type.
+// For better type safety, consider using generics or union types in future versions.
 interface StepComponentProps {
   formData: unknown;
   fieldErrors: Record<string, string>;
@@ -306,6 +310,11 @@ export function EntityEditStepper({
     if (!StepComponent) return null;
 
     // Determine which form data to pass based on step
+    // NOTE: This assumes a 3-step flow with basic info, address, and images.
+    // For different entity types with different step structures, consider:
+    // 1. Passing a data mapping configuration as a prop
+    // 2. Using a more generic form state management approach
+    // 3. Creating specialized stepper components per entity type
     let formData: unknown;
     let onChange: ((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void) | ((field: string, value: UploadedFile | null) => void);
 
