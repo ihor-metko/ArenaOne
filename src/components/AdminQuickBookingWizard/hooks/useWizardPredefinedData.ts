@@ -37,14 +37,6 @@ export function useWizardPredefinedData({
       return;
     }
 
-    // Reset if modal was closed and reopened
-    if (!isOpen) {
-      setHasInitialized(false);
-      setPredefinedOrganization(null);
-      setPredefinedClub(null);
-      return;
-    }
-
     const initializePredefinedData = async () => {
       setIsLoading(true);
 
@@ -54,8 +46,9 @@ export function useWizardPredefinedData({
           // Initialize organization if predefined
           predefinedData?.organizationId
             ? (async () => {
-                const getOrganizationById = useOrganizationStore.getState().getOrganizationById;
-                const fetchOrganizations = useOrganizationStore.getState().fetchOrganizations;
+                const orgStore = useOrganizationStore.getState();
+                const getOrganizationById = orgStore.getOrganizationById;
+                const fetchOrganizations = orgStore.fetchOrganizations;
 
                 // First try to get from current store state
                 let org = getOrganizationById(predefinedData.organizationId!);
@@ -79,8 +72,9 @@ export function useWizardPredefinedData({
           // Initialize club if predefined
           predefinedData?.clubId
             ? (async () => {
-                const getClubById = useClubStore.getState().getClubById;
-                const fetchClubsIfNeeded = useClubStore.getState().fetchClubsIfNeeded;
+                const clubStore = useClubStore.getState();
+                const getClubById = clubStore.getClubById;
+                const fetchClubsIfNeeded = clubStore.fetchClubsIfNeeded;
 
                 try {
                   // Try to get from current store state first
@@ -117,14 +111,15 @@ export function useWizardPredefinedData({
     initializePredefinedData();
   }, [isOpen, hasInitialized, predefinedData?.organizationId, predefinedData?.clubId]);
 
-  // Reset when modal closes
+  // Reset when modal closes  
   useEffect(() => {
-    if (!isOpen) {
+    // Reset initialization state when modal is no longer open
+    if (!isOpen && hasInitialized) {
       setHasInitialized(false);
       setPredefinedOrganization(null);
       setPredefinedClub(null);
     }
-  }, [isOpen]);
+  }, [isOpen, hasInitialized]);
 
   return {
     predefinedOrganization,

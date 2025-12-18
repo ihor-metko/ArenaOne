@@ -1,7 +1,7 @@
 /**
  * Custom hook for managing organization data fetching in the wizard
  */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { toOrganizationOption } from "@/utils/organization";
 import type { WizardOrganization, AdminType, PredefinedData } from "../types";
@@ -38,6 +38,12 @@ export function useWizardOrganizations({
   const isLoading = useOrganizationStore((state) => state.loading);
   const error = useOrganizationStore((state) => state.error);
 
+  // Memoize the mapped organizations to avoid unnecessary computations
+  const mappedOrganizations = useMemo(
+    () => storeOrganizations.map(toOrganizationOption),
+    [storeOrganizations]
+  );
+
   useEffect(() => {
     // Only fetch for root admin on step 1 when modal is open
     if (!isOpen || currentStep !== 1 || adminType !== "root_admin") {
@@ -50,11 +56,10 @@ export function useWizardOrganizations({
     }
 
     // Update organizations when store data changes
-    if (storeOrganizations.length > 0) {
-      const orgs: WizardOrganization[] = storeOrganizations.map(toOrganizationOption);
-      setOrganizations(orgs);
+    if (mappedOrganizations.length > 0) {
+      setOrganizations(mappedOrganizations);
     }
-  }, [isOpen, currentStep, adminType, predefinedData, storeOrganizations]);
+  }, [isOpen, currentStep, adminType, predefinedData, mappedOrganizations]);
 
   return {
     organizations,

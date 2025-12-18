@@ -1,7 +1,7 @@
 /**
  * Custom hook for managing user data fetching in the wizard
  */
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import type { WizardUser, PredefinedData } from "../types";
@@ -36,6 +36,16 @@ export function useWizardUsers({
   const simpleUsers = useAdminUsersStore((state) => state.simpleUsers);
   const fetchSimpleUsers = useAdminUsersStore((state) => state.fetchSimpleUsers);
 
+  // Memoize the mapped users to avoid unnecessary computations
+  const mappedUsers = useMemo(
+    () => simpleUsers.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    })),
+    [simpleUsers]
+  );
+
   useEffect(() => {
     const fetchUsers = async () => {
       if (!isOpen || currentStep !== 5) {
@@ -52,11 +62,6 @@ export function useWizardUsers({
 
       try {
         await fetchSimpleUsers();
-        const mappedUsers: WizardUser[] = simpleUsers.map((user) => ({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        }));
         setUsers(mappedUsers);
       } catch {
         setError(t("auth.errorOccurred"));
@@ -66,7 +71,7 @@ export function useWizardUsers({
     };
 
     fetchUsers();
-  }, [isOpen, currentStep, predefinedData, fetchSimpleUsers, simpleUsers, t]);
+  }, [isOpen, currentStep, predefinedData, fetchSimpleUsers, mappedUsers, t]);
 
   const createUser = useCallback(
     async (name: string, email: string): Promise<WizardUser | null> => {

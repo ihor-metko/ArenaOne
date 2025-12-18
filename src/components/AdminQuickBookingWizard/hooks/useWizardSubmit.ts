@@ -4,8 +4,9 @@
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { calculateEndTime, type WizardState } from "../types";
+import { generateGuestEmail } from "../utils/generateGuestEmail";
 
-const GUEST_EMAIL_DOMAIN = "guest.arenaone.local";
+const BOOKING_SUCCESS_DISPLAY_DELAY = 2000; // ms to display success message before closing
 
 interface UseWizardSubmitOptions {
   state: WizardState;
@@ -55,11 +56,8 @@ export function useWizardSubmit({
       let userId = stepUser.selectedUser?.id;
 
       if (stepUser.isGuestBooking && stepUser.guestName) {
-        // Create a guest user with a generated email using secure random values
-        const randomValues = new Uint32Array(2);
-        crypto.getRandomValues(randomValues);
-        const randomId = Array.from(randomValues, (num) => num.toString(36)).join("");
-        const guestEmail = `guest-${Date.now()}-${randomId}@${GUEST_EMAIL_DOMAIN}`;
+        // Create a guest user with a generated email
+        const guestEmail = generateGuestEmail();
         
         const createUserResponse = await fetch("/api/admin/users/create", {
           method: "POST",
@@ -122,7 +120,7 @@ export function useWizardSubmit({
       setIsComplete(true);
       setBookingId(data.bookingId);
 
-      // Notify parent after short delay
+      // Notify parent after displaying success message
       setTimeout(() => {
         onSuccess(
           data.bookingId,
@@ -131,7 +129,7 @@ export function useWizardSubmit({
           stepDateTime.startTime,
           endTime
         );
-      }, 2000);
+      }, BOOKING_SUCCESS_DISPLAY_DELAY);
     } catch {
       setSubmitError(t("auth.errorOccurred"));
       setIsSubmitting(false);
