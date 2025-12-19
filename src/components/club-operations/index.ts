@@ -4,3 +4,4 @@ export { TodayBookingsList } from "./TodayBookingsList";
 export { BookingDetailModal } from "./BookingDetailModal";
 export { OperationsClubSelector } from "./OperationsClubSelector";
 export { OperationsClubCardSelector } from "./OperationsClubCardSelector";
+export { ConnectionStatusIndicator } from "./ConnectionStatusIndicator";
