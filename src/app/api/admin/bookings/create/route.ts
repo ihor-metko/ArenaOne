@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
+import { emitBookingCreated } from "@/lib/socketEmitters";
+import type { OperationsBooking } from "@/types/booking";
+import { migrateLegacyStatus } from "@/utils/bookingStatus";
+import { DEFAULT_SPORT_TYPE } from "@/constants/sports";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode, findCourtById, findClubById, findUserById, getMockBookings } from "@/services/mockDb";
 import { mockCreateBooking } from "@/services/mockApiHandlers";
@@ -129,6 +133,32 @@ export async function POST(request: Request) {
         end,
         price: priceCents,
         status: "reserved",
+      });
+
+      // Emit Socket.IO event for real-time updates
+      const { bookingStatus, paymentStatus } = migrateLegacyStatus(booking.status);
+      const operationsBooking: OperationsBooking = {
+        id: booking.id,
+        userId: booking.userId,
+        userName: user.name,
+        userEmail: user.email,
+        courtId: booking.courtId,
+        courtName: court.name,
+        start: booking.start.toISOString(),
+        end: booking.end.toISOString(),
+        bookingStatus,
+        paymentStatus,
+        price: booking.price,
+        sportType: court.sportType as OperationsBooking['sportType'],
+        coachId: null,
+        coachName: null,
+        createdAt: booking.createdAt.toISOString(),
+      };
+
+      emitBookingCreated({
+        booking: operationsBooking,
+        clubId: club.id,
+        courtId: booking.courtId,
       });
 
       return NextResponse.json(
@@ -317,6 +347,32 @@ export async function POST(request: Request) {
           },
         },
       },
+    });
+
+    // Emit Socket.IO event for real-time updates
+    const { bookingStatus, paymentStatus } = migrateLegacyStatus(booking.status);
+    const operationsBooking: OperationsBooking = {
+      id: booking.id,
+      userId: booking.userId,
+      userName: booking.user.name,
+      userEmail: booking.user.email,
+      courtId: booking.courtId,
+      courtName: booking.court.name,
+      start: booking.start.toISOString(),
+      end: booking.end.toISOString(),
+      bookingStatus,
+      paymentStatus,
+      price: booking.price,
+      sportType: (booking.sportType as OperationsBooking['sportType']) || DEFAULT_SPORT_TYPE,
+      coachId: null,
+      coachName: null,
+      createdAt: booking.createdAt.toISOString(),
+    };
+
+    emitBookingCreated({
+      booking: operationsBooking,
+      clubId: booking.court.club.id,
+      courtId: booking.courtId,
     });
 
     return NextResponse.json(
