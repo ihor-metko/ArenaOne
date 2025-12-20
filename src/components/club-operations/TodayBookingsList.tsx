@@ -7,6 +7,7 @@ import { formatPrice } from "@/utils/price";
 import { canCancelBooking } from "@/utils/bookingStatus";
 import { useSocketIO } from "@/hooks/useSocketIO";
 import { showToast } from "@/lib/toast";
+import { useBookingStore } from "@/stores/useBookingStore";
 import "./TodayBookingsList.css";
 
 interface TodayBookingsListProps {
@@ -33,6 +34,8 @@ export function TodayBookingsList({
   onRefresh,
 }: TodayBookingsListProps) {
   const t = useTranslations();
+  const updateBookingFromSocket = useBookingStore(state => state.updateBookingFromSocket);
+  const removeBookingFromSocket = useBookingStore(state => state.removeBookingFromSocket);
 
   // Set up WebSocket connection for real-time updates
   useSocketIO({
@@ -41,6 +44,7 @@ export function TodayBookingsList({
       // Only handle events for this club
       if (clubId && data.clubId === clubId) {
         showToast(t("operations.bookingCreatedToast"), { type: "success" });
+        updateBookingFromSocket(data.booking);
         onRefresh?.();
       }
     },
@@ -48,6 +52,7 @@ export function TodayBookingsList({
       // Only handle events for this club
       if (clubId && data.clubId === clubId) {
         showToast(t("operations.bookingUpdatedToast"), { type: "info" });
+        updateBookingFromSocket(data.booking);
         onRefresh?.();
       }
     },
@@ -55,8 +60,16 @@ export function TodayBookingsList({
       // Only handle events for this club
       if (clubId && data.clubId === clubId) {
         showToast(t("operations.bookingDeletedToast"), { type: "warning" });
+        removeBookingFromSocket(data.bookingId);
         onRefresh?.();
       }
+    },
+    onReconnect: () => {
+      // Sync missed updates after reconnection
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[TodayBookingsList] Reconnected, syncing data...');
+      }
+      onRefresh?.();
     },
   });
 

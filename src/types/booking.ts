@@ -81,6 +81,7 @@ export interface OperationsBooking {
   coachId: string | null;
   coachName: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 /**

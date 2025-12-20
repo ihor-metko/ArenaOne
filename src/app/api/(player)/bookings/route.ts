@@ -186,6 +186,7 @@ export async function POST(request: Request) {
       coachId: booking.coachId,
       coachName: booking.coach?.user.name ?? null,
       createdAt: booking.createdAt.toISOString(),
+      updatedAt: booking.updatedAt.toISOString(),
     };
 
     emitBookingCreated({

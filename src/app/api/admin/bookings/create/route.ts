@@ -153,6 +153,7 @@ export async function POST(request: Request) {
         coachId: null,
         coachName: null,
         createdAt: booking.createdAt.toISOString(),
+        updatedAt: booking.updatedAt.toISOString(),
       };
 
       emitBookingCreated({
@@ -367,6 +368,7 @@ export async function POST(request: Request) {
       coachId: null,
       coachName: null,
       createdAt: booking.createdAt.toISOString(),
+      updatedAt: booking.updatedAt.toISOString(),
     };
 
     emitBookingCreated({

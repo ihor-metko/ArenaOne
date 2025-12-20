@@ -9,6 +9,7 @@ import type {
   BookingUpdatedEvent,
   BookingDeletedEvent,
 } from '@/types/socket';
+import { debounceSocketEvent } from '@/utils/socketUpdateManager';
 
 /**
  * Typed Socket.IO client
@@ -39,6 +40,17 @@ interface UseSocketIOOptions {
    * Callback when a booking is deleted
    */
   onBookingDeleted?: (data: BookingDeletedEvent) => void;
+
+  /**
+   * Callback when socket reconnects (for syncing missed updates)
+   */
+  onReconnect?: () => void;
+
+  /**
+   * Debounce delay in milliseconds for booking events
+   * @default 300
+   */
+  debounceMs?: number;
 }
 
 /**
@@ -69,6 +81,11 @@ interface UseSocketIOReturn {
 /**
  * Custom hook for Socket.IO client connection
  * 
+ * Features:
+ * - Automatic reconnection handling
+ * - Debounced event handlers to prevent UI flickering
+ * - Callback to sync missed updates after reconnection
+ * 
  * @example
  * ```tsx
  * const { socket, isConnected } = useSocketIO({
@@ -79,6 +96,10 @@ interface UseSocketIOReturn {
  *   onBookingUpdated: (data) => {
  *     console.log('Booking updated:', data);
  *   },
+ *   onReconnect: () => {
+ *     // Fetch missed updates from server
+ *     refetchBookings();
+ *   },
  * });
  * ```
  */
@@ -88,6 +109,8 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
     onBookingCreated,
     onBookingUpdated,
     onBookingDeleted,
+    onReconnect,
+    debounceMs = 300,
   } = options;
 
   const [isConnected, setIsConnected] = useState(false);
@@ -97,13 +120,15 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
   const onBookingCreatedRef = useRef(onBookingCreated);
   const onBookingUpdatedRef = useRef(onBookingUpdated);
   const onBookingDeletedRef = useRef(onBookingDeleted);
+  const onReconnectRef = useRef(onReconnect);
   
   // Update refs when callbacks change
   useEffect(() => {
     onBookingCreatedRef.current = onBookingCreated;
     onBookingUpdatedRef.current = onBookingUpdated;
     onBookingDeletedRef.current = onBookingDeleted;
-  }, [onBookingCreated, onBookingUpdated, onBookingDeleted]);
+    onReconnectRef.current = onReconnect;
+  }, [onBookingCreated, onBookingUpdated, onBookingDeleted, onReconnect]);
 
   useEffect(() => {
     if (!autoConnect) return;
@@ -130,34 +155,52 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
       console.error('Socket.IO connection error:', error.message);
     });
 
-    // Booking event handlers using refs
-    const handleBookingCreated = (data: BookingCreatedEvent) => {
-      onBookingCreatedRef.current?.(data);
-    };
-    
-    const handleBookingUpdated = (data: BookingUpdatedEvent) => {
-      onBookingUpdatedRef.current?.(data);
-    };
-    
-    const handleBookingDeleted = (data: BookingDeletedEvent) => {
-      onBookingDeletedRef.current?.(data);
-    };
+    // Reconnection handler
+    socket.io.on('reconnect', (attemptNumber) => {
+      console.log('Socket.IO reconnected after', attemptNumber, 'attempts');
+      setIsConnected(true);
+      // Trigger callback to sync missed updates
+      onReconnectRef.current?.();
+    });
 
-    socket.on('bookingCreated', handleBookingCreated);
-    socket.on('bookingUpdated', handleBookingUpdated);
-    socket.on('bookingDeleted', handleBookingDeleted);
+    // Debounced booking event handlers
+    const debouncedBookingCreated = debounceSocketEvent(
+      (data: BookingCreatedEvent) => {
+        onBookingCreatedRef.current?.(data);
+      },
+      debounceMs
+    );
+
+    const debouncedBookingUpdated = debounceSocketEvent(
+      (data: BookingUpdatedEvent) => {
+        onBookingUpdatedRef.current?.(data);
+      },
+      debounceMs
+    );
+
+    const debouncedBookingDeleted = debounceSocketEvent(
+      (data: BookingDeletedEvent) => {
+        onBookingDeletedRef.current?.(data);
+      },
+      debounceMs
+    );
+
+    socket.on('bookingCreated', debouncedBookingCreated);
+    socket.on('bookingUpdated', debouncedBookingUpdated);
+    socket.on('bookingDeleted', debouncedBookingDeleted);
 
     // Cleanup on unmount
     return () => {
       socket.off('connect');
       socket.off('disconnect');
       socket.off('connect_error');
-      socket.off('bookingCreated', handleBookingCreated);
-      socket.off('bookingUpdated', handleBookingUpdated);
-      socket.off('bookingDeleted', handleBookingDeleted);
+      socket.io.off('reconnect');
+      socket.off('bookingCreated');
+      socket.off('bookingUpdated');
+      socket.off('bookingDeleted');
       socket.disconnect();
     };
-  }, [autoConnect]); // Only reconnect when autoConnect changes
+  }, [autoConnect, debounceMs]); // Only reconnect when autoConnect or debounceMs changes
 
   const connect = () => {
     if (!socketRef.current) {
@@ -181,21 +224,38 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
         console.error('Socket.IO connection error:', error.message);
       });
 
-      const handleBookingCreated = (data: BookingCreatedEvent) => {
-        onBookingCreatedRef.current?.(data);
-      };
-      
-      const handleBookingUpdated = (data: BookingUpdatedEvent) => {
-        onBookingUpdatedRef.current?.(data);
-      };
-      
-      const handleBookingDeleted = (data: BookingDeletedEvent) => {
-        onBookingDeletedRef.current?.(data);
-      };
+      // Reconnection handler
+      socket.io.on('reconnect', (attemptNumber) => {
+        console.log('Socket.IO reconnected after', attemptNumber, 'attempts');
+        setIsConnected(true);
+        onReconnectRef.current?.();
+      });
 
-      socket.on('bookingCreated', handleBookingCreated);
-      socket.on('bookingUpdated', handleBookingUpdated);
-      socket.on('bookingDeleted', handleBookingDeleted);
+      // Debounced booking event handlers
+      const debouncedBookingCreated = debounceSocketEvent(
+        (data: BookingCreatedEvent) => {
+          onBookingCreatedRef.current?.(data);
+        },
+        debounceMs
+      );
+
+      const debouncedBookingUpdated = debounceSocketEvent(
+        (data: BookingUpdatedEvent) => {
+          onBookingUpdatedRef.current?.(data);
+        },
+        debounceMs
+      );
+
+      const debouncedBookingDeleted = debounceSocketEvent(
+        (data: BookingDeletedEvent) => {
+          onBookingDeletedRef.current?.(data);
+        },
+        debounceMs
+      );
+
+      socket.on('bookingCreated', debouncedBookingCreated);
+      socket.on('bookingUpdated', debouncedBookingUpdated);
+      socket.on('bookingDeleted', debouncedBookingDeleted);
     } else if (!socketRef.current.connected) {
       socketRef.current.connect();
     }
