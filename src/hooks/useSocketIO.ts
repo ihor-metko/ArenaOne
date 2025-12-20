@@ -126,6 +126,10 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
       setIsConnected(false);
     });
 
+    socket.on('connect_error', (error) => {
+      console.error('Socket.IO connection error:', error.message);
+    });
+
     // Booking event handlers using refs
     const handleBookingCreated = (data: BookingCreatedEvent) => {
       onBookingCreatedRef.current?.(data);
@@ -147,6 +151,7 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
     return () => {
       socket.off('connect');
       socket.off('disconnect');
+      socket.off('connect_error');
       socket.off('bookingCreated', handleBookingCreated);
       socket.off('bookingUpdated', handleBookingUpdated);
       socket.off('bookingDeleted', handleBookingDeleted);
@@ -170,6 +175,10 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
       socket.on('disconnect', () => {
         console.log('Socket.IO disconnected');
         setIsConnected(false);
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('Socket.IO connection error:', error.message);
       });
 
       const handleBookingCreated = (data: BookingCreatedEvent) => {
