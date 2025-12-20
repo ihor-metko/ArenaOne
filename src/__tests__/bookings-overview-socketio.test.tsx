@@ -26,6 +26,10 @@ jest.mock("socket.io-client", () => {
         disconnect: jest.fn(function () {
           this.connected = false;
         }),
+        io: {
+          on: jest.fn(),
+          off: jest.fn(),
+        },
       };
       return mockSocket;
     }),

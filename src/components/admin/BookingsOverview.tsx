@@ -162,6 +162,15 @@ export default function BookingsOverview({
         onRefresh?.();
       }
     },
+    onReconnect: () => {
+      if (enableRealtime) {
+        // Sync missed updates after reconnection
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[BookingsOverview] Reconnected, syncing data...');
+        }
+        onRefresh?.();
+      }
+    },
   });
 
   if (loading) {

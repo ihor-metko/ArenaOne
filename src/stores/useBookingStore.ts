@@ -4,6 +4,10 @@ import type {
   CreateBookingPayload,
   CreateBookingResponse,
 } from "@/types/booking";
+import {
+  updateBookingInList,
+  removeBookingFromList,
+} from "@/utils/socketUpdateManager";
 
 /**
  * Zustand store for managing bookings in club operations
@@ -71,6 +75,10 @@ interface BookingState {
   // Selectors
   getBookingById: (id: string) => OperationsBooking | undefined;
   getBookingsByCourtId: (courtId: string) => OperationsBooking[];
+
+  // Real-time update methods with timestamp checking
+  updateBookingFromSocket: (booking: OperationsBooking) => void;
+  removeBookingFromSocket: (bookingId: string) => void;
 }
 
 /**
@@ -269,5 +277,22 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   getBookingsByCourtId: (courtId: string) => {
     const state = get();
     return state.bookings.filter((booking) => booking.courtId === courtId);
+  },
+
+  // Real-time update methods with timestamp checking
+  updateBookingFromSocket: (booking: OperationsBooking) => {
+    const currentBookings = get().bookings;
+    const updatedBookings = updateBookingInList(currentBookings, booking);
+    
+    // Only update state if the booking list was modified (prevents unnecessary re-renders)
+    if (updatedBookings !== currentBookings) {
+      set({ bookings: updatedBookings });
+    }
+  },
+
+  removeBookingFromSocket: (bookingId: string) => {
+    const currentBookings = get().bookings;
+    const updatedBookings = removeBookingFromList(currentBookings, bookingId);
+    set({ bookings: updatedBookings });
   },
 }));

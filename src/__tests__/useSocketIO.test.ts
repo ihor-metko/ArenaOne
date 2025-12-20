@@ -24,6 +24,10 @@ jest.mock('socket.io-client', () => {
         disconnect: jest.fn(function() {
           this.connected = false;
         }),
+        io: {
+          on: jest.fn(),
+          off: jest.fn(),
+        },
       };
       return mockSocket;
     }),
@@ -77,6 +81,23 @@ describe('useSocketIO', () => {
     });
   });
 
+  it('should register reconnect handler when onReconnect is provided', async () => {
+    const onReconnect = jest.fn();
+
+    renderHook(() =>
+      useSocketIO({
+        autoConnect: true,
+        onReconnect,
+      })
+    );
+
+    await waitFor(() => {
+      expect(mockSocket).toBeTruthy();
+      // Check that reconnect handler is registered on socket.io
+      expect(mockSocket.io.on).toHaveBeenCalledWith('reconnect', expect.any(Function));
+    });
+  });
+
   it('should provide manual connect and disconnect functions', () => {
     const { result } = renderHook(() => useSocketIO({ autoConnect: false }));
 
@@ -98,6 +119,7 @@ describe('useSocketIO', () => {
 
     expect(socketInstance.off).toHaveBeenCalledWith('connect');
     expect(socketInstance.off).toHaveBeenCalledWith('disconnect');
+    expect(socketInstance.io.off).toHaveBeenCalledWith('reconnect');
     expect(socketInstance.disconnect).toHaveBeenCalled();
   });
 });
@@ -112,17 +134,16 @@ describe('Socket.IO Event Types', () => {
         userEmail: 'test@example.com',
         courtId: 'court-123',
         courtName: 'Court 1',
-        clubId: 'club-123',
-        clubName: 'Test Club',
         start: '2024-01-15T10:00:00Z',
         end: '2024-01-15T11:00:00Z',
-        bookingStatus: 'confirmed',
-        paymentStatus: 'paid',
+        bookingStatus: 'Active',
+        paymentStatus: 'Paid',
         price: 100,
-        sportType: 'tennis',
+        sportType: 'PADEL',
         coachId: null,
         coachName: null,
         createdAt: '2024-01-15T09:00:00Z',
+        updatedAt: '2024-01-15T09:00:00Z',
       },
       clubId: 'club-123',
       courtId: 'court-123',
@@ -142,25 +163,24 @@ describe('Socket.IO Event Types', () => {
         userEmail: 'test@example.com',
         courtId: 'court-123',
         courtName: 'Court 1',
-        clubId: 'club-123',
-        clubName: 'Test Club',
         start: '2024-01-15T10:00:00Z',
         end: '2024-01-15T11:00:00Z',
-        bookingStatus: 'cancelled',
-        paymentStatus: 'refunded',
+        bookingStatus: 'Cancelled',
+        paymentStatus: 'Refunded',
         price: 100,
-        sportType: 'tennis',
+        sportType: 'PADEL',
         coachId: null,
         coachName: null,
         createdAt: '2024-01-15T09:00:00Z',
+        updatedAt: '2024-01-15T10:00:00Z',
       },
       clubId: 'club-123',
       courtId: 'court-123',
-      previousStatus: 'confirmed',
+      previousStatus: 'reserved',
     };
 
-    expect(event.booking.bookingStatus).toBe('cancelled');
-    expect(event.previousStatus).toBe('confirmed');
+    expect(event.booking.bookingStatus).toBe('Cancelled');
+    expect(event.previousStatus).toBe('reserved');
   });
 
   it('should have correct BookingDeletedEvent structure', () => {
