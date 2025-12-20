@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
-import { calculateBookingStatus, toBookingStatus } from "@/utils/bookingStatus";
+import { calculateBookingStatus, toBookingStatus, migrateLegacyStatus } from "@/utils/bookingStatus";
+import { emitBookingUpdated, emitBookingDeleted } from "@/lib/socketEmitters";
+import type { OperationsBooking } from "@/types/booking";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode } from "@/services/mockDb";
 import { mockGetBookingById, mockUpdateBookingById } from "@/services/mockApiHandlers";
@@ -370,6 +372,33 @@ export async function PATCH(
         );
       }
 
+      // Emit Socket.IO event for real-time updates
+      const { bookingStatus: newBookingStatus, paymentStatus: newPaymentStatus } = migrateLegacyStatus(updatedBooking.status);
+      const operationsBooking: OperationsBooking = {
+        id: updatedBooking.id,
+        userId: updatedBooking.userId,
+        userName: updatedBooking.userName,
+        userEmail: updatedBooking.userEmail,
+        courtId: updatedBooking.courtId,
+        courtName: updatedBooking.courtName,
+        start: updatedBooking.start,
+        end: updatedBooking.end,
+        bookingStatus: newBookingStatus,
+        paymentStatus: newPaymentStatus,
+        price: updatedBooking.price,
+        sportType: "PADEL", // mock bookings use default sport type
+        coachId: updatedBooking.coachId,
+        coachName: updatedBooking.coachName,
+        createdAt: updatedBooking.createdAt,
+      };
+
+      emitBookingUpdated({
+        booking: operationsBooking,
+        clubId: updatedBooking.clubId,
+        courtId: updatedBooking.courtId,
+        previousStatus: mockBooking.status,
+      });
+
       return NextResponse.json(updatedBooking);
     }
 
@@ -452,6 +481,33 @@ export async function PATCH(
       toBookingStatus(updatedBooking.status)
     );
 
+    // Emit Socket.IO event for real-time updates
+    const { bookingStatus: newBookingStatus, paymentStatus: newPaymentStatus } = migrateLegacyStatus(updatedBooking.status);
+    const operationsBooking: OperationsBooking = {
+      id: updatedBooking.id,
+      userId: updatedBooking.userId,
+      userName: updatedBooking.user.name,
+      userEmail: updatedBooking.user.email,
+      courtId: updatedBooking.courtId,
+      courtName: updatedBooking.court.name,
+      start: startISO,
+      end: endISO,
+      bookingStatus: newBookingStatus,
+      paymentStatus: newPaymentStatus,
+      price: updatedBooking.price,
+      sportType: (updatedBooking.sportType as OperationsBooking['sportType']) || "PADEL",
+      coachId: updatedBooking.coachId,
+      coachName: updatedBooking.coach?.user.name ?? null,
+      createdAt: updatedBooking.createdAt.toISOString(),
+    };
+
+    emitBookingUpdated({
+      booking: operationsBooking,
+      clubId: updatedBooking.court.clubId,
+      courtId: updatedBooking.courtId,
+      previousStatus: existingBooking.status,
+    });
+
     const response: AdminBookingDetailResponse = {
       id: updatedBooking.id,
       userId: updatedBooking.userId,
@@ -486,6 +542,72 @@ export async function PATCH(
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error updating booking:", error);
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/admin/bookings/:id
+ *
+ * Delete a booking permanently.
+ * Only allowed if user has permission for that booking.
+ */
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<NextResponse<{ success: boolean } | { error: string }>> {
+  const authResult = await requireAnyAdmin(request);
+
+  if (!authResult.authorized) {
+    return authResult.response as NextResponse<{ error: string }>;
+  }
+
+  const { adminType, managedIds } = authResult;
+  const { id } = await params;
+
+  try {
+    // TEMPORARY MOCK MODE — Not implementing for mock mode
+    if (isMockMode()) {
+      return NextResponse.json(
+        { error: "Delete operation not supported in mock mode" },
+        { status: 501 }
+      );
+    }
+
+    // First check if admin has access to this booking
+    const { hasAccess, booking } = await checkBookingAccess(id, adminType, managedIds);
+
+    if (!hasAccess || !booking) {
+      return NextResponse.json(
+        { error: "Booking not found" },
+        { status: 404 }
+      );
+    }
+
+    // Store club and court IDs before deletion
+    const clubId = booking.court.clubId;
+    const courtId = booking.courtId;
+
+    // Delete the booking
+    await prisma.booking.delete({
+      where: { id },
+    });
+
+    // Emit Socket.IO event for real-time updates (after deletion)
+    emitBookingDeleted({
+      bookingId: id,
+      clubId,
+      courtId,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error deleting booking:", error);
     }
     return NextResponse.json(
       { error: "Internal server error" },

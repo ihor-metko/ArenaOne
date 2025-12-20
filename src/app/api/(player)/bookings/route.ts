@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/requireRole";
 import { getResolvedPriceForSlot } from "@/lib/priceRules";
+import { emitBookingCreated } from "@/lib/socketEmitters";
+import type { OperationsBooking } from "@/types/booking";
+import { migrateLegacyStatus } from "@/utils/bookingStatus";
 
 interface BookingRequest {
   courtId: string;
@@ -95,10 +98,20 @@ export async function POST(request: Request) {
 
     // Implement atomic booking logic inside a transaction
     const booking = await prisma.$transaction(async (tx) => {
-      // Get court to retrieve sportType
+      // Get court to retrieve sportType and club info
       const court = await tx.court.findUnique({
         where: { id: body.courtId },
-        select: { sportType: true },
+        select: {
+          sportType: true,
+          name: true,
+          clubId: true,
+          club: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
       });
 
       if (!court) {
@@ -132,9 +145,53 @@ export async function POST(request: Request) {
           sportType: court.sportType || "PADEL",
           status: "reserved",
         },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+          coach: {
+            select: {
+              id: true,
+              user: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
       });
 
-      return newBooking;
+      return { ...newBooking, court };
+    });
+
+    // Emit Socket.IO event for real-time updates (after transaction commit)
+    const { bookingStatus, paymentStatus } = migrateLegacyStatus(booking.status);
+    const operationsBooking: OperationsBooking = {
+      id: booking.id,
+      userId: booking.userId,
+      userName: booking.user.name,
+      userEmail: booking.user.email,
+      courtId: booking.courtId,
+      courtName: booking.court.name,
+      start: booking.start.toISOString(),
+      end: booking.end.toISOString(),
+      bookingStatus,
+      paymentStatus,
+      price: booking.price,
+      sportType: (booking.sportType as OperationsBooking['sportType']) || "PADEL",
+      coachId: booking.coachId,
+      coachName: booking.coach?.user.name ?? null,
+      createdAt: booking.createdAt.toISOString(),
+    };
+
+    emitBookingCreated({
+      booking: operationsBooking,
+      clubId: booking.court.clubId,
+      courtId: booking.courtId,
     });
 
     // Return successful response with price
