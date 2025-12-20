@@ -31,6 +31,12 @@ export interface CourtAvailabilityEventPayload {
   }>;
 }
 
+/**
+ * Emit booking created event to club room
+ * @param io - Socket.IO server instance
+ * @param clubId - Club identifier
+ * @param booking - Booking event data
+ */
 export function emitBookingCreated(
   io: SocketIOServer | null,
   clubId: string,
@@ -40,6 +46,12 @@ export function emitBookingCreated(
   io.to(`club:${clubId}:bookings`).emit("booking:created", booking);
 }
 
+/**
+ * Emit booking updated event to club room
+ * @param io - Socket.IO server instance
+ * @param clubId - Club identifier
+ * @param booking - Booking event data
+ */
 export function emitBookingUpdated(
   io: SocketIOServer | null,
   clubId: string,
@@ -49,6 +61,12 @@ export function emitBookingUpdated(
   io.to(`club:${clubId}:bookings`).emit("booking:updated", booking);
 }
 
+/**
+ * Emit booking deleted event to club room
+ * @param io - Socket.IO server instance
+ * @param clubId - Club identifier
+ * @param bookingId - Booking identifier
+ */
 export function emitBookingDeleted(
   io: SocketIOServer | null,
   clubId: string,
@@ -58,6 +76,12 @@ export function emitBookingDeleted(
   io.to(`club:${clubId}:bookings`).emit("booking:deleted", { id: bookingId, clubId });
 }
 
+/**
+ * Emit court availability changed event to club room
+ * @param io - Socket.IO server instance
+ * @param clubId - Club identifier
+ * @param data - Court availability data
+ */
 export function emitCourtAvailabilityChanged(
   io: SocketIOServer | null,
   clubId: string,

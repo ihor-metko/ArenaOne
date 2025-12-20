@@ -30,6 +30,7 @@ app.prepare().then(() => {
   });
 
   // Initialize Socket.IO (singleton pattern)
+  // Stored in global.io to allow API routes to emit events
   if (!global.io) {
     const io = new Server(httpServer, {
       path: '/api/socket',

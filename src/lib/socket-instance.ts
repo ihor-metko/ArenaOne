@@ -15,6 +15,11 @@ declare global {
 /**
  * Get the Socket.IO server instance
  * @returns Socket.IO server instance or null if not initialized
+ * @example
+ * const io = getIO();
+ * if (io) {
+ *   emitBookingCreated(io, clubId, booking);
+ * }
  */
 export function getIO(): SocketIOServer | null {
   return global.io || null;
