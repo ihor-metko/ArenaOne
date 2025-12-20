@@ -56,6 +56,10 @@ async function runTests() {
   log(`Connecting to: ${SOCKET_URL}${SOCKET_PATH}\n`, 'info');
 
   return new Promise((resolve) => {
+    // State variables for test flow
+    let reconnected = false;
+    let initialConnectionComplete = false;
+
     const socket = io(SOCKET_URL, {
       path: SOCKET_PATH,
       transports: ['websocket'],
@@ -124,9 +128,6 @@ async function runTests() {
       }, 1000);
     });
 
-    let reconnected = false;
-    let initialConnectionComplete = false;
-
     socket.on('disconnect', (reason) => {
       if (testsRun === 0) {
         assert(false, `Unexpected disconnect: ${reason}`);
@@ -148,7 +149,7 @@ async function runTests() {
       }
       
       const percentage = testsRun > 0 ? ((testsPassed / testsRun) * 100).toFixed(1) : '0.0';
-      log(`\nSuccess rate: ${percentage}%\n`, parseFloat(percentage) === 100.0 ? 'success' : 'warning');
+      log(`\nSuccess rate: ${percentage}%\n`, percentage === '100.0' ? 'success' : 'warning');
 
       socket.disconnect();
       
