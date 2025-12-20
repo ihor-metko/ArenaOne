@@ -10,7 +10,6 @@
  * - No flickering or duplication of bookings
  */
 
-import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { useSocketIO } from "@/hooks/useSocketIO";
 import { useBookingStore } from "@/stores/useBookingStore";
@@ -109,9 +108,9 @@ describe("WebSocket Real-time Booking Updates - Multi-Client Tests", () => {
 
   describe("Multiple Client Connections", () => {
     it("should allow multiple clients to connect simultaneously", async () => {
-      const client1 = renderHook(() => useSocketIO({ autoConnect: true }));
-      const client2 = renderHook(() => useSocketIO({ autoConnect: true }));
-      const client3 = renderHook(() => useSocketIO({ autoConnect: true }));
+      renderHook(() => useSocketIO({ autoConnect: true }));
+      renderHook(() => useSocketIO({ autoConnect: true }));
+      renderHook(() => useSocketIO({ autoConnect: true }));
 
       await waitFor(() => {
         expect(mockSockets.length).toBe(3);
@@ -556,10 +555,8 @@ describe("WebSocket Real-time Booking Updates - Multi-Client Tests", () => {
       });
 
       const store = useBookingStore.getState();
-      let updateCount = 0;
       
       const callback = jest.fn((data: BookingCreatedEvent) => {
-        updateCount++;
         store.updateBookingFromSocket(data.booking);
       });
 

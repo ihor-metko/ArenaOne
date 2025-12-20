@@ -289,7 +289,7 @@ export function WebSocketTestingDemo({
             </li>
             <li>Observe all tabs receiving updates simultaneously</li>
             <li>
-              Test reconnection: Use the "Disconnect" button, then "Connect"
+              Test reconnection: Use the &quot;Disconnect&quot; button, then &quot;Connect&quot;
             </li>
             <li>
               Check event statistics to verify all events are received
