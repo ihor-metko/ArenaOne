@@ -57,7 +57,7 @@ This document describes the comprehensive WebSocket testing infrastructure for t
 
 ### Total Coverage
 
-- **Total WebSocket Tests**: 58 tests (all passing)
+- **Total WebSocket Tests**: 58 tests (as of Dec 2024 - update when adding/removing tests)
 - **Test Coverage**: All components with WebSocket subscriptions
 - **Event Types Tested**: bookingCreated, bookingUpdated, bookingDeleted
 - **Edge Cases Covered**: 25+ edge cases and error scenarios
