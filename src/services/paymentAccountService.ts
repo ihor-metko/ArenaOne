@@ -177,6 +177,37 @@ export async function getPaymentAccountStatus(clubId: string): Promise<PaymentAc
 }
 
 /**
+ * Get payment availability for a booking (frontend-safe)
+ * Returns only the information needed to display payment options
+ * 
+ * @param clubId - The club ID for the booking
+ * @returns Payment availability with provider list
+ */
+export async function getPaymentAvailabilityForBooking(clubId: string): Promise<{
+  paymentAvailable: boolean;
+  paymentProviders?: Array<'wayforpay' | 'liqpay'>;
+}> {
+  const status = await getPaymentAccountStatus(clubId);
+  
+  if (!status.isAvailable || !status.provider) {
+    return {
+      paymentAvailable: false,
+    };
+  }
+
+  // Map PaymentProvider enum to lowercase string for frontend
+  const providerMap: Record<PaymentProvider, 'wayforpay' | 'liqpay'> = {
+    [PaymentProvider.WAYFORPAY]: 'wayforpay',
+    [PaymentProvider.LIQPAY]: 'liqpay',
+  };
+
+  return {
+    paymentAvailable: true,
+    paymentProviders: [providerMap[status.provider]],
+  };
+}
+
+/**
  * Create a new payment account with encrypted credentials
  * 
  * @param credentials - Payment account credentials (plain text)

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import { calculateBookingStatus, toBookingStatus } from "@/utils/bookingStatus";
+import { getPaymentAvailabilityForBooking } from "@/services/paymentAccountService";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { isMockMode } from "@/services/mockDb";
 import { mockGetBookingById, mockUpdateBookingById } from "@/services/mockApiHandlers";
@@ -37,6 +38,8 @@ export interface AdminBookingDetailResponse {
     amount: number;
     createdAt: string;
   }[];
+  paymentAvailable?: boolean;
+  paymentProviders?: Array<'wayforpay' | 'liqpay'>;
 }
 
 /**
@@ -253,6 +256,9 @@ export async function GET(
       toBookingStatus(booking.status)
     );
 
+    // Get payment availability for this booking
+    const paymentAvailability = await getPaymentAvailabilityForBooking(booking.court.clubId);
+
     const response: AdminBookingDetailResponse = {
       id: booking.id,
       userId: booking.userId,
@@ -281,6 +287,8 @@ export async function GET(
         amount: payment.amount,
         createdAt: payment.createdAt.toISOString(),
       })),
+      paymentAvailable: paymentAvailability.paymentAvailable,
+      paymentProviders: paymentAvailability.paymentProviders,
     };
 
     return NextResponse.json(response);
@@ -452,6 +460,9 @@ export async function PATCH(
       toBookingStatus(updatedBooking.status)
     );
 
+    // Get payment availability for this booking
+    const paymentAvailability = await getPaymentAvailabilityForBooking(updatedBooking.court.clubId);
+
     const response: AdminBookingDetailResponse = {
       id: updatedBooking.id,
       userId: updatedBooking.userId,
@@ -480,6 +491,8 @@ export async function PATCH(
         amount: payment.amount,
         createdAt: payment.createdAt.toISOString(),
       })),
+      paymentAvailable: paymentAvailability.paymentAvailable,
+      paymentProviders: paymentAvailability.paymentProviders,
     };
 
     return NextResponse.json(response);
