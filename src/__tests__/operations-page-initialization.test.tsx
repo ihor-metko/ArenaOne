@@ -44,7 +44,6 @@ const mockUserStore = {
 const mockClubStore = {
   clubsById: {},
   ensureClubById: jest.fn().mockResolvedValue({}),
-  loading: false,
   clubs: [],
   fetchClubsIfNeeded: jest.fn().mockResolvedValue(undefined),
   loadingClubs: false,
