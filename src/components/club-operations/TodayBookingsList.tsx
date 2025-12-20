@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect } from "react";
 import { Button, BookingStatusBadge, PaymentStatusBadge } from "@/components/ui";
 import type { OperationsBooking } from "@/types/booking";
 import { formatPrice } from "@/utils/price";
