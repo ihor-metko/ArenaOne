@@ -92,6 +92,18 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
 
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<TypedSocket | null>(null);
+  
+  // Use refs to store callbacks to avoid reconnection on callback change
+  const onBookingCreatedRef = useRef(onBookingCreated);
+  const onBookingUpdatedRef = useRef(onBookingUpdated);
+  const onBookingDeletedRef = useRef(onBookingDeleted);
+  
+  // Update refs when callbacks change
+  useEffect(() => {
+    onBookingCreatedRef.current = onBookingCreated;
+    onBookingUpdatedRef.current = onBookingUpdated;
+    onBookingDeletedRef.current = onBookingDeleted;
+  }, [onBookingCreated, onBookingUpdated, onBookingDeleted]);
 
   useEffect(() => {
     if (!autoConnect) return;
@@ -114,29 +126,33 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
       setIsConnected(false);
     });
 
-    // Booking event handlers
-    if (onBookingCreated) {
-      socket.on('bookingCreated', onBookingCreated);
-    }
+    // Booking event handlers using refs
+    const handleBookingCreated = (data: BookingCreatedEvent) => {
+      onBookingCreatedRef.current?.(data);
+    };
+    
+    const handleBookingUpdated = (data: BookingUpdatedEvent) => {
+      onBookingUpdatedRef.current?.(data);
+    };
+    
+    const handleBookingDeleted = (data: BookingDeletedEvent) => {
+      onBookingDeletedRef.current?.(data);
+    };
 
-    if (onBookingUpdated) {
-      socket.on('bookingUpdated', onBookingUpdated);
-    }
-
-    if (onBookingDeleted) {
-      socket.on('bookingDeleted', onBookingDeleted);
-    }
+    socket.on('bookingCreated', handleBookingCreated);
+    socket.on('bookingUpdated', handleBookingUpdated);
+    socket.on('bookingDeleted', handleBookingDeleted);
 
     // Cleanup on unmount
     return () => {
       socket.off('connect');
       socket.off('disconnect');
-      if (onBookingCreated) socket.off('bookingCreated');
-      if (onBookingUpdated) socket.off('bookingUpdated');
-      if (onBookingDeleted) socket.off('bookingDeleted');
+      socket.off('bookingCreated', handleBookingCreated);
+      socket.off('bookingUpdated', handleBookingUpdated);
+      socket.off('bookingDeleted', handleBookingDeleted);
       socket.disconnect();
     };
-  }, [autoConnect, onBookingCreated, onBookingUpdated, onBookingDeleted]);
+  }, [autoConnect]); // Only reconnect when autoConnect changes
 
   const connect = () => {
     if (!socketRef.current) {
@@ -144,6 +160,33 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
         path: '/socket.io',
       });
       socketRef.current = socket;
+      
+      // Set up event listeners for manually connected socket
+      socket.on('connect', () => {
+        console.log('Socket.IO connected:', socket.id);
+        setIsConnected(true);
+      });
+
+      socket.on('disconnect', () => {
+        console.log('Socket.IO disconnected');
+        setIsConnected(false);
+      });
+
+      const handleBookingCreated = (data: BookingCreatedEvent) => {
+        onBookingCreatedRef.current?.(data);
+      };
+      
+      const handleBookingUpdated = (data: BookingUpdatedEvent) => {
+        onBookingUpdatedRef.current?.(data);
+      };
+      
+      const handleBookingDeleted = (data: BookingDeletedEvent) => {
+        onBookingDeletedRef.current?.(data);
+      };
+
+      socket.on('bookingCreated', handleBookingCreated);
+      socket.on('bookingUpdated', handleBookingUpdated);
+      socket.on('bookingDeleted', handleBookingDeleted);
     } else if (!socketRef.current.connected) {
       socketRef.current.connect();
     }

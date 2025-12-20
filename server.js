@@ -31,7 +31,9 @@ app.prepare().then(() => {
   // Initialize Socket.IO server
   const io = new Server(httpServer, {
     cors: {
-      origin: dev ? 'http://localhost:3000' : process.env.NEXT_PUBLIC_APP_URL || '*',
+      origin: dev 
+        ? 'http://localhost:3000' 
+        : process.env.NEXT_PUBLIC_APP_URL || false,
       methods: ['GET', 'POST'],
     },
   });

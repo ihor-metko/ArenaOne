@@ -44,7 +44,7 @@ describe('useSocketIO', () => {
   });
 
   it('should initialize socket when autoConnect is true', async () => {
-    const { result } = renderHook(() => useSocketIO({ autoConnect: true }));
+    renderHook(() => useSocketIO({ autoConnect: true }));
 
     await waitFor(() => {
       expect(mockSocket).toBeTruthy();
@@ -70,9 +70,10 @@ describe('useSocketIO', () => {
       expect(mockSocket).toBeTruthy();
       expect(mockSocket.on).toHaveBeenCalledWith('connect', expect.any(Function));
       expect(mockSocket.on).toHaveBeenCalledWith('disconnect', expect.any(Function));
-      expect(mockSocket.on).toHaveBeenCalledWith('bookingCreated', onBookingCreated);
-      expect(mockSocket.on).toHaveBeenCalledWith('bookingUpdated', onBookingUpdated);
-      expect(mockSocket.on).toHaveBeenCalledWith('bookingDeleted', onBookingDeleted);
+      // Check that handlers are registered (we use wrapper functions now)
+      expect(mockSocket.on).toHaveBeenCalledWith('bookingCreated', expect.any(Function));
+      expect(mockSocket.on).toHaveBeenCalledWith('bookingUpdated', expect.any(Function));
+      expect(mockSocket.on).toHaveBeenCalledWith('bookingDeleted', expect.any(Function));
     });
   });
 
