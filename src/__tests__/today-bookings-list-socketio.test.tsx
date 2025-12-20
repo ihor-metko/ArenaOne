@@ -27,6 +27,10 @@ jest.mock("socket.io-client", () => {
         disconnect: jest.fn(function () {
           this.connected = false;
         }),
+        io: {
+          on: jest.fn(),
+          off: jest.fn(),
+        },
       };
       return mockSocket;
     }),
@@ -65,6 +69,20 @@ jest.mock("@/components/ui", () => ({
   PaymentStatusBadge: ({ status }: any) => <span>{status}</span>,
 }));
 
+// Mock booking store
+const mockUpdateBookingFromSocket = jest.fn();
+const mockRemoveBookingFromSocket = jest.fn();
+
+jest.mock("@/stores/useBookingStore", () => ({
+  useBookingStore: jest.fn((selector) => {
+    const store = {
+      updateBookingFromSocket: mockUpdateBookingFromSocket,
+      removeBookingFromSocket: mockRemoveBookingFromSocket,
+    };
+    return selector ? selector(store) : store;
+  }),
+}));
+
 describe("TodayBookingsList with Socket.IO", () => {
   const mockBookings: OperationsBooking[] = [
     {
@@ -74,23 +92,24 @@ describe("TodayBookingsList with Socket.IO", () => {
       userEmail: "john@example.com",
       courtId: "court-1",
       courtName: "Court 1",
-      clubId: "club-1",
-      clubName: "Test Club",
       start: "2024-01-15T10:00:00Z",
       end: "2024-01-15T11:00:00Z",
-      bookingStatus: "confirmed",
-      paymentStatus: "paid",
+      bookingStatus: "Active",
+      paymentStatus: "Paid",
       price: 100,
-      sportType: "tennis",
+      sportType: "PADEL",
       coachId: null,
       coachName: null,
       createdAt: "2024-01-15T09:00:00Z",
+      updatedAt: "2024-01-15T09:00:00Z",
     },
   ];
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockSocket = null;
+    mockUpdateBookingFromSocket.mockClear();
+    mockRemoveBookingFromSocket.mockClear();
   });
 
   it("should not connect to socket when clubId is not provided", async () => {
