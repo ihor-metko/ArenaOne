@@ -28,11 +28,11 @@
                  │
          ┌───────┼───────┐
          │       │       │
-    ┌────▼──┐ ┌─▼──┐ ┌──▼────┐
-    │Upload │ │List│ │User   │
-    │Mutate │ │+   │ │Specific│
-    │Admin  │ │Pag │ │Query  │
-    └───┬───┘ └─┬──┘ └──┬────┘
+    ┌────▼──┐ ┌─▼────────┐ ┌──▼────┐
+    │Upload │ │List with │ │User   │
+    │Mutate │ │Pagination│ │Specific│
+    │Admin  │ │& Filters │ │Query  │
+    └───┬───┘ └─┬────────┘ └──┬────┘
         │       │       │
     ┌───▼───────▼───────▼────┐
     │ DIRECT FETCH OK ✅     │
@@ -98,16 +98,28 @@ if (hasRole('ROOT_ADMIN')) {
 **1. Specialized Operations**
 ```tsx
 // ✅ Image upload
-fetch(`/api/admin/organizations/${id}/images`, { 
-  method: 'POST', 
-  body: formData 
-});
+try {
+  const response = await fetch(`/api/admin/organizations/${id}/images`, { 
+    method: 'POST', 
+    body: formData 
+  });
+  if (!response.ok) throw new Error('Upload failed');
+  const data = await response.json();
+} catch (error) {
+  console.error('Failed to upload image:', error);
+}
 
 // ✅ Admin assignment
-fetch('/api/admin/organizations/assign-admin', { 
-  method: 'POST', 
-  body: JSON.stringify(payload) 
-});
+try {
+  const response = await fetch('/api/admin/organizations/assign-admin', { 
+    method: 'POST', 
+    body: JSON.stringify(payload) 
+  });
+  if (!response.ok) throw new Error('Assignment failed');
+  const data = await response.json();
+} catch (error) {
+  console.error('Failed to assign admin:', error);
+}
 ```
 
 **2. Public Endpoints with Server Filtering**

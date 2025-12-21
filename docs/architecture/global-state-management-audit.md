@@ -130,14 +130,17 @@ These direct fetch calls are **intentional and correct** as per architecture gui
 ### ⚠️ Minor Issues (Low Priority)
 
 **Issue 1: Mixed fetch patterns in some pages**
-- **Location:** A few pages like `/admin/courts/new` use both `fetchOrganizations()` and auto-fetch
+- **Location:** Several pages use both `fetchOrganizations()` and auto-fetch patterns:
+  - `/admin/courts/new/page.tsx` - Uses manual `fetchOrganizations()`
+  - `/admin/payment-accounts/page.tsx` - Uses manual `fetchOrganizations()`
+  - Could benefit from switching to `getOrganizationsWithAutoFetch()` pattern
 - **Impact:** Low - both patterns work, but inconsistent
-- **Recommendation:** Standardize on auto-fetch pattern for organizations
+- **Recommendation:** Standardize on auto-fetch pattern for organizations (2-3 files)
 
 **Issue 2: Direct fetch for public club endpoints**
-- **Location:** `/app/(pages)/(player)/dashboard/page.tsx` - Line 152
+- **Location:** `/app/(pages)/(player)/dashboard/page.tsx` (in player dashboard component)
 - **Status:** This is intentional (public API with server-side filtering)
-- **Recommendation:** Add comment to clarify this is an exception to store usage
+- **Recommendation:** Add comment to clarify this is an architectural exception to store usage
 
 ### ✅ No Critical Issues Found
 
