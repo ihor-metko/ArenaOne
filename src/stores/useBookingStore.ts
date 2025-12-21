@@ -15,7 +15,7 @@ import {
  * Features:
  * - Fetch bookings by club and date with inflight guards
  * - Create and cancel bookings
- * - Short-polling mechanism for auto-refresh
+ * - Real-time updates via Socket.IO
  * - Cache management and invalidation
  * 
  * Usage:
@@ -36,10 +36,6 @@ interface BookingState {
   error: string | null;
   lastFetchedAt: number | null;
   lastFetchParams: { clubId: string; date: string } | null;
-
-  // Polling state
-  pollingInterval: number | null;
-  pollingTimeoutId: NodeJS.Timeout | null;
 
   // Internal inflight guards
   _inflightFetch: Promise<OperationsBooking[]> | null;
@@ -68,10 +64,6 @@ interface BookingState {
   // Invalidate cache (force refetch)
   invalidateBookings: () => void;
 
-  // Polling controls
-  startPolling: (clubId: string, date: string, intervalMs?: number) => void;
-  stopPolling: () => void;
-
   // Selectors
   getBookingById: (id: string) => OperationsBooking | undefined;
   getBookingsByCourtId: (courtId: string) => OperationsBooking[];
@@ -91,8 +83,6 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   error: null,
   lastFetchedAt: null,
   lastFetchParams: null,
-  pollingInterval: null,
-  pollingTimeoutId: null,
   _inflightFetch: null,
 
   // State setters
@@ -238,34 +228,6 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   // Invalidate cached bookings
   invalidateBookings: () => {
     set({ lastFetchedAt: null, lastFetchParams: null });
-  },
-
-  // Start polling for bookings
-  startPolling: (clubId: string, date: string, intervalMs = 15000) => {
-    // Stop any existing polling
-    get().stopPolling();
-
-    // Initial fetch
-    get().fetchBookingsForDay(clubId, date).catch(console.error);
-
-    // Set up polling
-    const timeoutId = setInterval(() => {
-      get().fetchBookingsForDay(clubId, date).catch(console.error);
-    }, intervalMs);
-
-    set({
-      pollingInterval: intervalMs,
-      pollingTimeoutId: timeoutId,
-    });
-  },
-
-  // Stop polling
-  stopPolling: () => {
-    const state = get();
-    if (state.pollingTimeoutId) {
-      clearInterval(state.pollingTimeoutId);
-      set({ pollingInterval: null, pollingTimeoutId: null });
-    }
   },
 
   // Selectors
