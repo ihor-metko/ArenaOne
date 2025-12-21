@@ -248,7 +248,8 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
       socket.off('bookingDeleted');
       socket.disconnect();
     };
-  }, [autoConnect, debounceMs]); // Only reconnect when autoConnect or debounceMs changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoConnect]); // debounceMs is intentionally not included to avoid reconnection
 
   const connect = () => {
     if (!socketRef.current) {

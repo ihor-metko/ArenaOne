@@ -118,7 +118,8 @@ export function GlobalSocketListener() {
       socket.off('payment_confirmed');
       socket.off('payment_failed');
     };
-  }, [socket, updateBookingFromSocket, removeBookingFromSocket]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket]); // Zustand store functions are stable and excluded from dependencies
 
   // Cleanup notification manager on unmount
   useEffect(() => {
