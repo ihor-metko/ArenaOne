@@ -206,3 +206,73 @@ export interface UpdateClubPayload {
   logo?: string | null;
   supportedSports?: SportType[];
 }
+
+// ==================== Admin and Player Specific Types ====================
+
+/**
+ * Admin-specific club data with full operational details
+ * Used by useAdminClubStore
+ */
+export interface AdminClubWithCounts extends ClubWithCounts {
+  // Inherited from ClubWithCounts: organizationId, organization, admins, counts, etc.
+}
+
+/**
+ * Admin-specific detailed club data
+ * Used by useAdminClubStore for individual club details
+ */
+export interface AdminClubDetail extends ClubDetail {
+  // Inherited from ClubDetail: all fields including coaches, gallery, business hours, etc.
+}
+
+/**
+ * Player-specific club data with only public information
+ * Used by usePlayerClubStore
+ */
+export interface PlayerClub {
+  id: string;
+  name: string;
+  shortDescription?: string | null;
+  location: string;
+  city?: string | null;
+  contactInfo?: string | null;
+  openingHours?: string | null;
+  logo?: string | null;
+  heroImage?: string | null;
+  tags?: string | null;
+  createdAt: string;
+  indoorCount?: number;
+  outdoorCount?: number;
+}
+
+/**
+ * Player-specific detailed club data with public information
+ * Used by usePlayerClubStore for individual club details
+ */
+export interface PlayerClubDetail {
+  id: string;
+  name: string;
+  slug?: string | null;
+  shortDescription?: string | null;
+  longDescription?: string | null;
+  location: string;
+  city?: string | null;
+  country?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
+  socialLinks?: string | null;
+  contactInfo?: string | null;
+  openingHours?: string | null;
+  logo?: string | null;
+  heroImage?: string | null;
+  defaultCurrency?: string | null;
+  timezone?: string | null;
+  tags?: string | null;
+  courts: ClubCourt[];
+  coaches: Array<{ id: string; name: string }>;
+  gallery?: ClubGalleryImage[];
+  businessHours?: ClubBusinessHours[];
+}
