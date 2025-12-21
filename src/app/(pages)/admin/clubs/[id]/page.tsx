@@ -33,7 +33,7 @@ export default function AdminClubDetailPage({
   // Use centralized club store
   const currentClub = useClubStore((state) => state.currentClub);
   const loading = useClubStore((state) => state.loading);
-  const fetchClubById = useClubStore((state) => state.fetchClubById);
+  const fetchAdminClubById = useClubStore((state) => state.fetchAdminClubById);
   const deleteClub = useClubStore((state) => state.deleteClub);
   
   const [error, setError] = useState("");
@@ -60,7 +60,7 @@ export default function AdminClubDetailPage({
     if (!clubId) return;
 
     try {
-      await fetchClubById(clubId);
+      await fetchAdminClubById(clubId);
       setError("");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load club";
@@ -72,7 +72,7 @@ export default function AdminClubDetailPage({
         setError(errorMessage);
       }
     }
-  }, [clubId, fetchClubById, router]);
+  }, [clubId, fetchAdminClubById, router]);
 
   useEffect(() => {
     if (isLoadingStore) return;
@@ -118,7 +118,7 @@ export default function AdminClubDetailPage({
 
       const updatedClub = await response.json();
       // Refresh club data from store to keep it in sync
-      await fetchClubById(clubId);
+      await fetchAdminClubById(clubId);
       showToast("success", "Changes saved successfully");
       return updatedClub;
     } catch (err) {

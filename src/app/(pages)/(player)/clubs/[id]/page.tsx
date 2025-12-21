@@ -100,7 +100,7 @@ export default function ClubDetailPage({
   
   // Use centralized club store
   const currentClub = useClubStore((state) => state.currentClub);
-  const fetchClubById = useClubStore((state) => state.fetchClubById);
+  const fetchPlayerClubById = useClubStore((state) => state.fetchPlayerClubById);
   
   // Map currentClub to ClubWithDetails (they should be compatible)
   const club = currentClub as ClubWithDetails | null;
@@ -165,7 +165,7 @@ export default function ClubDetailPage({
     async function fetchClubData() {
       try {
         const resolvedParams = await params;
-        await fetchClubById(resolvedParams.id);
+        await fetchPlayerClubById(resolvedParams.id);
         setError(null);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : t("clubs.failedToLoadClub");
@@ -179,7 +179,7 @@ export default function ClubDetailPage({
       }
     }
     fetchClubData();
-  }, [params, fetchClubById, t]);
+  }, [params, fetchPlayerClubById, t]);
   
   // Fetch availability when club data is loaded
   useEffect(() => {

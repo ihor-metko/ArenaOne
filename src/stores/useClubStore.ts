@@ -41,12 +41,21 @@ interface ClubState {
   clearCurrentClub: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  
+  // Admin-specific methods (use /api/admin/clubs)
+  fetchAdminClubs: () => Promise<void>;
+  fetchAdminClubById: (id: string) => Promise<void>;
+  
+  // Player-specific methods (use /api/clubs)
+  fetchPlayerClubById: (id: string) => Promise<void>;
+  
+  // Legacy methods (kept for backward compatibility, use admin endpoints)
   fetchClubs: () => Promise<void>;
   fetchClubById: (id: string) => Promise<void>;
   
   // New idempotent, concurrency-safe methods
   fetchClubsIfNeeded: (options?: { force?: boolean; organizationId?: string | null }) => Promise<void>;
-  ensureClubById: (id: string, options?: { force?: boolean }) => Promise<ClubDetail>;
+  ensureClubById: (id: string, options?: { force?: boolean; useAdminEndpoint?: boolean }) => Promise<ClubDetail>;
   invalidateClubs: () => void;
   
   createClub: (payload: CreateClubPayload) => Promise<Club>;
@@ -87,8 +96,8 @@ export const useClubStore = create<ClubState>((set, get) => ({
   
   setError: (error) => set({ error }),
 
-  // Fetch all clubs (role-based filtering happens server-side)
-  fetchClubs: async () => {
+  // Admin-specific: Fetch all clubs (use /api/admin/clubs)
+  fetchAdminClubs: async () => {
     set({ loading: true, error: null });
     try {
       const response = await fetch("/api/admin/clubs");
@@ -109,8 +118,8 @@ export const useClubStore = create<ClubState>((set, get) => ({
     }
   },
 
-  // Fetch a single club by ID and set it as current
-  fetchClubById: async (id: string) => {
+  // Admin-specific: Fetch a single club by ID (use /api/admin/clubs/[id])
+  fetchAdminClubById: async (id: string) => {
     set({ loading: true, error: null });
     try {
       const response = await fetch(`/api/admin/clubs/${id}`);
@@ -127,6 +136,36 @@ export const useClubStore = create<ClubState>((set, get) => ({
       set({ error: errorMessage, loading: false, currentClub: null });
       throw error;
     }
+  },
+
+  // Player-specific: Fetch a single club by ID (use /api/clubs/[id])
+  fetchPlayerClubById: async (id: string) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await fetch(`/api/clubs/${id}`);
+      
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: "Failed to fetch club" }));
+        throw new Error(data.error || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      set({ currentClub: data, loading: false });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch club";
+      set({ error: errorMessage, loading: false, currentClub: null });
+      throw error;
+    }
+  },
+
+  // Legacy: Fetch all clubs (kept for backward compatibility, uses admin endpoint)
+  fetchClubs: async () => {
+    return get().fetchAdminClubs();
+  },
+
+  // Legacy: Fetch a single club by ID (kept for backward compatibility, uses admin endpoint)
+  fetchClubById: async (id: string) => {
+    return get().fetchAdminClubById(id);
   },
 
   /**
@@ -208,9 +247,10 @@ export const useClubStore = create<ClubState>((set, get) => ({
    * - If !force and clubsById[id] exists, returns cached club
    * - If an inflight request for this ID exists, returns that Promise
    * - Otherwise, performs a new network request
+   * - useAdminEndpoint: if true, uses /api/admin/clubs/[id], otherwise uses /api/clubs/[id]
    */
   ensureClubById: async (id: string, options = {}) => {
-    const { force = false } = options;
+    const { force = false, useAdminEndpoint = true } = options;
     const state = get();
 
     // If not forcing and club is already cached, return it
@@ -227,7 +267,8 @@ export const useClubStore = create<ClubState>((set, get) => ({
     const inflightPromise = (async (): Promise<ClubDetail> => {
       set({ loadingClubs: true, clubsError: null });
       try {
-        const response = await fetch(`/api/admin/clubs/${id}`);
+        const endpoint = useAdminEndpoint ? `/api/admin/clubs/${id}` : `/api/clubs/${id}`;
+        const response = await fetch(endpoint);
         
         if (!response.ok) {
           const data = await response.json().catch(() => ({ error: "Failed to fetch club" }));

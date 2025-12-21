@@ -176,12 +176,19 @@ function MyComponent() {
 - `loading: boolean` - Loading state
 - `error: string | null` - Error message
 
-#### Actions
+#### Actions (Role-based)
+- `fetchAdminClubs()` - Load clubs from `/api/admin/clubs` (admin-only, returns full data)
+- `fetchAdminClubById(id: string)` - Load single club from `/api/admin/clubs/:id` (admin-only)
+- `fetchPlayerClubById(id: string)` - Load single club from `/api/clubs/:id` (public, player view)
+- `fetchClubs()` - Legacy: uses admin endpoint
+- `fetchClubById(id: string)` - Legacy: uses admin endpoint
+
+#### Actions (General)
 - `setClubs(clubs: ClubWithCounts[])` - Manually set clubs list
 - `setCurrentClub(club: ClubDetail | null)` - Set current club
 - `clearCurrentClub()` - Clear current club selection
-- `fetchClubs()` - Load clubs from `/api/admin/clubs` (role-based filtering)
-- `fetchClubById(id: string)` - Load single club and set as current
+- `fetchClubsIfNeeded(options)` - Idempotent fetch with caching
+- `ensureClubById(id, options)` - Idempotent single club fetch with role support
 - `createClub(payload)` - Create new club (optimistic update)
 - `updateClub(id, payload)` - Update club (optimistic update)
 - `deleteClub(id)` - Delete club
@@ -192,23 +199,38 @@ function MyComponent() {
 
 ### Role-Based Access
 
-The store automatically handles role-based access control:
+The store supports separate endpoints for admins and players:
 
-- **Root Admin** → All clubs in the platform
-- **Organization SuperAdmin** → Clubs of the selected organization
-- **Club Admin** → Only their assigned clubs
+#### Admin Endpoints
+- **`fetchAdminClubs()`** → `/api/admin/clubs` - Full club list with admin data
+- **`fetchAdminClubById(id)`** → `/api/admin/clubs/:id` - Full club details including internal fields
 
-All filtering is handled on the server side for security.
+Use these in admin pages and components.
+
+#### Player Endpoints
+- **`fetchPlayerClubById(id)`** → `/api/clubs/:id` - Public club details only
+
+Use these in player-facing pages and components.
+
+#### Automatic Role Detection
+- **`ensureClubById(id, { useAdminEndpoint: true })`** - Manually specify endpoint
+- Default is admin endpoint for backward compatibility
+
+All admin filtering is handled on the server side for security.
 
 ### API Endpoints
 
-The store uses the following API endpoints:
+The store uses role-based API endpoints:
 
+#### Admin Endpoints (require authentication and admin privileges)
 - `GET /api/admin/clubs` - List clubs (role-based filtering)
-- `GET /api/admin/clubs/:id` - Get single club details
+- `GET /api/admin/clubs/:id` - Get full club details with admin-only fields
 - `POST /api/admin/clubs/new` - Create new club
 - `PUT /api/admin/clubs/:id` - Update club
 - `DELETE /api/admin/clubs/:id` - Delete club (root admin only)
+
+#### Player Endpoints (public or authenticated users)
+- `GET /api/clubs/:id` - Get public club details (no admin-only fields)
 
 ### Types
 
@@ -262,22 +284,31 @@ const handleCreate = async () => {
 };
 ```
 
-### Example: Using Selectors
+### Example: Using Role-Based Endpoints
 
 ```typescript
-// Subscribe only to specific club
-function ClubDetails({ clubId }: { clubId: string }) {
-  const club = useClubStore(state => state.getClubById(clubId));
-  const isSelected = useClubStore(state => state.isClubSelected(clubId));
+// In admin pages - use admin endpoint
+function AdminClubDetails({ clubId }: { clubId: string }) {
+  const fetchAdminClubById = useClubStore(state => state.fetchAdminClubById);
+  const currentClub = useClubStore(state => state.currentClub);
   
-  if (!club) return <div>Club not found</div>;
+  useEffect(() => {
+    fetchAdminClubById(clubId);
+  }, [clubId, fetchAdminClubById]);
   
-  return (
-    <div>
-      <h2>{club.name}</h2>
-      {isSelected && <span>✓ Selected</span>}
-    </div>
-  );
+  return <div>{currentClub?.name}</div>;
+}
+
+// In player pages - use player endpoint
+function PlayerClubDetails({ clubId }: { clubId: string }) {
+  const fetchPlayerClubById = useClubStore(state => state.fetchPlayerClubById);
+  const currentClub = useClubStore(state => state.currentClub);
+  
+  useEffect(() => {
+    fetchPlayerClubById(clubId);
+  }, [clubId, fetchPlayerClubById]);
+  
+  return <div>{currentClub?.name}</div>;
 }
 ```
 
