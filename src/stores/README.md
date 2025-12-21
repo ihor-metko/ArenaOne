@@ -2,6 +2,39 @@
 
 This directory contains Zustand store implementations for state management.
 
+## 🎯 Architecture Principles
+
+**ArenaOne uses Zustand stores as the SINGLE SOURCE OF TRUTH for all domain data.**
+
+### Core Rules
+
+1. **Store-Only Access**: All domain data (organizations, clubs, bookings) MUST be accessed via stores
+2. **No Direct Fetches**: Pages and components MUST NOT call `fetch()` directly for domain data
+3. **Store Actions Only**: Data fetching MUST happen only inside store actions
+4. **Lazy Loading**: Stores use lazy loading - data is fetched only when needed
+5. **Caching & Deduplication**: Stores handle caching and prevent duplicate fetches
+6. **Stable Rendering**: No refetching on tab switches or navigation
+
+### 📚 Documentation
+
+For complete guidelines on data fetching, see:
+- **[Data Fetching Guidelines](../../docs/architecture/data-fetching-guidelines.md)** - Comprehensive guide
+- **[Store Helpers](../lib/storeHelpers.ts)** - Helper functions to ensure proper usage
+
+### ⚡ Quick Reference
+
+#### When to Use Stores
+✅ Organizations data  
+✅ Clubs data  
+✅ Bookings data (operations/calendar)  
+✅ User session & auth  
+
+#### When NOT to Use Stores  
+❌ Specialized operations (image uploads, admin assignments)  
+❌ Public endpoints with server-side filtering  
+❌ User-specific queries (player bookings, notifications)  
+❌ Reporting endpoints (admin lists with pagination)
+
 ## useNotificationStore
 
 A centralized Zustand store for managing admin notifications across the entire application.
