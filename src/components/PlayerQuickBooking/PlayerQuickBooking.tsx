@@ -178,9 +178,8 @@ export function PlayerQuickBooking({
                 indoor: court.indoor,
                 defaultPriceCents: court.defaultPriceCents,
               },
-              },
-            }));
-          }
+            },
+          }));
         } catch {
           // Silently fail
         }
@@ -190,7 +189,7 @@ export function PlayerQuickBooking({
     if (isOpen && preselectedCourtId) {
       fetchPreselectedCourt();
     }
-  }, [isOpen, preselectedCourtId, state.step2.selectedCourt]);
+  }, [isOpen, preselectedCourtId, state.step2.selectedCourt, ensureCourtById]);
 
   // Memoize club mapping to avoid unnecessary re-renders
   const mappedClubs: BookingClub[] = useMemo(() => 

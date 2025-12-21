@@ -60,7 +60,7 @@ interface Club {
     id: string;
     name: string;
   } | null;
-  defaultCurrency?: string;
+  defaultCurrency?: string | null;
   businessHours?: Array<{
     dayOfWeek: number;
     openTime: string | null;
@@ -291,11 +291,6 @@ export default function CreateCourtPage({
         // Set default currency from club
         if (club.defaultCurrency) {
           setValue("currency", club.defaultCurrency);
-        }
-        
-        // Set organization ID from club if not already set
-        if (data.organizationId && !getValues("organizationId")) {
-          setValue("organizationId", data.organizationId);
         }
       } catch (err) {
         console.error("Failed to load club:", err);
