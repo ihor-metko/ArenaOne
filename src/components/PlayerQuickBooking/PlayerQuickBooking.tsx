@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
-import { useClubStore } from "@/stores/useClubStore";
+import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useCourtAvailability } from "@/hooks/useCourtAvailability";
 import { Step0SelectClub } from "./Step0SelectClub";
 import { Step1DateTime } from "./Step1DateTime";
@@ -37,8 +37,8 @@ export function PlayerQuickBooking({
   const t = useTranslations();
   
   // Use centralized club store with new idempotent method
-  const clubsFromStore = useClubStore((state) => state.clubs);
-  const fetchClubsIfNeeded = useClubStore((state) => state.fetchClubsIfNeeded);
+  const clubsFromStore = usePlayerClubStore((state) => state.clubs);
+  const fetchClubsIfNeeded = usePlayerClubStore((state) => state.fetchClubsIfNeeded);
 
   // Real-time availability updates via WebSocket
   const { refreshKey, triggerRefresh } = useCourtAvailability(
