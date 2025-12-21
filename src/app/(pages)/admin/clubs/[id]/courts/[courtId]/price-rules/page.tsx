@@ -8,6 +8,7 @@ import { TableSkeleton, PageHeaderSkeleton } from "@/components/ui/skeletons";
 import { PriceRuleForm, PriceRuleFormData } from "@/components/admin/PriceRuleForm";
 import { formatPrice } from "@/utils/price";
 import { useCourtStore } from "@/stores/useCourtStore";
+import { useUserStore } from "@/stores/useUserStore";
 
 
 interface PriceRule {
@@ -47,11 +48,13 @@ export default function PriceRulesPage({
 }: {
   params: Promise<{ id: string; courtId: string }>;
 }) {
+  const router = useRouter();
+  
   // Use store for auth
   const isHydrated = useUserStore((state) => state.isHydrated);
   const isLoading = useUserStore((state) => state.isLoading);
-  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
-  const router = useRouter();
+  const user = useUserStore((state) => state.user);
+  
   const [clubId, setClubId] = useState<string | null>(null);
   const [courtId, setCourtId] = useState<string | null>(null);
   const [club, setClub] = useState<Club | null>(null);
@@ -131,7 +134,7 @@ export default function PriceRulesPage({
   useEffect(() => {
     if (!isHydrated || isLoading) return;
 
-    if (!session?.user || !session.user.isRoot) {
+    if (!user || !user.isRoot) {
       router.push("/auth/sign-in");
       return;
     }
@@ -141,7 +144,7 @@ export default function PriceRulesPage({
       fetchCourt();
       fetchRules();
     }
-  }, [session, status, router, clubId, courtId, fetchClub, fetchCourt, fetchRules]);
+  }, [user, isLoading, router, clubId, courtId, fetchClub, fetchCourt, fetchRules, isHydrated]);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
