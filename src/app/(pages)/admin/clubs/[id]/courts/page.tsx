@@ -6,7 +6,9 @@ import { Button, Card, Modal, IMLink } from "@/components/ui";
 import { CourtForm, CourtFormData } from "@/components/admin/CourtForm";
 import { formatPrice } from "@/utils/price";
 import { useCourtStore } from "@/stores/useCourtStore";
+import { useClubStore } from "@/stores/useClubStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { ensureClubContext } from "@/lib/storeHelpers";
 import type { Court } from "@/types/court";
 
 interface Club {
@@ -50,22 +52,23 @@ export default function AdminCourtsPage({
     });
   }, [params]);
 
+  // Fetch club data from store instead of direct API call
   const fetchClub = useCallback(async () => {
     if (!clubId) return;
 
     try {
-      const response = await fetch(`/api/clubs/${clubId}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          setError("Club not found");
-          return;
-        }
-        throw new Error("Failed to fetch club");
+      // Use store to get club data with caching and inflight guards
+      const clubData = await ensureClubContext(clubId);
+      setClub({
+        id: clubData.id,
+        name: clubData.name,
+      });
+    } catch (err) {
+      if (err instanceof Error && err.message.includes("404")) {
+        setError("Club not found");
+      } else {
+        setError("Failed to load club");
       }
-      const data = await response.json();
-      setClub(data);
-    } catch {
-      setError("Failed to load club");
     }
   }, [clubId]);
 

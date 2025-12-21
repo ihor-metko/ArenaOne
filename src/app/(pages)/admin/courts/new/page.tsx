@@ -11,6 +11,7 @@ import { formatPrice, dollarsToCents } from "@/utils/price";
 import { useUserStore } from "@/stores/useUserStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useClubStore } from "@/stores/useClubStore";
+import { ensureClubContext } from "@/lib/storeHelpers";
 
 import "./page.css";
 
@@ -281,18 +282,12 @@ export default function CreateCourtPage({
       return;
     }
 
+    // Fetch club data from store instead of direct API call
     const fetchClub = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/clubs/${selectedClubId}`);
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError(t("admin.courts.new.errors.clubNotFound"));
-            return;
-          }
-          throw new Error(t("admin.courts.new.errors.failedToLoadClub"));
-        }
-        const data = await response.json();
+        // Use store to get club data with caching and inflight guards
+        const data = await ensureClubContext(selectedClubId);
         setClub(data);
         
         // Set default currency from club
@@ -306,7 +301,11 @@ export default function CreateCourtPage({
         }
       } catch (err) {
         console.error("Failed to load club:", err);
-        setError(t("admin.courts.new.errors.failedToLoadClub"));
+        if (err instanceof Error && err.message.includes("404")) {
+          setError(t("admin.courts.new.errors.clubNotFound"));
+        } else {
+          setError(t("admin.courts.new.errors.failedToLoadClub"));
+        }
       } finally {
         setLoading(false);
       }

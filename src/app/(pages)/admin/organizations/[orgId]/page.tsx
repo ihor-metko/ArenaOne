@@ -119,6 +119,9 @@ export default function OrganizationDetailPage() {
     }
   }, [orgId, ensureOrganizationById, t]);
 
+  // Fetch organization admins
+  // Note: This is a specialized operation to get admin list with membership details.
+  // This is NOT domain data and should remain as a direct fetch per data-fetching-guidelines.md
   const fetchAdmins = useCallback(async () => {
     try {
       setLoadingAdmins(true);
@@ -134,6 +137,9 @@ export default function OrganizationDetailPage() {
     }
   }, [orgId]);
 
+  // Fetch bookings preview with aggregations
+  // Note: This is a reporting/list endpoint with complex server-side filtering and aggregation.
+  // This is NOT domain data and should remain as a direct fetch per data-fetching-guidelines.md
   const fetchBookingsPreview = useCallback(async () => {
     try {
       setLoadingBookings(true);
@@ -251,6 +257,8 @@ export default function OrganizationDetailPage() {
       });
 
       // Upload images if new files were provided
+      // Note: Image uploads are specialized operations and should remain as direct fetch
+      // per data-fetching-guidelines.md
       if (data.logo) {
         const logoFormData = new FormData();
         logoFormData.append("file", data.logo);

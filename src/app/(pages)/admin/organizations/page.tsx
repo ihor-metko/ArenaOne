@@ -401,6 +401,8 @@ export default function AdminOrganizationsPage() {
             userId: selectedUserId,
           };
 
+      // Note: Admin assignment is a specialized operation, not domain data.
+      // Should remain as direct fetch per data-fetching-guidelines.md
       const response = await fetch("/api/admin/organizations/assign-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -428,6 +430,8 @@ export default function AdminOrganizationsPage() {
   // ============ Club Admins Management Functions ============
 
   // Fetch club admins for an organization
+  // Note: Club admin management is a specialized operation, not domain data.
+  // Should remain as direct fetch per data-fetching-guidelines.md
   const fetchClubAdmins = useCallback(async (orgId: string) => {
     try {
       setClubAdminsLoading(true);
@@ -507,6 +511,8 @@ export default function AdminOrganizationsPage() {
   };
 
   // Fetch users for club admin assignment
+  // Note: User search/autocomplete is a reporting endpoint with server-side filtering.
+  // Should remain as direct fetch per data-fetching-guidelines.md
   const fetchClubAdminUsers = useCallback(async (query: string = "") => {
     try {
       const response = await fetch(`/api/admin/users?q=${encodeURIComponent(query)}`);
