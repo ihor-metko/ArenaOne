@@ -248,7 +248,7 @@ export function useSocketIO(options: UseSocketIOOptions = {}): UseSocketIOReturn
       socket.off('bookingDeleted');
       socket.disconnect();
     };
-  }, [autoConnect]); // Only reconnect when autoConnect changes
+  }, [autoConnect, debounceMs]); // Only reconnect when autoConnect or debounceMs changes
 
   const connect = () => {
     if (!socketRef.current) {

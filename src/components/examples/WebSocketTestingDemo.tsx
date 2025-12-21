@@ -47,7 +47,6 @@ export function WebSocketTestingDemo({
   showDebugLogs = true,
 }: WebSocketTestingDemoProps) {
   const [logs, setLogs] = useState<string[]>([]);
-  const [lastEventTime, setLastEventTime] = useState<Date | null>(null);
 
   const { socket, isConnected } = useSocket();
   const bookings = useBookingStore((state) => state.bookings);
@@ -66,9 +65,9 @@ export function WebSocketTestingDemo({
   // Monitor booking changes
   useEffect(() => {
     if (bookings.length > 0) {
-      setLastEventTime(new Date());
       addLog(`📊 Bookings list updated: ${bookings.length} total`);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookings]);
 
   // Manual disconnect/connect handlers (for testing)
