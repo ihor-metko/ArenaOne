@@ -51,7 +51,7 @@ export default function AdminNotificationsPage() {
             </IMLink>
           </div>
 
-          <AdminNotificationsPanel pollInterval={30000} />
+          <AdminNotificationsPanel />
         </section>
       )}
     </main>

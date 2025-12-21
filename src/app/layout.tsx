@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { GlobalSocketListener } from "@/components/GlobalSocketListener";
+import { NotificationStoreInitializer } from "@/components/NotificationStoreInitializer";
 // TEMPORARY MOCK MODE — REMOVE WHEN DB IS FIXED
 import { MockModeWarning } from "@/components/MockModeWarning";
 
@@ -29,6 +30,7 @@ export default async function RootLayout({
           <AuthProvider>
             <SocketProvider>
               <GlobalSocketListener />
+              <NotificationStoreInitializer />
               {children}
             </SocketProvider>
           </AuthProvider>

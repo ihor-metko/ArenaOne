@@ -3,13 +3,6 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useNotificationStore, type AdminNotification } from "@/stores/useNotificationStore";
 
-interface NotificationsResponse {
-  notifications: AdminNotification[];
-  totalCount: number;
-  unreadCount: number;
-  hasMore: boolean;
-}
-
 interface UseNotificationsOptions {
   enabled?: boolean;
   onNewNotification?: (notification: AdminNotification) => void;
@@ -20,7 +13,6 @@ interface UseNotificationsReturn {
   unreadCount: number;
   loading: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
 }
@@ -28,11 +20,16 @@ interface UseNotificationsReturn {
 /**
  * Hook for accessing and managing notifications from the centralized store.
  * 
- * This hook:
+ * This hook is fully passive and:
  * - Reads notifications from the Zustand store (single source of truth)
- * - Performs initial HTTP fetch to populate the store
- * - Provides methods to mark notifications as read (with API calls)
- * - Does NOT poll - relies on Socket.IO for real-time updates
+ * - Does NOT fetch notifications (handled by NotificationStoreInitializer)
+ * - Does NOT poll (relies on Socket.IO for real-time updates via GlobalSocketListener)
+ * - Only provides methods to mark notifications as read (with API calls)
+ * 
+ * Notification flow:
+ * 1. Initial load: NotificationStoreInitializer fetches on app startup
+ * 2. Real-time updates: GlobalSocketListener handles WebSocket events
+ * 3. UI updates: Components read from store and re-render automatically
  * 
  * @example
  * ```tsx
@@ -56,10 +53,6 @@ export function useNotifications(
   const unreadCount = useNotificationStore(state => state.unreadCount);
   const loading = useNotificationStore(state => state.loading);
   const error = useNotificationStore(state => state.error);
-  const setNotifications = useNotificationStore(state => state.setNotifications);
-  const setUnreadCount = useNotificationStore(state => state.setUnreadCount);
-  const setLoading = useNotificationStore(state => state.setLoading);
-  const setError = useNotificationStore(state => state.setError);
   const markAsReadInStore = useNotificationStore(state => state.markAsRead);
   const markAllAsReadInStore = useNotificationStore(state => state.markAllAsRead);
 
@@ -73,6 +66,8 @@ export function useNotifications(
 
   // Detect new notifications and trigger callback
   useEffect(() => {
+    if (!enabled) return;
+
     const currentIds = new Set(notifications.map(n => n.id));
     const previousIds = previousNotificationIdsRef.current;
     
@@ -92,37 +87,7 @@ export function useNotifications(
     
     // Update the ref for next comparison
     previousNotificationIdsRef.current = currentIds;
-  }, [notifications]);
-
-  // Fetch notifications from API (initial load only)
-  const fetchNotifications = useCallback(async () => {
-    if (!enabled) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/admin/notifications");
-
-      if (response.status === 401 || response.status === 403) {
-        setError("Access denied. Admin privileges required.");
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch notifications");
-      }
-
-      const data: NotificationsResponse = await response.json();
-      setNotifications(data.notifications);
-      setUnreadCount(data.unreadCount);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load notifications");
-    } finally {
-      setLoading(false);
-    }
-  }, [enabled, setNotifications, setUnreadCount, setLoading, setError]);
+  }, [notifications, enabled]);
 
   // Mark notification as read (API call + store update)
   const markAsRead = useCallback(async (notificationId: string) => {
@@ -162,19 +127,11 @@ export function useNotifications(
     }
   }, [markAllAsReadInStore]);
 
-  // Initial fetch on mount
-  useEffect(() => {
-    if (enabled) {
-      fetchNotifications();
-    }
-  }, [enabled, fetchNotifications]);
-
   return {
     notifications,
     unreadCount,
     loading,
     error,
-    refetch: fetchNotifications,
     markAsRead,
     markAllAsRead,
   };
