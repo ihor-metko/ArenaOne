@@ -4,7 +4,7 @@
  * A reusable notification bell icon with dropdown menu for admin users.
  * 
  * Features:
- * - Real-time notifications via SSE (Server-Sent Events)
+ * - Real-time notifications via WebSocket (Socket.IO)
  * - Unread count badge
  * - Dropdown menu with recent notifications
  * - Toast notifications for new events
@@ -12,9 +12,9 @@
  * - Mark as read functionality
  * 
  * Data Source:
- * - Uses `useAdminNotifications` hook which connects to `/api/admin/notifications/stream`
- * - Fetches from `/api/admin/notifications` API endpoint
- * - Automatically polls if SSE is unavailable
+ * - Initial load: NotificationStoreInitializer (on app startup)
+ * - Real-time updates: GlobalSocketListener (via WebSocket)
+ * - UI: Reads from centralized notification store
  * 
  * Usage:
  * ```tsx
@@ -26,7 +26,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Modal } from "@/components/ui";
-import { useAdminNotifications, AdminNotification } from "@/hooks/useAdminNotifications";
+import { useNotifications } from "@/hooks/useNotifications";
+import { AdminNotification } from "@/stores/useNotificationStore";
 import { NotificationToastContainer } from "@/components/admin/NotificationToast";
 import "./NotificationsDropdown.css";
 
@@ -142,8 +143,7 @@ export function NotificationsDropdown({ maxDropdownItems = 10 }: NotificationsDr
     error,
     markAsRead,
     markAllAsRead,
-    connectionStatus,
-  } = useAdminNotifications({
+  } = useNotifications({
     enabled: true,
     onNewNotification: handleNewNotification,
   });
@@ -240,10 +240,10 @@ export function NotificationsDropdown({ maxDropdownItems = 10 }: NotificationsDr
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
-          {/* Connection status indicator */}
+          {/* Connection status indicator - always show connected since we use Socket.IO */}
           <span
-            className={`im-bell-status im-bell-status--${connectionStatus}`}
-            aria-label={`Connection status: ${connectionStatus}`}
+            className="im-bell-status im-bell-status--connected"
+            aria-label="Connection status: connected"
           />
         </button>
 

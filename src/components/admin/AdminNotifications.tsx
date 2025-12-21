@@ -6,13 +6,17 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { AdminNotification } from "@/stores/useNotificationStore";
 import "./AdminNotifications.css";
 
-interface AdminNotificationsPanelProps {
-  /**
-   * @deprecated Polling is no longer used. The component now relies on Socket.IO for real-time updates.
-   * This parameter is kept for backward compatibility but is ignored.
-   */
-  pollInterval?: number;
-}
+/**
+ * Admin Notifications Panel
+ * 
+ * Displays notifications from the centralized notification store.
+ * This component is fully passive and does not trigger any data loading.
+ * 
+ * Data flow:
+ * - Initial load: NotificationStoreInitializer (on app startup)
+ * - Real-time updates: GlobalSocketListener (via WebSocket)
+ * - UI: Reads from store and re-renders automatically
+ */
 
 function formatDateDisplay(dateStr: string): string {
   const date = new Date(dateStr);
@@ -75,8 +79,7 @@ function getNotificationIcon(type: string): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function AdminNotificationsPanel({ pollInterval }: AdminNotificationsPanelProps) {
-  // Note: pollInterval is deprecated and ignored - we rely on Socket.IO for real-time updates
+export function AdminNotificationsPanel() {
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
