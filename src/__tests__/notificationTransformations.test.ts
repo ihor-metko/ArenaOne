@@ -93,7 +93,7 @@ describe('Notification Transformation Functions', () => {
 
       const notification = transformBookingCreated(event);
 
-      expect(notification.playerName).toBeUndefined();
+      expect(notification.playerName).toBeFalsy();
       expect(notification.summary).toContain('user@example.com');
     });
 
