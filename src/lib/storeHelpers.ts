@@ -207,7 +207,8 @@ export function isDomainDataFetch(url: string): boolean {
     /\/payment-accounts/,                        // Payment operations
     /\/price-rules/,                             // Price rule operations
     /\/club-admins/,                             // Club admin management
-    /\?.*/, // Any URL with query parameters (usually filtering/searching)
+    // Query parameters that indicate reporting/filtering operations (not single resource fetch)
+    /\?(.*&)?(page|perPage|search|q|filter|sort|status|organizationId|clubId|userId|dateFrom|dateTo)=/,
   ];
 
   // Check if it matches domain patterns
