@@ -90,6 +90,9 @@ export default function DashboardGraphs({
   const [error, setError] = useState("");
   const [timeRange, setTimeRange] = useState<TimeRange>("week");
 
+  // NOTE: Intentional direct fetch - this is a reporting/analytics endpoint
+  // Dashboard graphs are derived statistics, not core domain data (organizations, clubs, etc.)
+  // Per architecture guidelines, reporting endpoints should use direct fetches
   const fetchGraphData = useCallback(async (range: TimeRange) => {
     try {
       setLoading(true);

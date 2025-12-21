@@ -92,6 +92,9 @@ export default function AdminBookingsPage() {
   const { clubs, fetchClubsIfNeeded } = useClubStore();
 
   // Fetch bookings
+  // NOTE: Intentional direct fetch - this is a reporting endpoint with pagination and filtering
+  // Admin bookings list is a reporting view with complex query parameters (search, org, club, status, date range, pagination)
+  // Per architecture guidelines, reporting endpoints with server-side filtering should use direct fetches
   const fetchBookings = useCallback(async () => {
     if (!adminStatus?.isAdmin) return;
 

@@ -80,6 +80,7 @@ export default function AdminOrganizationsPage() {
   const storeError = useOrganizationStore((state) => state.error);
   const createOrganization = useOrganizationStore((state) => state.createOrganization);
   const refetch = useOrganizationStore((state) => state.refetch);
+  const addAdmin = useOrganizationStore((state) => state.addAdmin);
 
   // Local error state for specific operations
   const [error, setError] = useState("");
@@ -387,31 +388,20 @@ export default function AdminOrganizationsPage() {
     setAssigning(true);
 
     try {
-      const payload =
-        assignMode === "new"
+      // Use store method instead of direct fetch
+      await addAdmin({
+        organizationId: selectedOrg!.id,
+        createNew: assignMode === "new",
+        ...(assignMode === "new"
           ? {
-            organizationId: selectedOrg?.id,
-            createNew: true,
-            name: newAdminName,
-            email: newAdminEmail,
-            password: newAdminPassword,
-          }
+              name: newAdminName,
+              email: newAdminEmail,
+              password: newAdminPassword,
+            }
           : {
-            organizationId: selectedOrg?.id,
-            userId: selectedUserId,
-          };
-
-      const response = await fetch("/api/admin/organizations/assign-admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+              userId: selectedUserId,
+            }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || t("organizations.errors.assignSuperAdminFailed"));
-      }
 
       showToast(t("organizations.assignSuccess"), "success");
       handleCloseAssignModal();
@@ -428,6 +418,8 @@ export default function AdminOrganizationsPage() {
   // ============ Club Admins Management Functions ============
 
   // Fetch club admins for an organization
+  // NOTE: Intentional direct fetch - specialized endpoint for organization club admins management
+  // This is a relationship-specific query (org -> club -> admin) that's not part of core domain data
   const fetchClubAdmins = useCallback(async (orgId: string) => {
     try {
       setClubAdminsLoading(true);
@@ -506,18 +498,20 @@ export default function AdminOrganizationsPage() {
     setAddClubAdminError("");
   };
 
-  // Fetch users for club admin assignment
+  // Fetch users for club admin assignment using store
+  const fetchSimpleUsers = useAdminUsersStore((state) => state.fetchSimpleUsers);
+  
   const fetchClubAdminUsers = useCallback(async (query: string = "") => {
     try {
-      const response = await fetch(`/api/admin/users?q=${encodeURIComponent(query)}`);
-      if (response.ok) {
-        const data = await response.json();
-        setClubAdminUsers(data);
-      }
+      // Use admin users store instead of direct fetch
+      await fetchSimpleUsers(query);
+      // Get simple users from store
+      const users = useAdminUsersStore.getState().simpleUsers;
+      setClubAdminUsers(users);
     } catch {
       // Silent fail for user search
     }
-  }, []);
+  }, [fetchSimpleUsers]);
 
   // Debounced user search for club admin
   useEffect(() => {
@@ -530,6 +524,8 @@ export default function AdminOrganizationsPage() {
   }, [clubAdminUserSearch, isAddClubAdminModalOpen, clubAdminAssignMode, fetchClubAdminUsers]);
 
   // Handle add club admin form submission
+  // NOTE: Intentional direct fetch - specialized endpoint for creating club admin relationships
+  // This endpoint creates a club membership with admin role, which is a specialized operation
   const handleAddClubAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clubAdminsOrg) return;
@@ -587,6 +583,7 @@ export default function AdminOrganizationsPage() {
   };
 
   // Handle edit club admin form submission
+  // NOTE: Intentional direct fetch - specialized endpoint for updating club admin relationships
   const handleEditClubAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clubAdminsOrg || !editingClubAdmin) return;
@@ -635,6 +632,7 @@ export default function AdminOrganizationsPage() {
   };
 
   // Handle remove club admin
+  // NOTE: Intentional direct fetch - specialized endpoint for removing club admin relationships
   const handleRemoveClubAdmin = async () => {
     if (!clubAdminsOrg || !removingClubAdmin) return;
 
