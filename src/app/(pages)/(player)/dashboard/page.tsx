@@ -179,6 +179,9 @@ export default function PlayerDashboardPage() {
   }, [clubs, selectedClubId]);
 
   // Fetch upcoming bookings
+  // NOTE: Intentional direct fetch - user-specific query for player's bookings
+  // Player bookings are user-specific queries that don't belong in global stores
+  // Per architecture guidelines, user-specific queries should use direct fetches
   const fetchUpcomingBookings = useCallback(async () => {
     if (!userId) return;
 
@@ -203,6 +206,9 @@ export default function PlayerDashboardPage() {
   }, [userId, router, t]);
 
   // Fetch coaches the user has trained with
+  // NOTE: Intentional direct fetch - this fetches clubs with coaches for player dashboard
+  // This is similar to the public clubs endpoint but includes coach relationships
+  // Could be optimized in the future by using a dedicated /api/player/coaches endpoint
   const fetchCoaches = useCallback(async () => {
     try {
       const response = await fetch("/api/clubs");
@@ -270,6 +276,9 @@ export default function PlayerDashboardPage() {
   };
 
   // Handle booking cancellation
+  // NOTE: Intentional direct fetch - user-specific booking cancellation
+  // This cancels a specific player booking and is part of user-specific operations
+  // Per architecture guidelines, user-specific mutations should use direct fetches
   const handleCancelBooking = async () => {
     if (!cancellingBookingId) return;
 
