@@ -230,7 +230,7 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
     
     // If there's already an inflight request for this ID, return it
     const inflightRequest = state._inflightFetchById[id];
-    if (inflightRequest !== undefined) {
+    if (inflightRequest) {
       return inflightRequest;
     }
 
@@ -249,6 +249,7 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
         const data = await response.json();
         
         // Update cache and clear inflight
+        // Only set as currentOrg if no org is currently selected or if it's the same org
         set((state) => {
           const newInflight = { ...state._inflightFetchById };
           delete newInflight[id];
@@ -257,7 +258,7 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
               ...state.organizationsById,
               [id]: data,
             },
-            currentOrg: data,
+            currentOrg: (!state.currentOrg || state.currentOrg.id === id) ? data : state.currentOrg,
             loading: false,
             _inflightFetchById: newInflight,
           };
@@ -404,8 +405,9 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
 
       // Remove from organizations list, organizationsById cache, and clear currentOrg if it was deleted
       set((state) => {
+        // Remove the deleted organization from the cache using destructuring
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [id]: _removed, ...remainingById } = state.organizationsById;
+        const { [id]: _, ...remainingById } = state.organizationsById;
         return {
           organizations: state.organizations.filter((org) => org.id !== id),
           organizationsById: remainingById,
