@@ -137,11 +137,11 @@ export const useClubStore = create<ClubState>((set, get) => ({
    * - Otherwise, performs a new network request
    */
   fetchClubsIfNeeded: async (options = {}) => {
-    const { force = false, organizationId = null } = options as { force?: boolean; organizationId?: string | null };
+    const { force = false, organizationId = null } = options;
     const state = get();
 
-    // If organizationId changed, invalidate cache
-    if (organizationId && state.lastOrganizationId && organizationId !== state.lastOrganizationId) {
+    // If organizationId changed (including null changes), invalidate cache
+    if (organizationId !== state.lastOrganizationId) {
       set({ 
         clubs: [], 
         clubsById: {}, 
@@ -151,7 +151,7 @@ export const useClubStore = create<ClubState>((set, get) => ({
     }
 
     // If not forcing and clubs are already loaded for this context, return immediately
-    if (!force && state.clubs.length > 0 && (!organizationId || organizationId === state.lastOrganizationId)) {
+    if (!force && state.clubs.length > 0 && organizationId === state.lastOrganizationId) {
       return Promise.resolve();
     }
 
