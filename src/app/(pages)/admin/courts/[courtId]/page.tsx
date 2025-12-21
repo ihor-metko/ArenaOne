@@ -92,7 +92,9 @@ export default function CourtDetailPage({
       if (!courtId || !court) return;
 
       try {
-        // Update via new API route
+        // NOTE: Intentional direct fetch - specialized endpoint for court block updates
+        // This endpoint performs partial updates on specific court properties
+        // Could be refactored to use store.updateCourt() in the future
         const response = await fetch(`/api/admin/courts/${courtId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -121,6 +123,9 @@ export default function CourtDetailPage({
 
     setSubmitting(true);
     try {
+      // NOTE: Intentional direct fetch - court deletion endpoint
+      // The store's deleteCourt method requires clubId, but admin context may not have it readily available
+      // Could be refactored to use store.deleteCourt(court.club.id, courtId) if club data is available
       const response = await fetch(`/api/admin/courts/${courtId}`, {
         method: "DELETE",
       });

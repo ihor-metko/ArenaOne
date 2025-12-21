@@ -190,6 +190,9 @@ export function BookingModal({
     setAlert(null);
 
     try {
+      // NOTE: Intentional direct fetch - user-specific booking creation
+      // Player booking is a user-specific operation (creates booking for current logged-in user)
+      // Per architecture guidelines, user-specific mutations should use direct fetches
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: {
