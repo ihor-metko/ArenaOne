@@ -170,7 +170,11 @@ export const usePlayerClubStore = create<PlayerClubState>((set, get) => ({
     }
 
     // If not forcing and clubs are already loaded for this context, return immediately
-    if (!force && state.clubs.length > 0 && searchParamsStr === state.lastSearchParams) {
+    // Check timestamp to prevent serving stale data (refresh after 5 minutes)
+    const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+    const isCacheExpired = state.lastFetchedAt && (Date.now() - state.lastFetchedAt > CACHE_EXPIRY_MS);
+    
+    if (!force && state.clubs.length > 0 && searchParamsStr === state.lastSearchParams && !isCacheExpired) {
       return Promise.resolve();
     }
 
@@ -274,10 +278,10 @@ export const usePlayerClubStore = create<PlayerClubState>((set, get) => ({
         const clubIndex = currentClubs.findIndex(c => c.id === id);
         if (clubIndex >= 0) {
           const updatedClubs = [...currentClubs];
-          // Merge updated public data while preserving the original id
+          // Only update public fields that are safe to sync
           updatedClubs[clubIndex] = { 
             ...updatedClubs[clubIndex],
-            id: club.id,
+            // Explicitly update only PlayerClub fields
             name: club.name,
             shortDescription: club.shortDescription,
             location: club.location,
@@ -287,6 +291,9 @@ export const usePlayerClubStore = create<PlayerClubState>((set, get) => ({
             logo: club.logo,
             heroImage: club.heroImage,
             tags: club.tags,
+            // Preserve existing id and createdAt
+            id: updatedClubs[clubIndex].id,
+            createdAt: updatedClubs[clubIndex].createdAt,
           };
           set({ clubs: updatedClubs });
         }

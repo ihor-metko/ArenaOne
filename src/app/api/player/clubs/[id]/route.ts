@@ -20,10 +20,20 @@ export async function GET(
     // Construct the target URL
     const targetUrl = `${baseUrl}/api/(player)/clubs/${clubId}`;
     
-    // Forward the request to the existing endpoint
+    // Forward the request with only safe headers
+    const safeHeaders = new Headers();
+    const headersToForward = ['accept', 'accept-language', 'user-agent'];
+    
+    headersToForward.forEach(headerName => {
+      const headerValue = request.headers.get(headerName);
+      if (headerValue) {
+        safeHeaders.set(headerName, headerValue);
+      }
+    });
+    
     const response = await fetch(targetUrl, {
       method: 'GET',
-      headers: request.headers,
+      headers: safeHeaders,
     });
     
     // Get the response data

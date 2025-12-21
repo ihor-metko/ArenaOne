@@ -254,10 +254,21 @@ export const useAdminClubStore = create<AdminClubState>((set, get) => ({
         const clubIndex = currentClubs.findIndex(c => c.id === id);
         if (clubIndex >= 0) {
           const updatedClubs = [...currentClubs];
-          // Merge updated data while preserving the original id
+          // Explicitly merge only safe fields to avoid overwriting counts or organization data
           updatedClubs[clubIndex] = { 
             ...updatedClubs[clubIndex],
-            ...club,
+            // Update basic club info from detail
+            name: club.name,
+            location: club.location,
+            shortDescription: club.shortDescription,
+            city: club.city,
+            logo: club.logo,
+            heroImage: club.heroImage,
+            tags: club.tags,
+            isPublic: club.isPublic,
+            status: club.status,
+            // Preserve existing aggregated data (counts, organization, admins)
+            // These should only be updated via fetchClubsIfNeeded
           };
           set({ clubs: updatedClubs });
         }
@@ -326,6 +337,8 @@ export const useAdminClubStore = create<AdminClubState>((set, get) => ({
       
       // Optimistically add to clubs list
       // Convert to AdminClubWithCounts format for the list
+      // Note: Setting counts to 0 as new clubs don't have courts or bookings yet
+      // If the API returns actual counts, use those instead
       const clubWithCounts: AdminClubWithCounts = {
         id: newClub.id,
         name: newClub.name,
@@ -341,10 +354,11 @@ export const useAdminClubStore = create<AdminClubState>((set, get) => ({
         heroImage: newClub.heroImage || null,
         tags: newClub.tags || null,
         isPublic: newClub.isPublic ?? true,
-        indoorCount: 0,
-        outdoorCount: 0,
-        courtCount: 0,
-        bookingCount: 0,
+        // Use actual counts from API if available, otherwise default to 0
+        indoorCount: newClub.indoorCount ?? 0,
+        outdoorCount: newClub.outdoorCount ?? 0,
+        courtCount: newClub.courtCount ?? 0,
+        bookingCount: newClub.bookingCount ?? 0,
       };
       
       set((state) => ({
