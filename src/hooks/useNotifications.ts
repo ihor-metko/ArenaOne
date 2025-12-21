@@ -64,7 +64,7 @@ export function useNotifications(
   const markAllAsReadInStore = useNotificationStore(state => state.markAllAsRead);
 
   const onNewNotificationRef = useRef(onNewNotification);
-  const previousNotificationCountRef = useRef(notifications.length);
+  const previousNotificationIdsRef = useRef<Set<string>>(new Set());
 
   // Update the ref when callback changes
   useEffect(() => {
@@ -73,16 +73,25 @@ export function useNotifications(
 
   // Detect new notifications and trigger callback
   useEffect(() => {
-    if (notifications.length > previousNotificationCountRef.current) {
-      // New notification(s) added
-      const newNotifications = notifications.slice(0, notifications.length - previousNotificationCountRef.current);
-      newNotifications.forEach(notification => {
-        if (!notification.read) {
+    const currentIds = new Set(notifications.map(n => n.id));
+    const previousIds = previousNotificationIdsRef.current;
+    
+    // Find notifications that are in current but not in previous
+    const newNotificationIds = notifications
+      .filter(n => !previousIds.has(n.id))
+      .map(n => n.id);
+    
+    // Trigger callback for each new unread notification
+    if (newNotificationIds.length > 0) {
+      notifications.forEach(notification => {
+        if (newNotificationIds.includes(notification.id) && !notification.read) {
           onNewNotificationRef.current?.(notification);
         }
       });
     }
-    previousNotificationCountRef.current = notifications.length;
+    
+    // Update the ref for next comparison
+    previousNotificationIdsRef.current = currentIds;
   }, [notifications]);
 
   // Fetch notifications from API (initial load only)

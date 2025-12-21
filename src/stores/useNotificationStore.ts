@@ -1,25 +1,11 @@
 import { create } from "zustand";
+import type { AdminNotificationEvent } from "@/types/socket";
 
 /**
  * Admin notification type
+ * Re-exported from socket types for convenience
  */
-export interface AdminNotification {
-  id: string;
-  type: "REQUESTED" | "ACCEPTED" | "DECLINED" | "CANCELED";
-  playerId: string;
-  playerName?: string;
-  playerEmail?: string | null;
-  coachId: string;
-  coachName?: string;
-  trainingRequestId: string | null;
-  bookingId: string | null;
-  sessionDate: string | null;
-  sessionTime: string | null;
-  courtInfo: string | null;
-  summary?: string;
-  read: boolean;
-  createdAt: string;
-}
+export type AdminNotification = AdminNotificationEvent;
 
 /**
  * Notification store state interface

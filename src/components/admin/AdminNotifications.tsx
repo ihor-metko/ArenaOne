@@ -7,7 +7,8 @@ import { AdminNotification } from "@/stores/useNotificationStore";
 import "./AdminNotifications.css";
 
 interface AdminNotificationsPanelProps {
-  pollInterval?: number; // Deprecated - kept for backward compatibility but not used
+  // Deprecated: polling is no longer used
+  pollInterval?: number;
 }
 
 function formatDateDisplay(dateStr: string): string {
@@ -72,7 +73,7 @@ function getNotificationIcon(type: string): string {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function AdminNotificationsPanel({ pollInterval }: AdminNotificationsPanelProps) {
-  // Note: pollInterval is ignored - we rely on Socket.IO for real-time updates
+  // Note: pollInterval is deprecated and ignored - we rely on Socket.IO for real-time updates
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -93,11 +94,10 @@ export function AdminNotificationsPanel({ pollInterval }: AdminNotificationsPane
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  const handleMarkAsRead = async (notificationId: string, currentlyRead: boolean) => {
+  const handleMarkNotificationAsRead = async (notificationId: string, currentlyRead: boolean) => {
     setProcessingId(notificationId);
     try {
-      // For now, we only support marking as read (not toggling back to unread)
-      // This matches the API behavior
+      // Only mark as read if not already read
       if (!currentlyRead) {
         await markAsRead(notificationId);
         showToast("Notification marked as read", "success");
@@ -230,7 +230,7 @@ export function AdminNotificationsPanel({ pollInterval }: AdminNotificationsPane
                 {!notification.read && (
                   <Button
                     variant="outline"
-                    onClick={() => handleMarkAsRead(notification.id, notification.read)}
+                    onClick={() => handleMarkNotificationAsRead(notification.id, notification.read)}
                     disabled={processingId === notification.id}
                     className="tm-mark-read-btn"
                   >

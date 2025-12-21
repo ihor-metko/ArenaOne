@@ -88,10 +88,15 @@ export async function createAdminNotification(
     // Emit to Socket.IO clients
     if (global.io) {
       const io = global.io as TypedServer;
-      io.emit('admin_notification', {
+      // Create socket event payload with read status
+      const socketPayload = {
         ...payload,
-        read: false,
-      });
+        read: notification.read,
+        playerName: undefined,
+        playerEmail: undefined,
+        coachName: undefined,
+      };
+      io.emit('admin_notification', socketPayload);
       console.log('[AdminNotifications] Socket.IO event emitted:', payload.id);
     }
   } catch (error) {
