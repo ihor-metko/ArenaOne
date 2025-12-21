@@ -229,8 +229,9 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
     }
     
     // If there's already an inflight request for this ID, return it
-    if (state._inflightFetchById[id]) {
-      return state._inflightFetchById[id];
+    const inflightRequest = state._inflightFetchById[id];
+    if (inflightRequest !== undefined) {
+      return inflightRequest;
     }
 
     // Create new fetch promise
@@ -248,32 +249,34 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
         const data = await response.json();
         
         // Update cache and clear inflight
-        set((state) => ({
-          organizationsById: {
-            ...state.organizationsById,
-            [id]: data,
-          },
-          currentOrg: data,
-          loading: false,
-          _inflightFetchById: {
-            ...state._inflightFetchById,
-            [id]: undefined,
-          },
-        }));
+        set((state) => {
+          const newInflight = { ...state._inflightFetchById };
+          delete newInflight[id];
+          return {
+            organizationsById: {
+              ...state.organizationsById,
+              [id]: data,
+            },
+            currentOrg: data,
+            loading: false,
+            _inflightFetchById: newInflight,
+          };
+        });
         
         return data;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to fetch organization";
         
         // Clear inflight and set error
-        set((state) => ({
-          error: errorMessage,
-          loading: false,
-          _inflightFetchById: {
-            ...state._inflightFetchById,
-            [id]: undefined,
-          },
-        }));
+        set((state) => {
+          const newInflight = { ...state._inflightFetchById };
+          delete newInflight[id];
+          return {
+            error: errorMessage,
+            loading: false,
+            _inflightFetchById: newInflight,
+          };
+        });
         
         throw error;
       }
