@@ -126,7 +126,7 @@ export default function AdminClubDetailPage({
       showToast("error", message);
       throw err;
     }
-  }, [clubId, fetchClubById, showToast]);
+  }, [clubId, fetchAdminClubById, showToast]);
 
   const handleDelete = async () => {
     if (!clubId) return;
