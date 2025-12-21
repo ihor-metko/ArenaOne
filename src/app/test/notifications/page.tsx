@@ -2,7 +2,7 @@
 
 /**
  * Test page for Global Real-Time Notifications
- * 
+ *
  * Use this page to manually test all notification events
  */
 
@@ -29,7 +29,7 @@ export default function NotificationsTestPage() {
     try {
       const response = await fetch(`/api/test/notifications?event=${eventType}`);
       const data = await response.json();
-      
+
       if (response.ok) {
         setResults(prev => [`✅ ${eventType}: ${data.message}`, ...prev].slice(0, 10));
       } else {
@@ -43,7 +43,7 @@ export default function NotificationsTestPage() {
   };
 
   return (
-    <div className="min-h-screen p-8 bg-gray-900">
+    <div className="min-h-screen p-8 bg-gray-900 overflow-auto">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-white mb-2">
           🔔 Global Notifications Test Page
@@ -116,7 +116,7 @@ export default function NotificationsTestPage() {
 
         <div className="mt-6 p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
           <p className="text-blue-200 text-sm">
-            <strong>Note:</strong> This test page is for development purposes only. 
+            <strong>Note:</strong> This test page is for development purposes only.
             In production, these events will be emitted automatically by the backend when real actions occur.
           </p>
         </div>
