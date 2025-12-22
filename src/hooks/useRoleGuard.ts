@@ -16,7 +16,6 @@ interface UseRoleGuardResult {
 export function useRootAdminGuard(): UseRoleGuardResult {
   const router = useRouter();
   const sessionStatus = useUserStore(state => state.sessionStatus);
-  const user = useUserStore(state => state.user);
   const hasRole = useUserStore(state => state.hasRole);
   const isUserLoading = useUserStore(state => state.isLoading);
 

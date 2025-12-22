@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/stores/useUserStore";
-import { useAuthStore } from "@/stores/useAuthStore";
 
 /**
  * Time to wait for Zustand persist to restore from localStorage
@@ -16,8 +15,6 @@ const HYDRATION_TIMEOUT_MS = 100;
  */
 export function UserStoreInitializer() {
   const loadUser = useUserStore(state => state.loadUser);
-  const clearUser = useUserStore(state => state.clearUser);
-  const clearSocketToken = useAuthStore(state => state.clearSocketToken);
   const isHydrated = useUserStore(state => state.isHydrated);
   const setHydrated = useUserStore(state => state.setHydrated);
   const [hasInitialized, setHasInitialized] = useState(false);
