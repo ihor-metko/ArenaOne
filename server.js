@@ -94,7 +94,7 @@ app.prepare().then(() => {
       socketId: socket.id,
       userId: userData.userId,
       isRoot: userData.isRoot,
-      requestedClubId: requestedClubId || 'none (notification socket)',
+      requestedClubId: requestedClubId ?? '(notification socket)',
     });
 
     // Notification Socket Logic (when no clubId is provided)
