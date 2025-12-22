@@ -179,7 +179,7 @@ export const usePlayerClubStore = create<PlayerClubState>((set, get) => ({
           params.append('city', city);
         }
 
-        const url = `/api/(player)/clubs${params.toString() ? `?${params.toString()}` : ''}`;
+        const url = `/api/clubs${params.toString() ? `?${params.toString()}` : ''}`;
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -234,7 +234,7 @@ export const usePlayerClubStore = create<PlayerClubState>((set, get) => ({
     const inflightPromise = (async (): Promise<PlayerClubDetail> => {
       set({ loadingClubs: true, clubsError: null });
       try {
-        const response = await fetch(`/api/(player)/clubs/${id}`);
+        const response = await fetch(`/api/clubs/${id}`);
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({ error: "Failed to fetch club" }));
@@ -262,18 +262,11 @@ export const usePlayerClubStore = create<PlayerClubState>((set, get) => ({
         const clubIndex = currentClubs.findIndex(c => c.id === id);
         if (clubIndex >= 0) {
           const updatedClubs = [...currentClubs];
-          // Merge updated data while preserving the original id
+          // Update with all shared fields from the detail view
+          const { courts, coaches, businessHours, gallery, ...publicFields } = club;
           updatedClubs[clubIndex] = {
             ...updatedClubs[clubIndex],
-            name: club.name,
-            shortDescription: club.shortDescription,
-            location: club.location,
-            city: club.city,
-            contactInfo: club.contactInfo,
-            openingHours: club.openingHours,
-            logo: club.logo,
-            heroImage: club.heroImage,
-            tags: club.tags,
+            ...publicFields,
           };
           set({ clubs: updatedClubs });
         }
