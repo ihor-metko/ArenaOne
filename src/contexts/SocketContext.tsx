@@ -61,12 +61,22 @@ interface SocketProviderProps {
  * 
  * Wraps the application and provides a single socket connection.
  * Should be placed high in the component tree (e.g., root layout).
- * Requires authentication - will only connect when user is authenticated.
+ * 
+ * Connection Requirements:
+ * - User must be authenticated (valid session)
+ * - activeClubId must be non-null
+ * - Socket connects only once when both conditions are met
  * 
  * Club-Based Room Targeting:
  * - Passes activeClubId during connection for room targeting
  * - Reconnects when activeClubId changes to switch club rooms
  * - Server joins socket to club:{clubId} room based on this value
+ * 
+ * Connection Behavior:
+ * - Singleton socket instance prevents multiple connections
+ * - Automatic reconnection on network failures
+ * - Clean disconnect on logout or unmount
+ * - No reconnection if activeClubId is null or session is invalid
  * 
  * @example
  * ```tsx
@@ -82,90 +92,125 @@ export function SocketProvider({ children }: SocketProviderProps) {
   const { activeClubId } = useActiveClub();
   const getSocketToken = useAuthStore(state => state.getSocketToken);
   const clearSocketToken = useAuthStore(state => state.clearSocketToken);
+  
+  // Track previous values to avoid unnecessary reconnections
+  const prevActiveClubIdRef = useRef<string | null>(null);
+  const isInitializingRef = useRef(false);
 
   useEffect(() => {
-    // Only initialize socket if user is authenticated
-    if (status !== 'authenticated' || !session?.user) {
-      // If socket exists and user is no longer authenticated, disconnect
+    // Only initialize socket if user is authenticated AND activeClubId is available
+    const isAuthenticated = status === 'authenticated' && !!session?.user;
+    const hasRequiredData = isAuthenticated && activeClubId !== null;
+
+    // Handle logout or missing data
+    if (!hasRequiredData) {
+      // If socket exists, disconnect it
       if (socketRef.current) {
-        console.log('[SocketProvider] User logged out, disconnecting socket');
+        console.log('[SocketProvider] Disconnecting socket (logged out or no active club)');
         socketRef.current.disconnect();
         socketRef.current = null;
         setIsConnected(false);
+        prevActiveClubIdRef.current = null;
       }
+      
       // Clear cached socket token on logout
-      clearSocketToken();
+      if (!isAuthenticated) {
+        clearSocketToken();
+      }
+      
       return;
     }
 
-    // If socket exists and activeClubId changed, reconnect with new clubId
-    if (socketRef.current && socketRef.current.connected) {
-      console.log('[SocketProvider] Active club changed, reconnecting socket:', activeClubId);
+    // Check if activeClubId changed (and socket is already connected)
+    const clubIdChanged = prevActiveClubIdRef.current !== null && 
+                         prevActiveClubIdRef.current !== activeClubId &&
+                         socketRef.current !== null;
+
+    if (clubIdChanged) {
+      // Disconnect existing socket when club changes
+      console.log('[SocketProvider] Active club changed, reconnecting:', {
+        from: prevActiveClubIdRef.current,
+        to: activeClubId,
+      });
       socketRef.current.disconnect();
       socketRef.current = null;
       setIsConnected(false);
+      prevActiveClubIdRef.current = null;
       // Fall through to reinitialize below
     }
 
-    // Prevent multiple socket instances
-    if (socketRef.current) {
-      console.warn('[SocketProvider] Socket already initialized, skipping');
+    // Prevent multiple socket instances or concurrent initializations
+    if (socketRef.current || isInitializingRef.current) {
       return;
     }
 
-    console.log('[SocketProvider] Initializing socket connection with authentication and clubId:', activeClubId);
+    // Mark as initializing
+    isInitializingRef.current = true;
+    prevActiveClubIdRef.current = activeClubId;
+
+    console.log('[SocketProvider] Initializing socket connection with clubId:', activeClubId);
 
     // Initialize socket connection with authentication
     const initializeSocket = async () => {
-      // Get token from auth store (cached and deduplicated)
-      const token = await getSocketToken();
+      try {
+        // Get token from auth store (cached and deduplicated)
+        const token = await getSocketToken();
 
-      if (!token) {
-        console.error('[SocketProvider] Cannot initialize socket: no token available');
-        return;
-      }
-
-      // Initialize Socket.IO client with authentication and clubId
-      const socket: TypedSocket = io({
-        path: '/socket.io',
-        auth: {
-          token,
-          clubId: activeClubId, // Pass active clubId for room targeting
-        },
-      });
-
-      socketRef.current = socket;
-
-      // Connection event handlers
-      socket.on('connect', () => {
-        console.log('[SocketProvider] Socket connected:', socket.id, 'clubId:', activeClubId);
-        setIsConnected(true);
-      });
-
-      socket.on('disconnect', (reason) => {
-        console.log('[SocketProvider] Socket disconnected:', reason);
-        setIsConnected(false);
-      });
-
-      socket.on('connect_error', (error) => {
-        console.error('[SocketProvider] Connection error:', error.message);
-        // If authentication fails, don't retry
-        if (error.message.includes('Authentication')) {
-          console.error('[SocketProvider] Authentication failed, disconnecting');
-          socket.disconnect();
+        if (!token) {
+          console.error('[SocketProvider] Cannot initialize socket: no token available');
+          isInitializingRef.current = false;
+          return;
         }
-      });
 
-      // Reconnection handler
-      socket.io.on('reconnect', (attemptNumber) => {
-        console.log('[SocketProvider] Socket reconnected after', attemptNumber, 'attempts');
-        setIsConnected(true);
-      });
+        // Initialize Socket.IO client with authentication and clubId
+        const socket: TypedSocket = io({
+          path: '/socket.io',
+          auth: {
+            token,
+            clubId: activeClubId, // Pass active clubId for room targeting
+          },
+        });
+
+        socketRef.current = socket;
+        isInitializingRef.current = false;
+
+        // Connection event handlers
+        socket.on('connect', () => {
+          console.log('[SocketProvider] Socket connected:', socket.id, 'for club:', activeClubId);
+          setIsConnected(true);
+        });
+
+        socket.on('disconnect', (reason) => {
+          console.log('[SocketProvider] Socket disconnected:', reason);
+          setIsConnected(false);
+        });
+
+        socket.on('connect_error', (error) => {
+          console.error('[SocketProvider] Connection error:', error.message);
+          // If authentication fails, don't retry
+          if (error.message.includes('Authentication')) {
+            console.error('[SocketProvider] Authentication failed, disconnecting');
+            socket.disconnect();
+            socketRef.current = null;
+            isInitializingRef.current = false;
+          }
+        });
+
+        // Reconnection handler
+        socket.io.on('reconnect', (attemptNumber) => {
+          console.log('[SocketProvider] Socket reconnected after', attemptNumber, 'attempts');
+          setIsConnected(true);
+        });
+      } catch (error) {
+        console.error('[SocketProvider] Error during socket initialization:', error);
+        isInitializingRef.current = false;
+        socketRef.current = null;
+      }
     };
 
     initializeSocket();
 
-    // Cleanup on unmount or when session/activeClubId changes
+    // Cleanup on unmount
     return () => {
       if (!socketRef.current) return;
       
@@ -179,6 +224,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
       
       socket.disconnect();
       socketRef.current = null;
+      isInitializingRef.current = false;
     };
   }, [session, status, activeClubId, getSocketToken, clearSocketToken]); // Re-initialize when session or activeClubId changes
 
