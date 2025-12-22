@@ -1,23 +1,16 @@
 /**
  * Example: WebSocket-enabled Booking Component
  * 
- * This is a demonstration component showing how to use
- * the centralized SocketProvider for real-time booking updates.
+ * DEPRECATED: This component requires a global SocketProvider which has been removed.
+ * Real-time booking updates are now page-scoped to the club operations page.
  * 
- * NOTE: Real-time updates are now handled globally by GlobalSocketListener,
- * which automatically updates the booking store. Components just need to
- * read from the store.
+ * For real-time updates, see:
+ * - /src/hooks/useOperationalSocket.ts - Page-scoped socket hook
+ * - /src/components/OperationalSocketListener.tsx - Event listener for operational page
+ * - /src/app/(pages)/admin/operations/[clubId]/page.tsx - Usage example
  * 
- * USAGE:
- * Import this component in any page that displays bookings.
- * 
- * @example
- * ```tsx
- * import { BookingListWithWebSocket } from '@/components/examples/BookingListWithWebSocket';
- * 
- * export default function BookingsPage() {
- *   return <BookingListWithWebSocket clubId="club-123" date="2024-01-15" />;
- * }
+ * This component is kept for reference but will not work without a SocketProvider.
+ */
  * ```
  */
 

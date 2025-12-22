@@ -1,20 +1,15 @@
 /**
  * WebSocket Real-time Updates - Testing Example Component
  * 
- * This component demonstrates and tests real-time booking updates
- * using the centralized SocketProvider. It's useful for:
- * - Manual testing during development
- * - Demonstrating WebSocket functionality
- * - Training/onboarding developers
+ * DEPRECATED: This component requires a global SocketProvider which has been removed.
+ * Real-time booking updates are now page-scoped to the club operations page.
  * 
- * Usage:
- * 1. Import this component in a test page
- * 2. Open the page in multiple browser tabs
- * 3. Use the controls to simulate booking events
- * 4. Observe real-time updates across all tabs
+ * For real-time updates, see:
+ * - /src/hooks/useOperationalSocket.ts - Page-scoped socket hook
+ * - /src/components/OperationalSocketListener.tsx - Event listener for operational page
+ * - /src/app/(pages)/admin/operations/[clubId]/page.tsx - Usage example
  * 
- * NOTE: Real-time updates are now handled by GlobalSocketListener.
- * This component only monitors the connection status and displays data.
+ * This component is kept for reference but will not work without a SocketProvider.
  */
 
 'use client';

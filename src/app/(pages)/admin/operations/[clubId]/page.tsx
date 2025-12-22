@@ -8,7 +8,6 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import { useCourtStore } from "@/stores/useCourtStore";
 import { useBookingStore } from "@/stores/useBookingStore";
-import { useActiveClub } from "@/contexts/ClubContext";
 import {
   DayCalendar,
   TodayBookingsList,
@@ -17,6 +16,8 @@ import {
 import { AdminQuickBookingWizard } from "@/components/AdminQuickBookingWizard";
 import type { OperationsBooking } from "@/types/booking";
 import { TableSkeleton } from "@/components/ui/skeletons";
+import { useOperationalSocket } from "@/hooks/useOperationalSocket";
+import { OperationalSocketListener } from "@/components/OperationalSocketListener";
 import "../page.css";
 
 // Default booking duration in minutes
@@ -41,7 +42,9 @@ export default function ClubOperationsPage() {
   const router = useRouter();
   const params = useParams();
   const clubId = params.clubId as string;
-  const { setActiveClubId } = useActiveClub();
+
+  // Page-scoped socket connection - only connects on this page with valid clubId
+  const { socket, isConnected: isSocketConnected } = useOperationalSocket({ clubId });
 
   // User store
   const adminStatus = useUserStore((state) => state.adminStatus);
@@ -144,16 +147,13 @@ export default function ClubOperationsPage() {
     }
   }, [adminStatus, clubs, clubId, user]);
 
-  // Load club data and set active club for socket connection
+  // Load club data
   useEffect(() => {
     if (clubId) {
-      // Set active club for socket room targeting
-      setActiveClubId(clubId);
-      
       ensureClubById(clubId).catch(console.error);
       fetchCourtsIfNeeded({ clubId }).catch(console.error);
     }
-  }, [clubId, ensureClubById, fetchCourtsIfNeeded, setActiveClubId]);
+  }, [clubId, ensureClubById, fetchCourtsIfNeeded]);
 
   // Load bookings for selected date (initial fetch)
   useEffect(() => {
@@ -273,6 +273,9 @@ export default function ClubOperationsPage() {
 
   return (
     <main className="im-club-operations-page">
+      {/* Page-scoped socket event listener - only active on this page */}
+      <OperationalSocketListener socket={socket} />
+      
       <PageHeader
         title={t("operations.title")}
         description={t("operations.pageDescription")}
