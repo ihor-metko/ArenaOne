@@ -58,6 +58,7 @@ async function verifySocketToken(token) {
     const clubIds = clubMemberships.map(m => m.clubId);
 
     // For organization admins, also include all clubs within their organizations
+    // Using string literal to match Prisma enum value (MembershipRole.ORGANIZATION_ADMIN)
     const orgAdminMemberships = organizationMemberships.filter(
       m => m.role === 'ORGANIZATION_ADMIN'
     );
