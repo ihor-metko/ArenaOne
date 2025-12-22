@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Input, IMLink } from "@/components/ui";
@@ -12,8 +12,9 @@ import { useUserStore } from "@/stores/useUserStore";
 export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session, status, update: updateSession } = useSession();
+  const sessionStatus = useUserStore(state => state.sessionStatus);
   const loadUser = useUserStore(state => state.loadUser);
+  const user = useUserStore(state => state.user);
   const t = useTranslations();
   const [email, setEmail] = useState("ihor.metko@gmail.com");
   const [password, setPassword] = useState("12345678");
@@ -34,11 +35,11 @@ export default function SignInPage() {
 
   // Redirect already logged-in users to their role-specific homepage or redirectTo
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      const targetPath = redirectTo || getRoleHomepage(session.user.isRoot);
+    if (sessionStatus === "authenticated" && user) {
+      const targetPath = redirectTo || getRoleHomepage(user.isRoot);
       router.push(targetPath);
     }
-  }, [status, session, router, redirectTo]);
+  }, [sessionStatus, user, router, redirectTo]);
 
   const handleRedirect = useCallback((userName: string | null | undefined, isRoot: boolean | undefined) => {
     // Prefer redirectTo from query params, fallback to role-based homepage
@@ -73,19 +74,19 @@ export default function SignInPage() {
       if (result?.error) {
         setError(t("auth.invalidCredentials"));
       } else {
-        // Refresh the session to get updated user data
-        const updatedSession = await updateSession();
-
-        // Load user data into the store
+        // Load user data into the store after successful sign-in
         await loadUser();
 
-        if (updatedSession?.user) {
+        // Get the updated user from the store
+        const currentUser = useUserStore.getState().user;
+
+        if (currentUser) {
           handleRedirect(
-            updatedSession.user.name,
-            updatedSession.user.isRoot
+            currentUser.name,
+            currentUser.isRoot
           );
         } else {
-          // Fallback: redirect to default page if session update fails
+          // Fallback: redirect to default page if user load fails
           router.push(getRoleHomepage(undefined));
           router.refresh();
         }
@@ -98,7 +99,7 @@ export default function SignInPage() {
   };
 
   // Show loading state while checking session
-  if (status === "loading") {
+  if (sessionStatus === "loading") {
     return (
       <div className="im-auth-card">
         <div className="text-center" style={{ color: "var(--im-auth-text)" }}>
@@ -109,7 +110,7 @@ export default function SignInPage() {
   }
 
   // If already authenticated, show loading while redirecting
-  if (status === "authenticated") {
+  if (sessionStatus === "authenticated") {
     return (
       <div className="im-auth-card">
         <div className="text-center" style={{ color: "var(--im-auth-text)" }}>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { PersonalizedSection } from "@/components/PersonalizedSection";
 import { useUserStore } from "@/stores/useUserStore";
 
@@ -9,10 +8,10 @@ import { useUserStore } from "@/stores/useUserStore";
  * based on authentication state
  */
 export function PersonalizedSectionWrapper() {
-  const { status } = useSession();
+  const sessionStatus = useUserStore(state => state.sessionStatus);
   const user = useUserStore(state => state.user);
 
-  const isAuthenticated = status === "authenticated" && user;
+  const isAuthenticated = sessionStatus === "authenticated" && user;
 
   if (!isAuthenticated || !user?.name) {
     return null;
