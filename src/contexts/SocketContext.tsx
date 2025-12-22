@@ -7,11 +7,18 @@
  * Ensures only one socket instance exists and is shared across all components.
  * 
  * Features:
- * - Singleton socket connection
+ * - Singleton socket connection (initializes ONCE per app lifecycle)
  * - Authentication via JWT token
  * - Automatic reconnection handling
  * - Connection state tracking
  * - Safe cleanup on unmount
+ * 
+ * Bootstrap Behavior:
+ * - Initializes only when user is authenticated (status === 'authenticated')
+ * - Uses hasInitializedRef to prevent re-initialization on re-renders
+ * - Dependencies limited to stable values (status, userId) to avoid unnecessary re-runs
+ * - Does NOT re-initialize on tab focus, navigation, or session object changes
+ * - Only disconnects and re-initializes if user logs out then logs back in
  */
 
 import React, { createContext, useContext, useEffect, useRef, useState, useMemo } from 'react';
@@ -72,27 +79,34 @@ export function SocketProvider({ children }: SocketProviderProps) {
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<TypedSocket | null>(null);
   const { data: session, status } = useSession();
+  const hasInitializedRef = useRef(false);
+  
+  // Extract stable user ID to avoid re-initialization on session object changes
+  const userId = session?.user?.id;
 
   useEffect(() => {
     // Only initialize socket if user is authenticated
-    if (status !== 'authenticated' || !session?.user) {
+    if (status !== 'authenticated' || !userId) {
       // If socket exists and user is no longer authenticated, disconnect
       if (socketRef.current) {
         console.log('[SocketProvider] User logged out, disconnecting socket');
         socketRef.current.disconnect();
         socketRef.current = null;
         setIsConnected(false);
+        hasInitializedRef.current = false;
       }
       return;
     }
 
-    // Prevent multiple socket instances
-    if (socketRef.current) {
+    // Prevent multiple socket instances (app-level guard)
+    // This ensures socket initializes only ONCE per app lifecycle
+    if (hasInitializedRef.current || socketRef.current) {
       console.warn('[SocketProvider] Socket already initialized, skipping');
       return;
     }
 
     console.log('[SocketProvider] Initializing socket connection with authentication');
+    hasInitializedRef.current = true;
 
     // Get the JWT token via API endpoint
     const getSessionToken = async () => {
@@ -118,6 +132,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
 
       if (!token) {
         console.error('[SocketProvider] Cannot initialize socket: no token available');
+        hasInitializedRef.current = false; // Allow retry on next render
         return;
       }
 
@@ -160,7 +175,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
 
     initializeSocket();
 
-    // Cleanup on unmount or when session changes
+    // Cleanup only on unmount or user logout (not on session object changes)
     return () => {
       if (!socketRef.current) return;
       
@@ -175,7 +190,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [session, status]); // Re-initialize when session changes
+  }, [status, userId]); // Only depend on status and stable userId, not full session object
 
   const value: SocketContextValue = useMemo(
     () => ({
