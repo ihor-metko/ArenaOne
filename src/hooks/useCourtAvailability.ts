@@ -64,7 +64,14 @@ export function useCourtAvailability(
 
     console.log('[useCourtAvailability] Setting up event listeners for club:', clubId);
 
+    // Capture the current event deduplication map for use in cleanup
+    // This ensures cleanup uses the Map that was current when effect was set up
+    const currentEventMap = eventHandledRef.current;
+
     // Handle booking created - refresh if it affects this club
+    // NOTE: Client-side filtering by clubId is LEGACY and will be removed.
+    // Server now guarantees correct targeting via club-based rooms.
+    // This guard remains temporarily for safety during migration.
     const handleBookingCreated = (data: BookingCreatedEvent) => {
       const eventId = `booking_created_${data.booking.id}`;
       if (isEventHandled(eventId)) return;
@@ -76,6 +83,9 @@ export function useCourtAvailability(
     };
 
     // Handle booking cancelled - refresh if it affects this club
+    // NOTE: Client-side filtering by clubId is LEGACY and will be removed.
+    // Server now guarantees correct targeting via club-based rooms.
+    // This guard remains temporarily for safety during migration.
     const handleBookingCancelled = (data: BookingDeletedEvent) => {
       const eventId = `booking_cancelled_${data.bookingId}`;
       if (isEventHandled(eventId)) return;
@@ -87,6 +97,9 @@ export function useCourtAvailability(
     };
 
     // Handle slot locked - trigger refresh for visual update
+    // NOTE: Client-side filtering by clubId is LEGACY and will be removed.
+    // Server now guarantees correct targeting via club-based rooms.
+    // This guard remains temporarily for safety during migration.
     const handleSlotLocked = (data: SlotLockedEvent) => {
       const eventId = `slot_locked_${data.slotId}`;
       if (isEventHandled(eventId)) return;
@@ -98,6 +111,9 @@ export function useCourtAvailability(
     };
 
     // Handle slot unlocked - trigger refresh
+    // NOTE: Client-side filtering by clubId is LEGACY and will be removed.
+    // Server now guarantees correct targeting via club-based rooms.
+    // This guard remains temporarily for safety during migration.
     const handleSlotUnlocked = (data: SlotUnlockedEvent) => {
       const eventId = `slot_unlocked_${data.slotId}`;
       if (isEventHandled(eventId)) return;
@@ -109,6 +125,9 @@ export function useCourtAvailability(
     };
 
     // Handle lock expired - trigger refresh
+    // NOTE: Client-side filtering by clubId is LEGACY and will be removed.
+    // Server now guarantees correct targeting via club-based rooms.
+    // This guard remains temporarily for safety during migration.
     const handleLockExpired = (data: LockExpiredEvent) => {
       const eventId = `lock_expired_${data.slotId}`;
       if (isEventHandled(eventId)) return;
@@ -134,7 +153,8 @@ export function useCourtAvailability(
       socket.off('slot_locked', handleSlotLocked);
       socket.off('slot_unlocked', handleSlotUnlocked);
       socket.off('lock_expired', handleLockExpired);
-      eventHandledRef.current.clear();
+      // Use the Map that was current when effect was set up, not when cleanup runs
+      currentEventMap.clear();
     };
   }, [socket, clubId, triggerRefresh, isEventHandled]);
 
