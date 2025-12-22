@@ -16,9 +16,9 @@
 
 import React, { createContext, useContext, useEffect, useRef, useState, useMemo } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { useSession } from 'next-auth/react';
 import { useActiveClub } from '@/contexts/ClubContext';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useUserStore } from '@/stores/useUserStore';
 import type {
   ServerToClientEvents,
   ClientToServerEvents,
@@ -78,14 +78,15 @@ interface SocketProviderProps {
 export function SocketProvider({ children }: SocketProviderProps) {
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<TypedSocket | null>(null);
-  const { data: session, status } = useSession();
+  const sessionStatus = useUserStore(state => state.sessionStatus);
+  const user = useUserStore(state => state.user);
   const { activeClubId } = useActiveClub();
   const getSocketToken = useAuthStore(state => state.getSocketToken);
   const clearSocketToken = useAuthStore(state => state.clearSocketToken);
 
   useEffect(() => {
     // Only initialize socket if user is authenticated
-    if (status !== 'authenticated' || !session?.user) {
+    if (sessionStatus !== 'authenticated' || !user) {
       // If socket exists and user is no longer authenticated, disconnect
       if (socketRef.current) {
         console.log('[SocketProvider] User logged out, disconnecting socket');
@@ -180,7 +181,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [session, status, activeClubId, getSocketToken, clearSocketToken]); // Re-initialize when session or activeClubId changes
+  }, [sessionStatus, user, activeClubId, getSocketToken, clearSocketToken]); // Re-initialize when session or activeClubId changes
 
   const value: SocketContextValue = useMemo(
     () => ({

@@ -5,11 +5,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 
-// Mock next-auth
-jest.mock("next-auth/react", () => ({
-  useSession: jest.fn(),
-}));
-
 // Mock next-intl
 jest.mock("next-intl", () => ({
   useTranslations: () => (key: string) => {

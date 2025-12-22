@@ -34,6 +34,11 @@ export const USER_ROLE = {
 } as const;
 
 /**
+ * Session status enum to replace NextAuth's status
+ */
+export type SessionStatus = "loading" | "authenticated" | "unauthenticated";
+
+/**
  * User store state interface
  */
 interface UserState {
@@ -46,6 +51,7 @@ interface UserState {
   adminStatus: AdminStatus | null;
   memberships: MembershipInfo[];
   clubMemberships: ClubMembershipInfo[];
+  sessionStatus: SessionStatus;
 
   // Actions
   setUser: (user: User | null) => void;
@@ -54,6 +60,7 @@ interface UserState {
   reloadUser: () => Promise<void>;
   clearUser: () => void;
   setHydrated: (hydrated: boolean) => void;
+  setSessionStatus: (status: SessionStatus) => void;
   
   // Role checks
   hasRole: (role: string) => boolean;
@@ -110,12 +117,20 @@ export const useUserStore = create<UserState>()(
       adminStatus: null,
       memberships: [],
       clubMemberships: [],
+      sessionStatus: "loading",
 
   /**
    * Set hydration status
    */
   setHydrated: (hydrated: boolean) => {
     set({ isHydrated: hydrated });
+  },
+
+  /**
+   * Set session status
+   */
+  setSessionStatus: (status: SessionStatus) => {
+    set({ sessionStatus: status });
   },
 
   /**
@@ -140,7 +155,7 @@ export const useUserStore = create<UserState>()(
    * Fetches consolidated user info and admin status from /api/me
    */
   loadUser: async () => {
-    set({ isLoading: true });
+    set({ isLoading: true, sessionStatus: "loading" });
     try {
       // Fetch consolidated user info and admin status
       const meResponse = await fetch("/api/me");
@@ -156,6 +171,7 @@ export const useUserStore = create<UserState>()(
           adminStatus: null,
           memberships: [],
           clubMemberships: [],
+          sessionStatus: "unauthenticated",
         });
         return;
       }
@@ -193,6 +209,7 @@ export const useUserStore = create<UserState>()(
         adminStatus: meData.adminStatus,
         memberships: meData.memberships,
         clubMemberships: meData.clubMemberships,
+        sessionStatus: "authenticated",
       });
     } catch (error) {
       console.error("Failed to load user:", error);
@@ -205,6 +222,7 @@ export const useUserStore = create<UserState>()(
         adminStatus: null,
         memberships: [],
         clubMemberships: [],
+        sessionStatus: "unauthenticated",
       });
     }
   },
@@ -230,6 +248,7 @@ export const useUserStore = create<UserState>()(
       adminStatus: null,
       memberships: [],
       clubMemberships: [],
+      sessionStatus: "unauthenticated",
     });
   },
 

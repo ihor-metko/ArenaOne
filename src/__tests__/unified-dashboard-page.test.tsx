@@ -2,14 +2,8 @@
  * @jest-environment jsdom
  */
 import { render, screen, waitFor, cleanup } from "@testing-library/react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import AdminDashboardPage from "@/app/(pages)/admin/dashboard/page";
-
-// Mock next-auth
-jest.mock("next-auth/react", () => ({
-  useSession: jest.fn(),
-}));
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({
