@@ -447,6 +447,7 @@ export default function AdminOrganizationsPage() {
   }, [t]);
 
   // Fetch clubs for an organization using store
+  const clubs = useAdminClubStore((state) => state.clubs);
   const fetchClubsIfNeeded = useAdminClubStore((state) => state.fetchClubsIfNeeded);
 
   const fetchOrgClubs = useCallback(async (orgId: string) => {
@@ -455,8 +456,7 @@ export default function AdminOrganizationsPage() {
       await fetchClubsIfNeeded({ organizationId: orgId });
 
       // Get clubs from store and filter to organization
-      const allClubs = useClubStore.getState().clubs;
-      const orgClubsList = allClubs.filter((club) => club.organization?.id === orgId);
+      const orgClubsList = clubs.filter((club) => club.organizationId === orgId);
       setOrgClubs(orgClubsList.map((club) => ({
         id: club.id,
         name: club.name,
@@ -464,7 +464,7 @@ export default function AdminOrganizationsPage() {
     } catch {
       setClubAdminsError(t("clubAdmins.failedToLoadClubs"));
     }
-  }, [t, fetchClubsIfNeeded]);
+  }, [t, fetchClubsIfNeeded, clubs]);
 
   // Open club admins modal
   // Note: This is kept for the Club Admins modal functionality but not directly exposed in the card view
