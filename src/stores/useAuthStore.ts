@@ -1,6 +1,11 @@
 import { create } from "zustand";
 
 /**
+ * API endpoint for socket token
+ */
+const SOCKET_TOKEN_ENDPOINT = '/api/socket/token';
+
+/**
  * Auth store state interface
  */
 interface AuthState {
@@ -69,7 +74,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isLoadingToken: true, tokenError: null });
       
       try {
-        const response = await fetch('/api/socket/token');
+        const response = await fetch(SOCKET_TOKEN_ENDPOINT);
         
         if (!response.ok) {
           const errorMsg = `Failed to get socket token: ${response.status}`;

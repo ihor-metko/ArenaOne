@@ -18,11 +18,12 @@ export function useRootAdminGuard(): UseRoleGuardResult {
   const { status } = useSession();
   const router = useRouter();
   const user = useUserStore(state => state.user);
+  const hasRole = useUserStore(state => state.hasRole);
   const isUserLoading = useUserStore(state => state.isLoading);
 
   const isLoading = status === "loading" || isUserLoading;
   const isAuthenticated = status === "authenticated";
-  const isRoot = user?.isRoot ?? false;
+  const isRoot = hasRole("ROOT_ADMIN");
   const isAuthorized = isAuthenticated && isRoot;
 
   useEffect(() => {

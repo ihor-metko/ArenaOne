@@ -1,4 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 // Mock fetch
