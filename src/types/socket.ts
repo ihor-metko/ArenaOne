@@ -110,8 +110,7 @@ export interface ClientToServerEvents {}
 /**
  * Server to Client events
  * 
- * Note: Legacy event names (bookingCreated, bookingUpdated, bookingDeleted) have been removed.
- * Only standardized event names with underscores are supported.
+ * All events use standardized naming with underscores (e.g., booking_created, not bookingCreated).
  */
 export interface ServerToClientEvents {
   booking_created: (data: BookingCreatedEvent) => void;

@@ -80,9 +80,8 @@ describe('Socket Emitters', () => {
 
       // Verify it emits to the club room
       expect(mockTo).toHaveBeenCalledWith('club:club-123');
-      // Verify it emits both new and legacy event names
+      // Verify it emits the booking_created event
       expect(mockEmit).toHaveBeenCalledWith('booking_created', event);
-      expect(mockEmit).toHaveBeenCalledWith('bookingCreated', event);
       // Verify it also emits to root_admin room
       expect(mockTo).toHaveBeenCalledWith('root_admin');
     });
@@ -150,9 +149,8 @@ describe('Socket Emitters', () => {
 
       // Verify it emits to the club room
       expect(mockTo).toHaveBeenCalledWith('club:club-123');
-      // Verify it emits both new and legacy event names
+      // Verify it emits the booking_updated event
       expect(mockEmit).toHaveBeenCalledWith('booking_updated', event);
-      expect(mockEmit).toHaveBeenCalledWith('bookingUpdated', event);
       // Verify it also emits to root_admin room
       expect(mockTo).toHaveBeenCalledWith('root_admin');
     });
@@ -201,9 +199,8 @@ describe('Socket Emitters', () => {
 
       // Verify it emits to the club room
       expect(mockTo).toHaveBeenCalledWith('club:club-123');
-      // Verify it emits both new and legacy event names
+      // Verify it emits the booking_cancelled event
       expect(mockEmit).toHaveBeenCalledWith('booking_cancelled', event);
-      expect(mockEmit).toHaveBeenCalledWith('bookingDeleted', event);
       // Verify it also emits to root_admin room
       expect(mockTo).toHaveBeenCalledWith('root_admin');
     });
