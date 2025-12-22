@@ -8,23 +8,17 @@ import type {
 } from "@/types/club";
 
 /**
- * @deprecated This store is deprecated. Please use:
- * - useAdminClubStore for admin functionality (uses /api/admin/clubs)
- * - usePlayerClubStore for player functionality (uses /api/player/clubs)
- * 
- * This ensures proper separation of concerns and prevents accidental exposure
- * of admin data to players.
- * 
  * SSR NOTE: This client-side store should not be relied upon for SSR logic.
  * Server-side pages must fetch data directly via getServerSideProps or route handlers.
- * After hydration, you can optionally call useClubStore.getState().setClubs(serverData)
+ * After hydration, you can optionally call useAdminClubStore.getState().setClubs(serverData)
  * to avoid refetching on the client.
  */
 
 /**
- * Club store state
+ * Admin club store state
+ * This store is for admin users and uses /api/admin/clubs endpoints
  */
-interface ClubState {
+interface AdminClubState {
   // State
   clubs: ClubWithCounts[];
   clubsById: Record<string, ClubDetail>;
@@ -66,10 +60,11 @@ interface ClubState {
 }
 
 /**
- * Zustand store for managing clubs
+ * Zustand store for managing clubs (Admin view)
  * SSR-friendly, lightweight, and integrates with existing API patterns
+ * Uses /api/admin/clubs endpoints for admin-level data access
  */
-export const useClubStore = create<ClubState>((set, get) => ({
+export const useAdminClubStore = create<AdminClubState>((set, get) => ({
   // Initial state
   clubs: [],
   clubsById: {},

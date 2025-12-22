@@ -14,7 +14,7 @@ import { CourtScheduleModal } from "@/components/CourtScheduleModal";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { GalleryModal } from "@/components/GalleryModal";
 import { Button, IMLink, Breadcrumbs, ImageCarousel, CourtCarousel, EntityBanner } from "@/components/ui";
-import { useClubStore } from "@/stores/useClubStore";
+import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useActiveClub } from "@/contexts/ClubContext";
 import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
@@ -95,15 +95,15 @@ export default function ClubDetailPage({
   const pathname = usePathname();
   const t = useTranslations();
   const { setActiveClubId } = useActiveClub();
-  
+
   // Use store for auth
   const user = useUserStore((state) => state.user);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
-  
-  // Use centralized club store
-  const currentClub = useClubStore((state) => state.currentClub);
-  const fetchClubById = useClubStore((state) => state.fetchClubById);
-  
+
+  // Use centralized player club store
+  const currentClub = usePlayerClubStore((state) => state.currentClub);
+  const ensureClubById = usePlayerClubStore((state) => state.ensureClubById);
+
   // Map currentClub to ClubWithDetails (they should be compatible)
   const club = currentClub as ClubWithDetails | null;
   const [isLoading, setIsLoading] = useState(true);
@@ -169,8 +169,8 @@ export default function ClubDetailPage({
         const resolvedParams = await params;
         // Set active club for socket room targeting
         setActiveClubId(resolvedParams.id);
-        
-        await fetchClubById(resolvedParams.id);
+
+        await ensureClubById(resolvedParams.id);
         setError(null);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : t("clubs.failedToLoadClub");
@@ -184,8 +184,8 @@ export default function ClubDetailPage({
       }
     }
     fetchClubData();
-  }, [params, fetchClubById, t, setActiveClubId]);
-  
+  }, [params, ensureClubById, t, setActiveClubId]);
+
   // Fetch availability when club data is loaded
   useEffect(() => {
     if (club?.courts && club.courts.length > 0) {
