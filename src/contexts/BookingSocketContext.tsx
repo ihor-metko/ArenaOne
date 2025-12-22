@@ -95,7 +95,6 @@ export function BookingSocketProvider({ children }: BookingSocketProviderProps) 
   const socketRef = useRef<TypedSocket | null>(null);
   const sessionStatus = useUserStore(state => state.sessionStatus);
   const user = useUserStore(state => state.user);
-  const adminStatus = useUserStore(state => state.adminStatus);
   const getSocketToken = useAuthStore(state => state.getSocketToken);
   const clearSocketToken = useAuthStore(state => state.clearSocketToken);
   const { activeClubId } = useActiveClub();
@@ -195,7 +194,7 @@ export function BookingSocketProvider({ children }: BookingSocketProviderProps) 
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [sessionStatus, user, activeClubId, adminStatus, getSocketToken, clearSocketToken]);
+  }, [sessionStatus, user, activeClubId, getSocketToken, clearSocketToken]);
 
   const value: BookingSocketContextValue = useMemo(
     () => ({
