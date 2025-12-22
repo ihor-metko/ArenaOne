@@ -147,32 +147,33 @@ export function OperationalSocketListener({ socket }: OperationalSocketListenerP
       addNotification(data);
     };
 
+    // Slot lock events - update booking store for real-time UI sync
+    const handleSlotLocked = (data: SlotLockedEvent) => {
+      handleSocketEvent('slot_locked', data);
+      addLockedSlot(data);
+      console.log('[OperationalSocketListener] Slot locked - toast shown, store updated');
+    };
+
+    const handleSlotUnlocked = (data: SlotUnlockedEvent) => {
+      handleSocketEvent('slot_unlocked', data);
+      removeLockedSlot(data.slotId);
+      console.log('[OperationalSocketListener] Slot unlocked - toast shown, store updated');
+    };
+
+    const handleLockExpired = (data: LockExpiredEvent) => {
+      handleSocketEvent('lock_expired', data);
+      removeLockedSlot(data.slotId);
+      console.log('[OperationalSocketListener] Lock expired - toast shown, store updated');
+    };
+
     // Register event listeners
     socket.on('booking_created', handleBookingCreated);
     socket.on('booking_updated', handleBookingUpdated);
     socket.on('booking_cancelled', handleBookingCancelled);
     socket.on('admin_notification', handleAdminNotification);
-
-    // Slot lock events - update booking store for real-time UI sync
-    socket.on('slot_locked', (data: SlotLockedEvent) => {
-      handleSocketEvent('slot_locked', data);
-      addLockedSlot(data);
-      console.log('[OperationalSocketListener] Slot locked - toast shown, store updated');
-    });
-
-    socket.on('slot_unlocked', (data: SlotUnlockedEvent) => {
-      handleSocketEvent('slot_unlocked', data);
-      removeLockedSlot(data.slotId);
-      console.log('[OperationalSocketListener] Slot unlocked - toast shown, store updated');
-    });
-
-    socket.on('lock_expired', (data: LockExpiredEvent) => {
-      handleSocketEvent('lock_expired', data);
-      removeLockedSlot(data.slotId);
-      console.log('[OperationalSocketListener] Lock expired - toast shown, store updated');
-    });
-
-    // Payment events with unified notification system
+    socket.on('slot_locked', handleSlotLocked);
+    socket.on('slot_unlocked', handleSlotUnlocked);
+    socket.on('lock_expired', handleLockExpired);
     socket.on('payment_confirmed', handlePaymentConfirmed);
     socket.on('payment_failed', handlePaymentFailed);
 
@@ -184,14 +185,13 @@ export function OperationalSocketListener({ socket }: OperationalSocketListenerP
       socket.off('booking_updated', handleBookingUpdated);
       socket.off('booking_cancelled', handleBookingCancelled);
       socket.off('admin_notification', handleAdminNotification);
-      socket.off('slot_locked');
-      socket.off('slot_unlocked');
-      socket.off('lock_expired');
+      socket.off('slot_locked', handleSlotLocked);
+      socket.off('slot_unlocked', handleSlotUnlocked);
+      socket.off('lock_expired', handleLockExpired);
       socket.off('payment_confirmed', handlePaymentConfirmed);
       socket.off('payment_failed', handlePaymentFailed);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket]); // Zustand store functions are stable and excluded from dependencies
+  }, [socket, updateBookingFromSocket, removeBookingFromSocket, addLockedSlot, removeLockedSlot, addNotification]);
 
   // This component doesn't render anything
   return null;

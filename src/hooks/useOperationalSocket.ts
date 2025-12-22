@@ -81,7 +81,6 @@ export function useOperationalSocket({
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<TypedSocket | null>(null);
   const getSocketToken = useAuthStore(state => state.getSocketToken);
-  const clearSocketToken = useAuthStore(state => state.clearSocketToken);
 
   useEffect(() => {
     // Guard: Do not connect if disabled
@@ -182,7 +181,7 @@ export function useOperationalSocket({
       socketRef.current = null;
       setIsConnected(false);
     };
-  }, [clubId, enabled, getSocketToken, clearSocketToken]);
+  }, [clubId, enabled, getSocketToken]); // Removed clearSocketToken as it's not used
 
   return {
     socket: socketRef.current,
