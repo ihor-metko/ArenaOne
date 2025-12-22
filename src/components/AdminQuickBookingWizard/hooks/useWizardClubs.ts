@@ -4,6 +4,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useAdminClubStore } from "@/stores/useAdminClubStore";
+import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import type { WizardClub, AdminType, PredefinedData } from "../types";
 
 interface UseWizardClubsOptions {
@@ -38,6 +39,8 @@ export function useWizardClubs({
   const [error, setError] = useState<string | null>(null);
 
   const fetchClubsIfNeeded = useAdminClubStore((state) => state.fetchClubsIfNeeded);
+  const storeClubs = useAdminClubStore((state) => state.clubs);
+  const organizations = useOrganizationStore((state) => state.organizations);
 
   const fetchClubs = useCallback(async () => {
     if (!isOpen || currentStep !== 2) {
@@ -57,13 +60,16 @@ export function useWizardClubs({
       await fetchClubsIfNeeded();
 
       // Map clubs from store to wizard format
-      const storeClubs = useClubStore.getState().clubs;
-      let mappedClubs: WizardClub[] = storeClubs.map((club) => ({
-        id: club.id,
-        name: club.name,
-        organizationId: club.organization?.id || "",
-        organizationName: club.organization?.name,
-      }));
+      let mappedClubs: WizardClub[] = storeClubs.map((club) => {
+        // Find organization name from organizations store
+        const org = organizations.find(o => o.id === club.organizationId);
+        return {
+          id: club.id,
+          name: club.name,
+          organizationId: club.organizationId || "",
+          organizationName: org?.name,
+        };
+      });
 
       // Filter by selected organization for root admin
       if (adminType === "root_admin" && selectedOrganizationId) {
@@ -85,6 +91,8 @@ export function useWizardClubs({
     selectedOrganizationId,
     predefinedData,
     fetchClubsIfNeeded,
+    storeClubs,
+    organizations,
     t,
   ]);
 
