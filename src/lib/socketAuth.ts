@@ -1,6 +1,6 @@
 import { decode } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
-import { MembershipRole, ClubMembershipRole } from '@/constants/roles';
+import { MembershipRole } from '@/constants/roles';
 
 /**
  * User socket authentication data
