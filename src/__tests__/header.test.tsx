@@ -2,13 +2,11 @@
  * @jest-environment jsdom
  */
 import { render, screen, fireEvent } from "@testing-library/react";
-import { useSession } from "next-auth/react";
 import { useUserStore } from "@/stores/useUserStore";
 import Header from "@/components/layout/Header";
 
-// Mock next-auth
+// Mock next-auth (still needed for signOut in UserMenu)
 jest.mock("next-auth/react", () => ({
-  useSession: jest.fn(),
   signOut: jest.fn(),
 }));
 
@@ -78,6 +76,7 @@ jest.mock("@/stores/useUserStore", () => ({
       user: null,
       isLoggedIn: false,
       isLoading: false,
+      sessionStatus: "unauthenticated" as const,
     };
     return selector(state);
   }),
@@ -92,7 +91,6 @@ jest.mock("next/link", () => {
   return MockLink;
 });
 
-const mockUseSession = useSession as jest.Mock;
 const mockUseUserStore = useUserStore as unknown as jest.Mock;
 
 describe("Header Component", () => {
@@ -105,6 +103,7 @@ describe("Header Component", () => {
         user: null,
         isLoggedIn: false,
         isLoading: false,
+        sessionStatus: "unauthenticated" as const,
       };
       return selector(state);
     });
@@ -112,9 +111,15 @@ describe("Header Component", () => {
 
   describe("Unauthenticated state", () => {
     beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: "unauthenticated",
+      mockUseUserStore.mockImplementation((selector) => {
+        const state = {
+          adminStatus: null,
+          user: null,
+          isLoggedIn: false,
+          isLoading: false,
+          sessionStatus: "unauthenticated" as const,
+        };
+        return selector(state);
       });
     });
 
@@ -153,9 +158,15 @@ describe("Header Component", () => {
 
   describe("Loading state", () => {
     beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: null,
-        status: "loading",
+      mockUseUserStore.mockImplementation((selector) => {
+        const state = {
+          adminStatus: null,
+          user: null,
+          isLoggedIn: false,
+          isLoading: true,
+          sessionStatus: "loading" as const,
+        };
+        return selector(state);
       });
     });
 
@@ -167,16 +178,20 @@ describe("Header Component", () => {
 
   describe("Player role", () => {
     beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: {
+      mockUseUserStore.mockImplementation((selector) => {
+        const state = {
+          adminStatus: null,
           user: {
             id: "user-1",
             name: "John Player",
             email: "player@test.com",
-            role: "player",
+            isRoot: false,
           },
-        },
-        status: "authenticated",
+          isLoggedIn: true,
+          isLoading: false,
+          sessionStatus: "authenticated" as const,
+        };
+        return selector(state);
       });
     });
 
