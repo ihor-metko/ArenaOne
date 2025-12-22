@@ -39,9 +39,6 @@ export function emitBookingCreated(data: BookingCreatedEvent): void {
   // Emit to club room
   const clubRoom = `club:${data.clubId}`;
   io.to(clubRoom).emit('booking_created', data);
-  
-  // Also emit legacy event for backward compatibility
-  io.to(clubRoom).emit('bookingCreated', data);
 
   console.log('Emitted booking_created event to room:', {
     room: clubRoom,
@@ -52,7 +49,6 @@ export function emitBookingCreated(data: BookingCreatedEvent): void {
   
   // Emit to root admins
   io.to('root_admin').emit('booking_created', data);
-  io.to('root_admin').emit('bookingCreated', data);
 }
 
 /**
@@ -66,9 +62,6 @@ export function emitBookingUpdated(data: BookingUpdatedEvent): void {
   // Emit to club room
   const clubRoom = `club:${data.clubId}`;
   io.to(clubRoom).emit('booking_updated', data);
-  
-  // Also emit legacy event for backward compatibility
-  io.to(clubRoom).emit('bookingUpdated', data);
 
   console.log('Emitted booking_updated event to room:', {
     room: clubRoom,
@@ -80,7 +73,6 @@ export function emitBookingUpdated(data: BookingUpdatedEvent): void {
   
   // Emit to root admins
   io.to('root_admin').emit('booking_updated', data);
-  io.to('root_admin').emit('bookingUpdated', data);
 }
 
 /**
@@ -94,9 +86,6 @@ export function emitBookingDeleted(data: BookingDeletedEvent): void {
   // Emit to club room
   const clubRoom = `club:${data.clubId}`;
   io.to(clubRoom).emit('booking_cancelled', data);
-  
-  // Also emit legacy event for backward compatibility
-  io.to(clubRoom).emit('bookingDeleted', data);
 
   console.log('Emitted booking_cancelled event to room:', {
     room: clubRoom,
@@ -107,7 +96,6 @@ export function emitBookingDeleted(data: BookingDeletedEvent): void {
   
   // Emit to root admins
   io.to('root_admin').emit('booking_cancelled', data);
-  io.to('root_admin').emit('bookingDeleted', data);
 }
 
 /**

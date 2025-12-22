@@ -10,20 +10,11 @@
  * 
  * This component is initialized once at app startup and works across all pages.
  * 
- * Events monitored:
- * - booking_created, booking_updated, booking_cancelled
- * - slot_locked, slot_unlocked, lock_expired
- * - payment_confirmed, payment_failed
- * - admin_notification
- * 
- * Note: Legacy event names (bookingCreated, bookingUpdated, bookingDeleted) have been removed.
- * The system now uses only the standardized event names with underscores.
- * 
  * Club-Based Room Targeting:
  * - Server-side guarantees that only events for the user's active club are received
  * - Socket connection automatically joins the correct club:{clubId} room
- * - No client-side filtering by clubId is needed (events are pre-filtered by server)
- * - This component receives and processes all events knowing they're already targeted
+ * - Events are pre-filtered by server based on room membership
+ * - This component receives and processes all events knowing they're already targeted correctly
  * 
  * Features:
  * - Uses global socket from SocketProvider (no duplicate connections)

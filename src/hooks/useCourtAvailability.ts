@@ -23,8 +23,12 @@ const EVENT_DEDUPLICATION_TIMEOUT_MS = 5000;
  * - Handles booking_created, booking_cancelled, slot_locked, slot_unlocked events
  * - Automatic cleanup on component unmount
  * - Deduplication of events
+ * - Server-side room targeting ensures only relevant events are received
  * 
- * @param clubId - The club ID to filter events
+ * Note: The server guarantees that only events for the user's active club are received
+ * through room-based targeting, so no client-side filtering is needed.
+ * 
+ * @param clubId - The club ID (used for logging, server handles targeting)
  * @param onAvailabilityChange - Optional callback when availability changes
  * @returns Socket connection status and refresh function
  */
@@ -68,74 +72,49 @@ export function useCourtAvailability(
     // This ensures cleanup uses the Map that was current when effect was set up
     const currentEventMap = eventHandledRef.current;
 
-    // Handle booking created - refresh if it affects this club
-    // NOTE: Client-side filtering by clubId is LEGACY and will be removed.
-    // Server now guarantees correct targeting via club-based rooms.
-    // This guard remains temporarily for safety during migration.
+    // Handle booking created - refresh availability
     const handleBookingCreated = (data: BookingCreatedEvent) => {
       const eventId = `booking_created_${data.booking.id}`;
       if (isEventHandled(eventId)) return;
 
-      if (data.clubId === clubId) {
-        console.log('[useCourtAvailability] Booking created for this club, refreshing');
-        triggerRefresh();
-      }
+      console.log('[useCourtAvailability] Booking created, refreshing');
+      triggerRefresh();
     };
 
-    // Handle booking cancelled - refresh if it affects this club
-    // NOTE: Client-side filtering by clubId is LEGACY and will be removed.
-    // Server now guarantees correct targeting via club-based rooms.
-    // This guard remains temporarily for safety during migration.
+    // Handle booking cancelled - refresh availability
     const handleBookingCancelled = (data: BookingDeletedEvent) => {
       const eventId = `booking_cancelled_${data.bookingId}`;
       if (isEventHandled(eventId)) return;
 
-      if (data.clubId === clubId) {
-        console.log('[useCourtAvailability] Booking cancelled for this club, refreshing');
-        triggerRefresh();
-      }
+      console.log('[useCourtAvailability] Booking cancelled, refreshing');
+      triggerRefresh();
     };
 
     // Handle slot locked - trigger refresh for visual update
-    // NOTE: Client-side filtering by clubId is LEGACY and will be removed.
-    // Server now guarantees correct targeting via club-based rooms.
-    // This guard remains temporarily for safety during migration.
     const handleSlotLocked = (data: SlotLockedEvent) => {
       const eventId = `slot_locked_${data.slotId}`;
       if (isEventHandled(eventId)) return;
 
-      if (data.clubId === clubId) {
-        console.log('[useCourtAvailability] Slot locked for this club, refreshing');
-        triggerRefresh();
-      }
+      console.log('[useCourtAvailability] Slot locked, refreshing');
+      triggerRefresh();
     };
 
     // Handle slot unlocked - trigger refresh
-    // NOTE: Client-side filtering by clubId is LEGACY and will be removed.
-    // Server now guarantees correct targeting via club-based rooms.
-    // This guard remains temporarily for safety during migration.
     const handleSlotUnlocked = (data: SlotUnlockedEvent) => {
       const eventId = `slot_unlocked_${data.slotId}`;
       if (isEventHandled(eventId)) return;
 
-      if (data.clubId === clubId) {
-        console.log('[useCourtAvailability] Slot unlocked for this club, refreshing');
-        triggerRefresh();
-      }
+      console.log('[useCourtAvailability] Slot unlocked, refreshing');
+      triggerRefresh();
     };
 
     // Handle lock expired - trigger refresh
-    // NOTE: Client-side filtering by clubId is LEGACY and will be removed.
-    // Server now guarantees correct targeting via club-based rooms.
-    // This guard remains temporarily for safety during migration.
     const handleLockExpired = (data: LockExpiredEvent) => {
       const eventId = `lock_expired_${data.slotId}`;
       if (isEventHandled(eventId)) return;
 
-      if (data.clubId === clubId) {
-        console.log('[useCourtAvailability] Lock expired for this club, refreshing');
-        triggerRefresh();
-      }
+      console.log('[useCourtAvailability] Lock expired, refreshing');
+      triggerRefresh();
     };
 
     // Register event listeners
