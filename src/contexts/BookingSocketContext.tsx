@@ -158,7 +158,7 @@ export function BookingSocketProvider({ children }: BookingSocketProviderProps) 
       const token = await getSocketToken();
 
       // Validate token before initializing socket
-      if (!token) {
+      if (!token || token === null || token === undefined) {
         console.error('[BookingSocket] Cannot initialize socket: no token available');
         return;
       }

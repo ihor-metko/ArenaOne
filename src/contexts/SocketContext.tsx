@@ -123,7 +123,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
       const token = await getSocketToken();
 
       // Validate token before initializing socket
-      if (!token) {
+      if (!token || token === null || token === undefined) {
         console.error('[NotificationSocket] Cannot initialize socket: no token available');
         return;
       }
