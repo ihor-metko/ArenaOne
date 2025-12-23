@@ -60,17 +60,23 @@ const mockAddLockedSlot = jest.fn();
 const mockRemoveLockedSlot = jest.fn();
 const mockCleanupExpiredLocks = jest.fn();
 
+const mockBookingStore = {
+  updateBookingFromSocket: mockUpdateBookingFromSocket,
+  removeBookingFromSocket: mockRemoveBookingFromSocket,
+  addLockedSlot: mockAddLockedSlot,
+  removeLockedSlot: mockRemoveLockedSlot,
+  cleanupExpiredLocks: mockCleanupExpiredLocks,
+};
+
 jest.mock('@/stores/useBookingStore', () => ({
-  useBookingStore: jest.fn((selector) => {
-    const mockStore = {
-      updateBookingFromSocket: mockUpdateBookingFromSocket,
-      removeBookingFromSocket: mockRemoveBookingFromSocket,
-      addLockedSlot: mockAddLockedSlot,
-      removeLockedSlot: mockRemoveLockedSlot,
-      cleanupExpiredLocks: mockCleanupExpiredLocks,
-    };
-    return selector(mockStore);
-  }),
+  useBookingStore: Object.assign(
+    jest.fn((selector) => {
+      return selector(mockBookingStore);
+    }),
+    {
+      getState: () => mockBookingStore,
+    }
+  ),
 }));
 
 // Mock booking socket.io-client

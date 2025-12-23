@@ -3,33 +3,80 @@
 /**
  * Global Socket.IO Event Dispatcher
  * 
- * Handles two types of WebSocket connections:
- * 1. NotificationSocket - Persistent connection for platform-wide notifications
- * 2. BookingSocket - Club-specific connection for real-time booking updates
+ * ARCHITECTURE OVERVIEW:
+ * ======================
+ * This component manages two separate WebSocket connections:
  * 
- * NotificationSocket:
- * - Always active during user session
- * - Handles: admin_notification, payment events, booking events (for notifications only)
- * - Updates notification store with role-scoped notifications
- * - Server-side room filtering based on user role (Root Admin, Org Admin, Club Admin, Player)
+ * 1. NotificationSocket (SocketProvider)
+ *    - Purpose: Platform-wide notifications
+ *    - Lifecycle: Always active during user session
+ *    - Events: admin_notification, payment_confirmed, payment_failed, booking events (for notifications)
+ *    - Store Updates: Notification store only
+ *    - Room Filtering: Server-side based on user role (root_admin, organization:{orgId}, club:{clubId})
  * 
- * BookingSocket:
- * - Active only when a club is selected (club operations page)
- * - Handles: booking_created, booking_updated, booking_cancelled, slot_locked, slot_unlocked, lock_expired
- * - Updates booking store for real-time calendar synchronization
- * - Automatically disconnects when leaving club pages
+ * 2. BookingSocket (BookingSocketProvider)
+ *    - Purpose: Real-time booking calendar updates
+ *    - Lifecycle: Active only when a club is selected (club operations page)
+ *    - Events: booking_created, booking_updated, booking_cancelled, slot_locked, slot_unlocked, lock_expired
+ *    - Store Updates: Booking store only
+ *    - Room Filtering: Server-side, club:{clubId} room only
  * 
- * Role-Based Event Filtering:
- * - Root Admin: Receives all events (platform-wide)
- * - Organization Admin: Receives events for their organizations
- * - Club Admin/Player: Receives events for their clubs
- * - Server-side room filtering ensures no client-side filtering needed
+ * EVENT FLOW:
+ * ===========
  * 
- * Features:
- * - Singleton integration with existing socket instances
- * - Proper event cleanup on unmount
- * - Duplicate prevention via notification manager
- * - Separate store updates for notifications vs booking calendar
+ * Booking Events:
+ * - NotificationSocket receives booking events → Shows toast + Adds to notification store
+ * - BookingSocket receives booking events → Updates booking store (calendar UI sync)
+ * - Both can fire simultaneously without duplication due to separate responsibilities
+ * 
+ * Slot Lock Events:
+ * - Only handled by BookingSocket
+ * - Updates booking store to show locked/unavailable slots in calendar
+ * 
+ * Payment Events:
+ * - Only handled by NotificationSocket
+ * - Shows toast + Adds to notification store
+ * 
+ * Admin Notification Events:
+ * - Only handled by NotificationSocket
+ * - Adds directly to notification store (no transformation needed)
+ * 
+ * ROLE-BASED ACCESS:
+ * ==================
+ * - Root Admin: Receives all events from all clubs/organizations
+ * - Organization Admin: Receives events for clubs within their organizations
+ * - Club Admin: Receives events for clubs they manage
+ * - Player: Receives events for clubs they belong to
+ * - Server-side room filtering ensures users only receive relevant events
+ * 
+ * INTEGRATION:
+ * ============
+ * - Place in root layout (app/layout.tsx) as a singleton
+ * - Uses existing socket instances from SocketProvider and BookingSocketProvider
+ * - Reacts to activeClubId changes from ClubContext
+ * - BookingSocket automatically connects when activeClubId is set, disconnects when cleared
+ * 
+ * USAGE:
+ * ======
+ * In root layout:
+ * ```tsx
+ * <SocketProvider>
+ *   <BookingSocketProvider>
+ *     <GlobalSocketListener />
+ *     {children}
+ *   </BookingSocketProvider>
+ * </SocketProvider>
+ * ```
+ * 
+ * In club operations page:
+ * ```tsx
+ * const { setActiveClubId } = useActiveClub();
+ * 
+ * useEffect(() => {
+ *   setActiveClubId(clubId); // BookingSocket connects
+ *   return () => setActiveClubId(null); // BookingSocket disconnects
+ * }, [clubId]);
+ * ```
  */
 
 import { useEffect } from 'react';
@@ -79,13 +126,8 @@ export function GlobalSocketListener() {
   // BookingSocket - active only when club is selected
   const { socket: bookingSocket, isConnected: bookingConnected, activeClubId } = useBookingSocket();
   
-  // Store actions
+  // Store actions - using direct selector to get addNotification
   const addNotification = useNotificationStore(state => state.addNotification);
-  const updateBookingFromSocket = useBookingStore(state => state.updateBookingFromSocket);
-  const removeBookingFromSocket = useBookingStore(state => state.removeBookingFromSocket);
-  const addLockedSlot = useBookingStore(state => state.addLockedSlot);
-  const removeLockedSlot = useBookingStore(state => state.removeLockedSlot);
-  const cleanupExpiredLocks = useBookingStore(state => state.cleanupExpiredLocks);
 
   // ===== NotificationSocket Event Handlers =====
   // These events are for notifications only, not real-time calendar updates
@@ -185,41 +227,41 @@ export function GlobalSocketListener() {
 
     console.log('[GlobalSocketListener] Registering BookingSocket event listeners for club:', activeClubId);
 
+    // Helper to filter events by active club
+    const isEventForActiveClub = (clubId: string): boolean => {
+      if (clubId !== activeClubId) {
+        console.log('[GlobalSocketListener] Ignoring event for different club');
+        return false;
+      }
+      return true;
+    };
+
     // Booking events - update booking store for real-time calendar sync
     const handleBookingCreated = (data: BookingCreatedEvent) => {
-      // Only process events for the current club
-      if (data.clubId !== activeClubId) {
-        console.log('[GlobalSocketListener] Ignoring booking_created for different club');
-        return;
-      }
+      if (!isEventForActiveClub(data.clubId)) return;
 
       // Update booking store for real-time calendar sync
+      const { updateBookingFromSocket } = useBookingStore.getState();
       updateBookingFromSocket(data.booking);
       
       console.log('[GlobalSocketListener] Booking created - store updated');
     };
 
     const handleBookingUpdated = (data: BookingUpdatedEvent) => {
-      // Only process events for the current club
-      if (data.clubId !== activeClubId) {
-        console.log('[GlobalSocketListener] Ignoring booking_updated for different club');
-        return;
-      }
+      if (!isEventForActiveClub(data.clubId)) return;
 
       // Update booking store for real-time calendar sync
+      const { updateBookingFromSocket } = useBookingStore.getState();
       updateBookingFromSocket(data.booking);
       
       console.log('[GlobalSocketListener] Booking updated - store updated');
     };
 
     const handleBookingCancelled = (data: BookingDeletedEvent) => {
-      // Only process events for the current club
-      if (data.clubId !== activeClubId) {
-        console.log('[GlobalSocketListener] Ignoring booking_cancelled for different club');
-        return;
-      }
+      if (!isEventForActiveClub(data.clubId)) return;
 
       // Remove from booking store for real-time calendar sync
+      const { removeBookingFromSocket } = useBookingStore.getState();
       removeBookingFromSocket(data.bookingId);
       
       console.log('[GlobalSocketListener] Booking cancelled - store updated');
@@ -227,37 +269,28 @@ export function GlobalSocketListener() {
 
     // Slot lock events - update booking store for real-time UI sync
     const handleSlotLocked = (data: SlotLockedEvent) => {
-      // Only process events for the current club
-      if (data.clubId !== activeClubId) {
-        console.log('[GlobalSocketListener] Ignoring slot_locked for different club');
-        return;
-      }
+      if (!isEventForActiveClub(data.clubId)) return;
 
       handleSocketEvent('slot_locked', data);
+      const { addLockedSlot } = useBookingStore.getState();
       addLockedSlot(data);
       console.log('[GlobalSocketListener] Slot locked - store updated');
     };
 
     const handleSlotUnlocked = (data: SlotUnlockedEvent) => {
-      // Only process events for the current club
-      if (data.clubId !== activeClubId) {
-        console.log('[GlobalSocketListener] Ignoring slot_unlocked for different club');
-        return;
-      }
+      if (!isEventForActiveClub(data.clubId)) return;
 
       handleSocketEvent('slot_unlocked', data);
+      const { removeLockedSlot } = useBookingStore.getState();
       removeLockedSlot(data.slotId);
       console.log('[GlobalSocketListener] Slot unlocked - store updated');
     };
 
     const handleLockExpired = (data: LockExpiredEvent) => {
-      // Only process events for the current club
-      if (data.clubId !== activeClubId) {
-        console.log('[GlobalSocketListener] Ignoring lock_expired for different club');
-        return;
-      }
+      if (!isEventForActiveClub(data.clubId)) return;
 
       handleSocketEvent('lock_expired', data);
+      const { removeLockedSlot } = useBookingStore.getState();
       removeLockedSlot(data.slotId);
       console.log('[GlobalSocketListener] Lock expired - store updated');
     };
@@ -281,16 +314,17 @@ export function GlobalSocketListener() {
       bookingSocket.off('slot_unlocked', handleSlotUnlocked);
       bookingSocket.off('lock_expired', handleLockExpired);
     };
-  }, [bookingSocket, activeClubId, updateBookingFromSocket, removeBookingFromSocket, addLockedSlot, removeLockedSlot]);
+  }, [bookingSocket, activeClubId]); // Only depend on socket and activeClubId, not store actions
 
   // Periodic cleanup of expired slot locks
   useEffect(() => {
     const interval = setInterval(() => {
+      const { cleanupExpiredLocks } = useBookingStore.getState();
       cleanupExpiredLocks();
     }, CLEANUP_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [cleanupExpiredLocks]);
+  }, []); // Empty deps - cleanup function doesn't change
 
   // Cleanup notification manager on unmount
   useEffect(() => {
