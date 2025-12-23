@@ -392,6 +392,7 @@ export default function ClubDetailPage({
         logoUrl={logoUrl}
         imageAlt={`${club.name} hero image`}
         logoAlt={`${club.name} logo`}
+        hideAdminFeatures={true}
       />
 
       {/* Main Content */}
