@@ -106,7 +106,7 @@ export async function POST(
     }
 
     // Save file to filesystem
-    const saveResult = await saveFileToStorage(filename, fileBuffer);
+    const saveResult = await saveFileToStorage(filename, fileBuffer, "organizations");
 
     if ("error" in saveResult) {
       console.error("Failed to save file:", saveResult.error);
@@ -117,7 +117,7 @@ export async function POST(
     }
 
     // Generate URL to serve the image
-    const imageUrl = `/api/images/${filename}`;
+    const imageUrl = `/api/images/organizations/${filename}`;
 
     // Update the organization with the new image URL
     const updateData = imageType === "logo" 

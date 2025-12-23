@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import { readFileFromStorage, getMimeTypeFromFilename, isValidFilename } from "@/lib/fileStorage";
+import { readFileFromStorage, getMimeTypeFromFilename, isValidFilename, ALLOWED_ENTITIES, type EntityType } from "@/lib/fileStorage";
 
 /**
  * GET /api/images/[filename]
  * Serve an image from the filesystem storage.
  * 
- * Images are stored in /app/storage/images/ and served with appropriate headers.
+ * For backward compatibility, this endpoint:
+ * 1. First tries to read from the root /app/storage/images/ directory
+ * 2. If not found, tries each entity subdirectory (organizations, clubs, general, users)
+ * 
+ * New uploads should use the entity-specific endpoint: /api/images/[entity]/[filename]
  */
 export async function GET(
   request: Request,
@@ -23,9 +27,20 @@ export async function GET(
       );
     }
 
-    // Read the file from storage
-    const result = await readFileFromStorage(filename);
+    // Try to read from root directory first (backward compatibility)
+    let result = await readFileFromStorage(filename);
 
+    // If not found in root, try entity subdirectories
+    if ("error" in result) {
+      for (const entity of ALLOWED_ENTITIES) {
+        result = await readFileFromStorage(filename, entity as EntityType);
+        if (!("error" in result)) {
+          break; // Found the file
+        }
+      }
+    }
+
+    // If still not found, return 404
     if ("error" in result) {
       return NextResponse.json(
         { error: "File not found" },

@@ -151,15 +151,40 @@ export function generateUniqueFilename(mimeType: string): string {
 }
 
 /**
+ * Allowed entity types for subdirectory organization.
+ */
+export const ALLOWED_ENTITIES = ["organizations", "clubs", "users", "general"] as const;
+export type EntityType = typeof ALLOWED_ENTITIES[number];
+
+/**
+ * Validate an entity type.
+ * 
+ * @param entity - The entity type to validate
+ * @returns true if valid, false otherwise
+ */
+export function isValidEntity(entity: string): entity is EntityType {
+  return ALLOWED_ENTITIES.includes(entity as EntityType);
+}
+
+/**
  * Ensure the storage directory exists.
  * Creates the directory if it doesn't exist.
+ * 
+ * @param entity - Optional entity subdirectory (e.g., "organizations", "clubs")
  */
-async function ensureStorageDirectory(): Promise<void> {
+async function ensureStorageDirectory(entity?: EntityType): Promise<void> {
   try {
-    await fs.access(STORAGE_BASE_PATH);
+    const targetPath = entity 
+      ? path.join(STORAGE_BASE_PATH, entity)
+      : STORAGE_BASE_PATH;
+    
+    await fs.access(targetPath);
   } catch {
     // Directory doesn't exist, create it
-    await fs.mkdir(STORAGE_BASE_PATH, { recursive: true });
+    const targetPath = entity 
+      ? path.join(STORAGE_BASE_PATH, entity)
+      : STORAGE_BASE_PATH;
+    await fs.mkdir(targetPath, { recursive: true });
   }
 }
 
@@ -168,16 +193,20 @@ async function ensureStorageDirectory(): Promise<void> {
  * 
  * @param filename - The filename to save as (e.g., "uuid.jpg")
  * @param fileBuffer - The file content as a Buffer
+ * @param entity - Optional entity subdirectory (e.g., "organizations", "clubs")
  * @returns Object with the filename or error
  */
 export async function saveFileToStorage(
   filename: string,
-  fileBuffer: Buffer
+  fileBuffer: Buffer,
+  entity?: EntityType
 ): Promise<{ filename: string } | { error: string }> {
   try {
-    await ensureStorageDirectory();
+    await ensureStorageDirectory(entity);
     
-    const filePath = path.join(STORAGE_BASE_PATH, filename);
+    const filePath = entity
+      ? path.join(STORAGE_BASE_PATH, entity, filename)
+      : path.join(STORAGE_BASE_PATH, filename);
     
     // Write the file
     await fs.writeFile(filePath, fileBuffer);
@@ -194,13 +223,17 @@ export async function saveFileToStorage(
  * Read a file from the filesystem storage.
  * 
  * @param filename - The filename to read
+ * @param entity - Optional entity subdirectory (e.g., "organizations", "clubs")
  * @returns Object with the file buffer or error
  */
 export async function readFileFromStorage(
-  filename: string
+  filename: string,
+  entity?: EntityType
 ): Promise<{ buffer: Buffer } | { error: string }> {
   try {
-    const filePath = path.join(STORAGE_BASE_PATH, filename);
+    const filePath = entity
+      ? path.join(STORAGE_BASE_PATH, entity, filename)
+      : path.join(STORAGE_BASE_PATH, filename);
     
     // Check if file exists
     await fs.access(filePath);
@@ -220,13 +253,17 @@ export async function readFileFromStorage(
  * Delete a file from the filesystem storage.
  * 
  * @param filename - The filename to delete
+ * @param entity - Optional entity subdirectory (e.g., "organizations", "clubs")
  * @returns Object with success status or error
  */
 export async function deleteFileFromStorage(
-  filename: string
+  filename: string,
+  entity?: EntityType
 ): Promise<{ success: true } | { error: string }> {
   try {
-    const filePath = path.join(STORAGE_BASE_PATH, filename);
+    const filePath = entity
+      ? path.join(STORAGE_BASE_PATH, entity, filename)
+      : path.join(STORAGE_BASE_PATH, filename);
     
     // Check if file exists before attempting to delete
     await fs.access(filePath);

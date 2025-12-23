@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
     // Save file to filesystem
     const buffer = Buffer.from(await file.arrayBuffer());
-    const saveResult = await saveFileToStorage(filename, buffer);
+    const saveResult = await saveFileToStorage(filename, buffer, "general");
 
     if ("error" in saveResult) {
       console.error("Failed to save file:", saveResult.error);
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     }
 
     // Generate URL to serve the image
-    const url = `/api/images/${filename}`;
+    const url = `/api/images/general/${filename}`;
 
     return NextResponse.json(
       {

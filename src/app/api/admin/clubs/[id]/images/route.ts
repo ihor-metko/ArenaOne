@@ -54,7 +54,7 @@ export async function POST(
 
     // Save file to filesystem
     const buffer = Buffer.from(await file.arrayBuffer());
-    const saveResult = await saveFileToStorage(filename, buffer);
+    const saveResult = await saveFileToStorage(filename, buffer, "clubs");
 
     if ("error" in saveResult) {
       console.error("Failed to save file:", saveResult.error);
@@ -65,7 +65,7 @@ export async function POST(
     }
 
     // Generate URL to serve the image
-    const imageUrl = `/api/images/${filename}`;
+    const imageUrl = `/api/images/clubs/${filename}`;
 
     // Get current max sortOrder for this club's gallery
     const maxSortOrder = await prisma.clubGallery.aggregate({

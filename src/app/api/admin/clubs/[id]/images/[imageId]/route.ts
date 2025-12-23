@@ -45,7 +45,7 @@ export async function DELETE(
       const filename = extractFilenameFromPath(image.imageKey);
       
       if (filename) {
-        const deleteResult = await deleteFileFromStorage(filename);
+        const deleteResult = await deleteFileFromStorage(filename, "clubs");
         if ("error" in deleteResult) {
           console.error("Failed to delete from filesystem:", deleteResult.error);
           // Continue with DB deletion even if storage deletion fails
