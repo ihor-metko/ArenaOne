@@ -11,8 +11,9 @@ import { randomUUID } from "crypto";
 
 /**
  * Base storage directory for images (Docker volume mount point)
+ * Can be overridden via STORAGE_BASE_PATH environment variable
  */
-export const STORAGE_BASE_PATH = "/app/storage/images";
+export const STORAGE_BASE_PATH = process.env.STORAGE_BASE_PATH || "/app/storage/images";
 
 /**
  * Allowed MIME types for image uploads.
@@ -226,13 +227,25 @@ export async function deleteFileFromStorage(
  * - /uploads/clubs/uuid.jpg -> uuid.jpg
  * - clubs/uuid.jpg -> uuid.jpg
  * 
+ * This function validates the filename for security:
+ * - Ensures no path traversal attacks (.., /, \)
+ * - Returns only the last segment of the path
+ * 
  * @param urlPath - The URL path as stored in the database
- * @returns The filename only
+ * @returns The filename only, or empty string if invalid
  */
 export function extractFilenameFromPath(urlPath: string): string {
   // Get the last segment of the path
   const segments = urlPath.split("/").filter(Boolean);
-  return segments[segments.length - 1] || "";
+  const filename = segments[segments.length - 1] || "";
+  
+  // Validate the filename doesn't contain dangerous characters
+  if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+    console.error("Invalid filename detected in path:", urlPath);
+    return "";
+  }
+  
+  return filename;
 }
 
 /**

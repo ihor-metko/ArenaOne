@@ -37,7 +37,7 @@ export async function GET(
     const mimeType = getMimeTypeFromFilename(filename);
 
     // Return the image with appropriate headers
-    return new NextResponse(result.buffer as unknown as BodyInit, {
+    return new NextResponse(result.buffer as BodyInit, {
       status: 200,
       headers: {
         "Content-Type": mimeType,
