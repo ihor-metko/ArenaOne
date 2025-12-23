@@ -3,12 +3,19 @@
  *
  * This module provides authentication for Socket.IO connections.
  * It's written in CommonJS to be compatible with server.js.
- * 
+ *
  * Token Format: JWS (signed JWT) using HS256 algorithm
  * Verification: Uses jose library's jwtVerify function
  */
 
-const { jwtVerify } = require('jose');
+let jose;
+
+async function getJose() {
+  if (!jose) {
+    jose = await import('jose');
+  }
+  return jose;
+}
 
 /**
  * Convert string to Uint8Array for jose library
@@ -50,6 +57,7 @@ async function verifySocketToken(token) {
     }
 
     // Verify the JWS token using jose
+    const { jwtVerify } = await getJose();
     const { payload } = await jwtVerify(
       token,
       stringToUint8Array(secret),
