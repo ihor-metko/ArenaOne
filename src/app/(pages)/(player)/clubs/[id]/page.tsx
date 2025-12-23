@@ -410,7 +410,7 @@ export default function ClubDetailPage({
         {/* Admin Link */}
         {user?.isRoot && (
           <div className="mb-4 text-right">
-            <IMLink href={`/admin/clubs/${club.id}/courts`}>{t("clubs.adminCourts")}</IMLink>
+            <IMLink href={`/admin/courts?clubId=${club.id}`}>{t("clubs.adminCourts")}</IMLink>
           </div>
         )}
 

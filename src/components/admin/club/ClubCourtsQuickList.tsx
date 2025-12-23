@@ -88,7 +88,7 @@ export function ClubCourtsQuickList({ club }: ClubCourtsQuickListProps) {
             + Add Court
           </Button>
           <IMLink
-            href={`/admin/clubs/${club.id}/courts`}
+            href={`/admin/courts?clubId=${club.id}`}
             className="im-courts-manage-link"
           >
             Manage All →
