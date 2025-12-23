@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button, Card } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useUserStore } from "@/stores/useUserStore";
@@ -35,6 +36,9 @@ interface StepperFormData {
   address: string;
   city: string;
   postalCode: string;
+  country: string;
+  latitude: string;
+  longitude: string;
   phone: string;
   email: string;
   website: string;
@@ -66,6 +70,9 @@ const initialFormData: StepperFormData = {
   address: "вул. Спортивна 12, Київ",
   city: "Київ",
   postalCode: "12345",
+  country: "Ukraine",
+  latitude: "50.4501",
+  longitude: "30.5234",
   phone: "+380501234567",
   email: "info@padelpulsearena.ua",
   website: "https://padelpulsearena.ua",
@@ -85,6 +92,9 @@ const STEPS = [
 
 export function ClubCreationStepper() {
   const router = useRouter();
+  const t = useTranslations("admin.clubs.stepper");
+  const tNav = useTranslations("admin.clubs.stepper.navigation");
+  const tErrors = useTranslations("admin.clubs.stepper.errors");
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<StepperFormData>(initialFormData);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -213,10 +223,25 @@ export function ClubCreationStepper() {
     if (step === 1) {
       // Validate organization selection
       if (!formData.organizationId) {
-        errors.organizationId = "Organization is required";
+        errors.organizationId = tErrors("organizationRequired");
       }
       if (!formData.name.trim()) {
-        errors.name = "Club name is required";
+        errors.name = tErrors("nameRequired");
+      }
+    }
+
+    if (step === 2) {
+      // Validate email format if provided
+      if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        errors.email = tErrors("invalidEmail");
+      }
+      // Validate latitude if provided
+      if (formData.latitude && isNaN(parseFloat(formData.latitude))) {
+        errors.latitude = tErrors("invalidLatitude");
+      }
+      // Validate longitude if provided
+      if (formData.longitude && isNaN(parseFloat(formData.longitude))) {
+        errors.longitude = tErrors("invalidLongitude");
       }
     }
 
@@ -225,7 +250,7 @@ export function ClubCreationStepper() {
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [formData]);
+  }, [formData, tErrors]);
 
   const handleNext = useCallback(() => {
     if (validateStep(currentStep)) {
@@ -275,12 +300,12 @@ export function ClubCreationStepper() {
 
     // Final validation
     if (!formData.organizationId) {
-      setError("Organization is required");
+      setError(tErrors("organizationRequired"));
       setCurrentStep(1);
       return;
     }
     if (!formData.name.trim()) {
-      setError("Club name is required");
+      setError(tErrors("nameRequired"));
       setCurrentStep(1);
       return;
     }
@@ -297,6 +322,9 @@ export function ClubCreationStepper() {
         shortDescription: formData.shortDescription.trim() || `${formData.name} - ${formData.clubType || "Sports"} Club`,
         location: formData.address.trim() || "Address not provided",
         city: formData.city.trim() || null,
+        country: formData.country.trim() || null,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
         phone: formData.phone.trim() || null,
         email: formData.email.trim() || null,
         website: formData.website.trim() || null,
@@ -389,9 +417,9 @@ export function ClubCreationStepper() {
       case 1:
         return (
           <Card className="im-stepper-section">
-            <h2 className="im-stepper-section-title">General Information</h2>
+            <h2 className="im-stepper-section-title">{t("generalInfo.title")}</h2>
             <p className="im-stepper-section-description">
-              Enter the basic details about your club.
+              {t("generalInfo.description")}
             </p>
             <GeneralInfoStep
               data={{
@@ -412,16 +440,18 @@ export function ClubCreationStepper() {
       case 2:
         return (
           <Card className="im-stepper-section">
-            <h2 className="im-stepper-section-title">Contacts and Address</h2>
+            <h2 className="im-stepper-section-title">{t("contacts.title")}</h2>
             <p className="im-stepper-section-description">
-              Provide contact information and location details.
+              {t("contacts.description")}
             </p>
             <ContactsStep
               data={{
                 address: formData.address,
                 city: formData.city,
                 postalCode: formData.postalCode,
-                country: "",
+                country: formData.country,
+                latitude: formData.latitude,
+                longitude: formData.longitude,
                 phone: formData.phone,
                 email: formData.email,
                 website: formData.website,
@@ -436,9 +466,9 @@ export function ClubCreationStepper() {
       case 3:
         return (
           <Card className="im-stepper-section">
-            <h2 className="im-stepper-section-title">Club Working Hours</h2>
+            <h2 className="im-stepper-section-title">{t("hours.title")}</h2>
             <p className="im-stepper-section-description">
-              Set the standard operating hours for each day of the week.
+              {t("hours.description")}
             </p>
             <HoursStep
               data={{ businessHours: formData.businessHours }}
@@ -452,9 +482,9 @@ export function ClubCreationStepper() {
       case 4:
         return (
           <Card className="im-stepper-section">
-            <h2 className="im-stepper-section-title">Courts</h2>
+            <h2 className="im-stepper-section-title">{t("courts.title")}</h2>
             <p className="im-stepper-section-description">
-              Add courts for your club. You can add more later from the club detail page.
+              {t("courts.description")}
             </p>
             <CourtsStep
               data={{ courts: formData.courts }}
@@ -468,9 +498,9 @@ export function ClubCreationStepper() {
       case 5:
         return (
           <Card className="im-stepper-section">
-            <h2 className="im-stepper-section-title">Gallery / Images</h2>
+            <h2 className="im-stepper-section-title">{t("gallery.title")}</h2>
             <p className="im-stepper-section-description">
-              Upload your club logo and photos.
+              {t("gallery.description")}
             </p>
             <GalleryStep
               data={{ logo: formData.logo, gallery: formData.gallery }}
@@ -499,7 +529,7 @@ export function ClubCreationStepper() {
               <span className="im-stepper-indicator-number">
                 {currentStep > step.id ? "✓" : step.id}
               </span>
-              <span className="im-stepper-indicator-label">{step.label}</span>
+              <span className="im-stepper-indicator-label">{t(`steps.${step.label.toLowerCase()}`)}</span>
             </div>
             {index < STEPS.length - 1 && (
               <div
@@ -513,7 +543,7 @@ export function ClubCreationStepper() {
 
       {/* Progress Text */}
       <p className="im-stepper-progress">
-        Step {currentStep} of {STEPS.length}
+        {t("stepOf", { current: currentStep, total: STEPS.length })}
       </p>
 
       {/* Error Alert */}
@@ -537,7 +567,7 @@ export function ClubCreationStepper() {
             onClick={handleCancel}
             disabled={isSubmitting}
           >
-            Cancel
+            {tNav("cancel")}
           </Button>
         </div>
         <div className="im-stepper-navigation-right">
@@ -548,7 +578,7 @@ export function ClubCreationStepper() {
               onClick={handleBack}
               disabled={isSubmitting}
             >
-              Back
+              {tNav("back")}
             </Button>
           )}
           {currentStep < STEPS.length ? (
@@ -557,7 +587,7 @@ export function ClubCreationStepper() {
               onClick={handleNext}
               disabled={isSubmitting}
             >
-              Next
+              {tNav("next")}
             </Button>
           ) : (
             <Button
@@ -565,7 +595,7 @@ export function ClubCreationStepper() {
               onClick={handleSubmit}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Creating..." : "Create Club"}
+              {isSubmitting ? tNav("creating") : tNav("createClub")}
             </Button>
           )}
         </div>
