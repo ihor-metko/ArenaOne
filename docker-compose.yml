@@ -17,7 +17,7 @@ services:
     container_name: arena_one_nginx
     ports:
       - "8080:80"
-      - "443:443"
+      - "8443:443"
     volumes:
       - ./nginx:/etc/nginx/conf.d
     depends_on:
