@@ -148,6 +148,7 @@ export default function ClubOperationsPage() {
   useEffect(() => {
     if (clubId) {
       // Set active club for socket room targeting
+      // This will trigger BookingSocket to connect for admin users
       setActiveClubId(clubId);
       
       ensureClubById(clubId).catch(console.error);
@@ -156,6 +157,7 @@ export default function ClubOperationsPage() {
 
     // Cleanup: Clear active club when leaving this page
     // This will trigger BookingSocket to disconnect automatically
+    // Also clear localStorage to prevent stale clubId from persisting
     return () => {
       setActiveClubId(null);
     };
