@@ -364,8 +364,6 @@ export default function ClubDetailPage({
   }
 
   // Prepare derived data
-  const heroImageUrl = getImageUrl(club.heroImage);
-  const logoUrl = getImageUrl(club.logo);
   const hasValidCoordinates = club.latitude !== null && club.longitude !== null && club.latitude !== undefined && club.longitude !== undefined;
 
   // Format location display
@@ -388,10 +386,11 @@ export default function ClubDetailPage({
         title={club.name}
         subtitle={club.shortDescription}
         location={locationDisplay}
-        imageUrl={heroImageUrl}
-        logoUrl={logoUrl}
+        imageUrl={club.heroImage}
+        logoUrl={club.logo}
         imageAlt={`${club.name} hero image`}
         logoAlt={`${club.name} logo`}
+        hideAdminFeatures={true}
       />
 
       {/* Main Content */}
