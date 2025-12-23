@@ -229,7 +229,7 @@ export default function PlayerDashboardPage() {
     } finally {
       setCoachesLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // Fetch events (placeholder - events API would be needed)
   const fetchEvents = useCallback(async () => {
