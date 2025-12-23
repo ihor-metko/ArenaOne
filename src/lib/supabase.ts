@@ -6,6 +6,7 @@
  */
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { sanitizeSVG, isValidSVGBuffer } from "./svgSanitizer";
 
 /**
  * The name of the Supabase Storage bucket where images are stored.
@@ -25,6 +26,15 @@ export const ALLOWED_MIME_TYPES = [
 ] as const;
 
 /**
+ * Allowed MIME types for logo uploads (includes SVG).
+ * SVG is only allowed for organization and club logos, not general uploads.
+ */
+export const ALLOWED_LOGO_MIME_TYPES = [
+  ...ALLOWED_MIME_TYPES,
+  "image/svg+xml",
+] as const;
+
+/**
  * Map of MIME types to file extensions.
  * Note: "image/jpg" maps to "jpg" for browser compatibility.
  */
@@ -34,6 +44,7 @@ export const MIME_TO_EXTENSION: Record<string, string> = {
   "image/png": "png",
   "image/webp": "webp",
   "image/avif": "avif",
+  "image/svg+xml": "svg",
 };
 
 /**
@@ -127,6 +138,46 @@ export async function uploadToStorage(
 }
 
 /**
+ * Upload a logo file (with SVG support) to Supabase Storage.
+ * This should ONLY be used for organization and club logos.
+ * SVG files are sanitized before upload to prevent XSS attacks.
+ * 
+ * @param filePath - The path within the bucket (e.g., "organizations/uuid/logo.svg")
+ * @param fileBuffer - The file content as a Buffer
+ * @param contentType - The MIME type of the file
+ * @returns Object with the file path or error
+ */
+export async function uploadLogoToStorage(
+  filePath: string,
+  fileBuffer: Buffer,
+  contentType: string
+): Promise<{ path: string } | { error: string }> {
+  // If it's an SVG, sanitize it first
+  if (contentType === "image/svg+xml") {
+    try {
+      // Validate the buffer contains SVG
+      if (!isValidSVGBuffer(fileBuffer)) {
+        return { error: "Invalid SVG file" };
+      }
+
+      // Convert buffer to string and sanitize
+      const svgContent = fileBuffer.toString("utf-8");
+      const sanitizedSVG = sanitizeSVG(svgContent);
+
+      // Convert sanitized content back to buffer
+      fileBuffer = Buffer.from(sanitizedSVG, "utf-8");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "SVG sanitization failed";
+      console.error("SVG sanitization error:", errorMessage);
+      return { error: errorMessage };
+    }
+  }
+
+  // Use the standard upload function with the sanitized content
+  return uploadToStorage(filePath, fileBuffer, contentType);
+}
+
+/**
  * Delete a file from Supabase Storage.
  * 
  * @param filePath - The path within the bucket (e.g., "clubs/uuid/filename.jpg")
@@ -169,15 +220,19 @@ export async function deleteFromStorage(
 
 /**
  * Get a user-friendly list of allowed file extensions.
+ * 
+ * @param allowedMimeTypes - Array of allowed MIME types
  */
-function getAllowedExtensionsList(): string {
-  // Get unique extensions from the MIME_TO_EXTENSION map
-  const extensions = [...new Set(Object.values(MIME_TO_EXTENSION))];
-  return extensions.join(", ");
+function getAllowedExtensionsList(allowedMimeTypes: readonly string[]): string {
+  // Get extensions for the allowed MIME types
+  const extensions = allowedMimeTypes
+    .map(mimeType => MIME_TO_EXTENSION[mimeType])
+    .filter((ext): ext is string => ext !== undefined);
+  return Array.from(new Set(extensions)).join(", ");
 }
 
 /**
- * Validate a file for upload.
+ * Validate a file for upload (raster images only, no SVG).
  * 
  * @param mimeType - The MIME type of the file
  * @param size - The size of the file in bytes
@@ -188,7 +243,30 @@ export function validateFileForUpload(
   size: number
 ): string | null {
   if (!ALLOWED_MIME_TYPES.includes(mimeType as (typeof ALLOWED_MIME_TYPES)[number])) {
-    return `Invalid file type. Allowed: ${getAllowedExtensionsList()}`;
+    return `Invalid file type. Allowed: ${getAllowedExtensionsList(ALLOWED_MIME_TYPES)}`;
+  }
+
+  if (size > MAX_FILE_SIZE) {
+    return `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB`;
+  }
+
+  return null;
+}
+
+/**
+ * Validate a file for logo upload (includes SVG support).
+ * This should ONLY be used for organization and club logos.
+ * 
+ * @param mimeType - The MIME type of the file
+ * @param size - The size of the file in bytes
+ * @returns null if valid, or error message string
+ */
+export function validateLogoFileForUpload(
+  mimeType: string,
+  size: number
+): string | null {
+  if (!ALLOWED_LOGO_MIME_TYPES.includes(mimeType as (typeof ALLOWED_LOGO_MIME_TYPES)[number])) {
+    return `Invalid file type. Allowed: ${getAllowedExtensionsList(ALLOWED_LOGO_MIME_TYPES)}`;
   }
 
   if (size > MAX_FILE_SIZE) {

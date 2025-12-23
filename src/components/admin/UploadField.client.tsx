@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { ALLOWED_IMAGE_TYPES, ALLOWED_LOGO_TYPES } from "@/constants/uploadConstants";
 import "./UploadField.css";
 
 interface UploadedFile {
@@ -20,34 +21,39 @@ interface UploadFieldProps {
   helperText?: string;
   aspectRatio?: "square" | "wide" | "auto";
   disabled?: boolean;
+  allowSVG?: boolean; // New prop to enable SVG support for logos only
 }
-
-const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 export function UploadField({
   label,
   value,
   onChange,
-  accept = "image/jpeg,image/png,image/webp",
+  accept,
   maxSizeMB = 5,
   required = false,
   helperText,
   aspectRatio = "auto",
   disabled = false,
+  allowSVG = false, // Default to false for backward compatibility
 }: UploadFieldProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Set default accept based on allowSVG
+  const acceptTypes = accept || (allowSVG ? "image/jpeg,image/png,image/webp,image/svg+xml" : "image/jpeg,image/png,image/webp");
+
   const validateFile = useCallback((file: File): string | null => {
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return "Invalid file type. Allowed: JPG, PNG, WebP";
+    const allowedTypes = allowSVG ? ALLOWED_LOGO_TYPES : ALLOWED_IMAGE_TYPES;
+    if (!allowedTypes.includes(file.type as typeof allowedTypes[number])) {
+      const formats = allowSVG ? "JPG, PNG, WebP, SVG" : "JPG, PNG, WebP";
+      return `Invalid file type. Allowed: ${formats}`;
     }
     if (file.size > maxSizeMB * 1024 * 1024) {
       return `File too large. Maximum size: ${maxSizeMB}MB`;
     }
     return null;
-  }, [maxSizeMB]);
+  }, [maxSizeMB, allowSVG]);
 
   const handleFile = useCallback((file: File) => {
     const validationError = validateFile(file);
@@ -157,7 +163,7 @@ export function UploadField({
         <input
           ref={inputRef}
           type="file"
-          accept={accept}
+          accept={acceptTypes}
           onChange={handleInputChange}
           className="im-upload-field-input"
           disabled={disabled}
@@ -192,7 +198,7 @@ export function UploadField({
               Drop image here or click to upload
             </span>
             <span className="im-upload-field-hint">
-              JPG, PNG, WebP (max {maxSizeMB}MB)
+              {allowSVG ? `JPG, PNG, WebP, SVG (max ${maxSizeMB}MB)` : `JPG, PNG, WebP (max ${maxSizeMB}MB)`}
             </span>
           </div>
         )}

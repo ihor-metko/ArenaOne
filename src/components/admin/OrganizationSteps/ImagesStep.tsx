@@ -44,6 +44,7 @@ export function ImagesStep({ formData, fieldErrors, isSubmitting, onChange }: Im
               aspectRatio="square"
               helperText={t("logoHelperText")}
               disabled={isSubmitting}
+              allowSVG={true}
             />
           </div>
         </div>

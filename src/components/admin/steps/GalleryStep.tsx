@@ -67,8 +67,9 @@ export function GalleryStep({
             value={data.logo}
             onChange={handleLogoChange}
             aspectRatio="square"
-            helperText="Recommended: 512x512 square image"
+            helperText="Recommended: 512x512 square image (SVG supported)"
             disabled={disabled}
+            allowSVG={true}
           />
           {errors.logo && (
             <span className="im-stepper-field-error">{errors.logo}</span>
