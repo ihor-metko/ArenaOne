@@ -4,6 +4,8 @@ import { requireRootAdmin } from "@/lib/requireRole";
 import { randomUUID } from "crypto";
 import {
   uploadToStorage,
+  uploadLogoToStorage,
+  validateLogoFileForUpload,
   validateFileForUpload,
   getExtensionForMimeType,
   isSupabaseStorageConfigured,
@@ -62,8 +64,12 @@ export async function POST(
       );
     }
 
-    // Validate file type and size
-    const validationError = validateFileForUpload(file.type, file.size);
+    // Validate file type and size based on image type
+    // SVG is only allowed for logos, not for heroImage
+    const validationError = imageType === "logo"
+      ? validateLogoFileForUpload(file.type, file.size)
+      : validateFileForUpload(file.type, file.size);
+    
     if (validationError) {
       return NextResponse.json(
         { error: validationError },
@@ -81,7 +87,12 @@ export async function POST(
     // Upload to Supabase Storage if configured, otherwise use mock URL
     if (isSupabaseStorageConfigured()) {
       const buffer = Buffer.from(await file.arrayBuffer());
-      const uploadResult = await uploadToStorage(imageKey, buffer, file.type);
+      
+      // Use uploadLogoToStorage for logos (supports SVG with sanitization)
+      // Use regular upload for heroImage (no SVG support)
+      const uploadResult = imageType === "logo"
+        ? await uploadLogoToStorage(imageKey, buffer, file.type)
+        : await uploadToStorage(imageKey, buffer, file.type);
 
       if ("error" in uploadResult) {
         console.error("Failed to upload to Supabase Storage:", uploadResult.error);

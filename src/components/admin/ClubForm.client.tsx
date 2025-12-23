@@ -569,8 +569,9 @@ export function ClubForm() {
                 onChange={handleImageChange("logo")}
                 required
                 aspectRatio="square"
-                helperText="Recommended: 512x512 square image"
+                helperText="Recommended: 512x512 square image (SVG supported)"
                 disabled={isSubmitting}
+                allowSVG={true}
               />
               {fieldErrors.logo && (
                 <span className="im-club-form-field-error">{fieldErrors.logo}</span>
