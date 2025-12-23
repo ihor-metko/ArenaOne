@@ -4,7 +4,7 @@
 
 // Mock isomorphic-dompurify since it has ES module dependencies
 jest.mock("isomorphic-dompurify", () => ({
-  sanitize: jest.fn((input: string, config?: unknown) => {
+  sanitize: jest.fn((input: string) => {
     // Basic mock sanitization - removes script tags and event handlers
     let result = input;
     result = result.replace(/<script[^>]*>.*?<\/script>/gi, "");
