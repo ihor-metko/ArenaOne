@@ -102,7 +102,12 @@ app.prepare().then(() => {
     if (!requestedClubId) {
       console.log('[SocketIO] Notification socket detected (no clubId)');
       
-      // Root admins join root_admin room for all notifications
+      // All users join their personal player room for player-specific notifications
+      const playerRoom = `player:${userData.userId}`;
+      socket.join(playerRoom);
+      console.log('[SocketIO] Joined player room for personal notifications:', playerRoom);
+      
+      // Root admins join root_admin room for platform-wide notifications
       if (userData.isRoot) {
         socket.join('root_admin');
         console.log('[SocketIO] Root admin joined root_admin room for notifications');

@@ -46,10 +46,14 @@
  * ROLE-BASED ACCESS:
  * ==================
  * NotificationSocket (all roles):
- * - Root Admin: Receives all events from all clubs/organizations
- * - Organization Admin: Receives events for clubs within their organizations
- * - Club Admin: Receives events for clubs they manage
- * - Player: Receives events for clubs they belong to
+ * - Players: Subscribe to player:{playerId} room
+ *   - Receive personal notifications (booking updates, messages, etc.)
+ * - Club Admins: Subscribe to club:{clubId} rooms for clubs they manage
+ *   - Receive notifications relevant to their clubs
+ * - Organization Admins: Subscribe to organization:{orgId} rooms for organizations they manage
+ *   - Receive notifications relevant to their organizations
+ * - Root Admins: Subscribe to root_admin room
+ *   - Receive platform-wide notifications
  * - Server-side room filtering ensures users only receive relevant events
  * 
  * BookingSocket (admin roles only):
