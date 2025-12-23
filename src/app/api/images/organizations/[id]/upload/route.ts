@@ -120,7 +120,7 @@ export async function POST(
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       organizationId,
-      imageType: formData.get("type"),
+      imageType: formData?.get("type"),
       fileSize: file ? file.size : "N/A",
       fileType: file ? file.type : "N/A",
     });
