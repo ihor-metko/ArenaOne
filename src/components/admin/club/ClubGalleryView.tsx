@@ -74,10 +74,28 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
     setError("");
   }, [gallery]);
 
-  const uploadFile = useCallback(async (file: File): Promise<{ url: string; key: string }> => {
+  const uploadFile = useCallback(async (file: File, type?: 'logo' | 'heroImage'): Promise<{ url: string; key: string }> => {
     const formData = new FormData();
     formData.append("file", file);
+    
+    // If type is specified, use the new specific upload endpoint
+    if (type) {
+      formData.append("type", type);
+      const response = await fetch(`/api/images/clubs/${club.id}/upload`, {
+        method: "POST",
+        body: formData,
+      });
 
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Upload failed");
+      }
+
+      const result = await response.json();
+      return { url: result.url, key: result.filename };
+    }
+
+    // For gallery images, use the old endpoint (if it exists) or the new one without type
     const response = await fetch(`/api/admin/clubs/${club.id}/images`, {
       method: "POST",
       body: formData,
@@ -99,7 +117,7 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
       setIsUploading(true);
       setError("");
       try {
-        const { url } = await uploadFile(file);
+        const { url } = await uploadFile(file, 'heroImage');
         setHeroImage(url);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to upload hero image");
@@ -121,7 +139,7 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
       setIsUploading(true);
       setError("");
       try {
-        const { url } = await uploadFile(file);
+        const { url } = await uploadFile(file, 'logo');
         setLogo(url);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to upload logo");
