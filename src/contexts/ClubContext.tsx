@@ -7,9 +7,14 @@
  * This is used by the Socket.IO connection to join the correct club room.
  * 
  * Features:
- * - Persists selected clubId in localStorage
+ * - Persists selected clubId in localStorage for page reload restoration
  * - Provides setActiveClubId to update the current club
- * - Used by SocketProvider to determine which club room to join
+ * - Used by BookingSocketProvider to determine which club room to join
+ * - Does NOT auto-initialize from localStorage to prevent unwanted socket connections
+ * 
+ * Important: The activeClubId should ONLY be set by the operations page when
+ * navigating to a specific club. This ensures BookingSocket connections are
+ * intentional and not triggered by stale localStorage data.
  */
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
@@ -45,7 +50,11 @@ interface ClubProviderProps {
  * Club Provider
  * 
  * Manages the currently active club for socket room targeting.
- * Persists the selection in localStorage.
+ * Persists the selection in localStorage for page reload restoration.
+ * 
+ * Important: Does NOT auto-restore from localStorage on mount to prevent
+ * unwanted BookingSocket connections from stale clubId values. The operations
+ * page is responsible for setting activeClubId when navigating to a club.
  * 
  * @example
  * ```tsx
@@ -58,24 +67,26 @@ export function ClubProvider({ children }: ClubProviderProps) {
   const [activeClubId, setActiveClubIdState] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Hydrate from localStorage on mount
+  // Mark as hydrated on mount
+  // Note: We do NOT restore from localStorage here to prevent unwanted
+  // BookingSocket connections from stale clubId. The operations page will
+  // set activeClubId explicitly when needed.
   useEffect(() => {
-    const stored = localStorage.getItem('activeClubId');
-    if (stored) {
-      setActiveClubIdState(stored);
-    }
     setIsHydrated(true);
   }, []);
 
   // Persist to localStorage when changed
+  // Note: localStorage is used ONLY for page reload restoration within the operations
+  // page itself. It should NOT trigger automatic socket connections on app start.
   const setActiveClubId = useCallback((clubId: string | null) => {
     setActiveClubIdState(clubId);
     if (clubId) {
       localStorage.setItem('activeClubId', clubId);
+      console.log('[ClubContext] Active club set:', clubId);
     } else {
       localStorage.removeItem('activeClubId');
+      console.log('[ClubContext] Active club cleared');
     }
-    console.log('[ClubContext] Active club changed:', clubId);
   }, []);
 
   const value: ClubContextValue = useMemo(

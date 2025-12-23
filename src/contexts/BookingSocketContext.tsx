@@ -120,6 +120,11 @@ export function BookingSocketProvider({ children }: BookingSocketProviderProps) 
       if (sessionStatus !== 'authenticated') {
         clearSocketToken();
       }
+      
+      // Log why socket is not initializing
+      if (!activeClubId && sessionStatus === 'authenticated') {
+        console.log('[BookingSocket] Not initializing - no active club set (prevents unwanted connections from stale localStorage)');
+      }
       return;
     }
 
