@@ -151,14 +151,14 @@ export default function OrganizationDetailPage() {
       setBookingsPreview({
         items: upcomingBookings.slice(0, PREVIEW_BOOKINGS_LIMIT).map((b) => ({
           id: b.id,
-          courtName: b.courtName || '',
-          clubName: b.clubName || '',
-          userName: b.userName || null,
-          userEmail: b.userEmail || '',
+          courtName: b.courtName,
+          clubName: b.clubName,
+          userName: b.userName,
+          userEmail: b.userEmail,
           start: b.start,
           end: b.end,
-          status: b.bookingStatus || b.status || '',
-          sportType: b.sportType || '',
+          status: b.bookingStatus,
+          sportType: b.sportType,
         })),
         summary: {
           todayCount: todayBookings.length,

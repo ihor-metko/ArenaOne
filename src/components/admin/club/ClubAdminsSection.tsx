@@ -10,7 +10,7 @@ import { UserProfileModal } from "../UserProfileModal";
 interface ClubAdmin {
   id: string;
   name: string | null;
-  email: string;
+  email: string | null;
 }
 
 interface ClubAdminsSectionProps {
@@ -261,8 +261,8 @@ export function ClubAdminsSection({
             <tbody>
               {admins.map((admin) => (
                 <tr key={admin.id}>
-                  <td>{admin.name || admin.email}</td>
-                  <td>{admin.email}</td>
+                  <td>{admin.name || admin.email || admin.id}</td>
+                  <td>{admin.email || t("common.notAvailable")}</td>
                   <td>
                     <div className="flex gap-2">
                       <Button
@@ -421,7 +421,7 @@ export function ClubAdminsSection({
 
           <p>
             {t("common.confirmRemove", {
-              item: adminToRemove?.name || adminToRemove?.email || "",
+              item: adminToRemove?.name || adminToRemove?.email || adminToRemove?.id || "",
             })}
           </p>
 

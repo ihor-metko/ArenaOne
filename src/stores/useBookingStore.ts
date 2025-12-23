@@ -4,6 +4,7 @@ import type {
   CreateBookingPayload,
   CreateBookingResponse,
 } from "@/types/booking";
+import type { AdminBookingResponse } from "@/app/api/admin/bookings/route";
 import type { SlotLockedEvent } from "@/types/socket";
 import {
   updateBookingInList,
@@ -55,7 +56,7 @@ interface BookingState {
   // State
   bookings: OperationsBooking[];
   lockedSlots: LockedSlot[];
-  bookingsByOrg: Record<string, OperationsBooking[]>; // Cache bookings by orgId
+  bookingsByOrg: Record<string, AdminBookingResponse[]>; // Cache admin bookings by orgId and filters
   loading: boolean;
   error: string | null;
   lastFetchedAt: number | null;
@@ -63,7 +64,8 @@ interface BookingState {
 
   // Internal inflight guards
   _inflightFetch: Promise<OperationsBooking[]> | null;
-  _inflightFetchByOrg: Record<string, Promise<OperationsBooking[]>> | null;
+  _inflightFetchByOrg: Record<string, Promise<AdminBookingResponse[]>>;
+}
 
   // Actions
   setBookings: (bookings: OperationsBooking[]) => void;
@@ -89,7 +91,7 @@ interface BookingState {
       perPage?: number;
       force?: boolean;
     }
-  ) => Promise<OperationsBooking[]>;
+  ) => Promise<AdminBookingResponse[]>;
 
   // Create a new booking
   createBooking: (payload: CreateBookingPayload) => Promise<CreateBookingResponse>;
@@ -129,7 +131,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   lastFetchedAt: null,
   lastFetchParams: null,
   _inflightFetch: null,
-  _inflightFetchByOrg: null,
+  _inflightFetchByOrg: {},
 
   // State setters
   setBookings: (bookings) => set({ bookings }),
@@ -235,7 +237,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
     }
 
     // Create new inflight request
-    const inflightPromise = (async (): Promise<OperationsBooking[]> => {
+    const inflightPromise = (async (): Promise<AdminBookingResponse[]> => {
       set({ loading: true, error: null });
 
       try {
@@ -253,7 +255,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
         }
 
         const result = await response.json();
-        const bookings: OperationsBooking[] = result.bookings || result;
+        const bookings: AdminBookingResponse[] = result.bookings || result;
         
         // Update cache and clear inflight
         set((state) => {
@@ -266,7 +268,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
               [cacheKey]: bookings,
             },
             loading: false,
-            _inflightFetchByOrg: Object.keys(newInflight).length > 0 ? newInflight : null,
+            _inflightFetchByOrg: newInflight,
           };
         });
 
@@ -282,7 +284,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
           return {
             error: errorMessage,
             loading: false,
-            _inflightFetchByOrg: Object.keys(newInflight).length > 0 ? newInflight : null,
+            _inflightFetchByOrg: newInflight,
           };
         });
         
