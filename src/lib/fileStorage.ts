@@ -173,17 +173,14 @@ export function isValidEntity(entity: string): entity is EntityType {
  * @param entity - Optional entity subdirectory (e.g., "organizations", "clubs")
  */
 async function ensureStorageDirectory(entity?: EntityType): Promise<void> {
+  const targetPath = entity 
+    ? path.join(STORAGE_BASE_PATH, entity)
+    : STORAGE_BASE_PATH;
+  
   try {
-    const targetPath = entity 
-      ? path.join(STORAGE_BASE_PATH, entity)
-      : STORAGE_BASE_PATH;
-    
     await fs.access(targetPath);
   } catch {
     // Directory doesn't exist, create it
-    const targetPath = entity 
-      ? path.join(STORAGE_BASE_PATH, entity)
-      : STORAGE_BASE_PATH;
     await fs.mkdir(targetPath, { recursive: true });
   }
 }
