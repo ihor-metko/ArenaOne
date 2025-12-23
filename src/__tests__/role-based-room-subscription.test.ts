@@ -2,6 +2,7 @@
  * Integration tests for role-based room subscription
  * 
  * Validates that socket connections properly subscribe to rooms based on user roles:
+ * - All users → player:{playerId} room for personal notifications
  * - Root Admin → root_admin room
  * - Organization Admin → organization:{orgId} rooms for managed organizations
  * - Club Admin → club:{clubId} rooms for managed clubs
@@ -226,6 +227,9 @@ describe('Role-based room subscription', () => {
         organizationIds: ['org-1'],
         clubIds: ['club-1', 'club-3'],
       });
+
+      // Verify player:{playerId} room will be joined for personal notifications
+      expect(userData?.userId).toBe('player-1');
 
       // Verify club rooms will be joined: club:club-1, club:club-3
       expect(userData?.clubIds).toContain('club-1');

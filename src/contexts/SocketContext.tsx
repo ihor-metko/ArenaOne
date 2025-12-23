@@ -69,7 +69,11 @@ interface SocketProviderProps {
  * - Connects once per user session
  * - Remains active regardless of page navigation or club changes
  * - Delivers role-scoped notifications (Root Admin, Org Admin, Club Admin, Player)
- * - Automatically joins appropriate rooms based on user role and memberships
+ * - Automatically joins appropriate rooms based on user role and memberships:
+ *   - Players: player:{playerId} room for personal notifications
+ *   - Club Admins: club:{clubId} rooms for each club they manage
+ *   - Organization Admins: organization:{orgId} rooms for each organization they manage
+ *   - Root Admins: root_admin room for platform-wide notifications
  * - Disconnects only on logout
  * 
  * Note: Booking Socket (club-specific, connects/disconnects on club changes) 
