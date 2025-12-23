@@ -60,9 +60,9 @@ function parseTags(tags: string | null | undefined): string[] {
 export function PublicClubCard({ club, isRoot = false }: PublicClubCardProps) {
   const t = useTranslations();
   
-  // Convert stored paths to full Supabase Storage URLs
-  const heroImageUrl = getSupabaseStorageUrl(club.heroImage);
-  const logoUrl = getSupabaseStorageUrl(club.logo);
+  // Convert stored paths to display URLs
+  const heroImageUrl = getImageUrl(club.heroImage);
+  const logoUrl = getImageUrl(club.logo);
   
   // Determine the main image: heroImage first, then logo as fallback
   const mainImage = isValidImageUrl(heroImageUrl) ? heroImageUrl : null;

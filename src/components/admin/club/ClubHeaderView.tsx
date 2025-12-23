@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { Button, Input } from "@/components/ui";
 import { SectionEditModal } from "./SectionEditModal";
-import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
+import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import type { ClubDetail } from "@/types/club";
 import "./ClubHeaderView.css";
 
@@ -92,7 +92,7 @@ export function ClubHeaderView({ club, onUpdate }: ClubHeaderViewProps) {
           {isValidImageUrl(club.logo) && (
             <div className="im-header-view-logo">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={getSupabaseStorageUrl(club.logo) ?? ""} alt={`${club.name} logo`} />
+              <img src={getImageUrl(club.logo) ?? ""} alt={`${club.name} logo`} />
             </div>
           )}
           <div className="im-header-view-info">

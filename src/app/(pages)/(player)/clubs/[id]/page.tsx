@@ -16,7 +16,7 @@ import { Button, IMLink, Breadcrumbs, ImageCarousel, CourtCarousel, EntityBanner
 import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useActiveClub } from "@/contexts/ClubContext";
-import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
+import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import type { Court, AvailabilitySlot, AvailabilityResponse, CourtAvailabilityStatus } from "@/types/court";
 import "@/components/ClubDetailPage.css";
 
@@ -364,8 +364,8 @@ export default function ClubDetailPage({
   }
 
   // Prepare derived data
-  const heroImageUrl = getSupabaseStorageUrl(club.heroImage);
-  const logoUrl = getSupabaseStorageUrl(club.logo);
+  const heroImageUrl = getImageUrl(club.heroImage);
+  const logoUrl = getImageUrl(club.logo);
   const hasValidCoordinates = club.latitude !== null && club.longitude !== null && club.latitude !== undefined && club.longitude !== undefined;
 
   // Format location display
@@ -374,7 +374,7 @@ export default function ClubDetailPage({
   // Prepare gallery images for modal
   const galleryImages = (club.gallery || [])
     .map((image) => {
-      const imageUrl = getSupabaseStorageUrl(image.imageUrl);
+      const imageUrl = getImageUrl(image.imageUrl);
       return isValidImageUrl(imageUrl)
         ? { url: imageUrl as string, alt: image.altText || `${club.name} gallery image` }
         : null;

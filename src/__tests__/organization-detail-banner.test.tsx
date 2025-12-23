@@ -9,8 +9,12 @@ jest.mock("@/utils/image", () => ({
   isValidImageUrl: (url: string | null | undefined): url is string => {
     return typeof url === "string" && url.length > 0 && url.startsWith("http");
   },
-  getSupabaseStorageUrl: (url: string | null | undefined): string | null => {
+  getImageUrl: (url: string | null | undefined): string | null => {
     // Pass through URLs for testing - in reality this would convert paths to full URLs
+    return url || null;
+  },
+  getSupabaseStorageUrl: (url: string | null | undefined): string | null => {
+    // Deprecated - kept for backward compatibility
     return url || null;
   },
 }));

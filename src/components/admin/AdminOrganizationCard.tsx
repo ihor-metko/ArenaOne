@@ -54,9 +54,9 @@ export function AdminOrganizationCard({
   // Format date for display
   const formattedDate = new Date(organization.createdAt).toLocaleDateString();
 
-  // Convert stored paths to full Supabase Storage URLs
-  const heroImageUrl = getSupabaseStorageUrl(organization.heroImage);
-  const logoUrl = getSupabaseStorageUrl(organization.logo);
+  // Convert stored paths to display URLs
+  const heroImageUrl = getImageUrl(organization.heroImage);
+  const logoUrl = getImageUrl(organization.logo);
 
   // Validate both images (isValidImageUrl checks for null/undefined/empty and valid URL format)
   const hasHeroImage = isValidImageUrl(heroImageUrl);

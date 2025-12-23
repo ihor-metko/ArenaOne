@@ -14,7 +14,7 @@ import { ClubAdminsSection } from "@/components/admin/club/ClubAdminsSection";
 import { WeeklyAvailabilityTimeline } from "@/components/WeeklyAvailabilityTimeline";
 import { GalleryModal } from "@/components/GalleryModal";
 import { useAdminClubStore } from "@/stores/useAdminClubStore";
-import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
+import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
 import { parseTags, getPriceRange, getCourtCounts, getGoogleMapsEmbedUrl } from "@/utils/club";
 
@@ -196,8 +196,8 @@ export default function AdminClubDetailPage({
   }
 
   // Prepare derived data
-  const heroImageUrl = getSupabaseStorageUrl(club.heroImage);
-  const logoUrl = getSupabaseStorageUrl(club.logo);
+  const heroImageUrl = getImageUrl(club.heroImage);
+  const logoUrl = getImageUrl(club.logo);
   const hasHeroImage = isValidImageUrl(heroImageUrl);
   const hasLogo = isValidImageUrl(logoUrl);
   const clubTags = parseTags(club.tags);
@@ -215,7 +215,7 @@ export default function AdminClubDetailPage({
   // Prepare gallery images for carousel and modal
   const galleryImages = (club.gallery || [])
     .map((image) => {
-      const imageUrl = getSupabaseStorageUrl(image.imageUrl);
+      const imageUrl = getImageUrl(image.imageUrl);
       return isValidImageUrl(imageUrl)
         ? { url: imageUrl as string, alt: image.altText || `${club.name} gallery image` }
         : null;
