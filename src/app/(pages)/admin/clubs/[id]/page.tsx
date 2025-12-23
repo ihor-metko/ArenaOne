@@ -14,7 +14,7 @@ import { ClubAdminsSection } from "@/components/admin/club/ClubAdminsSection";
 import { WeeklyAvailabilityTimeline } from "@/components/WeeklyAvailabilityTimeline";
 import { GalleryModal } from "@/components/GalleryModal";
 import { useAdminClubStore } from "@/stores/useAdminClubStore";
-import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
+import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
 import { parseTags, getPriceRange, getCourtCounts, getGoogleMapsEmbedUrl } from "@/utils/club";
 
@@ -26,16 +26,16 @@ export default function AdminClubDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-    const router = useRouter();
+  const router = useRouter();
   const t = useTranslations();
   const [clubId, setClubId] = useState<string | null>(null);
-  
+
   // Use centralized admin club store
   const currentClub = useAdminClubStore((state) => state.currentClub);
   const loading = useAdminClubStore((state) => state.loading);
   const fetchClubById = useAdminClubStore((state) => state.fetchClubById);
   const deleteClub = useAdminClubStore((state) => state.deleteClub);
-  
+
   const [error, setError] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -211,7 +211,7 @@ export default function AdminClubDetailPage({
   // Prepare gallery images for carousel and modal
   const galleryImages = (club.gallery || [])
     .map((image) => {
-      const imageUrl = getSupabaseStorageUrl(image.imageUrl);
+      const imageUrl = getImageUrl(image.imageUrl);
       return isValidImageUrl(imageUrl)
         ? { url: imageUrl as string, alt: image.altText || `${club.name} gallery image` }
         : null;

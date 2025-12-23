@@ -22,6 +22,7 @@ jest.mock("next-intl", () => ({
 // Mock image utils
 jest.mock("@/utils/image", () => ({
   isValidImageUrl: jest.fn(() => false),
+  getImageUrl: jest.fn((path) => path),
   getSupabaseStorageUrl: jest.fn((path) => path),
 }));
 

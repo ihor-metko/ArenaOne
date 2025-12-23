@@ -38,6 +38,7 @@ jest.mock("@/stores/useUserStore", () => ({
 // Mock image utilities
 jest.mock("@/utils/image", () => ({
   isValidImageUrl: () => false,
+  getImageUrl: (url: string | null | undefined) => url || "",
   getSupabaseStorageUrl: (url: string | null | undefined) => url || "",
 }));
 

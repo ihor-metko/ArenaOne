@@ -23,7 +23,8 @@ jest.mock("next-intl", () => ({
 // Mock image utilities
 jest.mock("@/utils/image", () => ({
   isValidImageUrl: jest.fn((url) => url && url.startsWith("http")),
-  getSupabaseStorageUrl: jest.fn((path) => path ? `https://example.supabase.co/storage/v1/object/public/uploads/${path}` : null),
+  getImageUrl: jest.fn((path) => path ? `https://example.com/api/images/${path}` : null),
+  getSupabaseStorageUrl: jest.fn((path) => path ? `https://example.com/api/images/${path}` : null),
 }));
 
 describe("AdminOrganizationCard", () => {

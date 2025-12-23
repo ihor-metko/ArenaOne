@@ -12,7 +12,7 @@
  */
 
 import React, { useMemo } from "react";
-import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
+import { isValidImageUrl, getImageUrl } from "@/utils/image";
 
 /**
  * Location pin icon - reusable SVG component
@@ -149,9 +149,9 @@ export function EntityBanner({
   onEdit,
   hideAdminFeatures = false,
 }: EntityBannerProps) {
-  // Convert stored paths to full URLs if needed (passthrough for full URLs, converts relative paths)
-  const heroImageFullUrl = useMemo(() => getSupabaseStorageUrl(imageUrl), [imageUrl]);
-  const logoFullUrl = useMemo(() => getSupabaseStorageUrl(logoUrl), [logoUrl]);
+  // Convert stored paths to display URLs
+  const heroImageFullUrl = useMemo(() => getImageUrl(imageUrl), [imageUrl]);
+  const logoFullUrl = useMemo(() => getImageUrl(logoUrl), [logoUrl]);
   
   // Memoize validation to avoid unnecessary calls on each render
   const hasHeroImage = useMemo(() => isValidImageUrl(heroImageFullUrl), [heroImageFullUrl]);

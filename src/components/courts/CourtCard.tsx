@@ -73,7 +73,7 @@ export function CourtCard({
   const showAdminInfo = isAdmin && (club || organization);
 
   // Memoize the court image URL to avoid recalculating on every render
-  const imageUrl = useMemo(() => getSupabaseStorageUrl(court.imageUrl), [court.imageUrl]);
+  const imageUrl = useMemo(() => getImageUrl(court.imageUrl), [court.imageUrl]);
   const hasImage = useMemo(() => isValidImageUrl(imageUrl), [imageUrl]);
 
   // Calculate availability summary

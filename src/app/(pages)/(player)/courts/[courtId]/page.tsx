@@ -11,7 +11,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useBookingStore } from "@/stores/useBookingStore";
 import { useCourtAvailability } from "@/hooks/useCourtAvailability";
 import { formatPrice } from "@/utils/price";
-import { isValidImageUrl, getSupabaseStorageUrl } from "@/utils/image";
+import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import type { Court, AvailabilitySlot, AvailabilityResponse, PriceTimelineResponse, PriceSegment } from "@/types/court";
 
 interface CourtWithClub extends Court {
@@ -306,7 +306,7 @@ export default function CourtDetailPage({
   const hasAvailableSlots = availability.some((slot) => slot.status !== "booked");
 
   // Get image URL and validate
-  const imageUrl = getSupabaseStorageUrl(court.imageUrl);
+  const imageUrl = getImageUrl(court.imageUrl);
   const hasImage = isValidImageUrl(imageUrl);
 
   return (
