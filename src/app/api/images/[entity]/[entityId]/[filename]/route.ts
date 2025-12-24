@@ -4,6 +4,16 @@ import { stat } from "fs/promises";
 import path from "path";
 
 /**
+ * DEPRECATED: This route is maintained for backward compatibility only.
+ * 
+ * New images should be served directly by Nginx from /uploads/ path.
+ * See docs/IMAGE_HANDLING.md for current image handling architecture.
+ * 
+ * This route will continue to work for legacy image URLs but should not
+ * be used for new uploads or references.
+ */
+
+/**
  * Allowed entity types for image serving
  */
 const ALLOWED_ENTITIES = ["organizations", "clubs", "users", "bookings"] as const;
