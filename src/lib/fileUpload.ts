@@ -107,9 +107,7 @@ export async function saveUploadedFile(
   const filename = generateUniqueFilename(file.name, file.type);
 
   // Construct storage path
-  const storagePath = process.env.NODE_ENV === 'production'
-    ? process.env.IMAGE_UPLOAD_PATH_PROD!
-    : process.env.IMAGE_UPLOAD_PATH_DEV!;
+  const storagePath = process.env.IMAGE_UPLOAD_PATH!;
   const entityDir = path.join(storagePath, entity, entityId);
 
   // Ensure directory exists
@@ -132,12 +130,13 @@ export async function saveUploadedFile(
  * @param entity - Entity type
  * @param entityId - Entity ID
  * @param filename - Filename
- * @returns The URL for accessing the image
+ * @returns The absolute URL for accessing the image
  */
 export function getUploadedImageUrl(
   entity: UploadEntityType,
   entityId: string,
   filename: string
 ): string {
-  return `/api/images/${entity}/${entityId}/${filename}`;
+  const baseUrl = process.env.NEXT_PUBLIC_ASSETS_BASE_URL || '';
+  return `${baseUrl}/api/images/${entity}/${entityId}/${filename}`;
 }

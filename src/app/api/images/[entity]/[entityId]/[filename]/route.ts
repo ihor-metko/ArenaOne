@@ -127,9 +127,7 @@ export async function GET(
 
     // Construct the file path within the Docker volume
     // Storage structure: /app/storage/images/[entity]/[entityId]/[filename]
-    const storagePath = process.env.NODE_ENV === 'production'
-      ? process.env.IMAGE_UPLOAD_PATH_PROD!
-      : process.env.IMAGE_UPLOAD_PATH_DEV!;
+    const storagePath = process.env.IMAGE_UPLOAD_PATH!;
 
     const filePath = path.join(storagePath, entity, entityId, sanitizedFilename);
 

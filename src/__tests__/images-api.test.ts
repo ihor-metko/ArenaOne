@@ -7,6 +7,9 @@ import { NextRequest } from "next/server";
 import { readFile, stat } from "fs/promises";
 import path from "path";
 
+// Set up environment variables for tests
+process.env.IMAGE_UPLOAD_PATH = "/app/storage/images";
+
 // Mock fs/promises
 jest.mock("fs/promises", () => ({
   readFile: jest.fn(),
@@ -387,7 +390,7 @@ describe("Images API - GET /api/images/[entity]/[entityId]/[filename]", () => {
       );
 
       // Verify that stat was called with the correct path structure
-      const expectedPath = path.join("/app/storage/images", "organizations", "abc12345-e89b-12d3-a456-426614174000", "logo.png");
+      const expectedPath = path.join(process.env.IMAGE_UPLOAD_PATH!, "organizations", "abc12345-e89b-12d3-a456-426614174000", "logo.png");
       expect(mockStat).toHaveBeenCalledWith(expectedPath);
     });
   });
