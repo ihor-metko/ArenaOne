@@ -161,7 +161,7 @@ export function getUploadedImageUrl(
     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
       console.warn(
         `[fileUpload] NEXT_PUBLIC_ASSETS_BASE_URL should start with http:// or https://. ` +
-        `Found: "${baseUrl}". Falling back to relative path.`
+        `Falling back to relative path.`
       );
       return relativePath;
     }
