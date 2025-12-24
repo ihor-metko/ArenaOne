@@ -137,6 +137,6 @@ export function getUploadedImageUrl(
   entityId: string,
   filename: string
 ): string {
-  const baseUrl = process.env.NEXT_PUBLIC_ASSETS_BASE_URL || '';
+  const baseUrl = (process.env.NEXT_PUBLIC_ASSETS_BASE_URL || '').replace(/\/+$/, '');
   return `${baseUrl}/api/images/${entity}/${entityId}/${filename}`;
 }
