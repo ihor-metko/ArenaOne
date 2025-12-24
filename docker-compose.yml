@@ -34,3 +34,4 @@ networks:
 volumes:
   arenaone_storage:
     name: arenaone_storage
+    external: true
