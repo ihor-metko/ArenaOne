@@ -239,6 +239,23 @@ export default function AdminClubDetailPage({
     setGalleryIndex(index);
   };
 
+  // Parse club metadata for logo and banner settings
+  let clubMetadata: {
+    bannerAlignment?: 'top' | 'center' | 'bottom';
+    logoTheme?: 'light' | 'dark';
+    secondLogo?: string | null;
+    secondLogoTheme?: 'light' | 'dark';
+  } | undefined;
+  
+  if (club.metadata) {
+    try {
+      clubMetadata = JSON.parse(club.metadata);
+    } catch {
+      // Invalid JSON, use defaults
+      clubMetadata = undefined;
+    }
+  }
+
   return (
     <main className="im-admin-club-detail-page">
       {/* Toast Notification */}
@@ -257,9 +274,9 @@ export default function AdminClubDetailPage({
         subtitle={club.shortDescription}
         location={locationDisplay}
         imageUrl={club.heroImage}
-        bannerAlignment={(club.metadata as { bannerAlignment?: 'top' | 'center' | 'bottom' })?.bannerAlignment || 'center'}
+        bannerAlignment={clubMetadata?.bannerAlignment || 'center'}
         logoUrl={club.logo}
-        logoMetadata={club.metadata as { logoTheme?: 'light' | 'dark'; secondLogo?: string | null; secondLogoTheme?: 'light' | 'dark'; }}
+        logoMetadata={clubMetadata}
         imageAlt={`${club.name} hero image`}
         logoAlt={`${club.name} logo`}
         isPublished={club.isPublic}
