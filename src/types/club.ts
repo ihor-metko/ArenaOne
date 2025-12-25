@@ -152,7 +152,6 @@ export interface ClubDetail {
    * - secondLogoTheme: 'light' | 'dark'
    * - Any other custom club-specific settings
    */
-  metadata?: Record<string, unknown> | null;
   supportedSports?: SportType[];
   createdAt: string;
   updatedAt: string;
@@ -235,7 +234,7 @@ export function parseClubMetadata(metadataString: string | null | undefined): Cl
   if (!metadataString) {
     return undefined;
   }
-  
+
   try {
     return JSON.parse(metadataString) as ClubMetadata;
   } catch {
