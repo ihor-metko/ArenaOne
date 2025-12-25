@@ -183,11 +183,11 @@ export default function AdminClubDetailPage({
   const dangerActions: DangerAction[] = [
     {
       id: 'publish',
-      title: club?.isPublic ? t("clubs.unpublish") : t("clubs.publish"),
+      title: club?.isPublic ? t("entityBanner.unpublish") : t("entityBanner.publish"),
       description: club?.isPublic 
         ? t("dangerZone.unpublishClubDescription")
         : t("dangerZone.publishClubDescription"),
-      buttonLabel: club?.isPublic ? t("clubs.unpublish") : t("clubs.publish"),
+      buttonLabel: club?.isPublic ? t("entityBanner.unpublish") : t("entityBanner.publish"),
       onAction: handleOpenPublishModal,
       isProcessing: isTogglingPublish,
       variant: club?.isPublic ? 'danger' : 'warning',
@@ -506,7 +506,7 @@ export default function AdminClubDetailPage({
       <Modal
         isOpen={isPublishModalOpen}
         onClose={() => setIsPublishModalOpen(false)}
-        title={club.isPublic ? t("clubs.unpublish") : t("clubs.publish")}
+        title={club.isPublic ? t("entityBanner.unpublish") : t("entityBanner.publish")}
       >
         <p className="mb-4">
           {club.isPublic 
@@ -523,7 +523,7 @@ export default function AdminClubDetailPage({
             disabled={isTogglingPublish}
             className={club.isPublic ? "bg-red-500 hover:bg-red-600" : ""}
           >
-            {isTogglingPublish ? t("common.processing") : (club.isPublic ? t("clubs.unpublish") : t("clubs.publish"))}
+            {isTogglingPublish ? t("common.processing") : (club.isPublic ? t("entityBanner.unpublish") : t("entityBanner.publish"))}
           </Button>
         </div>
       </Modal>
