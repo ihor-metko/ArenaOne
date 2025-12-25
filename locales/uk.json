@@ -1295,7 +1295,7 @@
       "logoThemeLabel": "Тема логотипу",
       "logoThemeLight": "Світла тема",
       "logoThemeDark": "Темна тема",
-      "logoBackgroundLabel": "Фон попереднього перегляду",
+      "logoBackgroundLabel": "Фон логотипу для відображення",
       "logoBackgroundLight": "Світлий фон",
       "logoBackgroundDark": "Темний фон",
       "logoPreview": "Попередній перегляд логотипу",
@@ -1306,7 +1306,11 @@
       "secondLogo": "Другий логотип (альтернативна тема)",
       "secondLogoHelperText": "Завантажте альтернативний логотип для іншої теми.",
       "bannerTitle": "Банер організації",
-      "bannerDescription": "Завантажте фоновий банер для профілю організації."
+      "bannerDescription": "Завантажте фоновий банер для профілю організації.",
+      "logoBackgroundHelperText": "Виберіть колір фону для відображення логотипу в банерах та картках",
+      "logoBackgroundLightDescription": "Логотип буде відображатися на світлих фонах",
+      "logoBackgroundDarkDescription": "Логотип буде відображатися на темних фонах",
+      "bannerAlignmentHelperText": "Виберіть, як має бути вирівняне зображення банера при відображенні"
     },
     "errors": {
       "createFailed": "Не вдалося створити організацію",
