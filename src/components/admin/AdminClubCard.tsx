@@ -127,22 +127,34 @@ export function AdminClubCard({ club, showOrganization, actionButton }: AdminClu
       {/* Main Image Section */}
       <div className="im-admin-club-card-image">
         {mainImage ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={mainImage}
-            alt={`${club.name} main image`}
-            className="im-admin-club-hero-image"
-          />
-        ) : (
+          <>
+            {/* Banner/Hero Image */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={mainImage}
+              alt={`${club.name} main image`}
+              className="im-admin-club-hero-image"
+            />
+            {/* Logo overlayed on banner */}
+            {hasLogo && (
+              <EntityLogo
+                logoUrl={club.logo}
+                logoMetadata={logoMetadata}
+                alt={`${club.name} logo`}
+                className="im-admin-club-logo-overlay"
+              />
+            )}
+          </>
+        ) : hasLogo ? (
+          /* Logo as fallback when no banner */
           <EntityLogo
             logoUrl={club.logo}
             logoMetadata={logoMetadata}
             alt={`${club.name} logo`}
             className="im-admin-club-hero-image im-admin-club-hero-image--logo"
           />
-        )}
-
-        {!mainImage && !hasLogo && (
+        ) : (
+          /* Placeholder when no images */
           <div className="im-admin-club-image-placeholder" aria-hidden="true">
             <span className="im-admin-club-image-placeholder-text">
               {club.name.charAt(0).toUpperCase()}
