@@ -258,7 +258,7 @@ export function ClubEditor({
         message={t("common.unsavedChangesMessage")}
         confirmText={t("common.discardChanges")}
         cancelText={t("common.cancel")}
-        variant="warning"
+        variant="danger"
       />
     </>
   );

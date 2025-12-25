@@ -22,7 +22,7 @@ interface OrganizationEditorProps {
   isOpen: boolean;
   onClose: () => void;
   organization: OrganizationData;
-  onUpdate: (orgId: string, data: Partial<OrganizationData>) => Promise<void>;
+  onUpdate: (orgId: string, data: Partial<OrganizationData>) => Promise<unknown>;
   onRefresh: () => Promise<void>;
 }
 
@@ -309,7 +309,7 @@ export function OrganizationEditor({
         message={t("common.unsavedChangesMessage")}
         confirmText={t("common.discardChanges")}
         cancelText={t("common.cancel")}
-        variant="warning"
+        variant="danger"
       />
     </>
   );

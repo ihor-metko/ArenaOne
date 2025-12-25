@@ -144,11 +144,12 @@ export function EntityEditStepper({
 
       // Set existing images as URLs (not files)
       setLogoData({
+        logoCount: 'one',
         logo: entityData.logo ? { url: entityData.logo, key: "", preview: entityData.logo } : null,
         logoTheme: 'light',
         logoBackground: 'light',
-        hasSecondLogo: false,
         secondLogo: null,
+        secondLogoTheme: 'dark',
       });
 
       setBannerData({
@@ -270,8 +271,8 @@ export function EntityEditStepper({
 
     if (step === 3) {
       // Logo validation - logo is optional for editing
-      // If hasSecondLogo is checked, secondLogo is optional but can be validated if needed
-      if (logoData.hasSecondLogo && !logoData.secondLogo && !logoData.logo) {
+      // If logoCount is 'two', secondLogo is optional but can be validated if needed
+      if (logoData.logoCount === 'two' && !logoData.secondLogo && !logoData.logo) {
         // If user enabled second logo but didn't upload either logo, show a warning (optional)
         // For now, we allow this as logos are optional
       }
@@ -284,7 +285,7 @@ export function EntityEditStepper({
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [basicInfoData, addressData, logoData.hasSecondLogo, logoData.logo, logoData.secondLogo, t]);
+  }, [basicInfoData, addressData, logoData.logoCount, logoData.logo, logoData.secondLogo, t]);
 
   const handleNext = useCallback(() => {
     if (validateStep(currentStep)) {
