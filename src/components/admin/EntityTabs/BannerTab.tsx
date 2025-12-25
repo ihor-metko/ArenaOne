@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Card, Button } from "@/components/ui";
+import { Card, Button, RadioGroup } from "@/components/ui";
 import { UploadField } from "@/components/admin/UploadField.client";
 
 interface UploadedFile {
@@ -12,13 +12,16 @@ interface UploadedFile {
   preview?: string;
 }
 
+export type BannerAlignment = 'top' | 'center' | 'bottom';
+
 export interface BannerData {
   heroImage: UploadedFile | null;
+  bannerAlignment?: BannerAlignment;
 }
 
 interface BannerTabProps {
   initialData: BannerData;
-  onSave: (file: File | null) => Promise<void>;
+  onSave: (file: File | null, alignment: BannerAlignment) => Promise<void>;
   disabled?: boolean;
   translationNamespace?: string;
 }
@@ -31,7 +34,12 @@ export function BannerTab({ initialData, onSave, disabled = false, translationNa
   const [hasChanges, setHasChanges] = useState(false);
 
   const handleChange = useCallback((file: UploadedFile | null) => {
-    setFormData({ heroImage: file });
+    setFormData(prev => ({ ...prev, heroImage: file }));
+    setHasChanges(true);
+  }, []);
+
+  const handleAlignmentChange = useCallback((alignment: string) => {
+    setFormData(prev => ({ ...prev, bannerAlignment: alignment as BannerAlignment }));
     setHasChanges(true);
   }, []);
 
@@ -40,7 +48,10 @@ export function BannerTab({ initialData, onSave, disabled = false, translationNa
     setError(null);
 
     try {
-      await onSave(formData.heroImage?.file || null);
+      await onSave(
+        formData.heroImage?.file || null,
+        formData.bannerAlignment || 'center'
+      );
       setHasChanges(false);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("errors.saveFailed");
@@ -87,15 +98,30 @@ export function BannerTab({ initialData, onSave, disabled = false, translationNa
 
         {formData.heroImage && (
           <div className="im-entity-tab-field">
-            <label className="im-upload-field-label">{t("banner.preview")}</label>
-            <div className="im-banner-preview-container">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={formData.heroImage.preview || formData.heroImage.url}
-                alt={t("banner.previewAlt")}
-                className="im-banner-preview-image"
-              />
-            </div>
+            <RadioGroup
+              label={t("banner.alignment")}
+              name="bannerAlignment"
+              value={formData.bannerAlignment || 'center'}
+              onChange={handleAlignmentChange}
+              disabled={isSaving || disabled}
+              options={[
+                {
+                  value: 'top',
+                  label: t("banner.alignmentTop"),
+                  description: t("banner.alignmentTopDesc")
+                },
+                {
+                  value: 'center',
+                  label: t("banner.alignmentCenter"),
+                  description: t("banner.alignmentCenterDesc")
+                },
+                {
+                  value: 'bottom',
+                  label: t("banner.alignmentBottom"),
+                  description: t("banner.alignmentBottomDesc")
+                }
+              ]}
+            />
           </div>
         )}
       </div>

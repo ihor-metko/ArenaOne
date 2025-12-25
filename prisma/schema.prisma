@@ -195,6 +195,7 @@ model Club {
   openingHours     String?
   logo             String?
   heroImage        String?
+  metadata         String?          @db.Text // JSON string for additional metadata
   defaultCurrency  String?          @default("USD")
   timezone         String?          @default("UTC")
   isPublic         Boolean          @default(true)

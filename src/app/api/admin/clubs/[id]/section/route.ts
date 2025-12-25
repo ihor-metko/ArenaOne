@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRootAdmin } from "@/lib/requireRole";
 import { SportType } from "@/constants/sports";
 
-type Section = "header" | "contacts" | "hours" | "gallery" | "coaches";
+type Section = "header" | "contacts" | "hours" | "gallery" | "coaches" | "metadata" | "location";
 
 interface HeaderPayload {
   name: string;
@@ -63,9 +63,21 @@ interface CoachesPayload {
   coachIds: string[];
 }
 
+interface MetadataPayload {
+  metadata: Record<string, unknown>;
+}
+
+interface LocationPayload {
+  location: string;
+  city?: string | null;
+  country?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
 interface SectionUpdateRequest {
   section: Section;
-  payload: HeaderPayload | ContactsPayload | HoursPayload | GalleryPayload | CoachesPayload;
+  payload: HeaderPayload | ContactsPayload | HoursPayload | GalleryPayload | CoachesPayload | MetadataPayload | LocationPayload;
 }
 
 function validateHours(hours: BusinessHour[]): { valid: boolean; error?: string } {
@@ -136,7 +148,7 @@ export async function PATCH(
       );
     }
 
-    const validSections: Section[] = ["header", "contacts", "hours", "gallery", "coaches"];
+    const validSections: Section[] = ["header", "contacts", "hours", "gallery", "coaches", "metadata", "location"];
     if (!validSections.includes(section)) {
       return NextResponse.json(
         { error: `Invalid section. Must be one of: ${validSections.join(", ")}` },
@@ -372,6 +384,55 @@ export async function PATCH(
               specialHours: { orderBy: { date: "asc" } },
             },
           });
+        });
+        break;
+      }
+
+      case "metadata": {
+        const metadataPayload = payload as MetadataPayload;
+
+        updatedClub = await prisma.club.update({
+          where: { id: clubId },
+          data: {
+            metadata: JSON.stringify(metadataPayload.metadata),
+          },
+          include: {
+            courts: true,
+            coaches: { include: { user: true } },
+            gallery: { orderBy: { sortOrder: "asc" } },
+            businessHours: { orderBy: { dayOfWeek: "asc" } },
+            specialHours: { orderBy: { date: "asc" } },
+          },
+        });
+        break;
+      }
+
+      case "location": {
+        const locationPayload = payload as LocationPayload;
+
+        if (!locationPayload.location?.trim()) {
+          return NextResponse.json(
+            { error: "Address is required" },
+            { status: 400 }
+          );
+        }
+
+        updatedClub = await prisma.club.update({
+          where: { id: clubId },
+          data: {
+            location: locationPayload.location.trim(),
+            city: locationPayload.city?.trim() || null,
+            country: locationPayload.country?.trim() || null,
+            latitude: locationPayload.latitude || null,
+            longitude: locationPayload.longitude || null,
+          },
+          include: {
+            courts: true,
+            coaches: { include: { user: true } },
+            gallery: { orderBy: { sortOrder: "asc" } },
+            businessHours: { orderBy: { dayOfWeek: "asc" } },
+            specialHours: { orderBy: { date: "asc" } },
+          },
         });
         break;
       }
