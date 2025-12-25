@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Modal, Tabs, TabList, Tab, TabPanel, ConfirmationModal } from "@/components/ui";
 import { BaseInfoTab, AddressTab, LogoTab, BannerTab } from "@/components/admin/EntityTabs";
 import type { BaseInfoData, AddressData, LogoData, BannerData } from "@/components/admin/EntityTabs";
+import { parseClubMetadata } from "@/types/club";
 import "@/components/admin/EntityTabs/EntityTabs.css";
 
 interface ClubData {
@@ -43,21 +44,7 @@ export function ClubEditor({
   const [pendingTabId, setPendingTabId] = useState<string | null>(null);
 
   // Parse metadata from JSON string
-  let metadata: {
-    bannerAlignment?: 'top' | 'center' | 'bottom';
-    logoTheme?: 'light' | 'dark';
-    secondLogo?: string | null;
-    secondLogoTheme?: 'light' | 'dark';
-  } | null = null;
-  
-  if (club.metadata) {
-    try {
-      metadata = JSON.parse(club.metadata);
-    } catch {
-      // Invalid JSON, use null
-      metadata = null;
-    }
-  }
+  const metadata = parseClubMetadata(club.metadata);
 
   const baseInfoData: BaseInfoData = {
     name: club.name,

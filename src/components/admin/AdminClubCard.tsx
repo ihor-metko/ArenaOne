@@ -5,6 +5,7 @@ import { IMLink, Button, EntityLogo } from "@/components/ui";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { getSportName } from "@/constants/sports";
 import type { ClubWithCounts } from "@/types/club";
+import { parseClubMetadata } from "@/types/club";
 import "./AdminClubCard.css";
 
 export interface AdminClubCardProps {
@@ -113,15 +114,7 @@ export function AdminClubCard({ club, showOrganization, actionButton }: AdminClu
   const logoUrl = getImageUrl(club.logo);
 
   // Parse logo metadata if available
-  let logoMetadata: { logoTheme?: 'light' | 'dark'; secondLogo?: string | null; secondLogoTheme?: 'light' | 'dark'; } | undefined;
-  if (club.metadata) {
-    try {
-      logoMetadata = JSON.parse(club.metadata);
-    } catch {
-      // Invalid JSON, ignore metadata
-      logoMetadata = undefined;
-    }
-  }
+  const logoMetadata = parseClubMetadata(club.metadata);
 
   // Determine the main image: heroImage first, then logo as fallback
   const mainImage = isValidImageUrl(heroImageUrl) ? heroImageUrl : null;

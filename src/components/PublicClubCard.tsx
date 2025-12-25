@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Button, IMLink, EntityLogo } from "@/components/ui";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
+import { parseClubMetadata } from "@/types/club";
 import "./ClubsList.css";
 
 export interface PublicClubCardProps {
@@ -66,15 +67,7 @@ export function PublicClubCard({ club, isRoot = false }: PublicClubCardProps) {
   const logoUrl = getImageUrl(club.logo);
   
   // Parse logo metadata if available
-  let logoMetadata: { logoTheme?: 'light' | 'dark'; secondLogo?: string | null; secondLogoTheme?: 'light' | 'dark'; } | undefined;
-  if (club.metadata) {
-    try {
-      logoMetadata = JSON.parse(club.metadata);
-    } catch {
-      // Invalid JSON, ignore metadata
-      logoMetadata = undefined;
-    }
-  }
+  const logoMetadata = parseClubMetadata(club.metadata);
   
   // Determine the main image: heroImage first, then logo as fallback
   const mainImage = isValidImageUrl(heroImageUrl) ? heroImageUrl : null;

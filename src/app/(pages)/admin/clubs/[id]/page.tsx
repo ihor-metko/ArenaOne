@@ -18,7 +18,7 @@ import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
 import { parseTags, getPriceRange, getCourtCounts, getGoogleMapsEmbedUrl } from "@/utils/club";
-
+import { parseClubMetadata } from "@/types/club";
 import { useUserStore } from "@/stores/useUserStore";
 import "./page.css";
 import "@/components/ClubDetailPage.css";
@@ -240,21 +240,7 @@ export default function AdminClubDetailPage({
   };
 
   // Parse club metadata for logo and banner settings
-  let clubMetadata: {
-    bannerAlignment?: 'top' | 'center' | 'bottom';
-    logoTheme?: 'light' | 'dark';
-    secondLogo?: string | null;
-    secondLogoTheme?: 'light' | 'dark';
-  } | undefined;
-  
-  if (club.metadata) {
-    try {
-      clubMetadata = JSON.parse(club.metadata);
-    } catch {
-      // Invalid JSON, use defaults
-      clubMetadata = undefined;
-    }
-  }
+  const clubMetadata = parseClubMetadata(club.metadata);
 
   return (
     <main className="im-admin-club-detail-page">

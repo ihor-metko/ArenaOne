@@ -17,6 +17,7 @@ import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useActiveClub } from "@/contexts/ClubContext";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
+import { parseClubMetadata } from "@/types/club";
 import type { Court, AvailabilitySlot, AvailabilityResponse, CourtAvailabilityStatus } from "@/types/court";
 import "@/components/ClubDetailPage.css";
 
@@ -371,21 +372,7 @@ export default function ClubDetailPage({
   const locationDisplay = [club.city, club.country].filter(Boolean).join(", ") || club.location;
 
   // Parse club metadata for logo and banner settings
-  let clubMetadata: {
-    bannerAlignment?: 'top' | 'center' | 'bottom';
-    logoTheme?: 'light' | 'dark';
-    secondLogo?: string | null;
-    secondLogoTheme?: 'light' | 'dark';
-  } | undefined;
-  
-  if (club.metadata) {
-    try {
-      clubMetadata = JSON.parse(club.metadata);
-    } catch {
-      // Invalid JSON, use defaults
-      clubMetadata = undefined;
-    }
-  }
+  const clubMetadata = parseClubMetadata(club.metadata);
 
   // Prepare gallery images for modal
   const galleryImages = (club.gallery || [])
