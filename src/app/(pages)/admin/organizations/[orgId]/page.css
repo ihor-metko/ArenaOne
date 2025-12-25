@@ -1,17 +1,5 @@
 @reference "tailwindcss";
 
-/* ===== Organization Detail Page - Redesigned Styles ===== */
-
-.im-org-detail-page {
-  padding: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .im-org-detail-page {
-    padding: 2rem;
-  }
-}
-
 /* ===== Banner Actions ===== */
 .im-banner-actions {
   @apply flex gap-3 flex-wrap p-4 rounded-lg mt-4;
@@ -23,7 +11,7 @@
   .im-banner-actions {
     @apply flex-col;
   }
-  
+
   .im-banner-actions button {
     @apply w-full;
   }
@@ -953,7 +941,7 @@
   .im-bookings-summary {
     @apply flex-col gap-4;
   }
-  
+
   .im-bookings-summary-item {
     @apply items-center text-center;
   }

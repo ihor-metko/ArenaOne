@@ -10,7 +10,7 @@
 
 /* Admin content wrapper with max-width constraint */
 .im-admin-content-wrapper {
-  @apply w-full mx-auto px-6;
+  @apply w-full mx-auto;
   max-width: 1600px;
 }
 
