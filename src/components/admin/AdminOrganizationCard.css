@@ -129,6 +129,17 @@
   opacity: 0.5;
 }
 
+/* Address Section */
+.im-admin-org-address {
+  @apply flex items-start gap-2 mb-3;
+}
+
+.im-admin-org-address-text {
+  @apply text-sm truncate;
+  color: var(--rsp-foreground);
+  opacity: 0.8;
+}
+
 /* Owner Section */
 .im-admin-org-owner {
   @apply flex items-start gap-2 mb-3;

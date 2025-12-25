@@ -34,6 +34,7 @@ describe("AdminOrganizationCard", () => {
     slug: "test-organization",
     createdAt: "2024-01-15T00:00:00.000Z",
     clubCount: 5,
+    isPublic: true,
     superAdmins: [
       {
         id: "user-1",
@@ -56,17 +57,17 @@ describe("AdminOrganizationCard", () => {
     expect(screen.getByText("Test Organization")).toBeInTheDocument();
   });
 
-  it("should show active status when clubCount > 0", () => {
+  it("should show published status when isPublic is true", () => {
     render(<AdminOrganizationCard organization={mockOrganization} />);
     
-    expect(screen.getByText("organizations.active")).toBeInTheDocument();
+    expect(screen.getByText("common.published")).toBeInTheDocument();
   });
 
-  it("should show inactive status when clubCount is 0", () => {
-    const orgWithNoClubs = { ...mockOrganization, clubCount: 0 };
-    render(<AdminOrganizationCard organization={orgWithNoClubs} />);
+  it("should show unpublished status when isPublic is false", () => {
+    const orgUnpublished = { ...mockOrganization, isPublic: false };
+    render(<AdminOrganizationCard organization={orgUnpublished} />);
     
-    expect(screen.getByText("organizations.inactive")).toBeInTheDocument();
+    expect(screen.getByText("common.unpublished")).toBeInTheDocument();
   });
 
   it("should display primary owner information", () => {
@@ -137,6 +138,23 @@ describe("AdminOrganizationCard", () => {
     render(<AdminOrganizationCard organization={mockOrganization} />);
     
     expect(screen.getByText("organizations.noDescription")).toBeInTheDocument();
+  });
+
+  it("should display address when provided", () => {
+    const orgWithAddress = {
+      ...mockOrganization,
+      address: "123 Main St, City, Country",
+    };
+    render(<AdminOrganizationCard organization={orgWithAddress} />);
+    
+    expect(screen.getByText("123 Main St, City, Country")).toBeInTheDocument();
+  });
+
+  it("should not display address section when address is not provided", () => {
+    render(<AdminOrganizationCard organization={mockOrganization} />);
+    
+    // Address section should not be present
+    expect(screen.queryByText(/Main St/)).not.toBeInTheDocument();
   });
 
   it("should display heroImage when provided", () => {
