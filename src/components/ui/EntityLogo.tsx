@@ -2,12 +2,12 @@
 
 /**
  * EntityLogo - Reusable logo component with metadata-based background logic
- * 
+ *
  * This component handles:
  * - Theme-aware logo selection (switching between primary and secondary logos based on theme)
  * - Contrast enhancement (applying background styling when logo doesn't match current theme)
  * - Metadata-driven styling decisions
- * 
+ *
  * Used by: EntityBanner, AdminOrganizationCard, AdminClubCard, PublicClubCard
  */
 
@@ -21,12 +21,12 @@ export interface EntityLogoMetadata {
    * - 'dark': Logo designed for dark backgrounds
    */
   logoTheme?: 'light' | 'dark';
-  
+
   /**
    * Alternative logo URL for different theme
    */
   secondLogo?: string | null;
-  
+
   /**
    * Theme that the secondary logo is designed for
    */
@@ -38,7 +38,7 @@ export interface EntityLogoProps {
    * Primary logo URL (required)
    */
   logoUrl: string | null | undefined;
-  
+
   /**
    * Logo metadata for theme-aware display (optional)
    * When provided, the component will:
@@ -46,12 +46,12 @@ export interface EntityLogoProps {
    * - Apply contrast enhancement when needed
    */
   logoMetadata?: EntityLogoMetadata | null;
-  
+
   /**
    * Alt text for the logo image
    */
   alt: string;
-  
+
   /**
    * Additional CSS classes to apply to the logo
    */
@@ -160,7 +160,7 @@ export function EntityLogo({
     <img
       src={logoFullUrl}
       alt={alt}
-      className={`rsp-club-hero-logo ${logoContrastClass} ${className}`.trim()}
+      className={`${logoContrastClass} ${className}`.trim()}
     />
   );
 }
