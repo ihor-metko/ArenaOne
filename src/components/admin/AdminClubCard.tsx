@@ -112,6 +112,17 @@ export function AdminClubCard({ club, showOrganization, actionButton }: AdminClu
   const heroImageUrl = getImageUrl(club.heroImage);
   const logoUrl = getImageUrl(club.logo);
 
+  // Parse logo metadata if available
+  let logoMetadata: { logoTheme?: 'light' | 'dark'; secondLogo?: string | null; secondLogoTheme?: 'light' | 'dark'; } | undefined;
+  if (club.metadata) {
+    try {
+      logoMetadata = JSON.parse(club.metadata);
+    } catch {
+      // Invalid JSON, ignore metadata
+      logoMetadata = undefined;
+    }
+  }
+
   // Determine the main image: heroImage first, then logo as fallback
   const mainImage = isValidImageUrl(heroImageUrl) ? heroImageUrl : null;
   const hasLogo = isValidImageUrl(logoUrl);
@@ -132,6 +143,7 @@ export function AdminClubCard({ club, showOrganization, actionButton }: AdminClu
         ) : (
           <EntityLogo
             logoUrl={club.logo}
+            logoMetadata={logoMetadata}
             alt={`${club.name} logo`}
             className="im-admin-club-hero-image im-admin-club-hero-image--logo"
           />

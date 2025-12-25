@@ -16,6 +16,7 @@ export interface PublicClubCardProps {
     openingHours?: string | null;
     logo?: string | null;
     heroImage?: string | null;
+    metadata?: string | null;
     tags?: string | null;
     indoorCount?: number;
     outdoorCount?: number;
@@ -64,6 +65,17 @@ export function PublicClubCard({ club, isRoot = false }: PublicClubCardProps) {
   const heroImageUrl = getImageUrl(club.heroImage);
   const logoUrl = getImageUrl(club.logo);
   
+  // Parse logo metadata if available
+  let logoMetadata: { logoTheme?: 'light' | 'dark'; secondLogo?: string | null; secondLogoTheme?: 'light' | 'dark'; } | undefined;
+  if (club.metadata) {
+    try {
+      logoMetadata = JSON.parse(club.metadata);
+    } catch {
+      // Invalid JSON, ignore metadata
+      logoMetadata = undefined;
+    }
+  }
+  
   // Determine the main image: heroImage first, then logo as fallback
   const mainImage = isValidImageUrl(heroImageUrl) ? heroImageUrl : null;
   const hasLogo = isValidImageUrl(logoUrl);
@@ -92,6 +104,7 @@ export function PublicClubCard({ club, isRoot = false }: PublicClubCardProps) {
         ) : (
           <EntityLogo
             logoUrl={club.logo}
+            logoMetadata={logoMetadata}
             alt={`${club.name} logo`}
             className="rsp-club-hero-image rsp-club-hero-image--logo"
           />

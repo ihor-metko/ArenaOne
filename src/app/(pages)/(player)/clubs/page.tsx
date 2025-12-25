@@ -29,6 +29,7 @@ interface ClubWithCounts {
   openingHours?: string | null;
   logo?: string | null;
   heroImage?: string | null;
+  metadata?: string | null;
   tags?: string | null;
   createdAt: string;
   indoorCount: number;

@@ -32,6 +32,7 @@ export interface ClubWithCounts extends Club {
   shortDescription?: string | null;
   city?: string | null;
   heroImage?: string | null;
+  metadata?: string | null;
   tags?: string | null;
   isPublic?: boolean;
   status: string;
