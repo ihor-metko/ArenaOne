@@ -1,4 +1,5 @@
 import { SportType } from "@/constants/sports";
+import type { EntityLogoMetadata } from "@/components/ui/EntityLogo";
 
 export interface Club {
   id: string;
@@ -32,6 +33,7 @@ export interface ClubWithCounts extends Club {
   shortDescription?: string | null;
   city?: string | null;
   heroImage?: string | null;
+  metadata?: string | null;
   tags?: string | null;
   isPublic?: boolean;
   status: string;
@@ -135,6 +137,7 @@ export interface ClubDetail {
   openingHours: string | null;
   logo: string | null;
   heroImage: string | null;
+  metadata: string | null;
   defaultCurrency: string | null;
   timezone: string | null;
   isPublic: boolean;
@@ -215,4 +218,28 @@ export interface UpdateClubPayload {
   openingHours?: string | null;
   logo?: string | null;
   supportedSports?: SportType[];
+}
+
+/**
+ * Club metadata type extending EntityLogoMetadata with banner alignment
+ */
+export interface ClubMetadata extends EntityLogoMetadata {
+  /** Banner image vertical alignment */
+  bannerAlignment?: 'top' | 'center' | 'bottom';
+}
+
+/**
+ * Helper function to parse club metadata from JSON string
+ */
+export function parseClubMetadata(metadataString: string | null | undefined): ClubMetadata | undefined {
+  if (!metadataString) {
+    return undefined;
+  }
+  
+  try {
+    return JSON.parse(metadataString) as ClubMetadata;
+  } catch {
+    // Invalid JSON
+    return undefined;
+  }
 }

@@ -17,6 +17,7 @@ import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useActiveClub } from "@/contexts/ClubContext";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
+import { parseClubMetadata } from "@/types/club";
 import type { Court, AvailabilitySlot, AvailabilityResponse, CourtAvailabilityStatus } from "@/types/court";
 import "@/components/ClubDetailPage.css";
 
@@ -64,6 +65,7 @@ interface ClubWithDetails {
   openingHours?: string | null;
   logo?: string | null;
   heroImage?: string | null;
+  metadata?: string | null;
   defaultCurrency?: string | null;
   timezone?: string | null;
   tags?: string | null;
@@ -370,6 +372,9 @@ export default function ClubDetailPage({
   // Format location display
   const locationDisplay = [club.city, club.country].filter(Boolean).join(", ") || club.location;
 
+  // Parse club metadata for logo and banner settings
+  const clubMetadata = parseClubMetadata(club.metadata);
+
   // Prepare gallery images for modal
   const galleryImages = (club.gallery || [])
     .map((image) => {
@@ -388,8 +393,9 @@ export default function ClubDetailPage({
         subtitle={club.shortDescription}
         location={locationDisplay}
         imageUrl={club.heroImage}
-        bannerAlignment={(club.metadata as { bannerAlignment?: 'top' | 'center' | 'bottom' })?.bannerAlignment || 'center'}
+        bannerAlignment={clubMetadata?.bannerAlignment || 'center'}
         logoUrl={club.logo}
+        logoMetadata={clubMetadata}
         imageAlt={`${club.name} hero image`}
         logoAlt={`${club.name} logo`}
         hideAdminFeatures={true}

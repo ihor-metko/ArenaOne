@@ -19,7 +19,7 @@ import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
 import { parseTags, getPriceRange, getCourtCounts, getGoogleMapsEmbedUrl } from "@/utils/club";
-
+import { parseClubMetadata } from "@/types/club";
 import { useUserStore } from "@/stores/useUserStore";
 import "./page.css";
 import "@/components/ClubDetailPage.css";
@@ -277,6 +277,9 @@ export default function AdminClubDetailPage({
     setGalleryIndex(index);
   };
 
+  // Parse club metadata for logo and banner settings
+  const clubMetadata = parseClubMetadata(club.metadata);
+
   return (
     <main className="im-admin-club-detail-page">
       {/* Toast Notification */}
@@ -295,8 +298,9 @@ export default function AdminClubDetailPage({
         subtitle={club.shortDescription}
         location={locationDisplay}
         imageUrl={club.heroImage}
-        bannerAlignment={(club.metadata as { bannerAlignment?: 'top' | 'center' | 'bottom' })?.bannerAlignment || 'center'}
+        bannerAlignment={clubMetadata?.bannerAlignment || 'center'}
         logoUrl={club.logo}
+        logoMetadata={clubMetadata}
         imageAlt={`${club.name} hero image`}
         logoAlt={`${club.name} logo`}
         isPublished={club.isPublic}

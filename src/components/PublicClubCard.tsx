@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Button, IMLink, EntityLogo } from "@/components/ui";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
+import { parseClubMetadata } from "@/types/club";
 import "./ClubsList.css";
 
 export interface PublicClubCardProps {
@@ -16,6 +17,7 @@ export interface PublicClubCardProps {
     openingHours?: string | null;
     logo?: string | null;
     heroImage?: string | null;
+    metadata?: string | null;
     tags?: string | null;
     indoorCount?: number;
     outdoorCount?: number;
@@ -64,6 +66,9 @@ export function PublicClubCard({ club, isRoot = false }: PublicClubCardProps) {
   const heroImageUrl = getImageUrl(club.heroImage);
   const logoUrl = getImageUrl(club.logo);
   
+  // Parse logo metadata if available
+  const logoMetadata = parseClubMetadata(club.metadata);
+  
   // Determine the main image: heroImage first, then logo as fallback
   const mainImage = isValidImageUrl(heroImageUrl) ? heroImageUrl : null;
   const hasLogo = isValidImageUrl(logoUrl);
@@ -92,6 +97,7 @@ export function PublicClubCard({ club, isRoot = false }: PublicClubCardProps) {
         ) : (
           <EntityLogo
             logoUrl={club.logo}
+            logoMetadata={logoMetadata}
             alt={`${club.name} logo`}
             className="rsp-club-hero-image rsp-club-hero-image--logo"
           />
