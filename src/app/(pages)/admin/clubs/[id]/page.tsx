@@ -17,6 +17,9 @@ import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
 import { parseTags, getPriceRange, getCourtCounts, getGoogleMapsEmbedUrl } from "@/utils/club";
+import { EntityEditStepper } from "@/components/admin/EntityEditStepper.client";
+import { BasicInfoStep, AddressStep } from "@/components/admin/ClubSteps";
+import { LogoStep, BannerStep } from "@/components/admin/SharedSteps";
 
 import { useUserStore } from "@/stores/useUserStore";
 import "./page.css";
@@ -38,6 +41,7 @@ export default function AdminClubDetailPage({
 
   const [error, setError] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -157,6 +161,82 @@ export default function AdminClubDetailPage({
     }
   };
 
+  // Handler for opening edit modal
+  const handleOpenDetailsEdit = () => {
+    setIsEditingDetails(true);
+  };
+
+  // Stepper save handler for editing club details with images
+  const handleStepperSave = async (data: {
+    name: string;
+    slug: string;
+    description: string | null;
+    location?: string;
+    city?: string;
+    country?: string;
+    latitude?: number;
+    longitude?: number;
+    logo?: File | null;
+    heroImage?: File | null;
+  }) => {
+    if (!clubId) return;
+
+    try {
+      // Update club basic info and location
+      await handleSectionUpdate("header", {
+        name: data.name,
+        slug: data.slug,
+        shortDescription: data.description,
+        location: data.location || club?.location || "",
+        city: data.city || "",
+        country: data.country || "",
+        latitude: data.latitude,
+        longitude: data.longitude,
+      });
+
+      // Upload images if new files were provided
+      if (data.logo) {
+        const logoFormData = new FormData();
+        logoFormData.append("file", data.logo);
+        logoFormData.append("type", "logo");
+
+        const logoResponse = await fetch(`/api/images/clubs/${clubId}/upload`, {
+          method: "POST",
+          body: logoFormData,
+        });
+
+        if (!logoResponse.ok) {
+          const errorData = await logoResponse.json();
+          throw new Error(errorData.error || t("clubs.errors.imageUploadFailed"));
+        }
+      }
+
+      if (data.heroImage) {
+        const heroFormData = new FormData();
+        heroFormData.append("file", data.heroImage);
+        heroFormData.append("type", "heroImage");
+
+        const heroResponse = await fetch(`/api/images/clubs/${clubId}/upload`, {
+          method: "POST",
+          body: heroFormData,
+        });
+
+        if (!heroResponse.ok) {
+          const errorData = await heroResponse.json();
+          throw new Error(errorData.error || t("clubs.errors.imageUploadFailed"));
+        }
+      }
+
+      showToast("success", t("clubs.updateSuccess"));
+      // Force refresh to get updated data including images
+      await fetchClubById(clubId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t("clubs.errors.updateFailed");
+      showToast("error", message);
+      throw err; // Re-throw to let the stepper handle the error
+    }
+  };
+
   // Determine if user can delete clubs (only root admin)
   const canDelete = adminStatus?.adminType === "root_admin";
 
@@ -255,6 +335,7 @@ export default function AdminClubDetailPage({
         logoAlt={`${club.name} logo`}
         isPublished={club.isPublic}
         onTogglePublish={handleTogglePublish}
+        onEdit={handleOpenDetailsEdit}
       />
 
       {/* Main Content */}
@@ -465,6 +546,36 @@ export default function AdminClubDetailPage({
         currentIndex={galleryIndex}
         onNavigate={handleGalleryNavigate}
       />
+
+      {/* Entity Edit Stepper Modal */}
+      {club && (
+        <EntityEditStepper
+          isOpen={isEditingDetails}
+          onClose={() => setIsEditingDetails(false)}
+          entityData={{
+            id: club.id,
+            name: club.name,
+            slug: club.slug || "",
+            shortDescription: club.shortDescription,
+            location: club.location,
+            city: club.city,
+            country: club.country,
+            latitude: club.latitude,
+            longitude: club.longitude,
+            logo: club.logo,
+            heroImage: club.heroImage,
+          }}
+          steps={[
+            { id: 1, label: t("clubs.stepper.stepBasicInfo") },
+            { id: 2, label: t("clubs.stepper.stepAddress") },
+            { id: 3, label: t("clubs.stepper.stepLogo") },
+            { id: 4, label: t("clubs.stepper.stepBanner") },
+          ]}
+          stepComponents={[BasicInfoStep, AddressStep, LogoStep, BannerStep]}
+          translationNamespace="clubs.stepper"
+          onSave={handleStepperSave}
+        />
+      )}
     </main>
   );
 }
