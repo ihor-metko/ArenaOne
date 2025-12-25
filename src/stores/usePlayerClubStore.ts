@@ -46,6 +46,7 @@ export interface PlayerClub {
   openingHours?: string | null;
   logo?: string | null;
   heroImage?: string | null;
+  metadata?: string | null;
   tags?: string | null;
   createdAt: string;
   indoorCount: number;
@@ -74,6 +75,7 @@ export interface PlayerClubDetail {
   openingHours?: string | null;
   logo?: string | null;
   heroImage?: string | null;
+  metadata?: string | null;
   defaultCurrency?: string | null;
   timezone?: string | null;
   tags?: string | null;
