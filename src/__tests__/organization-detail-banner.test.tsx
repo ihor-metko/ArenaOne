@@ -316,34 +316,30 @@ describe("Organization Detail Page - Banner Component", () => {
       expect(statusBadge).toBeInTheDocument();
     });
 
-    it("renders publish button when isPublished is false and onTogglePublish is provided", () => {
+    it("does not render publish/unpublish button - moved to DangerZone", () => {
       const handleToggle = jest.fn();
       render(
         <EntityBanner
           title="Test Organization"
           isPublished={false}
-          onTogglePublish={handleToggle}
         />
       );
 
-      const publishButton = screen.getByRole("button", { name: /publish test organization/i });
-      expect(publishButton).toBeInTheDocument();
-      expect(publishButton).toHaveTextContent("Publish");
+      const publishButton = screen.queryByRole("button", { name: /publish test organization/i });
+      expect(publishButton).not.toBeInTheDocument();
     });
 
-    it("renders unpublish button when isPublished is true and onTogglePublish is provided", () => {
+    it("does not render unpublish button - moved to DangerZone", () => {
       const handleToggle = jest.fn();
       render(
         <EntityBanner
           title="Test Organization"
           isPublished={true}
-          onTogglePublish={handleToggle}
         />
       );
 
-      const unpublishButton = screen.getByRole("button", { name: /unpublish test organization/i });
-      expect(unpublishButton).toBeInTheDocument();
-      expect(unpublishButton).toHaveTextContent("Unpublish");
+      const unpublishButton = screen.queryByRole("button", { name: /unpublish test organization/i });
+      expect(unpublishButton).not.toBeInTheDocument();
     });
 
     it("does not render publish/unpublish button when isArchived is true", () => {
@@ -373,20 +369,16 @@ describe("Organization Detail Page - Banner Component", () => {
       expect(publishButton).not.toBeInTheDocument();
     });
 
-    it("shows processing text when isTogglingPublish is true", () => {
-      const handleToggle = jest.fn();
+    it("does not show processing text for removed publish/unpublish functionality", () => {
       render(
         <EntityBanner
           title="Test Organization"
           isPublished={true}
-          onTogglePublish={handleToggle}
-          isTogglingPublish={true}
         />
       );
 
-      const button = screen.getByRole("button", { name: /unpublish test organization/i });
-      expect(button).toHaveTextContent("Processing...");
-      expect(button).toBeDisabled();
+      const button = screen.queryByRole("button", { name: /unpublish test organization/i });
+      expect(button).not.toBeInTheDocument();
     });
 
     it("prefers explicit status prop over auto-generated status", () => {
@@ -447,8 +439,8 @@ describe("Organization Detail Page - Banner Component", () => {
       // Should show status badge
       expect(screen.getByText("Published")).toBeInTheDocument();
       
-      // Should show publish/unpublish button
-      expect(screen.getByRole("button", { name: /unpublish test organization/i })).toBeInTheDocument();
+      // Should NOT show publish/unpublish button (moved to DangerZone)
+      expect(screen.queryByRole("button", { name: /unpublish test organization/i })).not.toBeInTheDocument();
       
       // Should show edit button
       expect(screen.getByRole("button", { name: /edit test organization details/i })).toBeInTheDocument();
