@@ -11,11 +11,13 @@ export interface AdminOrganizationCardProps {
     name: string;
     slug: string;
     description?: string | null;
+    address?: string | null;
     createdAt: string;
     clubCount?: number;
     supportedSports?: SportType[];
     logo?: string | null;
     heroImage?: string | null;
+    isPublic: boolean;
     createdBy?: {
       id: string;
       name: string | null;
@@ -105,18 +107,18 @@ export function AdminOrganizationCard({
           </div>
         )}
 
-        {/* Status badge based on club count */}
+        {/* Status badge based on isPublic */}
         <div className="im-admin-org-status">
           <span
             className={`im-admin-org-status-badge ${
-              (organization.clubCount || 0) > 0
+              organization.isPublic
                 ? "im-admin-org-status-badge--active"
                 : "im-admin-org-status-badge--inactive"
             }`}
           >
-            {(organization.clubCount || 0) > 0
-              ? t("organizations.active")
-              : t("organizations.inactive")}
+            {organization.isPublic
+              ? t("common.published")
+              : t("common.unpublished")}
           </span>
         </div>
       </div>
@@ -137,6 +139,28 @@ export function AdminOrganizationCard({
           <p className="im-admin-org-description im-admin-org-description--empty">
             {t("organizations.noDescription")}
           </p>
+        )}
+
+        {/* Address */}
+        {organization.address && (
+          <div className="im-admin-org-address">
+            <svg
+              className="im-admin-org-icon"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span className="im-admin-org-address-text">
+              {organization.address}
+            </span>
+          </div>
         )}
 
         {/* Owner Information */}
