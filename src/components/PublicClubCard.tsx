@@ -88,22 +88,34 @@ export function PublicClubCard({ club, isRoot = false }: PublicClubCardProps) {
       {/* Main Image Section */}
       <div className="rsp-club-card-image">
         {mainImage ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={mainImage}
-            alt={`${club.name} main image`}
-            className="rsp-club-hero-image"
-          />
-        ) : (
+          <>
+            {/* Banner/Hero Image */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={mainImage}
+              alt={`${club.name} main image`}
+              className="rsp-club-hero-image"
+            />
+            {/* Logo overlayed on banner */}
+            {hasLogo && (
+              <EntityLogo
+                logoUrl={club.logo}
+                logoMetadata={logoMetadata}
+                alt={`${club.name} logo`}
+                className="rsp-club-logo-overlay"
+              />
+            )}
+          </>
+        ) : hasLogo ? (
+          /* Logo as fallback when no banner */
           <EntityLogo
             logoUrl={club.logo}
             logoMetadata={logoMetadata}
             alt={`${club.name} logo`}
             className="rsp-club-hero-image rsp-club-hero-image--logo"
           />
-        )}
-
-        {!mainImage && !hasLogo && (
+        ) : (
+          /* Placeholder when no images */
           <div className="rsp-club-image-placeholder" aria-hidden="true">
             <span className="rsp-club-image-placeholder-text">
               {club.name.charAt(0).toUpperCase()}
