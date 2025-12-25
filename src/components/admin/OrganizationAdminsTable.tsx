@@ -7,6 +7,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { UserProfileModal } from "./UserProfileModal";
+import type { AdminRole } from "@/types/adminWizard";
 import "./OrganizationAdminsTable.css";
 
 interface OrgAdmin {
@@ -45,7 +46,7 @@ export default function OrganizationAdminsTable({
   const fetchSimpleUsers = useAdminUsersStore((state) => state.fetchSimpleUsers);
   const [userSearch, setUserSearch] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"ORGANIZATION_ADMIN" | "OWNER">("ORGANIZATION_ADMIN");
+  const [selectedRole, setSelectedRole] = useState<AdminRole>("ORGANIZATION_ADMIN");
   const [newAdminName, setNewAdminName] = useState("");
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [newAdminPassword, setNewAdminPassword] = useState("");
@@ -94,12 +95,6 @@ export default function OrganizationAdminsTable({
     try {
       // If role is OWNER, use the changeOwner API directly
       if (selectedRole === "OWNER") {
-        if (addMode === "new") {
-          setAddError(t("orgAdmins.cannotCreateNewOwner"));
-          setAdding(false);
-          return;
-        }
-        
         await changeOwner({
           organizationId: orgId,
           userId: selectedUserId,
@@ -354,7 +349,7 @@ export default function OrganizationAdminsTable({
                   name="role"
                   value="ORGANIZATION_ADMIN"
                   checked={selectedRole === "ORGANIZATION_ADMIN"}
-                  onChange={(e) => setSelectedRole(e.target.value as "ORGANIZATION_ADMIN" | "OWNER")}
+                  onChange={(e) => setSelectedRole(e.target.value as AdminRole)}
                 />
                 <div className="im-role-option-content">
                   <span className="im-role-option-title">{t("orgAdmins.organizationAdmin")}</span>
@@ -367,7 +362,7 @@ export default function OrganizationAdminsTable({
                   name="role"
                   value="OWNER"
                   checked={selectedRole === "OWNER"}
-                  onChange={(e) => setSelectedRole(e.target.value as "ORGANIZATION_ADMIN" | "OWNER")}
+                  onChange={(e) => setSelectedRole(e.target.value as AdminRole)}
                 />
                 <div className="im-role-option-content">
                   <span className="im-role-option-title">{t("orgAdmins.owner")}</span>
@@ -509,12 +504,22 @@ export default function OrganizationAdminsTable({
             </Button>
             <Button
               type="submit"
-              disabled={
-                adding ||
-                !selectedUserId ||
-                (selectedRole === "ORGANIZATION_ADMIN" && addMode === "new" &&
-                  (!newAdminName || !newAdminEmail || !newAdminPassword))
-              }
+              disabled={(() => {
+                if (adding) return true;
+                
+                // For Owner role, must select existing user
+                if (selectedRole === "OWNER") {
+                  return !selectedUserId;
+                }
+                
+                // For Organization Admin
+                if (addMode === "existing") {
+                  return !selectedUserId;
+                }
+                
+                // For new user creation
+                return !newAdminName || !newAdminEmail || !newAdminPassword;
+              })()}
             >
               {adding ? t("common.processing") : (selectedRole === "OWNER" ? t("orgAdmins.assignOwner") : t("orgAdmins.addPerson"))}
             </Button>
