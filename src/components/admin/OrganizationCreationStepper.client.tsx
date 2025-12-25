@@ -316,14 +316,16 @@ export function OrganizationCreationStepper() {
 
       // Add logo theme metadata if logos are provided
       if (formData.logo || formData.secondLogo) {
-        metadata.logoMetadata = {
+        const logoMetadata: Record<string, unknown> = {
           logoTheme: formData.logoTheme,
           logoCount: formData.logoCount,
         };
         
         if (formData.logoCount === 'two' && formData.secondLogo) {
-          metadata.logoMetadata.secondLogoTheme = formData.secondLogoTheme;
+          logoMetadata.secondLogoTheme = formData.secondLogoTheme;
         }
+        
+        metadata.logoMetadata = logoMetadata;
       }
 
       // Prepare data for submission (without images - they'll be uploaded separately)
@@ -377,9 +379,6 @@ export function OrganizationCreationStepper() {
             throw new Error(errorData.error || t("errors.imageUploadFailed"));
           }
           
-          // Get the uploaded logo URL to update metadata
-          const logoData = await logoResponse.json();
-          
           // Upload second logo if provided
           if (formData.logoCount === 'two' && formData.secondLogo?.file) {
             const secondLogoFormData = new FormData();
@@ -399,10 +398,11 @@ export function OrganizationCreationStepper() {
             const secondLogoData = await secondLogoResponse.json();
             
             // Update metadata with second logo URL
+            const currentLogoMetadata = metadata.logoMetadata as Record<string, unknown> || {};
             const updatedMetadata = {
               ...metadata,
               logoMetadata: {
-                ...metadata.logoMetadata,
+                ...currentLogoMetadata,
                 secondLogo: secondLogoData.url,
               }
             };
@@ -433,10 +433,11 @@ export function OrganizationCreationStepper() {
           const secondLogoData = await secondLogoResponse.json();
           
           // Update metadata with second logo URL
+          const currentLogoMetadata = metadata.logoMetadata as Record<string, unknown> || {};
           const updatedMetadata = {
             ...metadata,
             logoMetadata: {
-              ...metadata.logoMetadata,
+              ...currentLogoMetadata,
               secondLogo: secondLogoData.url,
             }
           };
