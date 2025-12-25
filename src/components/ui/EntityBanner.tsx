@@ -59,6 +59,13 @@ export interface EntityBannerProps {
   imageUrl?: string | null;
 
   /**
+   * Banner image alignment focus (optional)
+   * Controls the vertical positioning of the background image
+   * @default 'center'
+   */
+  bannerAlignment?: 'top' | 'center' | 'bottom';
+
+  /**
    * Logo image URL (optional)
    * If logoMetadata is provided, this may be overridden based on current theme
    */
@@ -149,6 +156,7 @@ export function EntityBanner({
   subtitle,
   location,
   imageUrl,
+  bannerAlignment = 'center',
   logoUrl,
   logoMetadata,
   imageAlt,
@@ -192,6 +200,9 @@ export function EntityBanner({
   // Determine if we should show the publish/unpublish button
   const showPublishButton = !hideAdminFeatures && !isArchived && isPublished !== null && isPublished !== undefined && onTogglePublish;
 
+  // Map alignment to CSS object-position
+  const objectPosition = bannerAlignment === 'top' ? 'top' : bannerAlignment === 'bottom' ? 'bottom' : 'center';
+
   return (
     <section className={`rsp-club-hero ${className}`} data-testid="entity-banner">
       {hasHeroImage && heroImageFullUrl ? (
@@ -201,6 +212,7 @@ export function EntityBanner({
             src={heroImageFullUrl}
             alt={imageAlt || t('heroImageAlt', { name: title })}
             className="rsp-club-hero-image"
+            style={{ objectPosition }}
           />
           <div className="rsp-club-hero-overlay" />
         </>

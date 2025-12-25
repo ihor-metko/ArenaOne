@@ -48,6 +48,7 @@ export function OrganizationEditor({
     secondLogoTheme?: 'light' | 'dark';
     logoCount?: 'one' | 'two';
     secondLogo?: string | null;
+    bannerAlignment?: 'top' | 'center' | 'bottom';
   } | null;
 
   const addressParts = organization.address?.split(", ") || [];
@@ -81,6 +82,7 @@ export function OrganizationEditor({
 
   const bannerData: BannerData = {
     heroImage: organization.heroImage ? { url: organization.heroImage, key: "", preview: organization.heroImage } : null,
+    bannerAlignment: metadata?.bannerAlignment || 'center',
   };
 
   const handleTabChange = useCallback(async (newTabId: string) => {
@@ -198,7 +200,16 @@ export function OrganizationEditor({
     setHasUnsavedChanges(false);
   }, [organization.id, organization.metadata, onUpdate, onRefresh, t]);
 
-  const handleBannerSave = useCallback(async (file: File | null) => {
+  const handleBannerSave = useCallback(async (file: File | null, alignment: 'top' | 'center' | 'bottom') => {
+    // Update metadata with alignment first
+    await onUpdate(organization.id, {
+      metadata: {
+        ...(organization.metadata as object || {}),
+        bannerAlignment: alignment,
+      },
+    });
+
+    // Upload file if provided
     if (file) {
       const heroFormData = new FormData();
       heroFormData.append("file", file);
@@ -217,7 +228,7 @@ export function OrganizationEditor({
 
     await onRefresh();
     setHasUnsavedChanges(false);
-  }, [organization.id, onRefresh, t]);
+  }, [organization.id, organization.metadata, onUpdate, onRefresh, t]);
 
   return (
     <>

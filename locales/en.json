@@ -319,7 +319,14 @@
         "heroImage": "Banner Image",
         "heroImageHelperText": "Wide image recommended for banner display",
         "preview": "Preview",
-        "previewAlt": "Banner preview"
+        "previewAlt": "Banner preview",
+        "alignment": "Banner Alignment",
+        "alignmentTop": "Top",
+        "alignmentTopDesc": "Focus on the top portion of the image",
+        "alignmentCenter": "Center",
+        "alignmentCenterDesc": "Focus on the center of the image",
+        "alignmentBottom": "Bottom",
+        "alignmentBottomDesc": "Focus on the bottom portion of the image"
       },
       "validation": {
         "nameRequired": "Club name is required",
@@ -551,8 +558,12 @@
           "longitudeRange": "Longitude must be between -180 and 180"
         },
         "errors": {
-          "createFailed": "Failed to save club",
-          "imageUploadFailed": "Failed to upload image"
+          "organizationRequired": "Organization is required",
+          "nameRequired": "Club name is required",
+          "invalidEmail": "Invalid email format",
+          "invalidLatitude": "Latitude must be a valid number",
+          "invalidLongitude": "Longitude must be a valid number",
+          "slugConflict": "This slug is already in use"
         },
         "steps": {
           "general": "General",
@@ -632,14 +643,6 @@
           "next": "Next",
           "createClub": "Create Club",
           "creating": "Creating..."
-        },
-        "errors": {
-          "organizationRequired": "Organization is required",
-          "nameRequired": "Club name is required",
-          "invalidEmail": "Invalid email format",
-          "invalidLatitude": "Latitude must be a valid number",
-          "invalidLongitude": "Longitude must be a valid number",
-          "slugConflict": "This slug is already in use"
         },
         "toast": {
           "success": "Club created successfully!",
@@ -1626,7 +1629,14 @@
         "heroImage": "Banner Image",
         "heroImageHelperText": "Wide image recommended for banner display",
         "preview": "Preview",
-        "previewAlt": "Banner preview"
+        "previewAlt": "Banner preview",
+        "alignment": "Banner Alignment",
+        "alignmentTop": "Top",
+        "alignmentTopDesc": "Focus on the top portion of the image",
+        "alignmentCenter": "Center",
+        "alignmentCenterDesc": "Focus on the center of the image",
+        "alignmentBottom": "Bottom",
+        "alignmentBottomDesc": "Focus on the bottom portion of the image"
       },
       "validation": {
         "nameRequired": "Organization name is required",

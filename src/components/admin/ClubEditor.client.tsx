@@ -19,6 +19,7 @@ interface ClubData {
   longitude: number | null;
   logo: string | null;
   heroImage: string | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 interface ClubEditorProps {
@@ -40,6 +41,10 @@ export function ClubEditor({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [pendingTabId, setPendingTabId] = useState<string | null>(null);
+
+  const metadata = club.metadata as {
+    bannerAlignment?: 'top' | 'center' | 'bottom';
+  } | null;
 
   const baseInfoData: BaseInfoData = {
     name: club.name,
@@ -66,6 +71,7 @@ export function ClubEditor({
 
   const bannerData: BannerData = {
     heroImage: club.heroImage ? { url: club.heroImage, key: "", preview: club.heroImage } : null,
+    bannerAlignment: metadata?.bannerAlignment || 'center',
   };
 
   const handleTabChange = useCallback(async (newTabId: string) => {
@@ -147,7 +153,16 @@ export function ClubEditor({
     setHasUnsavedChanges(false);
   }, [club.id, onRefresh, t]);
 
-  const handleBannerSave = useCallback(async (file: File | null) => {
+  const handleBannerSave = useCallback(async (file: File | null, alignment: 'top' | 'center' | 'bottom') => {
+    // Update metadata with alignment first
+    await onUpdate("metadata", {
+      metadata: {
+        ...(club.metadata as object || {}),
+        bannerAlignment: alignment,
+      },
+    });
+
+    // Upload file if provided
     if (file) {
       const heroFormData = new FormData();
       heroFormData.append("file", file);
@@ -166,7 +181,7 @@ export function ClubEditor({
 
     await onRefresh();
     setHasUnsavedChanges(false);
-  }, [club.id, onRefresh, t]);
+  }, [club.id, club.metadata, onUpdate, onRefresh, t]);
 
   return (
     <>

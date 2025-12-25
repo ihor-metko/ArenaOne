@@ -218,6 +218,7 @@ export default function OrganizationDetailPage() {
           subtitle={org.description || null}
           location={org.address}
           imageUrl={org.heroImage}
+          bannerAlignment={(org.metadata as { bannerAlignment?: 'top' | 'center' | 'bottom' })?.bannerAlignment || 'center'}
           logoUrl={org.logo}
           logoMetadata={org.metadata as { logoTheme?: 'light' | 'dark'; secondLogo?: string | null; secondLogoTheme?: 'light' | 'dark'; }}
           imageAlt={`${org.name} banner`}
