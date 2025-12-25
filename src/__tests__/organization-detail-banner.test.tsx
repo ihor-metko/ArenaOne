@@ -317,7 +317,6 @@ describe("Organization Detail Page - Banner Component", () => {
     });
 
     it("does not render publish/unpublish button - moved to DangerZone", () => {
-      const handleToggle = jest.fn();
       render(
         <EntityBanner
           title="Test Organization"
@@ -330,7 +329,6 @@ describe("Organization Detail Page - Banner Component", () => {
     });
 
     it("does not render unpublish button - moved to DangerZone", () => {
-      const handleToggle = jest.fn();
       render(
         <EntityBanner
           title="Test Organization"
