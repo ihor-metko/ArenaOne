@@ -68,6 +68,8 @@ export async function GET(request: Request) {
         id: org.id,
         name: org.name,
         slug: org.slug,
+        description: org.description,
+        address: org.address,
         createdAt: org.createdAt,
         clubCount: org._count.clubs,
         createdBy: org.createdBy,
@@ -76,6 +78,8 @@ export async function GET(request: Request) {
         superAdmin: superAdmins.find((a) => a.isPrimaryOwner) || superAdmins[0] || null,
         logo: org.logo,
         heroImage: org.heroImage,
+        supportedSports: org.supportedSports,
+        isPublic: org.isPublic,
       };
     });
 
@@ -172,6 +176,8 @@ export async function POST(request: Request) {
         id: organization.id,
         name: organization.name,
         slug: organization.slug,
+        description: organization.description,
+        address: organization.address,
         createdAt: organization.createdAt,
         clubCount: 0,
         createdBy: organization.createdBy,
@@ -179,6 +185,7 @@ export async function POST(request: Request) {
         supportedSports: organization.supportedSports,
         logo: organization.logo,
         heroImage: organization.heroImage,
+        isPublic: organization.isPublic,
       },
       { status: 201 }
     );
