@@ -1310,7 +1310,16 @@
       "logoBackgroundHelperText": "Виберіть колір фону для відображення логотипу в банерах та картках",
       "logoBackgroundLightDescription": "Логотип буде відображатися на світлих фонах",
       "logoBackgroundDarkDescription": "Логотип буде відображатися на темних фонах",
-      "bannerAlignmentHelperText": "Виберіть, як має бути вирівняне зображення банера при відображенні"
+      "bannerAlignmentHelperText": "Виберіть, як має бути вирівняне зображення банера при відображенні",
+      "logoCountLabel": "Кількість логотипів",
+      "logoCountOne": "Один логотип для обох тем",
+      "logoCountOneDescription": "Завантажте один логотип, який добре виглядає на світлому та темному фоні",
+      "logoCountTwo": "Два окремі логотипи для різних тем",
+      "logoCountTwoDescription": "Завантажте різні версії логотипу, оптимізовані для світлої та темної теми",
+      "firstLogo": "Перший логотип",
+      "firstLogoThemeLabel": "Тема першого логотипу",
+      "secondLogoThemeLabel": "Тема другого логотипу",
+      "logoThemeHelperText": "Виберіть тему для оптимального відображення логотипу"
     },
     "errors": {
       "createFailed": "Не вдалося створити організацію",
