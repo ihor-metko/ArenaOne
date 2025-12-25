@@ -10,6 +10,15 @@ import type {
 } from "@/types/adminUser";
 
 /**
+ * Fetch parameters for tracking cache validity
+ */
+interface FetchParams {
+  page: number;
+  pageSize: number;
+  filters: UsersFilters;
+}
+
+/**
  * Admin users store state
  */
 interface AdminUsersState {
@@ -26,10 +35,14 @@ interface AdminUsersState {
   pagination: PaginationInfo | null;
   filters: UsersFilters;
   lastFetchedAt: number | null;
+  lastFetchParams: FetchParams | null; // Track last fetch parameters for cache validation
 
   // Internal inflight Promise guards (not exposed)
   _inflightFetchUsers: Promise<void> | null;
   _inflightFetchUserById: Record<string, Promise<AdminUserDetail>> | null;
+
+  // Internal helper methods
+  _areFetchParamsEqual: (params1: FetchParams | null, params2: FetchParams) => boolean;
 
   // Actions
   setUsers: (users: AdminUser[]) => void;
@@ -108,6 +121,7 @@ export const useAdminUsersStore = create<AdminUsersState>((set, get) => ({
   pagination: null,
   filters: {},
   lastFetchedAt: null,
+  lastFetchParams: null,
   _inflightFetchUsers: null,
   _inflightFetchUserById: null,
 
@@ -125,15 +139,33 @@ export const useAdminUsersStore = create<AdminUsersState>((set, get) => ({
   setFilters: (filters) => set({ filters }),
 
   /**
+   * Compare two fetch parameter sets to determine if they're equivalent
+   */
+  _areFetchParamsEqual: (params1: FetchParams | null, params2: FetchParams): boolean => {
+    if (!params1) return false;
+    
+    return (
+      params1.page === params2.page &&
+      params1.pageSize === params2.pageSize &&
+      JSON.stringify(params1.filters) === JSON.stringify(params2.filters)
+    );
+  },
+
+  /**
    * Fetch users list with pagination and filtering
    * Uses inflight guard to prevent duplicate requests
+   * Caches results based on fetch parameters
    */
   fetchUsers: async (options = {}) => {
     const { page = 1, pageSize = 10, filters = {}, force = false } = options;
     const state = get();
 
-    // Skip fetch if already loaded and not forcing refresh
-    if (state.hasFetched && !force && !state.error) {
+    // Create current fetch params object
+    const currentParams: FetchParams = { page, pageSize, filters };
+
+    // Skip fetch if already loaded with same parameters and not forcing refresh
+    const isSameParams = state._areFetchParamsEqual(state.lastFetchParams, currentParams);
+    if (state.hasFetched && isSameParams && !force && !state.error) {
       return;
     }
 
@@ -189,6 +221,7 @@ export const useAdminUsersStore = create<AdminUsersState>((set, get) => ({
           loading: false,
           hasFetched: true,
           lastFetchedAt: Date.now(),
+          lastFetchParams: currentParams,
           _inflightFetchUsers: null,
         });
       } catch (error) {
@@ -528,6 +561,7 @@ export const useAdminUsersStore = create<AdminUsersState>((set, get) => ({
       usersById: {},
       hasFetched: false,
       lastFetchedAt: null,
+      lastFetchParams: null,
       error: null,
       pagination: null,
     });
