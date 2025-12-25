@@ -235,7 +235,8 @@ export function EntityBanner({
         : { label: t('unpublished'), variant: 'draft' as const };
     }
     return null;
-  }, [status, isArchived, isPublished, hideAdminFeatures, t]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, isArchived, isPublished, hideAdminFeatures]);
   
   // Determine if we should show the publish/unpublish button
   const showPublishButton = !hideAdminFeatures && !isArchived && isPublished !== null && isPublished !== undefined && onTogglePublish;
