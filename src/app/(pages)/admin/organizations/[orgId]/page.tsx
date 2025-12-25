@@ -44,7 +44,7 @@ export default function OrganizationDetailPage() {
   const router = useRouter();
   const params = useParams();
   const orgId = params?.orgId as string;
-  
+
   // Use store for auth
   const isHydrated = useUserStore((state) => state.isHydrated);
   const isLoading = useUserStore((state) => state.isLoading);
@@ -169,7 +169,7 @@ export default function OrganizationDetailPage() {
       router.push("/auth/sign-in");
       return;
     }
-    
+
     // Fetch organization data from store (will use cache if available)
     fetchOrgDetail();
     fetchBookingsPreview();
@@ -349,6 +349,7 @@ export default function OrganizationDetailPage() {
           location={org.address}
           imageUrl={org.heroImage}
           logoUrl={org.logo}
+          logoMetadata={org.metadata && typeof org.metadata === 'object' && 'logoMetadata' in org.metadata ? org.metadata.logoMetadata as { logoTheme?: 'light' | 'dark'; secondLogo?: string | null; secondLogoTheme?: 'light' | 'dark'; } : undefined}
           imageAlt={`${org.name} banner`}
           logoAlt={`${org.name} logo`}
           isPublished={org.isPublic ?? true}
