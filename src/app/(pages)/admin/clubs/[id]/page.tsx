@@ -230,7 +230,7 @@ export default function AdminClubDetailPage({
           {error}
         </div>
         <div className="mt-4 text-center">
-          <IMLink href="/admin/clubs">← Back to Clubs</IMLink>
+          <IMLink href="/admin/clubs">{t("clubs.backToClubs")}</IMLink>
         </div>
       </main>
     );
@@ -350,12 +350,12 @@ export default function AdminClubDetailPage({
               <div className="im-admin-club-courts-summary">
                 {courtCounts.indoor > 0 && (
                   <span className="im-admin-club-badge im-admin-club-badge-indoor">
-                    <span className="im-admin-club-court-type-count">{courtCounts.indoor}</span> Indoor
+                    <span className="im-admin-club-court-type-count">{courtCounts.indoor}</span> {t("clubs.indoor")}
                   </span>
                 )}
                 {courtCounts.outdoor > 0 && (
                   <span className="im-admin-club-badge im-admin-club-badge-outdoor">
-                    <span className="im-admin-club-court-type-count">{courtCounts.outdoor}</span> Outdoor
+                    <span className="im-admin-club-court-type-count">{courtCounts.outdoor}</span> {t("clubs.outdoor")}
                   </span>
                 )}
               </div>
@@ -363,13 +363,13 @@ export default function AdminClubDetailPage({
               {/* Price range */}
               {priceRange && (
                 <div className="im-admin-club-price-range">
-                  <span className="im-admin-club-price-label">Price Range:</span>
+                  <span className="im-admin-club-price-label">{t("clubs.priceRangeLabel")}</span>
                   <span className="im-admin-club-price-value">
                     {priceRange.min === priceRange.max
                       ? formatPrice(priceRange.min)
                       : `${formatPrice(priceRange.min)} - ${formatPrice(priceRange.max)}`}
                   </span>
-                  <span className="im-admin-club-price-label">per hour</span>
+                  <span className="im-admin-club-price-label">{t("clubs.perHour")}</span>
                 </div>
               )}
 
@@ -393,7 +393,7 @@ export default function AdminClubDetailPage({
                       <line x1="8" y1="2" x2="8" y2="18" />
                       <line x1="16" y1="6" x2="16" y2="22" />
                     </svg>
-                    Location
+                    {t("clubs.location")}
                   </h2>
                 </div>
                 <div className="im-admin-club-map-container">
@@ -486,8 +486,7 @@ export default function AdminClubDetailPage({
           {t("clubs.deleteConfirm", { name: club.name })}
         </p>
         <p className="mb-4 text-sm opacity-70">
-          This action cannot be undone and will also delete all associated courts, gallery
-          images, and business hours.
+          {t("clubs.deleteWarningDetails")}
         </p>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
