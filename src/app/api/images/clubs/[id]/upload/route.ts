@@ -65,9 +65,9 @@ export async function POST(
     }
 
     // Validate image type parameter
-    if (!imageType || !["logo", "heroImage"].includes(imageType)) {
+    if (!imageType || !["logo", "heroImage", "secondLogo"].includes(imageType)) {
       return NextResponse.json(
-        { error: "Invalid image type. Must be 'logo' or 'heroImage'" },
+        { error: "Invalid image type. Must be 'logo', 'heroImage', or 'secondLogo'" },
         { status: 400 }
       );
     }
@@ -101,12 +101,40 @@ export async function POST(
     const url = getUploadedImageUrl("clubs", clubId, filename);
 
     // Update club record with new image URL
-    await prisma.club.update({
-      where: { id: clubId },
-      data: {
-        [imageType]: url,
-      },
-    });
+    if (imageType === "secondLogo") {
+      // For secondLogo, update the metadata JSON field
+      const club = await prisma.club.findUnique({
+        where: { id: clubId },
+        select: { metadata: true },
+      });
+
+      let metadata: Record<string, unknown> = {};
+      if (club?.metadata) {
+        try {
+          metadata = JSON.parse(club.metadata);
+        } catch {
+          // Invalid JSON, start fresh
+          metadata = {};
+        }
+      }
+
+      metadata.secondLogo = url;
+
+      await prisma.club.update({
+        where: { id: clubId },
+        data: {
+          metadata: JSON.stringify(metadata),
+        },
+      });
+    } else {
+      // For logo and heroImage, update the direct columns
+      await prisma.club.update({
+        where: { id: clubId },
+        data: {
+          [imageType]: url,
+        },
+      });
+    }
 
     console.log(`[Club Upload] Database updated successfully for club ${clubId}, ${imageType}: ${url}`);
 
