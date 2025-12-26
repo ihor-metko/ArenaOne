@@ -48,7 +48,12 @@ interface StepperFormData {
   // Step 4: Courts
   courts: InlineCourt[];
   // Step 5: Gallery / Images
+  logoCount: 'one' | 'two';
   logo: UploadedFile | null;
+  logoTheme: 'light' | 'dark';
+  logoBackground: 'light' | 'dark';
+  secondLogo: UploadedFile | null;
+  secondLogoTheme: 'light' | 'dark';
   gallery: UploadedFile[];
 }
 
@@ -80,7 +85,12 @@ const initialFormData: StepperFormData = {
   website: "https://padelpulsearena.ua",
   businessHours: initialBusinessHours,
   courts: [],
+  logoCount: "one",
   logo: null,
+  logoTheme: "light",
+  logoBackground: "light",
+  secondLogo: null,
+  secondLogoTheme: "dark",
   gallery: [],
 };
 
@@ -527,7 +537,15 @@ export function ClubCreationStepper() {
               {t("gallery.description")}
             </p>
             <GalleryStep
-              data={{ logo: formData.logo, gallery: formData.gallery }}
+              data={{ 
+                logoCount: formData.logoCount,
+                logo: formData.logo,
+                logoTheme: formData.logoTheme,
+                logoBackground: formData.logoBackground,
+                secondLogo: formData.secondLogo,
+                secondLogoTheme: formData.secondLogoTheme,
+                gallery: formData.gallery 
+              }}
               onChange={handleGalleryChange}
               errors={fieldErrors}
               disabled={isSubmitting}
