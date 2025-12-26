@@ -104,8 +104,8 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
   }, [errors]);
 
   const handleUserSourceChange = useCallback((data: Partial<Pick<AdminCreationData, "userSource">>) => {
-    setFormData((prev) => ({ 
-      ...prev, 
+    setFormData((prev) => ({
+      ...prev,
       ...data,
       // Clear user-related fields when changing source
       userId: undefined,
@@ -259,7 +259,6 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
             setErrors({ general: data.error || "An owner already exists" });
           } else {
             setErrors({ general: data.error || "A conflict occurred" });
-          }
           }
         } else if (response.status === 403) {
           setErrors({ general: data.error || "You don't have permission to create this admin" });
