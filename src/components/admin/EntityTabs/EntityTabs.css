@@ -1,6 +1,6 @@
 /* Entity Tab Card */
 .im-entity-tab-card {
-  padding: 0;
+  padding: 0 !important;
 }
 
 /* Tab Header */
@@ -33,7 +33,7 @@
   padding: 1.5rem;
 }
 
-.im-entity-tab-content > * + * {
+.im-entity-tab-content>*+* {
   margin-top: 1.5rem;
 }
 
