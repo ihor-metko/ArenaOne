@@ -73,7 +73,7 @@
 /* Tab Panel */
 .im-tab-panel {
   padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
+  padding-bottom: 0;
 }
 
 /* Dark mode support */
@@ -95,4 +95,3 @@
     color: var(--primary-color, #3b82f6);
   }
 }
-
