@@ -155,12 +155,22 @@ export function EntityLogo({
     return null;
   }
 
+  // Build complete class list
+  // Strategy: Use either custom className OR base class, not both
+  // - Custom classes (e.g., rsp-club-logo-overlay) are self-sufficient with all needed styles
+  // - Base class (rsp-club-hero-logo) is used when no custom class provided (EntityBanner context)
+  // - Contrast classes are always added when needed, regardless of base/custom class
+  const logoClasses = [
+    className || 'rsp-club-hero-logo', // Custom class OR base logo styles
+    logoContrastClass,                  // Contrast enhancement if needed
+  ].filter(Boolean).join(' ');
+
   return (
     /* eslint-disable-next-line @next/next/no-img-element */
     <img
       src={logoFullUrl}
       alt={alt}
-      className={`${logoContrastClass} ${className}`.trim()}
+      className={logoClasses}
     />
   );
 }
