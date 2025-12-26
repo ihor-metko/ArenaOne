@@ -2236,7 +2236,8 @@
     "changeOwnerDescription": "Select a new primary owner for this organization. The current owner will become a regular organization admin.",
     "ownerProtectionTooltip": "Only root admin can modify the organization owner",
     "ownerMustBeExisting": "Owner must be selected from existing users. Create the user first if needed.",
-    "cannotCreateNewOwner": "Cannot create a new user as owner. Please create the user first, then assign as owner."
+    "cannotCreateNewOwner": "Cannot create a new user as owner. Please create the user first, then assign as owner.",
+    "ownerAlreadyExists": "This organization already has an owner. Only Organization Admins can be added."
   },
   "confirmation": {
     "title": "Confirm Action",

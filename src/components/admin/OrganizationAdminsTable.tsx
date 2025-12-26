@@ -73,6 +73,9 @@ export default function OrganizationAdminsTable({
     setTimeout(() => setToast(null), 5000);
   };
 
+  // Check if organization has an owner
+  const hasOwner = admins.some((a) => a.isPrimaryOwner);
+
   // Handle add admin
   const handleOpenAddModal = async () => {
     setAddMode("existing");
@@ -356,20 +359,25 @@ export default function OrganizationAdminsTable({
                   <span className="im-role-option-desc">{t("orgAdmins.organizationAdminDesc")}</span>
                 </div>
               </label>
-              <label className={`im-role-option ${selectedRole === "OWNER" ? "im-role-option--selected" : ""}`}>
-                <input
-                  type="radio"
-                  name="role"
-                  value="OWNER"
-                  checked={selectedRole === "OWNER"}
-                  onChange={(e) => setSelectedRole(e.target.value as AdminRole)}
-                />
-                <div className="im-role-option-content">
-                  <span className="im-role-option-title">{t("orgAdmins.owner")}</span>
-                  <span className="im-role-option-desc">{t("orgAdmins.ownerDesc")}</span>
-                </div>
-              </label>
+              {!hasOwner && (
+                <label className={`im-role-option ${selectedRole === "OWNER" ? "im-role-option--selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="OWNER"
+                    checked={selectedRole === "OWNER"}
+                    onChange={(e) => setSelectedRole(e.target.value as AdminRole)}
+                  />
+                  <div className="im-role-option-content">
+                    <span className="im-role-option-title">{t("orgAdmins.owner")}</span>
+                    <span className="im-role-option-desc">{t("orgAdmins.ownerDesc")}</span>
+                  </div>
+                </label>
+              )}
             </div>
+            {hasOwner && (
+              <p className="im-info-message">{t("orgAdmins.ownerAlreadyExists")}</p>
+            )}
           </div>
 
           {selectedRole === "OWNER" ? (
