@@ -11,9 +11,14 @@ jest.mock("@/lib/prisma", () => ({
     },
     membership: {
       findMany: jest.fn(),
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
       create: jest.fn(),
     },
     clubMembership: {
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
       create: jest.fn(),
     },
     organization: {
@@ -42,6 +47,7 @@ describe("Admin Create Admin API", () => {
 
   describe("POST /api/admin/admins/create", () => {
     const validOrgAdminData = {
+      userSource: "new",
       name: "John Doe",
       email: "john@example.com",
       phone: "+380501234567",
@@ -50,6 +56,7 @@ describe("Admin Create Admin API", () => {
     };
 
     const validClubAdminData = {
+      userSource: "new",
       name: "Jane Smith",
       email: "jane@example.com",
       phone: "+380507654321",
@@ -80,9 +87,7 @@ describe("Admin Create Admin API", () => {
 
       // Mock: no organization or club memberships
       (prisma.membership.findMany as jest.Mock).mockResolvedValue([]);
-      Object.assign(prisma.clubMembership, {
-        findMany: jest.fn().mockResolvedValue([])
-      });
+      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
 
       const request = new Request("http://localhost:3000/api/admin/admins/create", {
         method: "POST",
@@ -104,10 +109,16 @@ describe("Admin Create Admin API", () => {
 
       // Mock: user is a club admin
       (prisma.membership.findMany as jest.Mock).mockResolvedValue([]);
-      Object.assign(prisma.clubMembership, {
-        findMany: jest.fn().mockResolvedValue([
-          { clubId: "club-123", role: ClubMembershipRole.CLUB_ADMIN },
-        ])
+      
+      // Mock clubMembership.findMany to return different results based on the role filter
+      (prisma.clubMembership.findMany as jest.Mock).mockImplementation(({ where }) => {
+        if (where?.role === ClubMembershipRole.CLUB_OWNER) {
+          return Promise.resolve([]);
+        }
+        if (where?.role === ClubMembershipRole.CLUB_ADMIN) {
+          return Promise.resolve([{ clubId: "club-123", role: ClubMembershipRole.CLUB_ADMIN }]);
+        }
+        return Promise.resolve([]);
       });
 
       const request = new Request("http://localhost:3000/api/admin/admins/create", {
@@ -386,9 +397,7 @@ describe("Admin Create Admin API", () => {
       (prisma.membership.findMany as jest.Mock).mockResolvedValue([
         { organizationId: "org-123", role: MembershipRole.ORGANIZATION_ADMIN },
       ]);
-      Object.assign(prisma.clubMembership, {
-        findMany: jest.fn().mockResolvedValue([])
-      });
+      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
       
       (prisma.organization.findUnique as jest.Mock).mockResolvedValue({ id: "org-123", name: "Test Org" });
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
@@ -426,9 +435,7 @@ describe("Admin Create Admin API", () => {
       (prisma.membership.findMany as jest.Mock).mockResolvedValue([
         { organizationId: "org-456", role: MembershipRole.ORGANIZATION_ADMIN },
       ]);
-      Object.assign(prisma.clubMembership, {
-        findMany: jest.fn().mockResolvedValue([])
-      });
+      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
 
       const request = new Request("http://localhost:3000/api/admin/admins/create", {
         method: "POST",
@@ -452,9 +459,7 @@ describe("Admin Create Admin API", () => {
       (prisma.membership.findMany as jest.Mock).mockResolvedValue([
         { organizationId: "org-456", role: MembershipRole.ORGANIZATION_ADMIN },
       ]);
-      Object.assign(prisma.clubMembership, {
-        findMany: jest.fn().mockResolvedValue([])
-      });
+      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
       
       // Mock: club belongs to org-789 (different from user's org-456)
       (prisma.club.findUnique as jest.Mock).mockResolvedValue({
@@ -473,6 +478,268 @@ describe("Admin Create Admin API", () => {
 
       expect(response.status).toBe(403);
       expect(data.error).toContain("organization");
+    });
+
+    // New tests for owner roles
+    it("should create organization owner successfully as root admin", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "root-123", isRoot: true },
+      });
+
+      const orgOwnerData = {
+        userSource: "new",
+        name: "Org Owner",
+        email: "owner@example.com",
+        phone: "+380501111111",
+        role: "ORGANIZATION_OWNER",
+        organizationId: "org-123",
+      };
+
+      (prisma.organization.findUnique as jest.Mock).mockResolvedValue({ id: "org-123", name: "Test Org" });
+      (prisma.membership.findFirst as jest.Mock).mockResolvedValue(null); // No existing owner
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.user.create as jest.Mock).mockResolvedValue({
+        id: "new-owner-123",
+        email: "owner@example.com",
+        name: "Org Owner",
+      });
+      (prisma.membership.create as jest.Mock).mockResolvedValue({
+        id: "membership-owner-123",
+        userId: "new-owner-123",
+        organizationId: "org-123",
+        role: MembershipRole.ORGANIZATION_ADMIN,
+        isPrimaryOwner: true,
+      });
+
+      const request = new Request("http://localhost:3000/api/admin/admins/create", {
+        method: "POST",
+        body: JSON.stringify(orgOwnerData),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(data.userId).toBe("new-owner-123");
+      expect(data.role).toBe("ORGANIZATION_OWNER");
+      expect(prisma.membership.create).toHaveBeenCalledWith({
+        data: {
+          userId: "new-owner-123",
+          organizationId: "org-123",
+          role: MembershipRole.ORGANIZATION_ADMIN,
+          isPrimaryOwner: true,
+        },
+      });
+    });
+
+    it("should return 409 when organization already has an owner", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "root-123", isRoot: true },
+      });
+
+      const orgOwnerData = {
+        userSource: "new",
+        name: "Another Owner",
+        email: "owner2@example.com",
+        phone: "+380502222222",
+        role: "ORGANIZATION_OWNER",
+        organizationId: "org-123",
+      };
+
+      (prisma.organization.findUnique as jest.Mock).mockResolvedValue({ id: "org-123", name: "Test Org" });
+      (prisma.membership.findFirst as jest.Mock).mockResolvedValue({
+        id: "existing-owner",
+        userId: "existing-owner-id",
+        organizationId: "org-123",
+        isPrimaryOwner: true,
+      });
+
+      const request = new Request("http://localhost:3000/api/admin/admins/create", {
+        method: "POST",
+        body: JSON.stringify(orgOwnerData),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(409);
+      expect(data.error).toContain("already has an owner");
+      expect(data.field).toBe("owner");
+    });
+
+    it("should create club owner successfully as root admin", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "root-123", isRoot: true },
+      });
+
+      const clubOwnerData = {
+        userSource: "new",
+        name: "Club Owner",
+        email: "clubowner@example.com",
+        phone: "+380503333333",
+        role: "CLUB_OWNER",
+        clubId: "club-123",
+      };
+
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue({
+        id: "club-123",
+        name: "Test Club",
+        organizationId: "org-123",
+      });
+      (prisma.clubMembership.findFirst as jest.Mock).mockResolvedValue(null); // No existing owner
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.user.create as jest.Mock).mockResolvedValue({
+        id: "new-club-owner-123",
+        email: "clubowner@example.com",
+        name: "Club Owner",
+      });
+      (prisma.clubMembership.create as jest.Mock).mockResolvedValue({
+        id: "club-membership-owner-123",
+        userId: "new-club-owner-123",
+        clubId: "club-123",
+        role: ClubMembershipRole.CLUB_OWNER,
+      });
+
+      const request = new Request("http://localhost:3000/api/admin/admins/create", {
+        method: "POST",
+        body: JSON.stringify(clubOwnerData),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(data.userId).toBe("new-club-owner-123");
+      expect(data.role).toBe("CLUB_OWNER");
+      expect(prisma.clubMembership.create).toHaveBeenCalledWith({
+        data: {
+          userId: "new-club-owner-123",
+          clubId: "club-123",
+          role: ClubMembershipRole.CLUB_OWNER,
+        },
+      });
+    });
+
+    it("should return 409 when club already has an owner", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "root-123", isRoot: true },
+      });
+
+      const clubOwnerData = {
+        userSource: "new",
+        name: "Another Club Owner",
+        email: "clubowner2@example.com",
+        phone: "+380504444444",
+        role: "CLUB_OWNER",
+        clubId: "club-123",
+      };
+
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue({
+        id: "club-123",
+        name: "Test Club",
+        organizationId: "org-123",
+      });
+      (prisma.clubMembership.findFirst as jest.Mock).mockResolvedValue({
+        id: "existing-club-owner",
+        userId: "existing-club-owner-id",
+        clubId: "club-123",
+        role: ClubMembershipRole.CLUB_OWNER,
+      });
+
+      const request = new Request("http://localhost:3000/api/admin/admins/create", {
+        method: "POST",
+        body: JSON.stringify(clubOwnerData),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(409);
+      expect(data.error).toContain("already has an owner");
+      expect(data.field).toBe("owner");
+    });
+
+    it("should assign role to existing user successfully", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "root-123", isRoot: true },
+      });
+
+      const existingUserData = {
+        userSource: "existing",
+        userId: "existing-user-123",
+        role: "ORGANIZATION_ADMIN",
+        organizationId: "org-123",
+      };
+
+      (prisma.organization.findUnique as jest.Mock).mockResolvedValue({ id: "org-123", name: "Test Org" });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: "existing-user-123",
+        email: "existing@example.com",
+        name: "Existing User",
+      });
+      (prisma.membership.findUnique as jest.Mock).mockResolvedValue(null); // No existing membership
+      (prisma.membership.create as jest.Mock).mockResolvedValue({
+        id: "membership-456",
+        userId: "existing-user-123",
+        organizationId: "org-123",
+        role: MembershipRole.ORGANIZATION_ADMIN,
+      });
+
+      const request = new Request("http://localhost:3000/api/admin/admins/create", {
+        method: "POST",
+        body: JSON.stringify(existingUserData),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(data.userId).toBe("existing-user-123");
+      expect(data.email).toBe("existing@example.com");
+      expect(data.message).toContain("Role assigned successfully");
+    });
+
+    it("should return 409 when existing user already has role in organization", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "root-123", isRoot: true },
+      });
+
+      const existingUserData = {
+        userSource: "existing",
+        userId: "existing-user-123",
+        role: "ORGANIZATION_ADMIN",
+        organizationId: "org-123",
+      };
+
+      (prisma.organization.findUnique as jest.Mock).mockResolvedValue({ id: "org-123", name: "Test Org" });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: "existing-user-123",
+        email: "existing@example.com",
+        name: "Existing User",
+      });
+      (prisma.membership.findUnique as jest.Mock).mockResolvedValue({
+        id: "existing-membership",
+        userId: "existing-user-123",
+        organizationId: "org-123",
+        role: MembershipRole.ORGANIZATION_ADMIN,
+      });
+
+      const request = new Request("http://localhost:3000/api/admin/admins/create", {
+        method: "POST",
+        body: JSON.stringify(existingUserData),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(409);
+      expect(data.error).toContain("already has a role");
     });
   });
 });
