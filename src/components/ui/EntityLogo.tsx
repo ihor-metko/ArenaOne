@@ -156,8 +156,10 @@ export function EntityLogo({
   }
 
   // Build complete class list
-  // If custom className is provided (e.g., for card overlays), use it instead of base class
-  // Otherwise, use the base rsp-club-hero-logo class for EntityBanner context
+  // Strategy: Use either custom className OR base class, not both
+  // - Custom classes (e.g., rsp-club-logo-overlay) are self-sufficient with all needed styles
+  // - Base class (rsp-club-hero-logo) is used when no custom class provided (EntityBanner context)
+  // - Contrast classes are always added when needed, regardless of base/custom class
   const logoClasses = [
     className || 'rsp-club-hero-logo', // Custom class OR base logo styles
     logoContrastClass,                  // Contrast enhancement if needed
