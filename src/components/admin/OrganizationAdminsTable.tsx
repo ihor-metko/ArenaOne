@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Button, Modal, Input, Badge, Tooltip } from "@/components/ui";
+import { Button, Modal, Badge, Tooltip } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
-import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { UserProfileModal } from "./UserProfileModal";
-import type { AdminRole } from "@/types/adminWizard";
+import { CreateAdminModal } from "./admin-wizard";
+import type { CreateAdminWizardConfig } from "@/types/adminWizard";
 import "./OrganizationAdminsTable.css";
 
 interface OrgAdmin {
@@ -35,23 +35,10 @@ export default function OrganizationAdminsTable({
   const t = useTranslations();
   const user = useUserStore((state) => state.user);
   const isRoot = user?.isRoot ?? false;
-  const addAdmin = useOrganizationStore((state) => state.addAdmin);
   const removeAdmin = useOrganizationStore((state) => state.removeAdmin);
-  const changeOwner = useOrganizationStore((state) => state.changeOwner);
 
-  // Add admin modal state
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [addMode, setAddMode] = useState<"existing" | "new">("existing");
-  const simpleUsers = useAdminUsersStore((state) => state.simpleUsers);
-  const fetchSimpleUsers = useAdminUsersStore((state) => state.fetchSimpleUsers);
-  const [userSearch, setUserSearch] = useState("");
-  const [selectedUserId, setSelectedUserId] = useState("");
-  const [selectedRole, setSelectedRole] = useState<AdminRole>("ORGANIZATION_ADMIN");
-  const [newAdminName, setNewAdminName] = useState("");
-  const [newAdminEmail, setNewAdminEmail] = useState("");
-  const [newAdminPassword, setNewAdminPassword] = useState("");
-  const [addError, setAddError] = useState("");
-  const [adding, setAdding] = useState(false);
+  // Create Admin modal state
+  const [isCreateAdminModalOpen, setIsCreateAdminModalOpen] = useState(false);
 
   // Remove admin modal state
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
@@ -73,65 +60,26 @@ export default function OrganizationAdminsTable({
     setTimeout(() => setToast(null), 5000);
   };
 
-  // Handle add admin
-  const handleOpenAddModal = async () => {
-    setAddMode("existing");
-    setUserSearch("");
-    setSelectedUserId("");
-    setSelectedRole("ORGANIZATION_ADMIN");
-    setNewAdminName("");
-    setNewAdminEmail("");
-    setNewAdminPassword("");
-    setAddError("");
-    setIsAddModalOpen(true);
-    await fetchSimpleUsers();
+  // Get wizard configuration for organization context
+  const getWizardConfig = useCallback((): CreateAdminWizardConfig => {
+    return {
+      context: "organization",
+      defaultOrgId: orgId,
+      allowedRoles: ["ORGANIZATION_ADMIN"],
+      onSuccess: () => {
+        // Refresh the admins list after successful creation
+        onRefresh();
+      },
+    };
+  }, [orgId, onRefresh]);
+
+  // Handle create admin modal
+  const handleOpenCreateAdminModal = () => {
+    setIsCreateAdminModalOpen(true);
   };
 
-  const handleAddAdmin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAddError("");
-    setAdding(true);
-
-    try {
-      // If role is OWNER, use the changeOwner API directly
-      if (selectedRole === "OWNER") {
-        await changeOwner({
-          organizationId: orgId,
-          userId: selectedUserId,
-        });
-        
-        showToast(t("orgAdmins.ownerChanged"), "success");
-        setIsAddModalOpen(false);
-        onRefresh();
-        setAdding(false);
-        return;
-      }
-
-      const payload =
-        addMode === "new"
-          ? {
-              organizationId: orgId,
-              createNew: true,
-              name: newAdminName,
-              email: newAdminEmail,
-              password: newAdminPassword,
-            }
-          : {
-              organizationId: orgId,
-              createNew: false,
-              userId: selectedUserId,
-            };
-
-      await addAdmin(payload);
-
-      showToast(t("orgAdmins.personAdded"), "success");
-      setIsAddModalOpen(false);
-      onRefresh();
-    } catch (err) {
-      setAddError(err instanceof Error ? err.message : "Failed to assign admin");
-    } finally {
-      setAdding(false);
-    }
+  const handleCloseCreateAdminModal = () => {
+    setIsCreateAdminModalOpen(false);
   };
 
   // Handle remove admin
@@ -164,21 +112,7 @@ export default function OrganizationAdminsTable({
     }
   };
 
-  // Debounced user search
-  const handleUserSearchChange = (value: string) => {
-    setUserSearch(value);
-  };
-
-  // Debounce user search
-  useEffect(() => {
-    if (!isAddModalOpen || addMode !== "existing") return;
-
-    const timer = setTimeout(() => {
-      fetchSimpleUsers(userSearch);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [userSearch, isAddModalOpen, addMode, fetchSimpleUsers]);
+  // Debounced user search - REMOVED (no longer needed)
 
   // Root Admin or Organization Owner (isPrimaryOwner) can manage org admins
   const primaryOwner = admins.find((a) => a.isPrimaryOwner);
@@ -245,7 +179,7 @@ export default function OrganizationAdminsTable({
         <h3 className="im-section-title">{t("orgAdmins.people")}</h3>
         <div className="im-section-actions">
           {canManageAdmins && (
-            <Button size="small" onClick={handleOpenAddModal}>
+            <Button size="small" onClick={handleOpenCreateAdminModal}>
               {t("orgAdmins.addPerson")}
             </Button>
           )}
@@ -326,206 +260,12 @@ export default function OrganizationAdminsTable({
         </div>
       )}
 
-      {/* Add Admin Modal */}
-      <Modal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        title={t("orgAdmins.addPerson")}
-      >
-        <form onSubmit={handleAddAdmin} className="space-y-4">
-          {addError && (
-            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm">
-              {addError}
-            </div>
-          )}
-
-          {/* Role Selection */}
-          <div className="im-role-selection">
-            <label className="im-label">{t("orgAdmins.selectRole")}</label>
-            <div className="im-role-options">
-              <label className={`im-role-option ${selectedRole === "ORGANIZATION_ADMIN" ? "im-role-option--selected" : ""}`}>
-                <input
-                  type="radio"
-                  name="role"
-                  value="ORGANIZATION_ADMIN"
-                  checked={selectedRole === "ORGANIZATION_ADMIN"}
-                  onChange={(e) => setSelectedRole(e.target.value as AdminRole)}
-                />
-                <div className="im-role-option-content">
-                  <span className="im-role-option-title">{t("orgAdmins.organizationAdmin")}</span>
-                  <span className="im-role-option-desc">{t("orgAdmins.organizationAdminDesc")}</span>
-                </div>
-              </label>
-              <label className={`im-role-option ${selectedRole === "OWNER" ? "im-role-option--selected" : ""}`}>
-                <input
-                  type="radio"
-                  name="role"
-                  value="OWNER"
-                  checked={selectedRole === "OWNER"}
-                  onChange={(e) => setSelectedRole(e.target.value as AdminRole)}
-                />
-                <div className="im-role-option-content">
-                  <span className="im-role-option-title">{t("orgAdmins.owner")}</span>
-                  <span className="im-role-option-desc">{t("orgAdmins.ownerDesc")}</span>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          {selectedRole === "OWNER" ? (
-            <>
-              {/* For Owner role, only allow selecting existing users */}
-              <p className="im-info-message">{t("orgAdmins.ownerMustBeExisting")}</p>
-              <Input
-                label={t("orgAdmins.searchUsers")}
-                value={userSearch}
-                onChange={(e) => handleUserSearchChange(e.target.value)}
-                placeholder={t("orgAdmins.searchUsersPlaceholder")}
-              />
-              <div className="im-user-list">
-                {simpleUsers.length === 0 ? (
-                  <p className="im-user-list-empty">{t("orgAdmins.noUsersFound")}</p>
-                ) : (
-                  simpleUsers.map((u) => (
-                    <label
-                      key={u.id}
-                      className={`im-user-option ${
-                        selectedUserId === u.id ? "im-user-option--selected" : ""
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="userId"
-                        value={u.id}
-                        checked={selectedUserId === u.id}
-                        onChange={(e) => setSelectedUserId(e.target.value)}
-                      />
-                      <span className="im-user-info">
-                        <span className="im-user-name">{u.name || u.email}</span>
-                        <span className="im-user-email">{u.email}</span>
-                      </span>
-                    </label>
-                  ))
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="im-assign-mode-tabs">
-                <button
-                  type="button"
-                  className={`im-assign-mode-tab ${
-                    addMode === "existing" ? "im-assign-mode-tab--active" : ""
-                  }`}
-                  onClick={() => setAddMode("existing")}
-                >
-                  {t("orgAdmins.existingUser")}
-                </button>
-                <button
-                  type="button"
-                  className={`im-assign-mode-tab ${
-                    addMode === "new" ? "im-assign-mode-tab--active" : ""
-                  }`}
-                  onClick={() => setAddMode("new")}
-                >
-                  {t("orgAdmins.newUser")}
-                </button>
-              </div>
-
-              {addMode === "existing" ? (
-                <>
-                  <Input
-                    label={t("orgAdmins.searchUsers")}
-                    value={userSearch}
-                    onChange={(e) => handleUserSearchChange(e.target.value)}
-                    placeholder={t("orgAdmins.searchUsersPlaceholder")}
-                  />
-                  <div className="im-user-list">
-                    {simpleUsers.length === 0 ? (
-                      <p className="im-user-list-empty">{t("orgAdmins.noUsersFound")}</p>
-                    ) : (
-                      simpleUsers.map((u) => (
-                        <label
-                          key={u.id}
-                          className={`im-user-option ${
-                            selectedUserId === u.id ? "im-user-option--selected" : ""
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="userId"
-                            value={u.id}
-                            checked={selectedUserId === u.id}
-                            onChange={(e) => setSelectedUserId(e.target.value)}
-                          />
-                          <span className="im-user-info">
-                            <span className="im-user-name">{u.name || u.email}</span>
-                            <span className="im-user-email">{u.email}</span>
-                          </span>
-                        </label>
-                      ))
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <Input
-                    label={t("common.name")}
-                    value={newAdminName}
-                    onChange={(e) => setNewAdminName(e.target.value)}
-                    required
-                  />
-                  <Input
-                    label={t("common.email")}
-                    type="email"
-                    value={newAdminEmail}
-                    onChange={(e) => setNewAdminEmail(e.target.value)}
-                    required
-                  />
-                  <Input
-                    label={t("common.password")}
-                    type="password"
-                    value={newAdminPassword}
-                    onChange={(e) => setNewAdminPassword(e.target.value)}
-                    required
-                  />
-                </>
-              )}
-            </>
-          )}
-
-          <div className="flex justify-end gap-2 mt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsAddModalOpen(false)}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={(() => {
-                if (adding) return true;
-                
-                // For Owner role, must select existing user
-                if (selectedRole === "OWNER") {
-                  return !selectedUserId;
-                }
-                
-                // For Organization Admin
-                if (addMode === "existing") {
-                  return !selectedUserId;
-                }
-                
-                // For new user creation
-                return !newAdminName || !newAdminEmail || !newAdminPassword;
-              })()}
-            >
-              {adding ? t("common.processing") : (selectedRole === "OWNER" ? t("orgAdmins.assignOwner") : t("orgAdmins.addPerson"))}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      {/* Create Admin Modal */}
+      <CreateAdminModal
+        isOpen={isCreateAdminModalOpen}
+        onClose={handleCloseCreateAdminModal}
+        config={getWizardConfig()}
+      />
 
       {/* Remove Admin Modal */}
       <Modal
