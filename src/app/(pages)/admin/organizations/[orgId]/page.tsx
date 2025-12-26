@@ -13,6 +13,7 @@ import type { AdminBookingResponse } from "@/app/api/admin/bookings/route";
 
 import "./page.css";
 import "@/components/ClubDetailPage.css";
+import "@/components/EntityPageLayout.css";
 
 // Basic interfaces for this component
 // Note: Defined locally to avoid coupling with full User model from Prisma
@@ -252,7 +253,7 @@ export default function OrganizationDetailPage() {
         />
       )}
 
-      <div className="rsp-club-content">
+      <div className="entity-page-content">
         {/* Toast */}
         {toast && (
           <div className={`im-toast im-toast--${toast.type}`}>{toast.message}</div>
