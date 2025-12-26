@@ -6,7 +6,7 @@
 /* Tab Header */
 .im-entity-tab-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding: 1.5rem;
@@ -30,11 +30,10 @@
 
 /* Tab Content */
 .im-entity-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   padding: 1.5rem;
-}
-
-.im-entity-tab-content>*+* {
-  margin-top: 1.5rem;
 }
 
 /* Tab Fields */

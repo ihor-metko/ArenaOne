@@ -133,69 +133,63 @@ export function AddressTab({ initialData, onSave, disabled = false, translationN
       )}
 
       <div className="im-entity-tab-content">
-        <div className="im-entity-tab-row">
-          <div className="im-entity-tab-field">
-            <Input
-              label={t("address.street")}
-              name="street"
-              value={formData.street}
-              onChange={handleChange}
-              placeholder={t("address.streetPlaceholder")}
-              disabled={isSaving || disabled}
-              required
-            />
-            {fieldErrors.street && (
-              <span className="im-field-error">{fieldErrors.street}</span>
-            )}
-          </div>
+        <div className="im-entity-tab-field">
+          <Input
+            label={t("address.street")}
+            name="street"
+            value={formData.street}
+            onChange={handleChange}
+            placeholder={t("address.streetPlaceholder")}
+            disabled={isSaving || disabled}
+            required
+          />
+          {fieldErrors.street && (
+            <span className="im-field-error">{fieldErrors.street}</span>
+          )}
         </div>
 
-        <div className="im-entity-tab-row">
-          <div className="im-entity-tab-field im-entity-tab-field--half">
-            <Input
-              label={t("address.city")}
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              placeholder={t("address.cityPlaceholder")}
-              disabled={isSaving || disabled}
-              required
-            />
-            {fieldErrors.city && (
-              <span className="im-field-error">{fieldErrors.city}</span>
-            )}
-          </div>
-
-          <div className="im-entity-tab-field im-entity-tab-field--half">
-            <Input
-              label={t("address.postalCode")}
-              name="postalCode"
-              value={formData.postalCode}
-              onChange={handleChange}
-              placeholder={t("address.postalCodePlaceholder")}
-              disabled={isSaving || disabled}
-            />
-            {fieldErrors.postalCode && (
-              <span className="im-field-error">{fieldErrors.postalCode}</span>
-            )}
-          </div>
+        <div className="im-entity-tab-field im-entity-tab-field--half">
+          <Input
+            label={t("address.city")}
+            name="city"
+            value={formData.city}
+            onChange={handleChange}
+            placeholder={t("address.cityPlaceholder")}
+            disabled={isSaving || disabled}
+            required
+          />
+          {fieldErrors.city && (
+            <span className="im-field-error">{fieldErrors.city}</span>
+          )}
         </div>
 
-        <div className="im-entity-tab-row">
-          <div className="im-entity-tab-field">
-            <Input
-              label={t("address.country")}
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-              placeholder={t("address.countryPlaceholder")}
-              disabled={isSaving || disabled}
-              required
-            />
-            {fieldErrors.country && (
-              <span className="im-field-error">{fieldErrors.country}</span>
-            )}
-          </div>
+        <div className="im-entity-tab-field im-entity-tab-field--half">
+          <Input
+            label={t("address.postalCode")}
+            name="postalCode"
+            value={formData.postalCode}
+            onChange={handleChange}
+            placeholder={t("address.postalCodePlaceholder")}
+            disabled={isSaving || disabled}
+          />
+          {fieldErrors.postalCode && (
+            <span className="im-field-error">{fieldErrors.postalCode}</span>
+          )}
+        </div>
+
+        <div className="im-entity-tab-field">
+          <Input
+            label={t("address.country")}
+            name="country"
+            value={formData.country}
+            onChange={handleChange}
+            placeholder={t("address.countryPlaceholder")}
+            disabled={isSaving || disabled}
+            required
+          />
+          {fieldErrors.country && (
+            <span className="im-field-error">{fieldErrors.country}</span>
+          )}
         </div>
 
         <div className="im-entity-tab-row">

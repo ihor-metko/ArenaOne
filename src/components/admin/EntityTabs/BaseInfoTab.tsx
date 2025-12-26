@@ -6,7 +6,6 @@ import { Input, Textarea, Card, Button } from "@/components/ui";
 
 export interface BaseInfoData {
   name: string;
-  slug: string;
   description: string | null;
 }
 
@@ -59,7 +58,6 @@ export function BaseInfoTab({ initialData, onSave, disabled = false, translation
     try {
       await onSave({
         name: formData.name.trim(),
-        slug: formData.slug.trim(),
         description: formData.description?.trim() || null,
       });
       setHasChanges(false);
@@ -106,23 +104,6 @@ export function BaseInfoTab({ initialData, onSave, disabled = false, translation
           />
           {fieldErrors.name && (
             <span className="im-field-error">{fieldErrors.name}</span>
-          )}
-        </div>
-
-        <div className="im-entity-tab-field">
-          <Input
-            label={t("baseInfo.slug")}
-            name="slug"
-            value={formData.slug}
-            onChange={handleChange}
-            placeholder={t("baseInfo.slugPlaceholder")}
-            disabled={isSaving || disabled}
-          />
-          <span className="im-field-hint">
-            {t("baseInfo.slugHint")}
-          </span>
-          {fieldErrors.slug && (
-            <span className="im-field-error">{fieldErrors.slug}</span>
           )}
         </div>
 
