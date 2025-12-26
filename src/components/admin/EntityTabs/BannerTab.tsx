@@ -84,18 +84,6 @@ export function BannerTab({ initialData, onSave, disabled = false, translationNa
       )}
 
       <div className="im-entity-tab-content">
-        <div className="im-entity-tab-field">
-          <UploadField
-            label={t("banner.heroImage")}
-            value={formData.heroImage}
-            onChange={handleChange}
-            aspectRatio="wide"
-            helperText={t("banner.heroImageHelperText")}
-            disabled={isSaving || disabled}
-            allowSVG={false}
-          />
-        </div>
-
         {formData.heroImage && (
           <div className="im-entity-tab-field">
             <RadioGroup
@@ -124,6 +112,18 @@ export function BannerTab({ initialData, onSave, disabled = false, translationNa
             />
           </div>
         )}
+
+        <div className="im-entity-tab-field">
+          <UploadField
+            label={t("banner.heroImage")}
+            value={formData.heroImage}
+            onChange={handleChange}
+            aspectRatio="wide"
+            helperText={t("banner.heroImageHelperText")}
+            disabled={isSaving || disabled}
+            allowSVG={false}
+          />
+        </div>
       </div>
     </Card>
   );
