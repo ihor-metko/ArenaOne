@@ -2380,5 +2380,143 @@
     "unpublishOrgDescription": "Hide this organization from public view. Players will not be able to access clubs under this organization. This action is reversible.",
     "publishOrgConfirm": "Are you sure you want to publish \"{name}\"? It will become visible to all players.",
     "unpublishOrgConfirm": "Are you sure you want to unpublish \"{name}\"? It will be hidden from public view."
+  },
+  "createAdminWizard": {
+    "title": "Create Administrator",
+    "steps": {
+      "contextRole": "Context & Role",
+      "userSource": "User Source",
+      "userDetails": "User Details",
+      "review": "Review",
+      "confirm": "Confirm"
+    },
+    "progress": "Step {current} of {total}",
+    "navigation": {
+      "cancel": "Cancel",
+      "back": "Back",
+      "next": "Next",
+      "close": "Close",
+      "assignRole": "Assign Role",
+      "createAdmin": "Create Admin",
+      "processing": "Processing..."
+    },
+    "contextStep": {
+      "title": "Context & Role Selection",
+      "description": "Choose the organization, club (if applicable), and role for the admin.",
+      "organization": "Organization *",
+      "organizationPlaceholder": "Select an organization",
+      "organizationHint": "Organization is pre-selected based on your access level",
+      "role": "Admin Role *",
+      "rolePlaceholder": "Select a role",
+      "club": "Club *",
+      "clubPlaceholder": "Select a club",
+      "clubHint": "Please select an organization first",
+      "clubPreselectedHint": "Club is pre-selected based on your access level",
+      "roles": {
+        "organizationOwner": "Organization Owner",
+        "organizationAdmin": "Organization Admin",
+        "clubOwner": "Club Owner",
+        "clubAdmin": "Club Admin"
+      }
+    },
+    "userSourceStep": {
+      "title": "User Source Selection",
+      "description": "Choose whether to assign a role to an existing user or create a new user.",
+      "label": "How would you like to add the user? *",
+      "existing": {
+        "title": "Existing User",
+        "description": "Assign a role to a user who already exists in the system"
+      },
+      "new": {
+        "title": "New User",
+        "description": "Create a new user and send them an invitation email"
+      }
+    },
+    "userDataStep": {
+      "title": "User Details",
+      "descriptionExisting": "Search for and select an existing user.",
+      "descriptionNew": "Enter the new user's information.",
+      "newUserHint": "Enter the new user's information. They will receive an invitation email to set up their account.",
+      "fullName": "Full Name *",
+      "fullNamePlaceholder": "Enter user's full name",
+      "email": "Email Address *",
+      "emailPlaceholder": "user@example.com",
+      "emailHint": "An invitation will be sent to this email address",
+      "phone": "Phone Number *",
+      "phonePlaceholder": "+380501234567",
+      "phoneHint": "Include country code (e.g., +380 for Ukraine)"
+    },
+    "existingUserSearchStep": {
+      "searchLabel": "Search for User by Email *",
+      "searchPlaceholder": "Enter user email address",
+      "searchButton": "Search",
+      "searching": "Searching...",
+      "searchResults": "Search Results",
+      "select": "Select",
+      "selectedUser": "Selected User",
+      "name": "Name:",
+      "email": "Email:",
+      "changeUser": "Change User",
+      "noName": "No name",
+      "errors": {
+        "enterEmail": "Please enter an email address to search",
+        "invalidEmail": "Please enter a valid email address",
+        "searchFailed": "Failed to search for user",
+        "noResults": "No users found with that email address",
+        "searchError": "An error occurred while searching"
+      }
+    },
+    "reviewStep": {
+      "title": "Review & Confirm",
+      "description": "Please review the information before proceeding.",
+      "adminContext": "Admin Context",
+      "organization": "Organization:",
+      "club": "Club:",
+      "role": "Role:",
+      "notSelected": "Not selected",
+      "userInformation": "User Information",
+      "userSource": "User Source:",
+      "fullName": "Full Name:",
+      "email": "Email:",
+      "phone": "Phone:",
+      "na": "N/A",
+      "existingUser": "Existing User",
+      "newUser": "New User",
+      "actionLabel": "Action:",
+      "actionExisting": "The selected user will be assigned the role.",
+      "actionNew": "A new user will be created and an invitation email will be sent."
+    },
+    "confirmStep": {
+      "success": "Success!",
+      "error": "Error"
+    },
+    "messages": {
+      "successExisting": "Role assigned successfully!",
+      "successNew": "Admin created successfully! An invitation email will be sent.",
+      "operationSuccess": "Operation completed successfully!"
+    },
+    "errors": {
+      "organizationRequired": "Organization is required",
+      "roleRequired": "Role is required",
+      "clubRequired": "Club is required for Club roles",
+      "userSourceRequired": "Please select how to add the user",
+      "userRequired": "Please select an existing user",
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email format",
+      "phoneRequired": "Phone is required",
+      "phoneInvalid": "Invalid phone format",
+      "allFieldsRequired": "Please complete all required fields",
+      "emailInUse": "Email is already in use",
+      "phoneInUse": "Phone is already in use",
+      "ownerExists": "An owner already exists",
+      "conflictOccurred": "A conflict occurred",
+      "permissionDenied": "You don't have permission to create this admin",
+      "createFailed": "Failed to create admin"
+    },
+    "modal": {
+      "titleClub": "Create Club Admin",
+      "titleDefault": "Create Admin"
+    }
   }
 }

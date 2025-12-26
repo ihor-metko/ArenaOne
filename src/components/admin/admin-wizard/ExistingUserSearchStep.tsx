@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Input, Button } from "@/components/ui";
 import type { ExistingUserData, AdminWizardErrors } from "@/types/adminWizard";
 
@@ -23,6 +24,7 @@ export function ExistingUserSearchStep({
   errors,
   disabled,
 }: ExistingUserSearchStepProps) {
+  const t = useTranslations("createAdminWizard.existingUserSearchStep");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -30,14 +32,14 @@ export function ExistingUserSearchStep({
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) {
-      setSearchError("Please enter an email address to search");
+      setSearchError(t("errors.enterEmail"));
       return;
     }
 
     // Basic email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(searchQuery)) {
-      setSearchError("Please enter a valid email address");
+      setSearchError(t("errors.invalidEmail"));
       return;
     }
 
@@ -50,21 +52,21 @@ export function ExistingUserSearchStep({
       const result = await response.json();
 
       if (!response.ok) {
-        setSearchError(result.error || "Failed to search for user");
+        setSearchError(result.error || t("errors.searchFailed"));
         return;
       }
 
       if (result.users && result.users.length > 0) {
         setSearchResults(result.users);
       } else {
-        setSearchError("No users found with that email address");
+        setSearchError(t("errors.noResults"));
       }
     } catch (error) {
-      setSearchError("An error occurred while searching");
+      setSearchError(t("errors.searchError"));
     } finally {
       setIsSearching(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, t]);
 
   const handleSelectUser = (user: SearchResult) => {
     onChange({
@@ -88,7 +90,7 @@ export function ExistingUserSearchStep({
         <>
           <div className="im-form-field">
             <label htmlFor="userSearch" className="im-field-label">
-              Search for User by Email *
+              {t("searchLabel")}
             </label>
             <div className="im-search-field">
               <Input
@@ -96,7 +98,7 @@ export function ExistingUserSearchStep({
                 type="email"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Enter user email address"
+                placeholder={t("searchPlaceholder")}
                 disabled={disabled || isSearching}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -110,7 +112,7 @@ export function ExistingUserSearchStep({
                 onClick={handleSearch}
                 disabled={disabled || isSearching || !searchQuery.trim()}
               >
-                {isSearching ? "Searching..." : "Search"}
+                {isSearching ? t("searching") : t("searchButton")}
               </Button>
             </div>
             {searchError && (
@@ -127,12 +129,12 @@ export function ExistingUserSearchStep({
 
           {searchResults.length > 0 && (
             <div className="im-search-results">
-              <h4 className="im-search-results-title">Search Results</h4>
+              <h4 className="im-search-results-title">{t("searchResults")}</h4>
               <div className="im-search-results-list">
                 {searchResults.map((user) => (
                   <div key={user.id} className="im-search-result-item">
                     <div className="im-search-result-info">
-                      <div className="im-search-result-name">{user.name || "No name"}</div>
+                      <div className="im-search-result-name">{user.name || t("noName")}</div>
                       <div className="im-search-result-email">{user.email}</div>
                     </div>
                     <Button
@@ -141,7 +143,7 @@ export function ExistingUserSearchStep({
                       onClick={() => handleSelectUser(user)}
                       disabled={disabled}
                     >
-                      Select
+                      {t("select")}
                     </Button>
                   </div>
                 ))}
@@ -151,14 +153,14 @@ export function ExistingUserSearchStep({
         </>
       ) : (
         <div className="im-selected-user">
-          <h4 className="im-selected-user-title">Selected User</h4>
+          <h4 className="im-selected-user-title">{t("selectedUser")}</h4>
           <div className="im-selected-user-info">
             <div className="im-review-item">
-              <dt className="im-review-label">Name:</dt>
-              <dd className="im-review-value">{data.name || "No name"}</dd>
+              <dt className="im-review-label">{t("name")}</dt>
+              <dd className="im-review-value">{data.name || t("noName")}</dd>
             </div>
             <div className="im-review-item">
-              <dt className="im-review-label">Email:</dt>
+              <dt className="im-review-label">{t("email")}</dt>
               <dd className="im-review-value">{data.email}</dd>
             </div>
           </div>
@@ -168,7 +170,7 @@ export function ExistingUserSearchStep({
             onClick={handleClearSelection}
             disabled={disabled}
           >
-            Change User
+            {t("changeUser")}
           </Button>
         </div>
       )}
