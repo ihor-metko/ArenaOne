@@ -34,6 +34,13 @@ export function ExistingUserSearchStep({
       return;
     }
 
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(searchQuery)) {
+      setSearchError("Please enter a valid email address");
+      return;
+    }
+
     setIsSearching(true);
     setSearchError(null);
     setSearchResults([]);

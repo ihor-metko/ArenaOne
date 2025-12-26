@@ -283,12 +283,10 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
       setCurrentStep(5);
       showToast("success", "Operation completed successfully!");
 
-      // Call success callback after a short delay
-      setTimeout(() => {
-        if (config.onSuccess) {
-          config.onSuccess(data.userId);
-        }
-      }, 2000);
+      // Call success callback immediately
+      if (config.onSuccess) {
+        config.onSuccess(data.userId);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create admin";
       setErrors({ general: message });

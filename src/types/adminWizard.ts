@@ -4,6 +4,12 @@
 
 /**
  * Admin roles that can be assigned through the wizard
+ * 
+ * Note: These are UX-layer roles that map to database roles as follows:
+ * - ORGANIZATION_OWNER → MembershipRole.ORGANIZATION_ADMIN with isPrimaryOwner: true
+ * - ORGANIZATION_ADMIN → MembershipRole.ORGANIZATION_ADMIN with isPrimaryOwner: false
+ * - CLUB_OWNER → ClubMembershipRole.CLUB_OWNER
+ * - CLUB_ADMIN → ClubMembershipRole.CLUB_ADMIN
  */
 export type AdminRole = "ORGANIZATION_OWNER" | "ORGANIZATION_ADMIN" | "CLUB_OWNER" | "CLUB_ADMIN";
 

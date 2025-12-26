@@ -294,6 +294,8 @@ export async function POST(request: Request) {
     }
 
     // Create membership based on role
+    // Note: ORGANIZATION_OWNER is mapped to ORGANIZATION_ADMIN with isPrimaryOwner: true
+    // This is because the database uses a flag to distinguish ownership rather than a separate role
     if (role === "ORGANIZATION_OWNER") {
       await prisma.membership.create({
         data: {
