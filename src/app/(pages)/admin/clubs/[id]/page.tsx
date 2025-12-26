@@ -3,14 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, Card, Modal, IMLink, Breadcrumbs, ImageCarousel, EntityBanner, DangerZone } from "@/components/ui";
+import { Button, Card, Modal, IMLink, ImageCarousel, EntityBanner, DangerZone } from "@/components/ui";
 import type { DangerAction } from "@/components/ui";
-import { ClubHeaderView } from "@/components/admin/club/ClubHeaderView";
 import { ClubContactsView } from "@/components/admin/club/ClubContactsView";
 import { ClubHoursView } from "@/components/admin/club/ClubHoursView";
 import { ClubCourtsQuickList } from "@/components/admin/club/ClubCourtsQuickList";
 import { ClubGalleryView } from "@/components/admin/club/ClubGalleryView";
-import { ClubCoachesView } from "@/components/admin/club/ClubCoachesView";
 import { ClubAdminsSection } from "@/components/admin/club/ClubAdminsSection";
 import { ClubEditor } from "@/components/admin/ClubEditor.client";
 import { WeeklyAvailabilityTimeline } from "@/components/WeeklyAvailabilityTimeline";
@@ -309,20 +307,6 @@ export default function AdminClubDetailPage({
 
       {/* Main Content */}
       <div className="im-admin-club-content">
-        {/* Actions Bar */}
-        <div className="im-admin-club-actions-bar">
-          <div className="im-admin-club-breadcrumb">
-            {/* Breadcrumbs */}
-            <Breadcrumbs
-              items={[
-                { label: t("breadcrumbs.clubs"), href: "/admin/clubs" },
-                { label: club.name },
-              ]}
-              ariaLabel={t("breadcrumbs.navigation")}
-            />
-          </div>
-        </div>
-
         {/* Court Availability Section */}
         {club.courts.length > 0 && (
           <section className="im-admin-club-availability-section">
@@ -334,14 +318,6 @@ export default function AdminClubDetailPage({
         <div className="im-admin-club-info-grid">
           {/* Left Column - Description & Details */}
           <div className="im-admin-club-info-column">
-            {/* Description Card with Edit */}
-            <Card className="im-admin-club-info-card">
-              <ClubHeaderView
-                club={club}
-                onUpdate={(payload) => handleSectionUpdate("header", payload)}
-              />
-            </Card>
-
             {/* Courts Summary with Edit */}
             <Card className="im-admin-club-info-card">
               <ClubCourtsQuickList club={club} />
@@ -427,14 +403,6 @@ export default function AdminClubDetailPage({
               <ClubHoursView
                 club={club}
                 onUpdate={(payload) => handleSectionUpdate("hours", payload)}
-              />
-            </Card>
-
-            {/* Coaches Card with Edit */}
-            <Card className="im-admin-club-info-card">
-              <ClubCoachesView
-                club={club}
-                onUpdate={(payload) => handleSectionUpdate("coaches", payload)}
               />
             </Card>
           </div>
