@@ -39,10 +39,15 @@ export function useAuthGuardOnce(options: {
 
   const router = useRouter();
   const isHydrated = useUserStore((state) => state.isHydrated);
-  const isLoading = useUserStore((state) => state.isLoading);
-  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+  const sessionStatus = useUserStore((state) => state.sessionStatus);
+  const isUserLoading = useUserStore((state) => state.isLoading);
   const user = useUserStore((state) => state.user);
   const adminStatus = useUserStore((state) => state.adminStatus);
+
+  // Derive loading and authentication state from sessionStatus for consistency
+  const isLoading = sessionStatus === "loading" || isUserLoading;
+  const isAuthenticated = sessionStatus === "authenticated";
+  const isLoggedIn = isAuthenticated;
 
   // Track if we've performed the initial auth check to prevent redirects on page reload
   const hasPerformedAuthCheck = useRef(false);
@@ -56,7 +61,7 @@ export function useAuthGuardOnce(options: {
     hasPerformedAuthCheck.current = true;
 
     // Check authentication requirement
-    if (requireAuth && !isLoggedIn) {
+    if (requireAuth && !isAuthenticated) {
       router.push(redirectTo);
       return;
     }
@@ -75,7 +80,7 @@ export function useAuthGuardOnce(options: {
   }, [
     isHydrated,
     isLoading,
-    isLoggedIn,
+    isAuthenticated,
     user,
     adminStatus,
     router,
@@ -89,6 +94,8 @@ export function useAuthGuardOnce(options: {
     isHydrated,
     isLoading,
     isLoggedIn,
+    isAuthenticated,
+    sessionStatus,
     user,
     adminStatus,
   };
