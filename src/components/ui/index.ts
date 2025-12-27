@@ -33,6 +33,7 @@ export {
   OrgInfoCardSkeleton,
   ClubsPreviewSkeleton,
   BookingsPreviewSkeleton,
+  ClubStatisticsCardSkeleton,
 } from "./skeletons";
 export type {
   MetricCardSkeletonProps,
@@ -74,3 +75,5 @@ export { Tabs, TabList, Tab, TabPanel } from "./Tabs";
 export type { TabsProps, TabListProps, TabProps, TabPanelProps } from "./Tabs";
 export { DangerZone } from "./DangerZone";
 export type { DangerZoneProps, DangerAction } from "./DangerZone";
+export { ClubStatisticsCard } from "./ClubStatisticsCard";
+export type { ClubStatisticsCardProps } from "./ClubStatisticsCard";

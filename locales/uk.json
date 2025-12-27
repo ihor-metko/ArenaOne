@@ -1958,7 +1958,13 @@
     "publishSuccess": "Організацію успішно опубліковано",
     "unpublishSuccess": "Організацію успішно знято з публікації",
     "createNewClub": "Створити новий клуб",
-    "createFirstClub": "Створити перший клуб"
+    "createFirstClub": "Створити перший клуб",
+    "clubStatistics": "Статистика клубів",
+    "clubStatisticsDescription": "Показники завантаженості та ефективності всіх клубів",
+    "currentOccupancy": "Поточна завантаженість",
+    "vsLastMonth": "порівняно з минулим місяцем",
+    "noStatisticsAvailable": "Статистика поки недоступна. Розрахунок відбувається автоматично.",
+    "statisticsError": "Не вдалося завантажити статистику. Будь ласка, спробуйте пізніше."
   },
   "unifiedDashboard": {
     "organizationTitle": "Панель організації",
