@@ -1,9 +1,12 @@
+"use client";
+
 /**
- * RadioGroup - Reusable radio button group component
- * Provides an accessible radio button group with labels and descriptions
+ * RadioGroup - Reusable radio button group component with custom styling
+ * Provides a fully accessible radio button group that works with dark theme
+ * Uses custom radio controls instead of native inputs for better styling control
  */
 
-import React from "react";
+import React, { useRef, KeyboardEvent } from "react";
 import "./RadioGroup.css";
 
 export interface RadioOption {
@@ -59,45 +62,123 @@ export function RadioGroup({
   disabled = false,
   className = "",
 }: RadioGroupProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle keyboard navigation
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>, currentIndex: number) => {
+    const enabledOptions = options.filter(opt => !opt.disabled && !disabled);
+    const currentEnabledIndex = enabledOptions.findIndex(opt => opt.value === options[currentIndex].value);
+    
+    let newIndex = -1;
+    
+    switch (event.key) {
+      case 'ArrowDown':
+      case 'ArrowRight':
+        event.preventDefault();
+        if (currentEnabledIndex < enabledOptions.length - 1) {
+          newIndex = options.findIndex(opt => opt.value === enabledOptions[currentEnabledIndex + 1].value);
+        } else {
+          // Wrap to first enabled option
+          newIndex = options.findIndex(opt => opt.value === enabledOptions[0].value);
+        }
+        break;
+      
+      case 'ArrowUp':
+      case 'ArrowLeft':
+        event.preventDefault();
+        if (currentEnabledIndex > 0) {
+          newIndex = options.findIndex(opt => opt.value === enabledOptions[currentEnabledIndex - 1].value);
+        } else {
+          // Wrap to last enabled option
+          newIndex = options.findIndex(opt => opt.value === enabledOptions[enabledOptions.length - 1].value);
+        }
+        break;
+      
+      case ' ':
+      case 'Enter':
+        event.preventDefault();
+        if (!disabled && !options[currentIndex].disabled) {
+          onChange(options[currentIndex].value);
+        }
+        break;
+    }
+    
+    if (newIndex !== -1) {
+      const newOption = options[newIndex];
+      onChange(newOption.value);
+      
+      // Focus the new option
+      const optionElement = containerRef.current?.querySelector(
+        `[data-value="${newOption.value}"]`
+      ) as HTMLElement;
+      optionElement?.focus();
+    }
+  };
+
   return (
-    <div className={`im-radio-group ${className}`}>
+    <div className={`im-radio-group ${className}`} ref={containerRef}>
       {label && (
-        <label className="im-radio-group-label">
+        <div className="im-radio-group-label" id={`${name}-label`}>
           {label}
-        </label>
+        </div>
       )}
-      {options.map((option) => {
-        const isSelected = value === option.value;
-        const isDisabled = disabled || option.disabled;
-        
-        return (
-          <label
-            key={option.value}
-            className={`im-radio-option ${isSelected ? 'im-radio-option--selected' : ''} ${isDisabled ? 'im-radio-option--disabled' : ''}`}
-          >
-            <input
-              type="radio"
-              name={name}
-              value={option.value}
-              checked={isSelected}
-              onChange={() => !isDisabled && onChange(option.value)}
-              disabled={isDisabled}
-              aria-describedby={option.description ? `${name}-${option.value}-desc` : undefined}
-            />
-            <div className="im-radio-option-content">
-              <span className="im-radio-option-label">{option.label}</span>
-              {option.description && (
-                <span
-                  id={`${name}-${option.value}-desc`}
-                  className="im-radio-option-description"
-                >
-                  {option.description}
-                </span>
-              )}
+      <div
+        className="im-radio-group-options"
+        role="radiogroup"
+        aria-labelledby={label ? `${name}-label` : undefined}
+        aria-required="false"
+      >
+        {options.map((option, index) => {
+          const isSelected = value === option.value;
+          const isDisabled = disabled || option.disabled;
+          const optionId = `${name}-${option.value}`;
+          
+          return (
+            <div
+              key={option.value}
+              data-value={option.value}
+              role="radio"
+              aria-checked={isSelected}
+              aria-disabled={isDisabled}
+              aria-describedby={option.description ? `${optionId}-desc` : undefined}
+              tabIndex={isSelected && !isDisabled ? 0 : -1}
+              className={`im-radio-option ${isSelected ? 'im-radio-option--selected' : ''} ${isDisabled ? 'im-radio-option--disabled' : ''}`}
+              onClick={() => !isDisabled && onChange(option.value)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+            >
+              {/* Hidden native input for form compatibility */}
+              <input
+                type="radio"
+                name={name}
+                value={option.value}
+                checked={isSelected}
+                onChange={() => {}} // Controlled by parent onClick
+                disabled={isDisabled}
+                tabIndex={-1}
+                className="im-radio-native-input"
+                aria-hidden="true"
+              />
+              
+              {/* Custom radio control */}
+              <span className="im-radio-custom-control" aria-hidden="true">
+                <span className="im-radio-custom-control-inner"></span>
+              </span>
+              
+              <div className="im-radio-option-content">
+                <span className="im-radio-option-label">{option.label}</span>
+                {option.description && (
+                  <span
+                    id={`${optionId}-desc`}
+                    className="im-radio-option-description"
+                  >
+                    {option.description}
+                  </span>
+                )}
+              </div>
             </div>
-          </label>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
