@@ -62,7 +62,9 @@ export async function GET(
     const clubAdmins = await prisma.clubMembership.findMany({
       where: {
         clubId,
-        role: ClubMembershipRole.CLUB_ADMIN,
+        role: {
+          in: [ClubMembershipRole.CLUB_OWNER, ClubMembershipRole.CLUB_ADMIN],
+        },
       },
       include: {
         user: {
@@ -80,6 +82,7 @@ export async function GET(
       id: cm.user.id,
       name: cm.user.name,
       email: cm.user.email,
+      role: cm.role,
     }));
 
     return NextResponse.json(formattedAdmins);

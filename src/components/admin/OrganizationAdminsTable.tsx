@@ -103,6 +103,12 @@ export default function OrganizationAdminsTable({
   const isOwner = primaryOwner?.userId === user?.id;
   const canManageAdmins = isRoot || isOwner;
 
+  // Check if an owner already exists to determine allowed roles
+  const hasOwner = !!primaryOwner;
+  const allowedRoles = hasOwner 
+    ? ["ORGANIZATION_ADMIN"] 
+    : ["ORGANIZATION_OWNER", "ORGANIZATION_ADMIN"];
+
   // Sort admins: Owner first, then Organization Admins
   const sortedAdmins = [...admins].sort((a, b) => {
     if (a.isPrimaryOwner) return -1;
@@ -251,7 +257,7 @@ export default function OrganizationAdminsTable({
         config={{
           context: "organization",
           defaultOrgId: orgId,
-          allowedRoles: ["ORGANIZATION_ADMIN"],
+          allowedRoles: allowedRoles,
           onSuccess: () => {
             // Refresh the admins list after successful creation
             onRefresh();

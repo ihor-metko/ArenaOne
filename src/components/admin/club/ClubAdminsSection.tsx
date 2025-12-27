@@ -2,15 +2,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Button, Modal, Input } from "@/components/ui";
+import { Button, Modal, Badge } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
-import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import { UserProfileModal } from "../UserProfileModal";
+import { CreateAdminModal } from "../admin-wizard";
+import type { AdminRole } from "@/types/adminWizard";
 
 interface ClubAdmin {
   id: string;
   name: string | null;
   email: string;
+  role: "CLUB_OWNER" | "CLUB_ADMIN";
 }
 
 interface ClubAdminsSectionProps {
@@ -29,18 +31,8 @@ export function ClubAdminsSection({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Add club admin modal state
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [addMode, setAddMode] = useState<"existing" | "new">("existing");
-  const simpleUsers = useAdminUsersStore((state) => state.simpleUsers);
-  const fetchSimpleUsers = useAdminUsersStore((state) => state.fetchSimpleUsers);
-  const [userSearch, setUserSearch] = useState("");
-  const [selectedUserId, setSelectedUserId] = useState("");
-  const [newUserName, setNewUserName] = useState("");
-  const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserPassword, setNewUserPassword] = useState("");
-  const [addError, setAddError] = useState("");
-  const [adding, setAdding] = useState(false);
+  // Create Admin modal state
+  const [isCreateAdminModalOpen, setIsCreateAdminModalOpen] = useState(false);
 
   // Remove club admin modal state
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
@@ -64,6 +56,13 @@ export function ClubAdminsSection({
 
   // Check if user can manage club admins (Root Admin or Organization Admin)
   const canManageClubAdmins = hasAnyRole(["ROOT_ADMIN", "ORGANIZATION_ADMIN"]);
+
+  // Check if a club owner already exists to determine allowed roles
+  const clubOwner = admins.find((admin) => admin.role === "CLUB_OWNER");
+  const hasOwner = !!clubOwner;
+  const allowedRoles: AdminRole[] = hasOwner 
+    ? ["CLUB_ADMIN"] 
+    : ["CLUB_OWNER", "CLUB_ADMIN"];
 
   // Fetch club admins
   const fetchClubAdmins = useCallback(async () => {
@@ -94,60 +93,13 @@ export function ClubAdminsSection({
     fetchClubAdmins();
   }, [fetchClubAdmins]);
 
-  // Handle add club admin
-  const handleOpenAddModal = async () => {
-    setAddMode("existing");
-    setUserSearch("");
-    setSelectedUserId("");
-    setNewUserName("");
-    setNewUserEmail("");
-    setNewUserPassword("");
-    setAddError("");
-    setIsAddModalOpen(true);
-    await fetchSimpleUsers();
+  // Handle create admin modal
+  const handleOpenCreateAdminModal = () => {
+    setIsCreateAdminModalOpen(true);
   };
 
-  const handleAddClubAdmin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAddError("");
-    setAdding(true);
-
-    try {
-      const payload =
-        addMode === "new"
-          ? {
-              createNew: true,
-              name: newUserName,
-              email: newUserEmail,
-              password: newUserPassword,
-            }
-          : {
-              createNew: false,
-              userId: selectedUserId,
-            };
-
-      const response = await fetch(`/api/admin/clubs/${clubId}/admins`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to add club admin");
-      }
-
-      showToast(t("clubAdmins.adminAdded"), "success");
-      setIsAddModalOpen(false);
-      fetchClubAdmins();
-      if (onRefresh) onRefresh();
-    } catch (err) {
-      setAddError(
-        err instanceof Error ? err.message : "Failed to add club admin"
-      );
-    } finally {
-      setAdding(false);
-    }
+  const handleCloseCreateAdminModal = () => {
+    setIsCreateAdminModalOpen(false);
   };
 
   // Handle remove club admin
@@ -189,27 +141,18 @@ export function ClubAdminsSection({
     }
   };
 
-  // Debounced user search
-  const handleUserSearchChange = (value: string) => {
-    setUserSearch(value);
-  };
-
-  // Debounce user search
-  useEffect(() => {
-    if (!isAddModalOpen || addMode !== "existing") return;
-
-    const timer = setTimeout(() => {
-      fetchSimpleUsers(userSearch);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [userSearch, isAddModalOpen, addMode, fetchSimpleUsers]);
-
   // Handle view profile
   const handleViewProfile = (userId: string) => {
     setSelectedAdminUserId(userId);
     setIsViewProfileModalOpen(true);
   };
+
+  // Sort admins: Owner first, then Club Admins
+  const sortedAdmins = [...admins].sort((a, b) => {
+    if (a.role === "CLUB_OWNER") return -1;
+    if (b.role === "CLUB_OWNER") return 1;
+    return 0;
+  });
 
   if (loading) {
     return (
@@ -254,7 +197,7 @@ export function ClubAdminsSection({
         <h3 className="im-section-title">{t("clubAdmins.title")}</h3>
         <div className="im-section-actions">
           {canManageClubAdmins && (
-            <Button size="small" onClick={handleOpenAddModal}>
+            <Button size="small" onClick={handleOpenCreateAdminModal}>
               {t("clubAdmins.addAdmin")}
             </Button>
           )}
@@ -270,14 +213,26 @@ export function ClubAdminsSection({
               <tr>
                 <th>{t("common.name")}</th>
                 <th>{t("common.email")}</th>
+                <th>{t("common.role")}</th>
                 <th>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
-              {admins.map((admin) => (
+              {sortedAdmins.map((admin) => (
                 <tr key={admin.id}>
                   <td>{admin.name || admin.email}</td>
                   <td>{admin.email}</td>
+                  <td>
+                    {admin.role === "CLUB_OWNER" ? (
+                      <Badge variant="success" size="small">
+                        {t("clubAdmins.owner")}
+                      </Badge>
+                    ) : (
+                      <Badge variant="info" size="small">
+                        {t("clubAdmins.admin")}
+                      </Badge>
+                    )}
+                  </td>
                   <td>
                     <div className="flex gap-2">
                       <Button
@@ -292,6 +247,7 @@ export function ClubAdminsSection({
                           size="small"
                           variant="danger"
                           onClick={() => handleOpenRemoveModal(admin)}
+                          disabled={admin.role === "CLUB_OWNER"}
                         >
                           {t("common.remove")}
                         </Button>
@@ -305,121 +261,21 @@ export function ClubAdminsSection({
         </div>
       )}
 
-      {/* Add Club Admin Modal */}
-      <Modal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        title={t("clubAdmins.addAdmin")}
-      >
-        <form onSubmit={handleAddClubAdmin} className="space-y-4">
-          {addError && (
-            <div className="rsp-error bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-sm">
-              {addError}
-            </div>
-          )}
-
-          <div className="im-assign-mode-tabs">
-            <button
-              type="button"
-              className={`im-assign-mode-tab ${
-                addMode === "existing" ? "im-assign-mode-tab--active" : ""
-              }`}
-              onClick={() => setAddMode("existing")}
-            >
-              {t("clubAdmins.existingUser")}
-            </button>
-            <button
-              type="button"
-              className={`im-assign-mode-tab ${
-                addMode === "new" ? "im-assign-mode-tab--active" : ""
-              }`}
-              onClick={() => setAddMode("new")}
-            >
-              {t("clubAdmins.newUser")}
-            </button>
-          </div>
-
-          {addMode === "existing" ? (
-            <>
-              <Input
-                label={t("clubAdmins.searchUsers")}
-                value={userSearch}
-                onChange={(e) => handleUserSearchChange(e.target.value)}
-                placeholder={t("clubAdmins.searchUsersPlaceholder")}
-              />
-              <div className="im-user-list">
-                {simpleUsers.length === 0 ? (
-                  <p className="im-user-list-empty">{t("clubAdmins.noUsersFound")}</p>
-                ) : (
-                  simpleUsers.map((u) => (
-                    <label
-                      key={u.id}
-                      className={`im-user-option ${
-                        selectedUserId === u.id ? "im-user-option--selected" : ""
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="userId"
-                        value={u.id}
-                        checked={selectedUserId === u.id}
-                        onChange={(e) => setSelectedUserId(e.target.value)}
-                      />
-                      <span className="im-user-info">
-                        <span className="im-user-name">{u.name || u.email}</span>
-                        <span className="im-user-email">{u.email}</span>
-                      </span>
-                    </label>
-                  ))
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              <Input
-                label={t("common.name")}
-                value={newUserName}
-                onChange={(e) => setNewUserName(e.target.value)}
-                required
-              />
-              <Input
-                label={t("common.email")}
-                type="email"
-                value={newUserEmail}
-                onChange={(e) => setNewUserEmail(e.target.value)}
-                required
-              />
-              <Input
-                label={t("common.password")}
-                type="password"
-                value={newUserPassword}
-                onChange={(e) => setNewUserPassword(e.target.value)}
-                required
-              />
-            </>
-          )}
-
-          <div className="flex justify-end gap-2 mt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsAddModalOpen(false)}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={
-                adding ||
-                (addMode === "existing" && !selectedUserId) ||
-                (addMode === "new" && (!newUserName || !newUserEmail || !newUserPassword))
-              }
-            >
-              {adding ? t("common.processing") : t("clubAdmins.addAdmin")}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      {/* Create Admin Modal */}
+      <CreateAdminModal
+        isOpen={isCreateAdminModalOpen}
+        onClose={handleCloseCreateAdminModal}
+        config={{
+          context: "club",
+          defaultClubId: clubId,
+          allowedRoles: allowedRoles,
+          onSuccess: () => {
+            // Refresh the admins list after successful creation
+            fetchClubAdmins();
+            if (onRefresh) onRefresh();
+          },
+        }}
+      />
 
       {/* Remove Club Admin Modal */}
       <Modal

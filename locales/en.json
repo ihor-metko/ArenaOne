@@ -1968,7 +1968,9 @@
     "reassignToClub": "Reassign to Club",
     "inviteUser": "Invite User",
     "lastLogin": "Last Login",
-    "noAdmins": "No club admins assigned yet."
+    "noAdmins": "No club admins assigned yet.",
+    "owner": "Club Owner",
+    "admin": "Club Admin"
   },
   "orgDetail": {
     "title": "Organization Details",

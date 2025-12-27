@@ -64,6 +64,19 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
     });
   }, [fetchClubsIfNeeded]);
 
+  // When club context, set organization from club
+  useEffect(() => {
+    if (config.context === "club" && config.defaultClubId && clubs.length > 0) {
+      const club = clubs.find(c => c.id === config.defaultClubId);
+      if (club && club.organizationId) {
+        setFormData(prev => ({
+          ...prev,
+          organizationId: club.organizationId,
+        }));
+      }
+    }
+  }, [config.context, config.defaultClubId, clubs]);
+
   // Convert to options format
   const orgOptions: OrganizationOption[] = organizations.map(org => ({
     id: org.id,
