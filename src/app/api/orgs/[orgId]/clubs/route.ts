@@ -96,12 +96,8 @@ export async function GET(
       email: club.email,
       website: club.website,
       isPublic: club.isPublic,
-      // New structure
       logoData: club.logoData ? JSON.parse(club.logoData) : null,
       bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
-      // Deprecated - kept for backward compatibility
-      logo: club.logo,
-      heroImage: club.heroImage,
       courtCount: club._count.courts,
       adminCount: club._count.clubMemberships,
       createdBy: club.createdBy,

@@ -187,12 +187,8 @@ export async function GET(
       contactPhone: organization.contactPhone,
       website: organization.website,
       address: organization.address,
-      // New structure
       logoData: organization.logoData ? JSON.parse(organization.logoData) : null,
       bannerData: organization.bannerData ? JSON.parse(organization.bannerData) : null,
-      // Deprecated - kept for backward compatibility
-      logo: organization.logo,
-      heroImage: organization.heroImage,
       metadata: organization.metadata ? JSON.parse(organization.metadata) : null,
       isPublic: organization.isPublic,
       archivedAt: organization.archivedAt,
@@ -239,7 +235,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, slug, description, contactEmail, contactPhone, website, address, logo, heroImage, metadata, isPublic } = body;
+    const { name, slug, description, contactEmail, contactPhone, website, address, logoData, bannerData, metadata, isPublic } = body;
 
 
     // Verify organization exists
@@ -304,8 +300,8 @@ export async function PUT(
       contactPhone?: string | null;
       website?: string | null;
       address?: string | null;
-      logo?: string | null;
-      heroImage?: string | null;
+      logoData?: string | null;
+      bannerData?: string | null;
       metadata?: string | null;
       isPublic?: boolean;
     } = {};
@@ -317,8 +313,12 @@ export async function PUT(
     if (contactPhone !== undefined) updateData.contactPhone = contactPhone?.trim() || null;
     if (website !== undefined) updateData.website = website?.trim() || null;
     if (address !== undefined) updateData.address = address?.trim() || null;
-    if (logo !== undefined) updateData.logo = logo?.trim() || null;
-    if (heroImage !== undefined) updateData.heroImage = heroImage?.trim() || null;
+    if (logoData !== undefined) {
+      updateData.logoData = logoData ? JSON.stringify(logoData) : null;
+    }
+    if (bannerData !== undefined) {
+      updateData.bannerData = bannerData ? JSON.stringify(bannerData) : null;
+    }
     if (metadata !== undefined) {
       updateData.metadata = metadata ? JSON.stringify(metadata) : null;
     }
@@ -364,8 +364,12 @@ export async function PUT(
       contactPhone: updatedOrganization.contactPhone,
       website: updatedOrganization.website,
       address: updatedOrganization.address,
-      logo: updatedOrganization.logo,
-      heroImage: updatedOrganization.heroImage,
+      logoData: updatedOrganization.logoData
+        ? JSON.parse(updatedOrganization.logoData)
+        : null,
+      bannerData: updatedOrganization.bannerData
+        ? JSON.parse(updatedOrganization.bannerData)
+        : null,
       metadata: updatedOrganization.metadata
         ? JSON.parse(updatedOrganization.metadata)
         : null,

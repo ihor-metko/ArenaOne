@@ -208,12 +208,8 @@ export async function GET(
       contactPhone: organization.contactPhone,
       website: organization.website,
       address: organization.address,
-      // New structure
       logoData: organization.logoData ? JSON.parse(organization.logoData) : null,
       bannerData: organization.bannerData ? JSON.parse(organization.bannerData) : null,
-      // Deprecated - kept for backward compatibility
-      logo: organization.logo,
-      heroImage: organization.heroImage,
       metadata: organization.metadata ? JSON.parse(organization.metadata) : null,
       isPublic: organization.isPublic,
       archivedAt: organization.archivedAt,
@@ -260,7 +256,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, slug, description, contactEmail, contactPhone, website, address, logo, heroImage, logoData, bannerData, metadata, isPublic, supportedSports } = body;
+    const { name, slug, description, contactEmail, contactPhone, website, address, logoData, bannerData, metadata, isPublic, supportedSports } = body;
 
 
     // Verify organization exists
@@ -325,8 +321,6 @@ export async function PATCH(
       contactPhone?: string | null;
       website?: string | null;
       address?: string | null;
-      logo?: string | null;
-      heroImage?: string | null;
       logoData?: string | null;
       bannerData?: string | null;
       metadata?: string | null;
@@ -341,10 +335,6 @@ export async function PATCH(
     if (contactPhone !== undefined) updateData.contactPhone = contactPhone?.trim() || null;
     if (website !== undefined) updateData.website = website?.trim() || null;
     if (address !== undefined) updateData.address = address?.trim() || null;
-    // Deprecated fields - kept for backward compatibility
-    if (logo !== undefined) updateData.logo = logo?.trim() || null;
-    if (heroImage !== undefined) updateData.heroImage = heroImage?.trim() || null;
-    // New structure
     if (logoData !== undefined) {
       updateData.logoData = logoData ? JSON.stringify(logoData) : null;
     }
@@ -397,16 +387,12 @@ export async function PATCH(
       contactPhone: updatedOrganization.contactPhone,
       website: updatedOrganization.website,
       address: updatedOrganization.address,
-      // New structure
       logoData: updatedOrganization.logoData
         ? JSON.parse(updatedOrganization.logoData)
         : null,
       bannerData: updatedOrganization.bannerData
         ? JSON.parse(updatedOrganization.bannerData)
         : null,
-      // Deprecated - kept for backward compatibility
-      logo: updatedOrganization.logo,
-      heroImage: updatedOrganization.heroImage,
       metadata: updatedOrganization.metadata
         ? JSON.parse(updatedOrganization.metadata)
         : null,
