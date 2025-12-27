@@ -36,3 +36,5 @@ export type { ClubsPreviewSkeletonProps } from "./ClubsPreviewSkeleton";
 
 export { default as BookingsPreviewSkeleton } from "./BookingsPreviewSkeleton";
 export type { BookingsPreviewSkeletonProps } from "./BookingsPreviewSkeleton";
+
+export { ClubStatisticsCardSkeleton } from "./ClubStatisticsCardSkeleton";

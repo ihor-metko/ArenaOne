@@ -1,0 +1,173 @@
+@reference "tailwindcss";
+
+/* ===== Club Statistics Card ===== */
+.im-club-stat-card {
+  @apply rounded-xl p-5;
+  background-color: var(--im-card-bg);
+  border: 1px solid var(--im-border);
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.im-club-stat-card--clickable {
+  cursor: pointer;
+}
+
+.im-club-stat-card--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--im-primary);
+}
+
+.dark .im-club-stat-card--clickable:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.im-club-stat-card--clickable:focus {
+  outline: 2px solid var(--im-primary);
+  outline-offset: 2px;
+}
+
+/* ===== Header ===== */
+.im-club-stat-header {
+  @apply mb-4 pb-3;
+  border-bottom: 1px solid var(--im-border);
+}
+
+.im-club-stat-name {
+  @apply text-base font-semibold truncate;
+  color: var(--im-foreground);
+}
+
+/* ===== Content ===== */
+.im-club-stat-content {
+  @apply flex flex-col gap-4;
+}
+
+/* ===== Main Value ===== */
+.im-club-stat-main {
+  @apply text-center;
+}
+
+.im-club-stat-value {
+  @apply text-3xl font-bold leading-tight;
+  transition: color 0.2s ease;
+}
+
+.im-club-stat-value.im-stat-high {
+  color: #10b981;
+}
+
+.dark .im-club-stat-value.im-stat-high {
+  color: #34d399;
+}
+
+.im-club-stat-value.im-stat-medium {
+  color: #f59e0b;
+}
+
+.dark .im-club-stat-value.im-stat-medium {
+  color: #fbbf24;
+}
+
+.im-club-stat-value.im-stat-low {
+  color: #ef4444;
+}
+
+.dark .im-club-stat-value.im-stat-low {
+  color: #f87171;
+}
+
+.im-club-stat-label {
+  @apply text-xs font-medium mt-1 uppercase tracking-wide;
+  color: var(--im-muted);
+}
+
+/* ===== Progress Bar ===== */
+.im-club-stat-progress {
+  @apply w-full h-2 rounded-full overflow-hidden;
+  background-color: var(--im-border);
+}
+
+.im-club-stat-progress-bar {
+  @apply h-full rounded-full transition-all duration-300;
+}
+
+.im-club-stat-progress-bar.im-stat-high {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.im-club-stat-progress-bar.im-stat-medium {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.im-club-stat-progress-bar.im-stat-low {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+/* ===== Change Indicator ===== */
+.im-club-stat-change {
+  @apply flex items-center justify-between gap-2;
+}
+
+.im-club-stat-change-badge {
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.im-club-stat-change-badge.im-stat-change-positive {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.dark .im-club-stat-change-badge.im-stat-change-positive {
+  background-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+.im-club-stat-change-badge.im-stat-change-negative {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.dark .im-club-stat-change-badge.im-stat-change-negative {
+  background-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.im-club-stat-change-badge.im-stat-change-neutral {
+  background-color: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+}
+
+.dark .im-club-stat-change-badge.im-stat-change-neutral {
+  background-color: rgba(107, 114, 128, 0.25);
+  color: #9ca3af;
+}
+
+.im-club-stat-change-symbol {
+  @apply text-base leading-none;
+}
+
+.im-club-stat-change-value {
+  @apply text-sm font-semibold;
+}
+
+.im-club-stat-change-label {
+  @apply text-xs;
+  color: var(--im-muted);
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 640px) {
+  .im-club-stat-card {
+    @apply p-4;
+  }
+
+  .im-club-stat-value {
+    @apply text-2xl;
+  }
+
+  .im-club-stat-change {
+    @apply flex-col items-start gap-1;
+  }
+}

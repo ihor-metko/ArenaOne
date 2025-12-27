@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, EntityBanner, MetricCardSkeleton, ClubsPreviewSkeleton, TableSkeleton, DangerZone, Modal } from "@/components/ui";
+import { Button, EntityBanner, MetricCardSkeleton, ClubsPreviewSkeleton, TableSkeleton, DangerZone, Modal, ClubStatisticsCard, ClubStatisticsCardSkeleton } from "@/components/ui";
 import type { DangerAction } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { useClubStatisticsStore } from "@/stores/useClubStatisticsStore";
 import OrganizationAdminsTable from "@/components/admin/OrganizationAdminsTable";
 import { OrganizationEditor } from "@/components/admin/OrganizationEditor.client";
 import { parseOrganizationMetadata } from "@/types/organization";
@@ -34,6 +35,12 @@ export default function OrganizationDetailPage() {
   const storeError = useOrganizationStore((state) => state.error);
   // Note: deleteOrganization and archive functionality removed as per requirement to simplify the page
   // Archive/Delete modals can be re-added later if needed via the Danger Zone section
+
+  // Statistics store
+  const monthlyStatistics = useClubStatisticsStore((state) => state.monthlyStatistics);
+  const statisticsLoading = useClubStatisticsStore((state) => state.loading);
+  const statisticsError = useClubStatisticsStore((state) => state.error);
+  const setMonthlyStatistics = useClubStatisticsStore((state) => state.setMonthlyStatistics);
 
   const [error, setError] = useState("");
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
@@ -74,6 +81,59 @@ export default function OrganizationDetailPage() {
     // Fetch organization data from store (will use cache if available)
     fetchOrgDetail();
   }, [isLoggedIn, isLoading, router, orgId, fetchOrgDetail, isHydrated]);
+
+  // Fetch monthly statistics for organization's clubs (current month with lazy calculation)
+  useEffect(() => {
+    if (!org || !orgId) return;
+
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1; // 1-12
+    const currentYear = now.getFullYear();
+
+    // Fetch with lazy calculation enabled for current month
+    const fetchStats = async () => {
+      try {
+        // Build query params for organization-level stats with lazy calculation
+        const params = new URLSearchParams({
+          organizationId: orgId,
+          month: currentMonth.toString(),
+          year: currentYear.toString(),
+          lazyCalculate: "true",
+        });
+
+        const response = await fetch(`/api/admin/statistics/monthly?${params.toString()}`);
+        if (response.ok) {
+          const data = await response.json();
+          // Data is an array of { clubId, clubName, statistics }
+          // Extract statistics and update store
+          interface OrganizationStatisticsResponse {
+            clubId: string;
+            clubName: string;
+            statistics: {
+              id: string;
+              clubId: string;
+              month: number;
+              year: number;
+              averageOccupancy: number;
+              previousMonthOccupancy: number | null;
+              occupancyChangePercent: number | null;
+              createdAt: string;
+              updatedAt: string;
+            } | null;
+          }
+          const stats = (data as OrganizationStatisticsResponse[])
+            .filter((item) => item.statistics !== null)
+            .map((item) => item.statistics!);
+          
+          setMonthlyStatistics(stats);
+        }
+      } catch (err) {
+        console.error("Failed to fetch organization statistics:", err);
+      }
+    };
+
+    fetchStats();
+  }, [org, orgId, setMonthlyStatistics]);
 
   // Debounced user search
   // useEffect(() => {
@@ -246,6 +306,69 @@ export default function OrganizationDetailPage() {
                 <div className="im-metric-label">{t("orgDetail.activeBookings")}</div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Club Statistics */}
+        {isLoadingState || statisticsLoading ? (
+          <div className="im-section-card im-org-detail-content--full">
+            <div className="im-section-header">
+              <div className="im-skeleton im-skeleton-icon--round w-10 h-10" />
+              <div className="im-skeleton h-6 w-48 rounded" />
+            </div>
+            <div className="im-metrics-grid">
+              <ClubStatisticsCardSkeleton />
+              <ClubStatisticsCardSkeleton />
+              <ClubStatisticsCardSkeleton />
+            </div>
+          </div>
+        ) : org && (org.clubsPreview ?? []).length > 0 && (
+          <div className="im-section-card im-org-detail-content--full">
+            <div className="im-section-header">
+              <div className="im-section-icon im-section-icon--metrics">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 3v18h18" />
+                  <path d="M18 17V9" />
+                  <path d="M13 17V5" />
+                  <path d="M8 17v-3" />
+                </svg>
+              </div>
+              <h2 className="im-section-title">{t("orgDetail.clubStatistics")}</h2>
+            </div>
+            
+            {statisticsError ? (
+              <div className="im-preview-empty-state">
+                <p className="im-preview-empty" style={{ color: "var(--im-error)" }}>
+                  {t("orgDetail.statisticsError")}
+                </p>
+              </div>
+            ) : monthlyStatistics.length === 0 ? (
+              <div className="im-preview-empty-state">
+                <p className="im-preview-empty">{t("orgDetail.noStatisticsAvailable")}</p>
+              </div>
+            ) : (
+              <div className="im-metrics-grid">
+                {(org.clubsPreview ?? []).map((club) => {
+                  // Find statistics for this club
+                  const clubStats = monthlyStatistics.find(stat => stat.clubId === club.id);
+                  
+                  if (!clubStats) {
+                    return null;
+                  }
+
+                  return (
+                    <ClubStatisticsCard
+                      key={club.id}
+                      clubId={club.id}
+                      clubName={club.name}
+                      currentOccupancy={clubStats.averageOccupancy}
+                      changePercent={clubStats.occupancyChangePercent}
+                      onClick={() => router.push(`/admin/clubs/${club.id}`)}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
