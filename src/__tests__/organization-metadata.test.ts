@@ -118,4 +118,26 @@ describe("parseOrganizationMetadata", () => {
     expect(result).toBeDefined();
     expect(result?.logoTheme).toBe("dark");
   });
+
+  it("should return undefined for array input", () => {
+    const arrayInput = ["logoTheme", "dark"] as unknown as Record<string, unknown>;
+    const result = parseOrganizationMetadata(arrayInput);
+    
+    expect(result).toBeUndefined();
+  });
+
+  it("should handle class instances (which are objects in JavaScript)", () => {
+    // Note: In practice, API responses are always plain objects from JSON.parse()
+    // Class instances will have Object.prototype.toString.call return '[object Object]'
+    // This is expected behavior - the function accepts any object with the right structure
+    class CustomClass {
+      logoTheme = "dark";
+    }
+    const customObject = new CustomClass() as unknown as Record<string, unknown>;
+    const result = parseOrganizationMetadata(customObject);
+    
+    // The function will accept it since it's technically an object
+    expect(result).toBeDefined();
+    expect(result?.logoTheme).toBe("dark");
+  });
 });
