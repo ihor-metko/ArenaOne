@@ -4,6 +4,7 @@ import { requireRootAdmin, requireOrganizationAdmin } from "@/lib/requireRole";
 import { MembershipRole } from "@/constants/roles";
 import { auditLog, AuditAction, TargetType } from "@/lib/auditLog";
 import { SportType } from "@prisma/client";
+import type { Address } from "@/types/address";
 
 /**
  * Generate a URL-friendly slug from a name
@@ -321,6 +322,7 @@ export async function PATCH(
       contactPhone?: string | null;
       website?: string | null;
       address?: string | null;
+      addressData?: string | null;
       logoData?: string | null;
       bannerData?: string | null;
       metadata?: string | null;
@@ -334,7 +336,24 @@ export async function PATCH(
     if (contactEmail !== undefined) updateData.contactEmail = contactEmail?.trim() || null;
     if (contactPhone !== undefined) updateData.contactPhone = contactPhone?.trim() || null;
     if (website !== undefined) updateData.website = website?.trim() || null;
-    if (address !== undefined) updateData.address = address?.trim() || null;
+    
+    // Handle address updates - support both Address object and legacy string
+    if (address !== undefined) {
+      if (typeof address === 'object' && address !== null && 'street' in address && 'city' in address) {
+        // New Address object format
+        updateData.addressData = JSON.stringify(address);
+        // Update legacy string for backward compatibility
+        const parts = [address.street, address.city, address.zip, address.country].filter(Boolean);
+        updateData.address = parts.join(', ');
+      } else if (typeof address === 'string') {
+        // Legacy string format
+        updateData.address = address?.trim() || null;
+      } else if (address === null) {
+        updateData.address = null;
+        updateData.addressData = null;
+      }
+    }
+    
     if (logoData !== undefined) {
       updateData.logoData = logoData ? JSON.stringify(logoData) : null;
     }
@@ -378,6 +397,16 @@ export async function PATCH(
       }
     );
 
+    // Parse addressData for response
+    let responseAddress: unknown = updatedOrganization.address;
+    if (updatedOrganization.addressData) {
+      try {
+        responseAddress = JSON.parse(updatedOrganization.addressData);
+      } catch {
+        responseAddress = updatedOrganization.address;
+      }
+    }
+
     return NextResponse.json({
       id: updatedOrganization.id,
       name: updatedOrganization.name,
@@ -386,7 +415,7 @@ export async function PATCH(
       contactEmail: updatedOrganization.contactEmail,
       contactPhone: updatedOrganization.contactPhone,
       website: updatedOrganization.website,
-      address: updatedOrganization.address,
+      address: responseAddress,
       logoData: updatedOrganization.logoData
         ? JSON.parse(updatedOrganization.logoData)
         : null,
