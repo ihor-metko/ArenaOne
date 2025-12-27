@@ -144,9 +144,9 @@ model Organization {
   contactPhone String?
   website     String?
   address     String?
-  logo        String?      // Organization logo image URL
-  heroImage   String?      // Organization banner/hero image URL
-  metadata    String?      @db.Text // JSON string for additional metadata
+  logo        String?      @db.Text // JSON object: { url, altText?, thumbnailUrl?, theme?, secondUrl?, secondTheme? }
+  banner      String?      @db.Text // JSON object: { url, altText?, description?, position? }
+  metadata    String?      @db.Text // JSON string for additional metadata (excluding logo/banner)
   isPublic    Boolean      @default(true) // Whether organization is publicly visible
   supportedSports SportType[] @default([PADEL]) // Sports supported by this organization
   createdById String
@@ -248,9 +248,9 @@ model Club {
   socialLinks      String?          @db.Text  // JSON string for social links
   contactInfo      String?
   openingHours     String?
-  logo             String?
-  heroImage        String?
-  metadata         String?          @db.Text // JSON string for additional metadata
+  logo             String?          @db.Text // JSON object: { url, altText?, thumbnailUrl?, theme?, secondUrl?, secondTheme? }
+  banner           String?          @db.Text // JSON object: { url, altText?, description?, position? }
+  metadata         String?          @db.Text // JSON string for additional metadata (excluding logo/banner)
   defaultCurrency  String?          @default("USD")
   timezone         String?          @default("UTC")
   isPublic         Boolean          @default(true)

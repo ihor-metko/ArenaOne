@@ -3,7 +3,28 @@
  */
 
 import { SportType } from "@/constants/sports";
-import type { EntityLogoMetadata } from "@/components/ui/EntityLogo";
+
+/**
+ * Logo object structure
+ */
+export interface LogoObject {
+  url: string;
+  altText?: string;
+  thumbnailUrl?: string;
+  theme?: 'light' | 'dark';
+  secondUrl?: string;
+  secondTheme?: 'light' | 'dark';
+}
+
+/**
+ * Banner object structure
+ */
+export interface BannerObject {
+  url: string;
+  altText?: string;
+  description?: string;
+  position?: 'top' | 'center' | 'bottom';
+}
 
 /**
  * Organization entity
@@ -24,8 +45,8 @@ export interface Organization {
   isPublic: boolean;
   supportedSports?: SportType[];
   clubCount?: number;
-  logo?: string | null;
-  heroImage?: string | null;
+  logo?: LogoObject | null;
+  banner?: BannerObject | null;
   createdBy?: {
     id: string;
     name: string | null;
@@ -56,8 +77,8 @@ export interface CreateOrganizationPayload {
   contactPhone?: string;
   website?: string;
   address?: string;
-  logo?: string;
-  heroImage?: string;
+  logo?: LogoObject;
+  banner?: BannerObject;
   metadata?: Record<string, unknown>;
   supportedSports?: SportType[];
 }
@@ -73,46 +94,73 @@ export interface UpdateOrganizationPayload {
   contactPhone?: string | null;
   website?: string | null;
   address?: string | null;
-  logo?: string | null;
-  heroImage?: string | null;
+  logo?: LogoObject | null;
+  banner?: BannerObject | null;
   metadata?: Record<string, unknown> | null;
   supportedSports?: SportType[];
   isPublic?: boolean;
 }
 
 /**
- * Organization metadata type extending EntityLogoMetadata
+ * Helper function to parse organization logo from JSON string or object
  */
-export interface OrganizationMetadata extends EntityLogoMetadata {
-  /** Banner image vertical alignment */
-  bannerAlignment?: 'top' | 'center' | 'bottom';
-}
-
-/**
- * Helper function to parse organization metadata from JSON string or object
- * 
- * @param metadata - Can be a JSON string (from database) or already parsed object (from API)
- * @returns Parsed metadata or undefined if invalid
- */
-export function parseOrganizationMetadata(metadata: string | Record<string, unknown> | null | undefined): OrganizationMetadata | undefined {
-  if (!metadata) {
+export function parseOrganizationLogo(logo: string | LogoObject | null | undefined): LogoObject | undefined {
+  if (!logo) {
     return undefined;
   }
 
   try {
-    // If metadata is already an object (from API response), validate and return it
-    if (typeof metadata === 'object') {
-      // Basic validation - ensure it's a plain object
-      if (Object.prototype.toString.call(metadata) === '[object Object]') {
-        return metadata as OrganizationMetadata;
-      }
-      return undefined;
+    // If logo is already an object, return it
+    if (typeof logo === 'object') {
+      return logo as LogoObject;
     }
     
-    // If metadata is a string (from database), parse it
-    return JSON.parse(metadata) as OrganizationMetadata;
+    // If logo is a string, try to parse it as JSON
+    // First check if it looks like a URL (backward compatibility)
+    if (typeof logo === 'string' && (logo.startsWith('http') || logo.startsWith('/'))) {
+      // Old format - just a URL string
+      return { url: logo };
+    }
+    
+    // Otherwise, parse as JSON
+    return JSON.parse(logo) as LogoObject;
   } catch {
-    // Invalid JSON
+    // If parsing fails, treat as a URL
+    if (typeof logo === 'string') {
+      return { url: logo };
+    }
+    return undefined;
+  }
+}
+
+/**
+ * Helper function to parse organization banner from JSON string or object
+ */
+export function parseOrganizationBanner(banner: string | BannerObject | null | undefined): BannerObject | undefined {
+  if (!banner) {
+    return undefined;
+  }
+
+  try {
+    // If banner is already an object, return it
+    if (typeof banner === 'object') {
+      return banner as BannerObject;
+    }
+    
+    // If banner is a string, try to parse it as JSON
+    // First check if it looks like a URL (backward compatibility)
+    if (typeof banner === 'string' && (banner.startsWith('http') || banner.startsWith('/'))) {
+      // Old format - just a URL string
+      return { url: banner };
+    }
+    
+    // Otherwise, parse as JSON
+    return JSON.parse(banner) as BannerObject;
+  } catch {
+    // If parsing fails, treat as a URL
+    if (typeof banner === 'string') {
+      return { url: banner };
+    }
     return undefined;
   }
 }

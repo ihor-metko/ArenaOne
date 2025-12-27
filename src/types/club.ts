@@ -1,5 +1,26 @@
 import { SportType } from "@/constants/sports";
-import type { EntityLogoMetadata } from "@/components/ui/EntityLogo";
+
+/**
+ * Logo object structure
+ */
+export interface LogoObject {
+  url: string;
+  altText?: string;
+  thumbnailUrl?: string;
+  theme?: 'light' | 'dark';
+  secondUrl?: string;
+  secondTheme?: 'light' | 'dark';
+}
+
+/**
+ * Banner object structure
+ */
+export interface BannerObject {
+  url: string;
+  altText?: string;
+  description?: string;
+  position?: 'top' | 'center' | 'bottom';
+}
 
 export interface Club {
   id: string;
@@ -8,7 +29,7 @@ export interface Club {
   location: string;
   contactInfo: string | null;
   openingHours: string | null;
-  logo: string | null;
+  logo: LogoObject | null;
   status: string;
   supportedSports?: SportType[];
   createdAt: string;
@@ -32,7 +53,7 @@ export interface ClubWithCounts extends Club {
   organizationId: string;
   shortDescription?: string | null;
   city?: string | null;
-  heroImage?: string | null;
+  banner?: BannerObject | null;
   metadata?: string | null;
   tags?: string | null;
   isPublic?: boolean;
@@ -51,7 +72,7 @@ export interface ClubFormData {
   location: string;
   contactInfo: string;
   openingHours: string;
-  logo: string;
+  logo: LogoObject | null;
 }
 
 export interface ClubBusinessHours {
@@ -135,23 +156,14 @@ export interface ClubDetail {
   socialLinks: string | null;
   contactInfo: string | null;
   openingHours: string | null;
-  logo: string | null;
-  heroImage: string | null;
+  logo: LogoObject | null;
+  banner: BannerObject | null;
   metadata: string | null;
   defaultCurrency: string | null;
   timezone: string | null;
   isPublic: boolean;
   status: string;
   tags: string | null;
-  /**
-   * Flexible metadata field for storing additional club configuration.
-   * Common uses include:
-   * - bannerAlignment: 'top' | 'center' | 'bottom' (controls hero image positioning)
-   * - logoTheme: 'light' | 'dark' (for theme-aware logo display)
-   * - secondLogo: string | null (alternate logo URL)
-   * - secondLogoTheme: 'light' | 'dark'
-   * - Any other custom club-specific settings
-   */
   supportedSports?: SportType[];
   createdAt: string;
   updatedAt: string;
@@ -185,8 +197,8 @@ export interface CreateClubPayload {
   isPublic?: boolean;
   tags?: string | null;
   supportedSports?: SportType[];
-  heroImage?: string;
-  logo?: string;
+  banner?: BannerObject;
+  logo?: LogoObject;
   gallery?: Array<{
     url: string;
     key: string;
@@ -215,30 +227,71 @@ export interface UpdateClubPayload {
   location?: string;
   contactInfo?: string | null;
   openingHours?: string | null;
-  logo?: string | null;
+  logo?: LogoObject | null;
+  banner?: BannerObject | null;
   supportedSports?: SportType[];
 }
 
 /**
- * Club metadata type extending EntityLogoMetadata with banner alignment
+ * Helper function to parse club logo from JSON string or object
  */
-export interface ClubMetadata extends EntityLogoMetadata {
-  /** Banner image vertical alignment */
-  bannerAlignment?: 'top' | 'center' | 'bottom';
-}
-
-/**
- * Helper function to parse club metadata from JSON string
- */
-export function parseClubMetadata(metadataString: string | null | undefined): ClubMetadata | undefined {
-  if (!metadataString) {
+export function parseClubLogo(logo: string | LogoObject | null | undefined): LogoObject | undefined {
+  if (!logo) {
     return undefined;
   }
 
   try {
-    return JSON.parse(metadataString) as ClubMetadata;
+    // If logo is already an object, return it
+    if (typeof logo === 'object') {
+      return logo as LogoObject;
+    }
+    
+    // If logo is a string, try to parse it as JSON
+    // First check if it looks like a URL (backward compatibility)
+    if (typeof logo === 'string' && (logo.startsWith('http') || logo.startsWith('/'))) {
+      // Old format - just a URL string
+      return { url: logo };
+    }
+    
+    // Otherwise, parse as JSON
+    return JSON.parse(logo) as LogoObject;
   } catch {
-    // Invalid JSON
+    // If parsing fails, treat as a URL
+    if (typeof logo === 'string') {
+      return { url: logo };
+    }
+    return undefined;
+  }
+}
+
+/**
+ * Helper function to parse club banner from JSON string or object
+ */
+export function parseClubBanner(banner: string | BannerObject | null | undefined): BannerObject | undefined {
+  if (!banner) {
+    return undefined;
+  }
+
+  try {
+    // If banner is already an object, return it
+    if (typeof banner === 'object') {
+      return banner as BannerObject;
+    }
+    
+    // If banner is a string, try to parse it as JSON
+    // First check if it looks like a URL (backward compatibility)
+    if (typeof banner === 'string' && (banner.startsWith('http') || banner.startsWith('/'))) {
+      // Old format - just a URL string
+      return { url: banner };
+    }
+    
+    // Otherwise, parse as JSON
+    return JSON.parse(banner) as BannerObject;
+  } catch {
+    // If parsing fails, treat as a URL
+    if (typeof banner === 'string') {
+      return { url: banner };
+    }
     return undefined;
   }
 }
