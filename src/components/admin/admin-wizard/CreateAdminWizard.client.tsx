@@ -173,18 +173,15 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
           newErrors.userId = t("errors.userRequired");
         }
       } else {
-        // New user validation
-        if (!formData.name || !formData.name.trim()) {
-          newErrors.name = t("errors.nameRequired");
-        }
+        // New user validation - only email is required for invite flow
+        // Name and phone are optional metadata for admin's reference
         if (!formData.email || !formData.email.trim()) {
           newErrors.email = t("errors.emailRequired");
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
           newErrors.email = t("errors.emailInvalid");
         }
-        if (!formData.phone || !formData.phone.trim()) {
-          newErrors.phone = t("errors.phoneRequired");
-        } else if (!/^\+?[0-9\s\-\(\)]+$/.test(formData.phone)) {
+        // Optional fields - validate format if provided
+        if (formData.phone && formData.phone.trim() && !/^\+?[0-9\s\-\(\)]+$/.test(formData.phone)) {
           newErrors.phone = t("errors.phoneInvalid");
         }
       }
@@ -221,7 +218,8 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
         return;
       }
     } else {
-      if (!formData.organizationId || !formData.role || !formData.name || !formData.email || !formData.phone) {
+      // For new users (invite flow), only email and role are required
+      if (!formData.organizationId || !formData.role || !formData.email) {
         setErrors({ general: t("errors.allFieldsRequired") });
         return;
       }
