@@ -9,7 +9,7 @@ import { requireAnyAdmin } from "@/lib/requireRole";
  */
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const authResult = await requireAnyAdmin(request);
 
@@ -18,7 +18,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { bookedSlots, totalSlots } = body;
 
@@ -113,7 +113,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const authResult = await requireAnyAdmin(request);
 
@@ -122,7 +122,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Fetch the existing statistics to verify ownership
     const existingStats = await prisma.clubDailyStatistics.findUnique({
