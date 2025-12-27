@@ -218,10 +218,12 @@ export async function calculateAndStoreDailyStatistics(
  * This can be called from a cron job to update statistics daily.
  * 
  * @param date - The date to calculate statistics for (defaults to yesterday)
+ * @param fallbackMode - If true, only recalculate for missing statistics (default: false)
  * @returns Array of created/updated statistics
  */
 export async function calculateDailyStatisticsForAllClubs(
-  date: Date = new Date(Date.now() - MILLISECONDS_PER_DAY) // Default to yesterday
+  date: Date = new Date(Date.now() - MILLISECONDS_PER_DAY), // Default to yesterday
+  fallbackMode: boolean = false
 ) {
   // Get all active clubs
   const clubs = await prisma.club.findMany({
@@ -234,14 +236,43 @@ export async function calculateDailyStatisticsForAllClubs(
     },
   });
 
+  // Normalize date to start of day
+  const normalizedDate = new Date(date);
+  normalizedDate.setHours(0, 0, 0, 0);
+
   const results = [];
   for (const club of clubs) {
     try {
-      const stats = await calculateAndStoreDailyStatistics(club.id, date);
+      // In fallback mode, check if statistics already exist
+      if (fallbackMode) {
+        const existingStats = await prisma.clubDailyStatistics.findUnique({
+          where: {
+            clubId_date: {
+              clubId: club.id,
+              date: normalizedDate,
+            },
+          },
+        });
+
+        // Skip if statistics already exist
+        if (existingStats) {
+          results.push({
+            clubId: club.id,
+            clubName: club.name,
+            success: true,
+            skipped: true,
+            statistics: existingStats,
+          });
+          continue;
+        }
+      }
+
+      const stats = await calculateAndStoreDailyStatistics(club.id, normalizedDate);
       results.push({
         clubId: club.id,
         clubName: club.name,
         success: true,
+        skipped: false,
         statistics: stats,
       });
     } catch (error) {
@@ -253,6 +284,7 @@ export async function calculateDailyStatisticsForAllClubs(
         clubId: club.id,
         clubName: club.name,
         success: false,
+        skipped: false,
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
@@ -440,6 +472,58 @@ export async function getOrganizationMonthlyStatistics(
         statistics: null,
         error: error instanceof Error ? error.message : "Unknown error",
       });
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Update statistics for a booking's affected dates
+ * 
+ * This function is called reactively when a booking is created, updated, or deleted.
+ * It recalculates daily statistics for the date(s) affected by the booking.
+ * 
+ * Should be called within a transaction for consistency.
+ * 
+ * @param clubId - The club ID
+ * @param bookingStart - The booking start time
+ * @param bookingEnd - The booking end time (optional, defaults to same day as start)
+ * @returns Array of updated statistics records
+ */
+export async function updateStatisticsForBooking(
+  clubId: string,
+  bookingStart: Date,
+  bookingEnd?: Date
+) {
+  // Normalize dates to start of day
+  const startDate = new Date(bookingStart);
+  startDate.setHours(0, 0, 0, 0);
+
+  const endDate = bookingEnd ? new Date(bookingEnd) : new Date(bookingStart);
+  endDate.setHours(0, 0, 0, 0);
+
+  const affectedDates: Date[] = [];
+  const currentDate = new Date(startDate);
+
+  // Collect all affected dates (in case booking spans multiple days)
+  while (currentDate <= endDate) {
+    affectedDates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Recalculate statistics for each affected date
+  const results = [];
+  for (const date of affectedDates) {
+    try {
+      const stats = await calculateAndStoreDailyStatistics(clubId, date);
+      results.push(stats);
+    } catch (error) {
+      console.error(
+        `Failed to update statistics for club ${clubId} on ${date.toISOString()}:`,
+        error
+      );
+      // Continue updating other dates even if one fails
     }
   }
 
