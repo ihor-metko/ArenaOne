@@ -146,7 +146,6 @@ describe("Statistics Service", () => {
     });
 
     it("should count bookings correctly", async () => {
-      const baseDate = new Date("2024-01-15T10:00:00");
       (prisma.booking.findMany as jest.Mock).mockResolvedValue([
         {
           start: new Date("2024-01-15T10:00:00"),
