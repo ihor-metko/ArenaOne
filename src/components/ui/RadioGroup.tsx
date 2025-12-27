@@ -53,9 +53,6 @@ export interface RadioGroupProps {
   className?: string;
 }
 
-// Shared empty function to avoid creating new instances
-const noop = () => {};
-
 export function RadioGroup({
   label,
   options,
@@ -69,6 +66,7 @@ export function RadioGroup({
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
+    // currentTarget is the element with the event handler (the radio option div)
     const currentValue = event.currentTarget.getAttribute('data-value');
     if (!currentValue) return;
     
@@ -117,9 +115,10 @@ export function RadioGroup({
       const newOption = options[newIndex];
       onChange(newOption.value);
       
-      // Focus the new option
+      // Focus the new option - escape the value for safe querySelector
+      const escapedValue = CSS.escape(newOption.value);
       const optionElement = containerRef.current?.querySelector(
-        `[data-value="${newOption.value}"]`
+        `[data-value="${escapedValue}"]`
       ) as HTMLElement;
       optionElement?.focus();
     }
@@ -176,7 +175,7 @@ export function RadioGroup({
                 name={name}
                 value={option.value}
                 checked={isSelected}
-                onChange={noop}
+                readOnly
                 disabled={isDisabled}
                 tabIndex={-1}
                 className="im-radio-native-input"
