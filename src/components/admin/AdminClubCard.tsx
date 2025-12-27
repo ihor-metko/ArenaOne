@@ -39,7 +39,7 @@ function getClubAddress(club: ClubWithCounts): string {
     try {
       const metadata = typeof club.metadata === 'string' ? JSON.parse(club.metadata) : club.metadata;
       const addressFromMeta = parseAddressFromMetadata(metadata, {
-        street: club.location,
+        // Don't pass location as street - location is the full address
         city: club.city || undefined,
         country: club.country || undefined,
         latitude: club.latitude || undefined,
@@ -54,6 +54,7 @@ function getClubAddress(club: ClubWithCounts): string {
   }
   
   // Fall back to legacy city + location format
+  // location is the full address string, not just street
   if (club.city && club.location) {
     if (club.location.toLowerCase().startsWith(club.city.toLowerCase())) {
       return club.location;

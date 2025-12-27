@@ -8,8 +8,7 @@ import { createAddressFromForm, type Address } from "@/types/address";
 export interface AddressData {
   street: string;
   city: string;
-  postalCode?: string;
-  zip?: string;
+  postalCode?: string; // Keep postalCode as the standard field name
   country?: string;
   latitude?: number | null;
   longitude?: number | null;
@@ -27,7 +26,7 @@ export function AddressTab({ initialData, onSave, disabled = false, translationN
   const [formData, setFormData] = useState({
     street: initialData.street || "",
     city: initialData.city || "",
-    postalCode: initialData.postalCode || initialData.zip || "",
+    postalCode: initialData.postalCode || "", // Use postalCode consistently
     country: initialData.country || "",
     latitude: initialData.latitude?.toString() || "",
     longitude: initialData.longitude?.toString() || "",
