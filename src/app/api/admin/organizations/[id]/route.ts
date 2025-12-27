@@ -208,8 +208,8 @@ export async function GET(
       contactPhone: organization.contactPhone,
       website: organization.website,
       address: organization.address,
-      logo: organization.logo,
-      heroImage: organization.heroImage,
+      logo: organization.logo ? JSON.parse(organization.logo) : null,
+      banner: organization.banner ? JSON.parse(organization.banner) : null,
       metadata: organization.metadata ? JSON.parse(organization.metadata) : null,
       isPublic: organization.isPublic,
       archivedAt: organization.archivedAt,
@@ -256,7 +256,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, slug, description, contactEmail, contactPhone, website, address, logo, heroImage, metadata, isPublic, supportedSports } = body;
+    const { name, slug, description, contactEmail, contactPhone, website, address, logo, banner, metadata, isPublic, supportedSports } = body;
 
 
     // Verify organization exists
@@ -322,7 +322,7 @@ export async function PATCH(
       website?: string | null;
       address?: string | null;
       logo?: string | null;
-      heroImage?: string | null;
+      banner?: string | null;
       metadata?: string | null;
       isPublic?: boolean;
       supportedSports?: SportType[];
@@ -335,8 +335,8 @@ export async function PATCH(
     if (contactPhone !== undefined) updateData.contactPhone = contactPhone?.trim() || null;
     if (website !== undefined) updateData.website = website?.trim() || null;
     if (address !== undefined) updateData.address = address?.trim() || null;
-    if (logo !== undefined) updateData.logo = logo?.trim() || null;
-    if (heroImage !== undefined) updateData.heroImage = heroImage?.trim() || null;
+    if (logo !== undefined) updateData.logo = logo ? JSON.stringify(logo) : null;
+    if (banner !== undefined) updateData.banner = banner ? JSON.stringify(banner) : null;
     if (metadata !== undefined) {
       updateData.metadata = metadata ? JSON.stringify(metadata) : null;
     }
@@ -383,8 +383,8 @@ export async function PATCH(
       contactPhone: updatedOrganization.contactPhone,
       website: updatedOrganization.website,
       address: updatedOrganization.address,
-      logo: updatedOrganization.logo,
-      heroImage: updatedOrganization.heroImage,
+      logo: updatedOrganization.logo ? JSON.parse(updatedOrganization.logo) : null,
+      banner: updatedOrganization.banner ? JSON.parse(updatedOrganization.banner) : null,
       metadata: updatedOrganization.metadata
         ? JSON.parse(updatedOrganization.metadata)
         : null,
