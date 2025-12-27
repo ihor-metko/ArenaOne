@@ -79,14 +79,10 @@ export const useClubStatisticsStore = create<ClubStatisticsState>((set, get) => 
     const { force = false, clubId } = options;
     const state = get();
 
-    // If clubId changed, invalidate cache
+    // If clubId changed, invalidate cache (only if not already done)
     if (clubId && clubId !== state.lastClubId) {
-      set({ 
-        dailyStatistics: [], 
-        monthlyStatistics: [],
-        lastFetchedAt: null,
-        lastClubId: clubId,
-      });
+      get().invalidateStatistics();
+      set({ lastClubId: clubId });
     }
 
     // If not forcing and stats are already loaded for this club, return immediately
@@ -150,14 +146,10 @@ export const useClubStatisticsStore = create<ClubStatisticsState>((set, get) => 
     const { force = false, clubId } = options;
     const state = get();
 
-    // If clubId changed, invalidate cache
+    // If clubId changed, invalidate cache (only if not already done)
     if (clubId && clubId !== state.lastClubId) {
-      set({ 
-        dailyStatistics: [],
-        monthlyStatistics: [],
-        lastFetchedAt: null,
-        lastClubId: clubId,
-      });
+      get().invalidateStatistics();
+      set({ lastClubId: clubId });
     }
 
     // If not forcing and stats are already loaded for this club, return immediately

@@ -90,6 +90,15 @@ export async function PUT(
     // Recalculate occupancy percentage
     const finalBookedSlots = bookedSlots !== undefined ? bookedSlots : existingStats.bookedSlots;
     const finalTotalSlots = totalSlots !== undefined ? totalSlots : existingStats.totalSlots;
+    
+    // Validate that bookedSlots does not exceed totalSlots
+    if (finalBookedSlots > finalTotalSlots) {
+      return NextResponse.json(
+        { error: "bookedSlots cannot exceed totalSlots" },
+        { status: 400 }
+      );
+    }
+    
     updateData.occupancyPercentage = (finalBookedSlots / finalTotalSlots) * 100;
 
     const updatedStats = await prisma.clubDailyStatistics.update({

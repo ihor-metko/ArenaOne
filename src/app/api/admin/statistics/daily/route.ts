@@ -129,6 +129,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate that bookedSlots does not exceed totalSlots
+    if (bookedSlots > totalSlots) {
+      return NextResponse.json(
+        { error: "bookedSlots cannot exceed totalSlots" },
+        { status: 400 }
+      );
+    }
+
     // Check if user has permission to manage this club
     if (authResult.adminType === "club_owner" || authResult.adminType === "club_admin") {
       if (!authResult.managedIds.includes(clubId)) {
