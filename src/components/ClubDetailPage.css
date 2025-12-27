@@ -79,26 +79,7 @@
   @apply flex-1;
 }
 
-.rsp-club-hero-logo {
-  @apply w-16 h-16 md:w-20 md:h-20 rounded-xl object-contain border-2 border-white shadow-lg;
-  background-color: var(--rsp-card-bg);
-  flex-shrink: 0;
-  padding: 0.5rem;
-}
-
-/* Contrast enhancement for universal logos that don't match current theme */
-/* Using more specific selector to avoid !important */
-.rsp-club-hero-logo.rsp-club-hero-logo--contrast-light {
-  /* Light background for logos designed for light theme when in dark mode */
-  background-color: rgba(255, 255, 255, 0.95);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.rsp-club-hero-logo.rsp-club-hero-logo--contrast-dark {
-  /* Dark background for logos designed for dark theme when in light mode */
-  background-color: rgba(0, 0, 0, 0.85);
-  border-color: rgba(0, 0, 0, 0.3);
-}
+/* EntityLogo styles moved to src/components/ui/EntityLogo.styles.css */
 
 .rsp-club-hero-name {
   @apply text-2xl md:text-4xl font-bold mb-2;

@@ -13,6 +13,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
+import "./EntityLogo.styles.css";
 
 export interface EntityLogoMetadata {
   /**

@@ -120,10 +120,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-.rsp-club-logo-placeholder-skeleton {
-  @apply w-14 h-14 rounded-xl flex-shrink-0;
-  background-color: var(--rsp-border);
-}
+/* EntityLogo styles moved to src/components/ui/EntityLogo.styles.css */
 
 .rsp-club-name {
   @apply text-lg font-semibold leading-tight;
@@ -206,27 +203,9 @@
   transform: scale(1.05);
 }
 
-.rsp-club-hero-image--logo {
-  @apply object-contain;
-  background-color: var(--rsp-card-bg);
-  padding: 1rem;
-}
+/* EntityLogo styles moved to src/components/ui/EntityLogo.styles.css */
 
-/* Logo overlay on banner (similar to organization cards) */
-.rsp-club-logo-overlay {
-  @apply absolute bottom-3 left-3 w-16 h-16 rounded-lg object-contain shadow-lg;
-  background-color: rgba(255, 255, 255, 0.95);
-  padding: 0.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.dark .rsp-club-logo-overlay {
-  background-color: rgba(0, 0, 0, 0.8);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Logo styles are centralized in ClubDetailPage.css */
-/* rsp-club-hero-logo and contrast classes are defined there */
+/* Club card content section */
 
 .rsp-club-image-placeholder {
   @apply w-full h-full flex items-center justify-center;
