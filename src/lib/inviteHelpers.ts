@@ -10,10 +10,13 @@
 
 import { prisma } from "@/lib/prisma";
 import { MembershipRole, ClubMembershipRole } from "@/constants/roles";
+import { canInviteToOrganization, canInviteToClub } from "@/lib/permissions";
 import type { InviteRole, InviteStatus } from "@prisma/client";
 
 /**
  * Check if a user has permission to invite someone with a specific role.
+ * 
+ * Uses centralized permission utilities from @/lib/permissions.
  * 
  * Business rules:
  * - Root admins can invite anyone to anything
@@ -35,90 +38,41 @@ export async function validateInvitePermissions(
   organizationId?: string | null,
   clubId?: string | null
 ): Promise<{ allowed: boolean; error?: string }> {
-  // Root admins can invite anyone
-  if (isRoot) {
-    return { allowed: true };
+  const user = { id: inviterUserId, isRoot };
+
+  // Validate scope requirements
+  const isOrgRole = role === "ORGANIZATION_OWNER" || role === "ORGANIZATION_ADMIN";
+  const isClubRole = role === "CLUB_OWNER" || role === "CLUB_ADMIN";
+
+  if (isOrgRole && !organizationId) {
+    return { allowed: false, error: "Organization ID is required for organization role invites" };
   }
 
-  // Organization-level invites (ORGANIZATION_OWNER, ORGANIZATION_ADMIN)
-  if (role === "ORGANIZATION_OWNER" || role === "ORGANIZATION_ADMIN") {
-    if (!organizationId) {
-      return { allowed: false, error: "Organization ID is required for organization role invites" };
-    }
+  if (isClubRole && !clubId) {
+    return { allowed: false, error: "Club ID is required for club role invites" };
+  }
 
-    // Check if inviter is an organization admin for this organization
-    const membership = await prisma.membership.findUnique({
-      where: {
-        userId_organizationId: {
-          userId: inviterUserId,
-          organizationId,
-        },
-      },
-    });
-
-    if (!membership || membership.role !== MembershipRole.ORGANIZATION_ADMIN) {
+  // Organization-level invites
+  if (isOrgRole && organizationId) {
+    const canInvite = await canInviteToOrganization(user, organizationId, role);
+    if (!canInvite) {
+      if (role === "ORGANIZATION_OWNER") {
+        return { allowed: false, error: "Only organization owners can invite new organization owners" };
+      }
       return { allowed: false, error: "Only organization admins can invite organization members" };
     }
-
-    // Organization admins cannot invite organization owners unless they are the primary owner
-    if (role === "ORGANIZATION_OWNER" && !membership.isPrimaryOwner) {
-      return { allowed: false, error: "Only organization owners can invite new organization owners" };
-    }
-
     return { allowed: true };
   }
 
-  // Club-level invites (CLUB_OWNER, CLUB_ADMIN)
-  if (role === "CLUB_OWNER" || role === "CLUB_ADMIN") {
-    if (!clubId) {
-      return { allowed: false, error: "Club ID is required for club role invites" };
-    }
-
-    // Get the club to check organization membership
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      select: { organizationId: true },
-    });
-
-    if (!club) {
-      return { allowed: false, error: "Club not found" };
-    }
-
-    // Check if inviter is an organization admin for the club's organization
-    if (club.organizationId) {
-      const orgMembership = await prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId: inviterUserId,
-            organizationId: club.organizationId,
-          },
-        },
-      });
-
-      if (orgMembership && orgMembership.role === MembershipRole.ORGANIZATION_ADMIN) {
-        return { allowed: true };
+  // Club-level invites
+  if (isClubRole && clubId) {
+    const canInvite = await canInviteToClub(user, clubId, role);
+    if (!canInvite) {
+      if (role === "CLUB_OWNER") {
+        return { allowed: false, error: "Club owners cannot invite new club owners" };
       }
-    }
-
-    // Check if inviter is a club owner for this club
-    const clubMembership = await prisma.clubMembership.findUnique({
-      where: {
-        userId_clubId: {
-          userId: inviterUserId,
-          clubId,
-        },
-      },
-    });
-
-    if (!clubMembership || clubMembership.role !== ClubMembershipRole.CLUB_OWNER) {
       return { allowed: false, error: "Only club owners or organization admins can invite club members" };
     }
-
-    // Club owners cannot invite new club owners
-    if (role === "CLUB_OWNER") {
-      return { allowed: false, error: "Club owners cannot invite new club owners" };
-    }
-
     return { allowed: true };
   }
 
