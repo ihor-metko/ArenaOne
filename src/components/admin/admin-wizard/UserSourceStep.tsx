@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { UserSourceData, UserSource, AdminWizardErrors } from "@/types/adminWizard";
 
 interface UserSourceStepProps {
@@ -15,6 +16,8 @@ export function UserSourceStep({
   errors,
   disabled,
 }: UserSourceStepProps) {
+  const t = useTranslations("createAdminWizard.userSourceStep");
+  
   const handleSourceChange = (source: UserSource) => {
     onChange({ userSource: source });
   };
@@ -23,7 +26,7 @@ export function UserSourceStep({
     <div className="im-wizard-step-content">
       <div className="im-form-field">
         <label className="im-field-label">
-          How would you like to add the user? *
+          {t("label")}
         </label>
         <div className="im-radio-group">
           <label className="im-radio-option">
@@ -37,9 +40,9 @@ export function UserSourceStep({
               className="im-radio-input"
             />
             <span className="im-radio-label-content">
-              <span className="im-radio-label-title">Existing User</span>
+              <span className="im-radio-label-title">{t("existing.title")}</span>
               <span className="im-radio-label-description">
-                Assign a role to a user who already exists in the system
+                {t("existing.description")}
               </span>
             </span>
           </label>
@@ -55,9 +58,9 @@ export function UserSourceStep({
               className="im-radio-input"
             />
             <span className="im-radio-label-content">
-              <span className="im-radio-label-title">New User</span>
+              <span className="im-radio-label-title">{t("new.title")}</span>
               <span className="im-radio-label-description">
-                Create a new user and send them an invitation email
+                {t("new.description")}
               </span>
             </span>
           </label>

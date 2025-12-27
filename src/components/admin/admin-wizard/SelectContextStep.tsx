@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Select, type SelectOption } from "@/components/ui";
 import type { ContextSelectionData, OrganizationOption, ClubOption, AdminRole, AdminWizardErrors } from "@/types/adminWizard";
 
@@ -30,6 +31,8 @@ export function SelectContextStep({
   isRoleEditable,
   showClubSelector,
 }: SelectContextStepProps) {
+  const t = useTranslations("createAdminWizard.contextStep");
+  
   const orgOptions: SelectOption[] = organizations.map(org => ({
     value: org.id,
     label: org.name,
@@ -44,16 +47,16 @@ export function SelectContextStep({
     let label = "";
     switch (role) {
       case "ORGANIZATION_OWNER":
-        label = "Organization Owner";
+        label = t("roles.organizationOwner");
         break;
       case "ORGANIZATION_ADMIN":
-        label = "Organization Admin";
+        label = t("roles.organizationAdmin");
         break;
       case "CLUB_OWNER":
-        label = "Club Owner";
+        label = t("roles.clubOwner");
         break;
       case "CLUB_ADMIN":
-        label = "Club Admin";
+        label = t("roles.clubAdmin");
         break;
       default:
         label = role;
@@ -79,7 +82,7 @@ export function SelectContextStep({
       <div className="im-form-field">
         <Select
           id="organization"
-          label="Organization *"
+          label={t("organization")}
           options={orgOptions}
           value={data.organizationId}
           onChange={(value) => {
@@ -89,7 +92,7 @@ export function SelectContextStep({
               clubId: undefined,
             });
           }}
-          placeholder="Select an organization"
+          placeholder={t("organizationPlaceholder")}
           disabled={disabled || !isOrgEditable}
           required
           aria-describedby={errors.organizationId ? "org-error" : undefined}
@@ -101,7 +104,7 @@ export function SelectContextStep({
         )}
         {!isOrgEditable && (
           <p className="im-field-hint">
-            Organization is pre-selected based on your access level
+            {t("organizationHint")}
           </p>
         )}
       </div>
@@ -109,7 +112,7 @@ export function SelectContextStep({
       <div className="im-form-field">
         <Select
           id="role"
-          label="Admin Role *"
+          label={t("role")}
           options={roleOptions}
           value={data.role}
           onChange={(value) => {
@@ -119,7 +122,7 @@ export function SelectContextStep({
               clubId: value === "ORGANIZATION_ADMIN" ? undefined : data.clubId,
             });
           }}
-          placeholder="Select a role"
+          placeholder={t("rolePlaceholder")}
           disabled={disabled || !isRoleEditable || allowedRoles.length === 1}
           required
           aria-describedby={errors.role ? "role-error" : undefined}
@@ -135,11 +138,11 @@ export function SelectContextStep({
         <div className="im-form-field">
           <Select
             id="club"
-            label="Club *"
+            label={t("club")}
             options={filteredClubOptions}
             value={data.clubId}
             onChange={(value) => onChange({ clubId: value })}
-            placeholder="Select a club"
+            placeholder={t("clubPlaceholder")}
             disabled={disabled || !isClubEditable || !data.organizationId}
             required
             aria-describedby={errors.clubId ? "club-error" : undefined}
@@ -151,12 +154,12 @@ export function SelectContextStep({
           )}
           {!data.organizationId && (
             <p className="im-field-hint">
-              Please select an organization first
+              {t("clubHint")}
             </p>
           )}
           {!isClubEditable && (
             <p className="im-field-hint">
-              Club is pre-selected based on your access level
+              {t("clubPreselectedHint")}
             </p>
           )}
         </div>

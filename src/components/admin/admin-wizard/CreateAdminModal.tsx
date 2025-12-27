@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
 import { CreateAdminWizard } from "./CreateAdminWizard.client";
 import type { CreateAdminWizardConfig } from "@/types/adminWizard";
@@ -22,6 +23,8 @@ export function CreateAdminModal({
   onClose,
   config,
 }: CreateAdminModalProps) {
+  const t = useTranslations("createAdminWizard.modal");
+  
   // Create a wrapped config that includes onCancel to close the modal
   const wrappedConfig: CreateAdminWizardConfig = {
     ...config,
@@ -49,8 +52,8 @@ export function CreateAdminModal({
       onClose={onClose}
       title={
         config.context === "club"
-          ? "Create Club Admin"
-          : "Create Admin"
+          ? t("titleClub")
+          : t("titleDefault")
       }
     >
       <CreateAdminWizard config={wrappedConfig} />

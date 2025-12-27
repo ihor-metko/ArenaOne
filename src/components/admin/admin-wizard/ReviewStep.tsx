@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { AdminCreationData, OrganizationOption, ClubOption } from "@/types/adminWizard";
 
 interface ReviewStepProps {
@@ -13,6 +14,9 @@ export function ReviewStep({
   organizations,
   clubs,
 }: ReviewStepProps) {
+  const t = useTranslations("createAdminWizard.reviewStep");
+  const tContext = useTranslations("createAdminWizard.contextStep");
+  
   const organization = organizations.find(org => org.id === data.organizationId);
   const club = data.clubId ? clubs.find(c => c.id === data.clubId) : null;
   
@@ -21,44 +25,44 @@ export function ReviewStep({
   
   switch (data.role) {
     case "ORGANIZATION_OWNER":
-      roleLabel = "Organization Owner";
+      roleLabel = tContext("roles.organizationOwner");
       break;
     case "ORGANIZATION_ADMIN":
-      roleLabel = "Organization Admin";
+      roleLabel = tContext("roles.organizationAdmin");
       break;
     case "CLUB_OWNER":
-      roleLabel = "Club Owner";
+      roleLabel = tContext("roles.clubOwner");
       break;
     case "CLUB_ADMIN":
-      roleLabel = "Club Admin";
+      roleLabel = tContext("roles.clubAdmin");
       break;
     default:
       roleLabel = data.role;
   }
 
   if (data.userSource === "existing") {
-    actionText = "The selected user will be assigned the role.";
+    actionText = t("actionExisting");
   } else {
-    actionText = "A new user will be created and an invitation email will be sent.";
+    actionText = t("actionNew");
   }
 
   return (
     <div className="im-wizard-step-content">
       <div className="im-review-section">
-        <h3 className="im-review-section-title">Admin Context</h3>
+        <h3 className="im-review-section-title">{t("adminContext")}</h3>
         <dl className="im-review-list">
           <div className="im-review-item">
-            <dt className="im-review-label">Organization:</dt>
-            <dd className="im-review-value">{organization?.name || "Not selected"}</dd>
+            <dt className="im-review-label">{t("organization")}</dt>
+            <dd className="im-review-value">{organization?.name || t("notSelected")}</dd>
           </div>
           {club && (
             <div className="im-review-item">
-              <dt className="im-review-label">Club:</dt>
+              <dt className="im-review-label">{t("club")}</dt>
               <dd className="im-review-value">{club.name}</dd>
             </div>
           )}
           <div className="im-review-item">
-            <dt className="im-review-label">Role:</dt>
+            <dt className="im-review-label">{t("role")}</dt>
             <dd className="im-review-value">
               <span className="im-review-badge im-review-badge--role">
                 {roleLabel}
@@ -69,25 +73,25 @@ export function ReviewStep({
       </div>
 
       <div className="im-review-section">
-        <h3 className="im-review-section-title">User Information</h3>
+        <h3 className="im-review-section-title">{t("userInformation")}</h3>
         <dl className="im-review-list">
           <div className="im-review-item">
-            <dt className="im-review-label">User Source:</dt>
+            <dt className="im-review-label">{t("userSource")}</dt>
             <dd className="im-review-value">
-              {data.userSource === "existing" ? "Existing User" : "New User"}
+              {data.userSource === "existing" ? t("existingUser") : t("newUser")}
             </dd>
           </div>
           <div className="im-review-item">
-            <dt className="im-review-label">Full Name:</dt>
-            <dd className="im-review-value">{data.name || "N/A"}</dd>
+            <dt className="im-review-label">{t("fullName")}</dt>
+            <dd className="im-review-value">{data.name || t("na")}</dd>
           </div>
           <div className="im-review-item">
-            <dt className="im-review-label">Email:</dt>
-            <dd className="im-review-value">{data.email || "N/A"}</dd>
+            <dt className="im-review-label">{t("email")}</dt>
+            <dd className="im-review-value">{data.email || t("na")}</dd>
           </div>
           {data.userSource === "new" && data.phone && (
             <div className="im-review-item">
-              <dt className="im-review-label">Phone:</dt>
+              <dt className="im-review-label">{t("phone")}</dt>
               <dd className="im-review-value">{data.phone}</dd>
             </div>
           )}
@@ -96,7 +100,7 @@ export function ReviewStep({
 
       <div className="im-review-note">
         <p>
-          <strong>Action:</strong> {actionText}
+          <strong>{t("actionLabel")}</strong> {actionText}
         </p>
       </div>
     </div>
