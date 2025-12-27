@@ -67,6 +67,7 @@ export function ClubEditor({
     logoTheme: metadata?.logoTheme || 'light',
     secondLogo: metadata?.secondLogo ? { url: metadata.secondLogo, key: "", preview: metadata.secondLogo } : null,
     secondLogoTheme: metadata?.secondLogoTheme || 'dark',
+    previewBackground: metadata?.previewBackground || 'light',
   };
 
   const bannerData: BannerData = {
