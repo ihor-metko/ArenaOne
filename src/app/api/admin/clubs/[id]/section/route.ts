@@ -54,8 +54,8 @@ interface GalleryImage {
 }
 
 interface GalleryPayload {
-  heroImage: string | null;
-  logo: string | null;
+  banner: { url: string; altText?: string; description?: string; position?: string } | null;
+  logo: { url: string; altText?: string; thumbnailUrl?: string; theme?: string; secondUrl?: string; secondTheme?: string } | null;
   gallery: GalleryImage[];
 }
 
@@ -316,12 +316,12 @@ export async function PATCH(
         const galleryPayload = payload as GalleryPayload;
 
         updatedClub = await prisma.$transaction(async (tx) => {
-          // Update hero image and logo
+          // Update banner and logo
           await tx.club.update({
             where: { id: clubId },
             data: {
-              heroImage: galleryPayload.heroImage || null,
-              logo: galleryPayload.logo || null,
+              banner: galleryPayload.banner ? JSON.stringify(galleryPayload.banner) : null,
+              logo: galleryPayload.logo ? JSON.stringify(galleryPayload.logo) : null,
             },
           });
 
