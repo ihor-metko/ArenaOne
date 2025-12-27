@@ -66,7 +66,6 @@ export function ClubEditor({
     logoTheme: metadata?.logoTheme || 'light',
     secondLogo: metadata?.secondLogo ? { url: metadata.secondLogo, key: "", preview: metadata.secondLogo } : null,
     secondLogoTheme: metadata?.secondLogoTheme || 'dark',
-    previewBackground: metadata?.previewBackground || 'light',
   };
 
   const bannerData: BannerData = {
@@ -141,7 +140,7 @@ export function ClubEditor({
         existingMetadata = {};
       }
     }
-    
+
     // Update metadata with logo settings
     await onUpdate("metadata", {
       metadata: JSON.stringify({
@@ -149,7 +148,7 @@ export function ClubEditor({
         ...payload.metadata,
       }),
     });
-    
+
     // Upload logo if provided
     if (payload.logo) {
       const logoFormData = new FormData();
@@ -166,7 +165,7 @@ export function ClubEditor({
         throw new Error(errorData.error || t("clubs.errors.imageUploadFailed"));
       }
     }
-    
+
     // Upload second logo if provided
     if (payload.secondLogo) {
       const secondLogoFormData = new FormData();
@@ -199,7 +198,7 @@ export function ClubEditor({
         existingMetadata = {};
       }
     }
-    
+
     // Update metadata with alignment
     await onUpdate("metadata", {
       metadata: JSON.stringify({

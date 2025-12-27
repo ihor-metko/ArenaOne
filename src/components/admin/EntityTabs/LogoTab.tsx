@@ -20,7 +20,6 @@ export interface LogoData {
   logoTheme: 'light' | 'dark';
   secondLogo: UploadedFile | null;
   secondLogoTheme: 'light' | 'dark';
-  previewBackground?: 'light' | 'dark'; // Background preview for single logo mode
 }
 
 interface LogoTabProps {
@@ -51,7 +50,6 @@ export function LogoTab({ initialData, onSave, disabled = false, translationName
         logoTheme: formData.logoTheme,
         secondLogoTheme: formData.secondLogoTheme,
         logoCount: formData.logoCount,
-        previewBackground: formData.previewBackground,
       };
 
       await onSave({
@@ -69,13 +67,13 @@ export function LogoTab({ initialData, onSave, disabled = false, translationName
   };
 
   const logoCountOptions: RadioOption[] = [
-    { 
-      value: 'one', 
+    {
+      value: 'one',
       label: t("logo.logoCountOne"),
       description: t("logo.logoCountOneDescription")
     },
-    { 
-      value: 'two', 
+    {
+      value: 'two',
       label: t("logo.logoCountTwo"),
       description: t("logo.logoCountTwoDescription")
     },
@@ -87,21 +85,21 @@ export function LogoTab({ initialData, onSave, disabled = false, translationName
   ];
 
   const previewBackgroundOptions: RadioOption[] = [
-    { 
-      value: 'light', 
+    {
+      value: 'light',
       label: t("logo.logoBackgroundLight"),
       description: t("logo.previewLightDescription")
     },
-    { 
-      value: 'dark', 
+    {
+      value: 'dark',
       label: t("logo.logoBackgroundDark"),
       description: t("logo.previewDarkDescription")
     },
   ];
 
   // Determine which background to use for preview
-  const effectivePreviewBackground = formData.logoCount === 'one' 
-    ? (formData.previewBackground || 'light')
+  const effectivePreviewBackground = formData.logoCount === 'one'
+    ? (formData.logoTheme || 'light')
     : formData.logoTheme;
 
   return (
@@ -158,8 +156,8 @@ export function LogoTab({ initialData, onSave, disabled = false, translationName
               label={t("logo.logoBackgroundLabel")}
               name="previewBackground"
               options={previewBackgroundOptions}
-              value={formData.previewBackground || 'light'}
-              onChange={(value) => handleChange('previewBackground', value as 'light' | 'dark')}
+              value={formData.logoTheme || 'light'}
+              onChange={(value) => handleChange('logoTheme', value as 'light' | 'dark')}
               disabled={isSaving || disabled}
             />
             <p className="im-field-hint">
