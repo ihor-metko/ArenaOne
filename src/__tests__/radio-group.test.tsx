@@ -276,4 +276,23 @@ describe("RadioGroup Component", () => {
     const description = document.getElementById("test-radio-option1-desc");
     expect(description).toHaveTextContent("First option");
   });
+
+  it("makes first enabled option focusable when no option is selected", () => {
+    render(
+      <RadioGroup
+        name="test-radio"
+        options={mockOptions}
+        value=""
+        onChange={mockOnChange}
+      />
+    );
+
+    const option1 = screen.getByRole("radio", { name: /Option 1/i });
+    const option2 = screen.getByRole("radio", { name: /Option 2/i });
+
+    // First option should be focusable (tabIndex 0)
+    expect(option1).toHaveAttribute("tabIndex", "0");
+    // Other options should not be focusable
+    expect(option2).toHaveAttribute("tabIndex", "-1");
+  });
 });

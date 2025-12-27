@@ -6,7 +6,7 @@
  * Uses custom radio controls instead of native inputs for better styling control
  */
 
-import React, { useRef, KeyboardEvent } from "react";
+import React, { useRef, KeyboardEvent, useCallback } from "react";
 import "./RadioGroup.css";
 
 export interface RadioOption {
@@ -53,6 +53,9 @@ export interface RadioGroupProps {
   className?: string;
 }
 
+// Shared empty function to avoid creating new instances
+const noop = () => {};
+
 export function RadioGroup({
   label,
   options,
@@ -65,9 +68,15 @@ export function RadioGroup({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle keyboard navigation
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>, currentIndex: number) => {
+  const handleKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
+    const currentValue = event.currentTarget.getAttribute('data-value');
+    if (!currentValue) return;
+    
+    const currentIndex = options.findIndex(opt => opt.value === currentValue);
+    if (currentIndex === -1) return;
+    
     const enabledOptions = options.filter(opt => !opt.disabled && !disabled);
-    const currentEnabledIndex = enabledOptions.findIndex(opt => opt.value === options[currentIndex].value);
+    const currentEnabledIndex = enabledOptions.findIndex(opt => opt.value === currentValue);
     
     let newIndex = -1;
     
@@ -97,6 +106,7 @@ export function RadioGroup({
       case ' ':
       case 'Enter':
         event.preventDefault();
+        // Only select if the focused option is the one being activated
         if (!disabled && !options[currentIndex].disabled) {
           onChange(options[currentIndex].value);
         }
@@ -113,14 +123,27 @@ export function RadioGroup({
       ) as HTMLElement;
       optionElement?.focus();
     }
-  };
+  }, [options, disabled, onChange]);
+
+  // Determine which option should be focusable
+  const getFocusableValue = useCallback(() => {
+    // If there's a selected value, make it focusable
+    if (value && options.find(opt => opt.value === value)) {
+      return value;
+    }
+    // Otherwise, make the first enabled option focusable
+    const firstEnabled = options.find(opt => !opt.disabled && !disabled);
+    return firstEnabled?.value || null;
+  }, [value, options, disabled]);
+
+  const focusableValue = getFocusableValue();
 
   return (
     <div className={`im-radio-group ${className}`} ref={containerRef}>
       {label && (
-        <div className="im-radio-group-label" id={`${name}-label`}>
+        <label className="im-radio-group-label" id={`${name}-label`}>
           {label}
-        </div>
+        </label>
       )}
       <div
         className="im-radio-group-options"
@@ -128,9 +151,10 @@ export function RadioGroup({
         aria-labelledby={label ? `${name}-label` : undefined}
         aria-required="false"
       >
-        {options.map((option, index) => {
+        {options.map((option) => {
           const isSelected = value === option.value;
           const isDisabled = disabled || option.disabled;
+          const isFocusable = option.value === focusableValue && !isDisabled;
           const optionId = `${name}-${option.value}`;
           
           return (
@@ -141,10 +165,10 @@ export function RadioGroup({
               aria-checked={isSelected}
               aria-disabled={isDisabled}
               aria-describedby={option.description ? `${optionId}-desc` : undefined}
-              tabIndex={isSelected && !isDisabled ? 0 : -1}
+              tabIndex={isFocusable ? 0 : -1}
               className={`im-radio-option ${isSelected ? 'im-radio-option--selected' : ''} ${isDisabled ? 'im-radio-option--disabled' : ''}`}
               onClick={() => !isDisabled && onChange(option.value)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
+              onKeyDown={handleKeyDown}
             >
               {/* Hidden native input for form compatibility */}
               <input
@@ -152,7 +176,7 @@ export function RadioGroup({
                 name={name}
                 value={option.value}
                 checked={isSelected}
-                onChange={() => {}} // Controlled by parent onClick
+                onChange={noop}
                 disabled={isDisabled}
                 tabIndex={-1}
                 className="im-radio-native-input"
