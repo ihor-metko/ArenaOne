@@ -25,6 +25,18 @@ interface CreateAdminWizardProps {
   config: CreateAdminWizardConfig;
 }
 
+// Type definitions for API responses
+interface ErrorResponse {
+  error?: string;
+  field?: string;
+  existingInviteId?: string;
+}
+
+interface SuccessResponse {
+  userId?: string;
+  invite?: { id: string };
+}
+
 export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
   const t = useTranslations("createAdminWizard");
   const [currentStep, setCurrentStep] = useState(1);
@@ -293,107 +305,20 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
 
       if (!response.ok) {
         // Handle validation errors
-        // Type guard for error response structure
-        interface ErrorResponse {
-          error?: string;
-          field?: string;
-          existingInviteId?: string;
-        }
-        
         const errorData = (typeof data === 'object' && data !== null) 
           ? data as ErrorResponse 
           : { error: 'Unknown error' };
         
-        if (response.status === 409) {
-          if (errorData.field === "email") {
-            setErrors({ email: errorData.error || t("errors.emailInUse") });
-            setCurrentStep(3); // Go back to user details step
-            showToast("error", errorData.error || t("errors.emailInUse"));
-          } else if (errorData.field === "phone") {
-            setErrors({ phone: errorData.error || t("errors.phoneInUse") });
-            setCurrentStep(3);
-            showToast("error", errorData.error || t("errors.phoneInUse"));
-          } else if (errorData.field === "owner") {
-            setErrors({ general: errorData.error || t("errors.ownerExists") });
-            showToast("error", errorData.error || t("errors.ownerExists"));
-            setConfirmSuccess(false);
-            setConfirmMessage(errorData.error || t("errors.ownerExists"));
-            setCurrentStep(5);
-          } else if (errorData.existingInviteId) {
-            // Handle existing active invite - show warning
-            const inviteExistsMessage = errorData.error || t("errors.inviteExists");
-            setErrors({ general: inviteExistsMessage });
-            showToast("error", inviteExistsMessage);
-            setConfirmSuccess(false);
-            setConfirmMessage(inviteExistsMessage);
-            setCurrentStep(5);
-          } else {
-            const conflictMessage = errorData.error || t("errors.conflictOccurred");
-            setErrors({ general: conflictMessage });
-            showToast("error", conflictMessage);
-            setConfirmSuccess(false);
-            setConfirmMessage(conflictMessage);
-            setCurrentStep(5);
-          }
-        } else if (response.status === 403) {
-          // Permission denied - show clear error message
-          const permissionMessage = errorData.error || t("errors.permissionDenied");
-          setErrors({ general: permissionMessage });
-          showToast("error", permissionMessage);
-          setConfirmSuccess(false);
-          setConfirmMessage(permissionMessage);
-          setCurrentStep(5);
-        } else {
-          const errorMessage = errorData.error || t("errors.createFailed");
-          setErrors({ general: errorMessage });
-          showToast("error", errorMessage);
-          setConfirmSuccess(false);
-          setConfirmMessage(errorMessage);
-          setCurrentStep(5);
-        }
+        handleApiError(response, errorData);
         return;
       }
 
-      // Success! Move to confirm step
-      setConfirmSuccess(true);
-      setConfirmMessage(
-        formData.userSource === "existing"
-          ? t("messages.successExisting")
-          : t("messages.successInvite")
-      );
-      setCurrentStep(5);
-      showToast("success", t("messages.operationSuccess"));
-
-      // Refresh admin users store to show newly added users
-      try {
-        await refetchAdminUsers();
-      } catch (refreshError) {
-        // Log but don't fail - the user was created successfully
-        console.error("Failed to refresh admin users:", refreshError);
-      }
-
-      // Call success callback if provided
-      if (config.onSuccess) {
-        // Type guard for success response structure
-        interface SuccessResponse {
-          userId?: string;
-          invite?: { id: string };
-        }
-        
-        const responseData = (typeof data === 'object' && data !== null)
-          ? data as SuccessResponse
-          : {};
-        
-        // For existing users, we get userId directly
-        // For invites, we get invite.id
-        // Default to empty string if neither is available (though this shouldn't happen in normal flow)
-        const resultId = responseData.userId || responseData.invite?.id || "";
-        
-        // Only call callback if we have a valid ID
-        if (resultId) {
-          config.onSuccess(resultId);
-        }
-      }
+      // Success!
+      const responseData = (typeof data === 'object' && data !== null)
+        ? data as SuccessResponse
+        : {};
+      
+      await handleApiSuccess(responseData);
     } catch (err) {
       // Network error or other unexpected error
       const message = err instanceof Error ? err.message : t("errors.createFailed");
@@ -413,6 +338,93 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
       config.onCancel();
     }
   };
+
+  // Helper function for handling API errors
+  const handleApiError = useCallback((
+    response: Response,
+    errorData: ErrorResponse
+  ) => {
+    if (response.status === 409) {
+      if (errorData.field === "email") {
+        setErrors({ email: errorData.error || t("errors.emailInUse") });
+        setCurrentStep(3); // Go back to user details step
+        showToast("error", errorData.error || t("errors.emailInUse"));
+      } else if (errorData.field === "phone") {
+        setErrors({ phone: errorData.error || t("errors.phoneInUse") });
+        setCurrentStep(3);
+        showToast("error", errorData.error || t("errors.phoneInUse"));
+      } else if (errorData.field === "owner") {
+        setErrors({ general: errorData.error || t("errors.ownerExists") });
+        showToast("error", errorData.error || t("errors.ownerExists"));
+        setConfirmSuccess(false);
+        setConfirmMessage(errorData.error || t("errors.ownerExists"));
+        setCurrentStep(5);
+      } else if (errorData.existingInviteId) {
+        // Handle existing active invite - show warning
+        const inviteExistsMessage = errorData.error || t("errors.inviteExists");
+        setErrors({ general: inviteExistsMessage });
+        showToast("error", inviteExistsMessage);
+        setConfirmSuccess(false);
+        setConfirmMessage(inviteExistsMessage);
+        setCurrentStep(5);
+      } else {
+        const conflictMessage = errorData.error || t("errors.conflictOccurred");
+        setErrors({ general: conflictMessage });
+        showToast("error", conflictMessage);
+        setConfirmSuccess(false);
+        setConfirmMessage(conflictMessage);
+        setCurrentStep(5);
+      }
+    } else if (response.status === 403) {
+      // Permission denied - show clear error message
+      const permissionMessage = errorData.error || t("errors.permissionDenied");
+      setErrors({ general: permissionMessage });
+      showToast("error", permissionMessage);
+      setConfirmSuccess(false);
+      setConfirmMessage(permissionMessage);
+      setCurrentStep(5);
+    } else {
+      const errorMessage = errorData.error || t("errors.createFailed");
+      setErrors({ general: errorMessage });
+      showToast("error", errorMessage);
+      setConfirmSuccess(false);
+      setConfirmMessage(errorMessage);
+      setCurrentStep(5);
+    }
+  }, [t, showToast]);
+
+  // Helper function for handling successful API response
+  const handleApiSuccess = useCallback(async (responseData: SuccessResponse) => {
+    // Success! Move to or stay on confirm step
+    setConfirmSuccess(true);
+    setConfirmMessage(
+      formData.userSource === "existing"
+        ? t("messages.successExisting")
+        : t("messages.successInvite")
+    );
+    setCurrentStep(5);
+    showToast("success", t("messages.operationSuccess"));
+
+    // Refresh admin users store to show newly added users
+    try {
+      await refetchAdminUsers();
+    } catch (refreshError) {
+      // Log but don't fail - the user was created successfully
+      console.error("Failed to refresh admin users:", refreshError);
+    }
+
+    // Call success callback if provided
+    if (config.onSuccess) {
+      // For existing users, we get userId directly
+      // For invites, we get invite.id
+      const resultId = responseData.userId || responseData.invite?.id || "";
+      
+      // Only call callback if we have a valid ID
+      if (resultId) {
+        config.onSuccess(resultId);
+      }
+    }
+  }, [formData.userSource, t, showToast, refetchAdminUsers, config]);
 
   const handleRetry = async () => {
     if (!lastSubmitPayload) {
@@ -437,58 +449,21 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle errors same as in handleSubmit
-        interface ErrorResponse {
-          error?: string;
-          field?: string;
-          existingInviteId?: string;
-        }
-        
+        // Handle errors using the same comprehensive error handling
         const errorData = (typeof data === 'object' && data !== null) 
           ? data as ErrorResponse 
           : { error: 'Unknown error' };
         
-        const errorMessage = errorData.error || t("errors.createFailed");
-        setErrors({ general: errorMessage });
-        showToast("error", errorMessage);
-        setConfirmSuccess(false);
-        setConfirmMessage(errorMessage);
+        handleApiError(response, errorData);
         return;
       }
 
       // Success!
-      setConfirmSuccess(true);
-      setConfirmMessage(
-        formData.userSource === "existing"
-          ? t("messages.successExisting")
-          : t("messages.successInvite")
-      );
-      showToast("success", t("messages.operationSuccess"));
-
-      // Refresh admin users store
-      try {
-        await refetchAdminUsers();
-      } catch (refreshError) {
-        console.error("Failed to refresh admin users:", refreshError);
-      }
-
-      // Call success callback if provided
-      if (config.onSuccess) {
-        interface SuccessResponse {
-          userId?: string;
-          invite?: { id: string };
-        }
-        
-        const responseData = (typeof data === 'object' && data !== null)
-          ? data as SuccessResponse
-          : {};
-        
-        const resultId = responseData.userId || responseData.invite?.id || "";
-        
-        if (resultId) {
-          config.onSuccess(resultId);
-        }
-      }
+      const responseData = (typeof data === 'object' && data !== null)
+        ? data as SuccessResponse
+        : {};
+      
+      await handleApiSuccess(responseData);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("errors.createFailed");
       setErrors({ general: message });
