@@ -147,12 +147,15 @@ export async function POST(request: Request) {
           throw new Error("You are already a member of this organization");
         }
 
+        // Type assertion: role is MembershipRole when type is "organization"
+        const membershipRole = role as import("@/constants/roles").MembershipRole;
+
         // Create organization membership
         const membership = await tx.membership.create({
           data: {
             userId,
             organizationId: invite.organizationId,
-            role,
+            role: membershipRole,
             isPrimaryOwner: isPrimaryOwner || false,
           },
         });
@@ -188,12 +191,15 @@ export async function POST(request: Request) {
           throw new Error("You are already a member of this club");
         }
 
+        // Type assertion: role is ClubMembershipRole when type is "club"
+        const clubRole = role as import("@/constants/roles").ClubMembershipRole;
+
         // Create club membership
         const membership = await tx.clubMembership.create({
           data: {
             userId,
             clubId: invite.clubId,
-            role,
+            role: clubRole,
           },
         });
 
