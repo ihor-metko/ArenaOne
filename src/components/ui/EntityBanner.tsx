@@ -17,7 +17,7 @@ import React, { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { EntityLogo } from "./EntityLogo";
-import type { EntityLogoMetadata } from "./EntityLogo";
+import type { LogoObject, BannerObject } from "@/types/organization";
 
 /**
  * Location pin icon - reusable SVG component
@@ -54,36 +54,22 @@ export interface EntityBannerProps {
   location?: string | null;
 
   /**
-   * Hero/banner background image URL (optional)
+   * Banner object containing image URL, alignment, and metadata (optional)
    */
-  imageUrl?: string | null;
+  banner?: BannerObject | null;
 
   /**
-   * Banner image alignment focus (optional)
-   * Controls the vertical positioning of the background image
-   * @default 'center'
+   * Logo object containing image URL, theme info, and metadata (optional)
    */
-  bannerAlignment?: 'top' | 'center' | 'bottom';
+  logo?: LogoObject | null;
 
   /**
-   * Logo image URL (optional)
-   * If logoMetadata is provided, this may be overridden based on current theme
-   */
-  logoUrl?: string | null;
-
-  /**
-   * Logo metadata for theme-aware display (optional)
-   * Contains information about logo themes and alternate logos
-   */
-  logoMetadata?: EntityLogoMetadata | null;
-
-  /**
-   * Alt text for the hero image
+   * Alt text for the hero image (fallback if not in banner object)
    */
   imageAlt?: string;
 
   /**
-   * Alt text for the logo
+   * Alt text for the logo (fallback if not in logo object)
    */
   logoAlt?: string;
 
@@ -137,16 +123,14 @@ export interface EntityBannerProps {
  * EntityBanner component
  * Displays a hero/banner section with background image, logo, title, subtitle, and location
  * Includes built-in publish/unpublish functionality when isPublished prop is provided
- * Supports theme-aware logo display when logoMetadata is provided
+ * Supports theme-aware logo display via logo object
  */
 export function EntityBanner({
   title,
   subtitle,
   location,
-  imageUrl,
-  bannerAlignment = 'center',
-  logoUrl,
-  logoMetadata,
+  banner,
+  logo,
   imageAlt,
   logoAlt,
   isPublished,
@@ -160,6 +144,10 @@ export function EntityBanner({
   // Translations
   const t = useTranslations("entityBanner");
 
+  // Extract banner properties
+  const imageUrl = banner?.url;
+  const bannerAlignment = banner?.position || 'center';
+  
   // Convert stored paths to display URLs
   const heroImageFullUrl = useMemo(() => getImageUrl(imageUrl), [imageUrl]);
 
@@ -222,8 +210,7 @@ export function EntityBanner({
       <div className="rsp-club-hero-content">
         <div className="rsp-club-hero-main">
           <EntityLogo
-            logoUrl={logoUrl}
-            logoMetadata={logoMetadata}
+            logo={logo}
             alt={logoAlt || t('logoAlt', { name: title })}
           />
           <div className="rsp-club-hero-info">

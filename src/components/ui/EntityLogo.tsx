@@ -1,52 +1,26 @@
 "use client";
 
 /**
- * EntityLogo - Reusable logo component with metadata-based background logic
+ * EntityLogo - Reusable logo component with theme-aware logo selection
  *
  * This component handles:
  * - Theme-aware logo selection (switching between primary and secondary logos based on theme)
  * - Contrast enhancement (applying background styling when logo doesn't match current theme)
- * - Metadata-driven styling decisions
+ * - Logo object structure support
  *
  * Used by: EntityBanner, AdminOrganizationCard, AdminClubCard, PublicClubCard
  */
 
 import React, { useMemo, useState, useEffect } from "react";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
+import type { LogoObject } from "@/types/organization";
 import "./EntityLogo.styles.css";
-
-export interface EntityLogoMetadata {
-  /**
-   * Theme that the primary logo is designed for
-   * - 'light': Logo designed for light backgrounds
-   * - 'dark': Logo designed for dark backgrounds
-   */
-  logoTheme?: 'light' | 'dark';
-
-  /**
-   * Alternative logo URL for different theme
-   */
-  secondLogo?: string | null;
-
-  /**
-   * Theme that the secondary logo is designed for
-   */
-  secondLogoTheme?: 'light' | 'dark';
-}
 
 export interface EntityLogoProps {
   /**
-   * Primary logo URL (required)
+   * Logo object containing url, theme, and secondary logo info
    */
-  logoUrl: string | null | undefined;
-
-  /**
-   * Logo metadata for theme-aware display (optional)
-   * When provided, the component will:
-   * - Select appropriate logo based on current theme
-   * - Apply contrast enhancement when needed
-   */
-  logoMetadata?: EntityLogoMetadata | null;
+  logo: LogoObject | null | undefined;
 
   /**
    * Alt text for the logo image
@@ -64,8 +38,7 @@ export interface EntityLogoProps {
  * Renders an entity logo with theme-aware selection and contrast enhancement
  */
 export function EntityLogo({
-  logoUrl,
-  logoMetadata,
+  logo,
   alt,
   className = "",
 }: EntityLogoProps) {
@@ -90,29 +63,29 @@ export function EntityLogo({
     return () => observer.disconnect();
   }, []);
 
-  // Determine which logo to display based on theme and metadata
+  // Determine which logo to display based on theme and logo object
   const effectiveLogoUrl = useMemo(() => {
-    if (!logoMetadata) {
-      return logoUrl; // No metadata, use the primary logo
+    if (!logo) {
+      return null;
     }
 
     const currentTheme = isDarkTheme ? 'dark' : 'light';
 
     // If we have a second logo with theme info
-    if (logoMetadata.secondLogo && logoMetadata.secondLogoTheme) {
+    if (logo.secondUrl && logo.secondTheme) {
       // Check if second logo matches current theme
-      if (logoMetadata.secondLogoTheme === currentTheme) {
-        return logoMetadata.secondLogo;
+      if (logo.secondTheme === currentTheme) {
+        return logo.secondUrl;
       }
       // Check if primary logo matches current theme
-      if (logoMetadata.logoTheme === currentTheme) {
-        return logoUrl;
+      if (logo.theme === currentTheme) {
+        return logo.url;
       }
     }
 
     // Only one logo, or no theme match - use primary logo
-    return logoUrl;
-  }, [logoUrl, logoMetadata, isDarkTheme]);
+    return logo.url;
+  }, [logo, isDarkTheme]);
 
   /**
    * Determine if we need to apply contrast enhancement styles for a universal logo
@@ -120,17 +93,17 @@ export function EntityLogo({
    */
   const logoContrastClass = useMemo(() => {
     // Only apply contrast styles when we have a single universal logo
-    if (!logoMetadata || !logoMetadata.logoTheme) {
-      return ''; // No metadata, no special styling
+    if (!logo || !logo.theme) {
+      return ''; // No logo or no theme info, no special styling
     }
 
     // If we have two separate logos (theme-specific), no contrast adjustment needed
-    if (logoMetadata.secondLogo && logoMetadata.secondLogoTheme) {
+    if (logo.secondUrl && logo.secondTheme) {
       return ''; // Theme-specific logos handle this themselves
     }
 
     const currentTheme = isDarkTheme ? 'dark' : 'light';
-    const logoTheme = logoMetadata.logoTheme;
+    const logoTheme = logo.theme;
 
     // Apply contrast enhancement when logo theme doesn't match current theme
     if (logoTheme === 'light' && currentTheme === 'dark') {
@@ -143,7 +116,7 @@ export function EntityLogo({
 
     // Logo theme matches current theme, no contrast adjustment needed
     return '';
-  }, [logoMetadata, isDarkTheme]);
+  }, [logo, isDarkTheme]);
 
   // Convert stored path to display URL
   const logoFullUrl = useMemo(() => getImageUrl(effectiveLogoUrl), [effectiveLogoUrl]);
@@ -170,7 +143,7 @@ export function EntityLogo({
     /* eslint-disable-next-line @next/next/no-img-element */
     <img
       src={logoFullUrl}
-      alt={alt}
+      alt={logo?.altText || alt}
       className={logoClasses}
     />
   );
