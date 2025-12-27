@@ -3,6 +3,7 @@
  */
 
 import { SportType } from "@/constants/sports";
+import type { EntityLogoMetadata } from "@/components/ui/EntityLogo";
 
 /**
  * Organization entity
@@ -77,4 +78,34 @@ export interface UpdateOrganizationPayload {
   metadata?: Record<string, unknown> | null;
   supportedSports?: SportType[];
   isPublic?: boolean;
+}
+
+/**
+ * Organization metadata type extending EntityLogoMetadata
+ */
+export interface OrganizationMetadata extends EntityLogoMetadata {
+  /** Banner image vertical alignment */
+  bannerAlignment?: 'top' | 'center' | 'bottom';
+}
+
+/**
+ * Helper function to parse organization metadata from JSON string or object
+ */
+export function parseOrganizationMetadata(metadata: string | Record<string, unknown> | null | undefined): OrganizationMetadata | undefined {
+  if (!metadata) {
+    return undefined;
+  }
+
+  try {
+    // If metadata is already an object, return it as OrganizationMetadata
+    if (typeof metadata === 'object') {
+      return metadata as OrganizationMetadata;
+    }
+    
+    // If metadata is a string, parse it
+    return JSON.parse(metadata) as OrganizationMetadata;
+  } catch {
+    // Invalid JSON
+    return undefined;
+  }
 }
