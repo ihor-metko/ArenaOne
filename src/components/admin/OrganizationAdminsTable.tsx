@@ -105,7 +105,7 @@ export default function OrganizationAdminsTable({
 
   // Check if an owner already exists to determine allowed roles
   const hasOwner = !!primaryOwner;
-  const allowedRoles = hasOwner 
+  const allowedRoles: import("@/types/adminWizard").AdminRole[] = hasOwner 
     ? ["ORGANIZATION_ADMIN"] 
     : ["ORGANIZATION_OWNER", "ORGANIZATION_ADMIN"];
 
