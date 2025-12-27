@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Button, Card, Input, Textarea } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { LogoStep, BannerStep } from "./OrganizationSteps";
+import { createAddressFromForm } from "@/types/address";
 import "./ClubCreationStepper.css";
 
 interface UploadedFile {
@@ -317,7 +318,17 @@ export function OrganizationCreationStepper() {
     setError(null);
 
     try {
-      // Build address from components
+      // Build Address object from form data
+      const address = createAddressFromForm({
+        street: formData.street,
+        city: formData.city,
+        postalCode: formData.postalCode,
+        country: formData.country,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+      });
+
+      // Build legacy address string for backward compatibility
       const addressParts = [
         formData.street.trim(),
         formData.city.trim(),
@@ -326,12 +337,10 @@ export function OrganizationCreationStepper() {
       ].filter(Boolean); // Remove empty strings
       const fullAddress = addressParts.join(", ");
 
-      // Prepare metadata with social links and location
+      // Prepare metadata with social links
       const metadata: Record<string, unknown> = {
-        country: formData.country.trim(),
-        street: formData.street.trim(),
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude),
+        // Store address in metadata for backward compatibility
+        address,
       };
 
       // Add social media links if provided

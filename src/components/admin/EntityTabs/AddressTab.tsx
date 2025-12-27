@@ -3,19 +3,20 @@
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Input, Card, Button } from "@/components/ui";
+import { createAddressFromForm, type Address } from "@/types/address";
 
 export interface AddressData {
-  country: string;
-  city: string;
-  postalCode: string;
   street: string;
-  latitude: number | null;
-  longitude: number | null;
+  city: string;
+  postalCode?: string; // Keep postalCode as the standard field name
+  country?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 interface AddressTabProps {
   initialData: AddressData;
-  onSave: (data: AddressData) => Promise<void>;
+  onSave: (data: Address) => Promise<void>;
   disabled?: boolean;
   translationNamespace?: string;
 }
@@ -23,10 +24,10 @@ interface AddressTabProps {
 export function AddressTab({ initialData, onSave, disabled = false, translationNamespace = "organizations.tabs" }: AddressTabProps) {
   const t = useTranslations(translationNamespace);
   const [formData, setFormData] = useState({
-    country: initialData.country,
-    city: initialData.city,
-    postalCode: initialData.postalCode,
-    street: initialData.street,
+    street: initialData.street || "",
+    city: initialData.city || "",
+    postalCode: initialData.postalCode || "", // Use postalCode consistently
+    country: initialData.country || "",
     latitude: initialData.latitude?.toString() || "",
     longitude: initialData.longitude?.toString() || "",
   });
@@ -52,33 +53,39 @@ export function AddressTab({ initialData, onSave, disabled = false, translationN
   const validate = useCallback((): boolean => {
     const errors: Record<string, string> = {};
 
-    if (!formData.country.trim()) {
-      errors.country = t("validation.countryRequired");
+    // Only street and city are required
+    if (!formData.street.trim()) {
+      errors.street = t("validation.streetRequired");
     }
     if (!formData.city.trim()) {
       errors.city = t("validation.cityRequired");
     }
-    if (!formData.street.trim()) {
-      errors.street = t("validation.streetRequired");
-    }
-    if (!formData.latitude.trim()) {
-      errors.latitude = t("validation.latitudeRequired");
-    } else if (isNaN(parseFloat(formData.latitude))) {
-      errors.latitude = t("validation.latitudeInvalid");
-    } else {
-      const lat = parseFloat(formData.latitude);
-      if (lat < -90 || lat > 90) {
-        errors.latitude = t("validation.latitudeRange");
-      }
-    }
-    if (!formData.longitude.trim()) {
+    
+    // Validate coordinates if provided (both must be valid or both empty)
+    const hasLat = formData.latitude.trim() !== "";
+    const hasLng = formData.longitude.trim() !== "";
+    
+    if (hasLat && !hasLng) {
       errors.longitude = t("validation.longitudeRequired");
-    } else if (isNaN(parseFloat(formData.longitude))) {
-      errors.longitude = t("validation.longitudeInvalid");
-    } else {
-      const lng = parseFloat(formData.longitude);
-      if (lng < -180 || lng > 180) {
-        errors.longitude = t("validation.longitudeRange");
+    } else if (!hasLat && hasLng) {
+      errors.latitude = t("validation.latitudeRequired");
+    } else if (hasLat && hasLng) {
+      // Validate lat/lng format and range
+      if (isNaN(parseFloat(formData.latitude))) {
+        errors.latitude = t("validation.latitudeInvalid");
+      } else {
+        const lat = parseFloat(formData.latitude);
+        if (lat < -90 || lat > 90) {
+          errors.latitude = t("validation.latitudeRange");
+        }
+      }
+      if (isNaN(parseFloat(formData.longitude))) {
+        errors.longitude = t("validation.longitudeInvalid");
+      } else {
+        const lng = parseFloat(formData.longitude);
+        if (lng < -180 || lng > 180) {
+          errors.longitude = t("validation.longitudeRange");
+        }
       }
     }
 
@@ -93,14 +100,17 @@ export function AddressTab({ initialData, onSave, disabled = false, translationN
     setError(null);
 
     try {
-      await onSave({
-        country: formData.country.trim(),
-        city: formData.city.trim(),
-        postalCode: formData.postalCode.trim(),
-        street: formData.street.trim(),
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude),
+      // Create Address object from form data
+      const address = createAddressFromForm({
+        street: formData.street,
+        city: formData.city,
+        postalCode: formData.postalCode,
+        country: formData.country,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
       });
+
+      await onSave(address);
       setHasChanges(false);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("errors.saveFailed");
@@ -185,7 +195,6 @@ export function AddressTab({ initialData, onSave, disabled = false, translationN
             onChange={handleChange}
             placeholder={t("address.countryPlaceholder")}
             disabled={isSaving || disabled}
-            required
           />
           {fieldErrors.country && (
             <span className="im-field-error">{fieldErrors.country}</span>
@@ -201,7 +210,6 @@ export function AddressTab({ initialData, onSave, disabled = false, translationN
               onChange={handleChange}
               placeholder={t("address.latitudePlaceholder")}
               disabled={isSaving || disabled}
-              required
               type="number"
               step="any"
             />
@@ -218,7 +226,6 @@ export function AddressTab({ initialData, onSave, disabled = false, translationN
               onChange={handleChange}
               placeholder={t("address.longitudePlaceholder")}
               disabled={isSaving || disabled}
-              required
               type="number"
               step="any"
             />

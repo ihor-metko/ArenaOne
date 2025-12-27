@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRootAdmin } from "@/lib/requireRole";
+import type { Address } from "@/types/address";
 
 interface SuperAdmin {
   id: string;
@@ -64,12 +65,24 @@ export async function GET(request: Request) {
         isPrimaryOwner: m.isPrimaryOwner,
       }));
 
+      // Parse addressData if available, otherwise fall back to legacy address
+      let addressValue: Address | string | null = null;
+      if (org.addressData) {
+        try {
+          addressValue = JSON.parse(org.addressData);
+        } catch {
+          addressValue = org.address;
+        }
+      } else {
+        addressValue = org.address;
+      }
+
       return {
         id: org.id,
         name: org.name,
         slug: org.slug,
         description: org.description,
-        address: org.address,
+        address: addressValue,
         createdAt: org.createdAt,
         clubCount: org._count.clubs,
         createdBy: org.createdBy,
@@ -146,6 +159,23 @@ export async function POST(request: Request) {
       );
     }
 
+    // Handle addressData - support both Address object and legacy string
+    let addressDataJson: string | null = null;
+    let legacyAddressString: string | null = null;
+
+    if (address) {
+      if (typeof address === 'object' && 'street' in address && 'city' in address) {
+        // New Address object format
+        addressDataJson = JSON.stringify(address);
+        // Create legacy string for backward compatibility
+        const parts = [address.street, address.city, address.zip, address.country].filter(Boolean);
+        legacyAddressString = parts.join(', ');
+      } else if (typeof address === 'string') {
+        // Legacy string format
+        legacyAddressString = address;
+      }
+    }
+
     const organization = await prisma.organization.create({
       data: {
         name: name.trim(),
@@ -154,7 +184,8 @@ export async function POST(request: Request) {
         contactEmail: contactEmail?.trim() || null,
         contactPhone: contactPhone?.trim() || null,
         website: website?.trim() || null,
-        address: address?.trim() || null,
+        address: legacyAddressString,
+        addressData: addressDataJson,
         logoData: logoData ? JSON.stringify(logoData) : null,
         bannerData: bannerData ? JSON.stringify(bannerData) : null,
         metadata: metadata ? JSON.stringify(metadata) : null,
@@ -172,13 +203,23 @@ export async function POST(request: Request) {
       },
     });
 
+    // Parse addressData for response
+    let responseAddress: unknown = organization.address;
+    if (organization.addressData) {
+      try {
+        responseAddress = JSON.parse(organization.addressData);
+      } catch {
+        responseAddress = organization.address;
+      }
+    }
+
     return NextResponse.json(
       {
         id: organization.id,
         name: organization.name,
         slug: organization.slug,
         description: organization.description,
-        address: organization.address,
+        address: responseAddress,
         createdAt: organization.createdAt,
         clubCount: 0,
         createdBy: organization.createdBy,
