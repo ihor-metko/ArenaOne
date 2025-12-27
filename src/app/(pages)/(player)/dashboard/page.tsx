@@ -114,7 +114,7 @@ export default function PlayerDashboardPage() {
     id: club.id,
     name: club.name,
     location: club.location,
-    logo: club.logo,
+    logoData: club.logoData,
   })), [clubsFromStore]);
 
   // State for bookings

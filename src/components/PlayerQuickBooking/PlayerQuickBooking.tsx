@@ -153,7 +153,7 @@ export function PlayerQuickBooking({
                   slug: data.slug,
                   location: data.location,
                   city: data.city,
-                  heroImage: data.heroImage,
+                  bannerData: data.bannerData,
                 },
               },
             }));
@@ -212,7 +212,7 @@ export function PlayerQuickBooking({
       slug: null, // PlayerClub doesn't have slug field
       location: club.location,
       city: club.city || undefined,
-      heroImage: club.heroImage || undefined,
+      bannerData: club.bannerData || undefined,
     })),
     [clubsFromStore]
   );

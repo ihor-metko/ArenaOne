@@ -34,7 +34,7 @@ export async function getPopularClubs(limit: number = 4): Promise<ClubWithCounts
       contactInfo: club.contactInfo,
       openingHours: club.openingHours,
       shortDescription: club.shortDescription,
-      logo: club.logo,
+      logoData: club.logoData ? JSON.parse(club.logoData) : null,
       indoorCount: club.courts.filter((c) => c.indoor).length,
       outdoorCount: club.courts.filter((c) => !c.indoor).length,
     }));
