@@ -114,16 +114,16 @@ export default function OrganizationAdminsTable({
   const canModifyAdmin = (admin: OrgAdmin) => {
     // Root Admin can modify anyone
     if (isRoot) return true;
-    
+
     // Owner cannot be modified by non-root users (including by owner themselves in some cases)
     if (admin.isPrimaryOwner) {
       // Owner can only remove themselves if they want to transfer ownership first
       return false;
     }
-    
+
     // Organization Owner can modify other admins
     if (isOwner) return true;
-    
+
     return false;
   };
 
@@ -163,7 +163,7 @@ export default function OrganizationAdminsTable({
         <h3 className="im-section-title">{t("orgAdmins.people")}</h3>
         <div className="im-section-actions">
           {canManageAdmins && (
-            <Button size="small" onClick={handleOpenCreateAdminModal}>
+            <Button onClick={handleOpenCreateAdminModal}>
               {t("orgAdmins.addPerson")}
             </Button>
           )}

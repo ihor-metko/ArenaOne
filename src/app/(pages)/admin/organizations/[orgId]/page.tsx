@@ -352,7 +352,6 @@ export default function OrganizationDetailPage() {
                 <div className="im-section-actions">
                   <Button
                     variant="primary"
-                    size="small"
                     onClick={() => router.push(`/admin/clubs/new?organizationId=${orgId}`)}
                   >
                     {t("orgDetail.createNewClub")}
@@ -439,7 +438,6 @@ export default function OrganizationDetailPage() {
               <div className="im-section-actions">
                 <Button
                   variant="outline"
-                  size="small"
                   onClick={() => router.push(`/admin/bookings?orgId=${orgId}`)}
                 >
                   {t("orgDetail.viewAllBookings")}

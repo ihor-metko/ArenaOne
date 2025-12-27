@@ -75,7 +75,7 @@
 }
 
 .im-wizard-indicator-line {
-  width: 60px;
+  width: 50px;
   height: 2px;
   background: var(--im-step-line, var(--color-border));
   margin: 0 -4px;
@@ -276,6 +276,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
