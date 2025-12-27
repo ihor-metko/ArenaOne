@@ -76,7 +76,7 @@ export function OrganizationEditor({
     }
   } else if (metadata?.street && metadata?.city) {
     street = metadata.street as string;
-    city = addressParts.length > 1 ? addressParts[1] : "";
+    city = metadata.city as string; // Use metadata.city instead of addressParts
     postalCode = addressParts.length > 2 ? addressParts[2] : "";
     country = metadata.country as string || country;
   }
