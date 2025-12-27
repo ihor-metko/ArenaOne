@@ -12,6 +12,11 @@
 .im-admin-content-wrapper {
   @apply w-full mx-auto;
   max-width: 1600px;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 /* Responsive padding adjustments */
