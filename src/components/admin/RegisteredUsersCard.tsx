@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import type { RegisteredUsersResponse } from "@/app/api/admin/dashboard/registered-users/route";
+import { ClientOnly } from "@/components/ClientOnly";
 import "./RegisteredUsersCard.css";
 
 interface RegisteredUsersCardProps {
@@ -97,52 +98,56 @@ export function RegisteredUsersCard({ className = "" }: RegisteredUsersCardProps
           </svg>
         </div>
         <div className="im-registered-users-content">
-          <h3 className="im-registered-users-value">{data.totalUsers.toLocaleString()}</h3>
+          <h3 className="im-registered-users-value" suppressHydrationWarning>
+            {data.totalUsers.toLocaleString()}
+          </h3>
           <p className="im-registered-users-title">{t("registeredUsers")}</p>
         </div>
       </div>
 
       {/* Sparkline Trend Visualization */}
-      <div className="im-registered-users-trend">
-        <div className="im-registered-users-sparkline" role="img" aria-label="User registration trend for the last 30 days">
-          <svg
-            viewBox={`0 0 ${data.trend.length} 40`}
-            preserveAspectRatio="none"
-            className="im-registered-users-sparkline-svg"
-          >
-            {/* Background bars */}
-            {data.trend.map((point, index) => {
-              const height = maxCount > 0 ? (point.count / maxCount) * 35 : 0;
-              const y = 40 - height;
+      <ClientOnly>
+        <div className="im-registered-users-trend">
+          <div className="im-registered-users-sparkline" role="img" aria-label="User registration trend for the last 30 days">
+            <svg
+              viewBox={`0 0 ${data.trend.length} 40`}
+              preserveAspectRatio="none"
+              className="im-registered-users-sparkline-svg"
+            >
+              {/* Background bars */}
+              {data.trend.map((point, index) => {
+                const height = maxCount > 0 ? (point.count / maxCount) * 35 : 0;
+                const y = 40 - height;
 
-              return (
-                <rect
-                  key={`bar-${index}`}
-                  x={index}
-                  y={y}
-                  width="0.8"
-                  height={height}
-                  className="im-sparkline-bar"
-                />
-              );
-            })}
+                return (
+                  <rect
+                    key={`bar-${index}`}
+                    x={index}
+                    y={y}
+                    width="0.8"
+                    height={height}
+                    className="im-sparkline-bar"
+                  />
+                );
+              })}
 
-            {/* Line path */}
-            <polyline
-              points={data.trend
-                .map((point, index) => {
-                  const x = index + 0.4; // Center of bar
-                  const height = maxCount > 0 ? (point.count / maxCount) * 35 : 0;
-                  const y = 40 - height;
-                  return `${x},${y}`;
-                })
-                .join(" ")}
-              className="im-sparkline-line"
-            />
-          </svg>
+              {/* Line path */}
+              <polyline
+                points={data.trend
+                  .map((point, index) => {
+                    const x = index + 0.4; // Center of bar
+                    const height = maxCount > 0 ? (point.count / maxCount) * 35 : 0;
+                    const y = 40 - height;
+                    return `${x},${y}`;
+                  })
+                  .join(" ")}
+                className="im-sparkline-line"
+              />
+            </svg>
+          </div>
+          <p className="im-registered-users-trend-label">{t("trendLabel")}</p>
         </div>
-        <p className="im-registered-users-trend-label">{t("trendLabel")}</p>
-      </div>
+      </ClientOnly>
     </div>
   );
 }

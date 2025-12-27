@@ -89,7 +89,9 @@ function StatCard({ title, value, icon, colorClass }: StatCardProps) {
     <article className={`im-stat-card ${colorClass}`}>
       <div className="im-stat-card-icon">{icon}</div>
       <div className="im-stat-card-content">
-        <h3 className="im-stat-card-value">{value.toLocaleString()}</h3>
+        <h3 className="im-stat-card-value" suppressHydrationWarning>
+          {value.toLocaleString()}
+        </h3>
         <p className="im-stat-card-title">{title}</p>
       </div>
     </article>

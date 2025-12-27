@@ -75,7 +75,7 @@ function BookingsSummaryCard({
       <div className="im-booking-overview-card-header">
         <div className="im-booking-overview-card-icon">{icon}</div>
         <div className="im-booking-overview-card-content">
-          <h3 className="im-booking-overview-card-value">
+          <h3 className="im-booking-overview-card-value" suppressHydrationWarning>
             {count.toLocaleString()}
           </h3>
           <p className="im-booking-overview-card-title">{title}</p>
@@ -88,7 +88,7 @@ function BookingsSummaryCard({
               <span className="im-booking-overview-breakdown-label">
                 {item.label}
               </span>
-              <span className="im-booking-overview-breakdown-count">
+              <span className="im-booking-overview-breakdown-count" suppressHydrationWarning>
                 {item.count.toLocaleString()}
               </span>
             </div>

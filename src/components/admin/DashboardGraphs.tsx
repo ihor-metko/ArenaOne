@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import type { DashboardGraphsResponse, TimeRange } from "@/types/graphs";
 import { GraphSkeleton, GraphEmptyState, DEFAULT_MIN_POINTS_TO_RENDER } from "@/components/ui/skeletons";
+import { ClientOnly } from "@/components/ClientOnly";
 import "./DashboardGraphs.css";
 
 export interface DashboardGraphsProps {
@@ -193,45 +194,47 @@ export default function DashboardGraphs({
           <p className="im-graph-card-description">{t("dashboardGraphs.bookingTrendsDesc")}</p>
           {hasEnoughBookingData ? (
             <div className="im-graph-container">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  data={data.bookingTrends}
-                  margin={{ top: 10, right: 30, left: 10, bottom: 5 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="var(--im-border-color)"
-                    strokeOpacity={0.5}
-                  />
-                  <XAxis
-                    dataKey="label"
-                    stroke="var(--im-text-secondary)"
-                    tick={{ fill: "var(--im-text-secondary)", fontSize: 12 }}
-                    axisLine={{ stroke: "var(--im-border-color)" }}
-                  />
-                  <YAxis
-                    stroke="var(--im-text-secondary)"
-                    tick={{ fill: "var(--im-text-secondary)", fontSize: 12 }}
-                    axisLine={{ stroke: "var(--im-border-color)" }}
-                    allowDecimals={false}
-                    domain={[0, 'auto']}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend
-                    wrapperStyle={{
-                      paddingTop: '10px',
-                      color: 'var(--im-text-primary)'
-                    }}
-                  />
-                  <Bar
-                    dataKey="bookings"
-                    name={t("dashboardGraphs.bookings")}
-                    fill="var(--im-primary)"
-                    radius={[4, 4, 0, 0]}
-                    minPointSize={2}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <ClientOnly fallback={<GraphSkeleton showHeader={false} />}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={data.bookingTrends}
+                    margin={{ top: 10, right: 30, left: 10, bottom: 5 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="var(--im-border-color)"
+                      strokeOpacity={0.5}
+                    />
+                    <XAxis
+                      dataKey="label"
+                      stroke="var(--im-text-secondary)"
+                      tick={{ fill: "var(--im-text-secondary)", fontSize: 12 }}
+                      axisLine={{ stroke: "var(--im-border-color)" }}
+                    />
+                    <YAxis
+                      stroke="var(--im-text-secondary)"
+                      tick={{ fill: "var(--im-text-secondary)", fontSize: 12 }}
+                      axisLine={{ stroke: "var(--im-border-color)" }}
+                      allowDecimals={false}
+                      domain={[0, 'auto']}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend
+                      wrapperStyle={{
+                        paddingTop: '10px',
+                        color: 'var(--im-text-primary)'
+                      }}
+                    />
+                    <Bar
+                      dataKey="bookings"
+                      name={t("dashboardGraphs.bookings")}
+                      fill="var(--im-primary)"
+                      radius={[4, 4, 0, 0]}
+                      minPointSize={2}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ClientOnly>
             </div>
           ) : (
             <GraphEmptyState
@@ -247,47 +250,49 @@ export default function DashboardGraphs({
           <p className="im-graph-card-description">{t("dashboardGraphs.activeUsersDesc")}</p>
           {hasEnoughUserData ? (
             <div className="im-graph-container">
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart
-                  data={data.activeUsers}
-                  margin={{ top: 10, right: 30, left: 10, bottom: 5 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="var(--im-border-color)"
-                    strokeOpacity={0.5}
-                  />
-                  <XAxis
-                    dataKey="label"
-                    stroke="var(--im-text-secondary)"
-                    tick={{ fill: "var(--im-text-secondary)", fontSize: 12 }}
-                    axisLine={{ stroke: "var(--im-border-color)" }}
-                  />
-                  <YAxis
-                    stroke="var(--im-text-secondary)"
-                    tick={{ fill: "var(--im-text-secondary)", fontSize: 12 }}
-                    axisLine={{ stroke: "var(--im-border-color)" }}
-                    allowDecimals={false}
-                    domain={[0, 'auto']}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend
-                    wrapperStyle={{
-                      paddingTop: '10px',
-                      color: 'var(--im-text-primary)'
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="users"
-                    name={t("dashboardGraphs.users")}
-                    stroke="var(--im-success)"
-                    strokeWidth={3}
-                    dot={{ fill: "var(--im-success)", r: 5, strokeWidth: 2, stroke: "var(--im-success)" }}
-                    activeDot={{ r: 8, strokeWidth: 2 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <ClientOnly fallback={<GraphSkeleton showHeader={false} />}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart
+                    data={data.activeUsers}
+                    margin={{ top: 10, right: 30, left: 10, bottom: 5 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="var(--im-border-color)"
+                      strokeOpacity={0.5}
+                    />
+                    <XAxis
+                      dataKey="label"
+                      stroke="var(--im-text-secondary)"
+                      tick={{ fill: "var(--im-text-secondary)", fontSize: 12 }}
+                      axisLine={{ stroke: "var(--im-border-color)" }}
+                    />
+                    <YAxis
+                      stroke="var(--im-text-secondary)"
+                      tick={{ fill: "var(--im-text-secondary)", fontSize: 12 }}
+                      axisLine={{ stroke: "var(--im-border-color)" }}
+                      allowDecimals={false}
+                      domain={[0, 'auto']}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend
+                      wrapperStyle={{
+                        paddingTop: '10px',
+                        color: 'var(--im-text-primary)'
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="users"
+                      name={t("dashboardGraphs.users")}
+                      stroke="var(--im-success)"
+                      strokeWidth={3}
+                      dot={{ fill: "var(--im-success)", r: 5, strokeWidth: 2, stroke: "var(--im-success)" }}
+                      activeDot={{ r: 8, strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ClientOnly>
             </div>
           ) : (
             <GraphEmptyState
