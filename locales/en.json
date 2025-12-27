@@ -2442,12 +2442,12 @@
       "descriptionExisting": "Search for and select an existing user.",
       "descriptionNew": "Enter the new user's information.",
       "newUserHint": "Enter the new user's information. They will receive an invitation email to set up their account.",
-      "fullName": "Full Name *",
+      "fullName": "Full Name (Optional)",
       "fullNamePlaceholder": "Enter user's full name",
       "email": "Email Address *",
       "emailPlaceholder": "user@example.com",
       "emailHint": "An invitation will be sent to this email address",
-      "phone": "Phone Number *",
+      "phone": "Phone Number (Optional)",
       "phonePlaceholder": "+380501234567",
       "phoneHint": "Include country code (e.g., +380 for Ukraine)"
     },
@@ -2498,7 +2498,8 @@
     "messages": {
       "successExisting": "Role assigned successfully!",
       "successNew": "Admin created successfully! An invitation email will be sent.",
-      "operationSuccess": "Operation completed successfully!"
+      "operationSuccess": "Operation completed successfully!",
+      "successInvite": "Invitation sent successfully! The user will receive an email to accept their role."
     },
     "errors": {
       "organizationRequired": "Organization is required",
@@ -2517,7 +2518,8 @@
       "ownerExists": "An owner already exists",
       "conflictOccurred": "A conflict occurred",
       "permissionDenied": "You don't have permission to create this admin",
-      "createFailed": "Failed to create admin"
+      "createFailed": "Failed to create admin",
+      "inviteExists": "An invitation for this email and role already exists"
     },
     "modal": {
       "titleClub": "Create Club Admin",

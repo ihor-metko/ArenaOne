@@ -34,7 +34,7 @@ export function UserDataStep({
           onChange={(e) => onChange({ name: e.target.value })}
           placeholder={t("fullNamePlaceholder")}
           disabled={disabled}
-          required
+          required={false}
           aria-describedby={errors.name ? "name-error" : undefined}
         />
         {errors.name && (
@@ -75,7 +75,7 @@ export function UserDataStep({
           onChange={(e) => onChange({ phone: e.target.value })}
           placeholder={t("phonePlaceholder")}
           disabled={disabled}
-          required
+          required={false}
           aria-describedby={errors.phone ? "phone-error" : undefined}
         />
         {errors.phone && (
