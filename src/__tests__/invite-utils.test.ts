@@ -84,7 +84,7 @@ describe("inviteUtils", () => {
       
       // These operations should take similar time regardless of match
       const start1 = Date.now();
-      verifyInviteToken("correct-token", hash);
+      verifyInviteToken(token, hash);
       const time1 = Date.now() - start1;
       
       const start2 = Date.now();
