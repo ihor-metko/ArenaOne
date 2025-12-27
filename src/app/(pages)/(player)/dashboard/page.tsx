@@ -17,7 +17,7 @@ interface Club {
   id: string;
   name: string;
   location: string;
-  logo?: string | null;
+  logoData?: { url: string; altText?: string; thumbnailUrl?: string } | null;
 }
 
 interface ClubCoach {
