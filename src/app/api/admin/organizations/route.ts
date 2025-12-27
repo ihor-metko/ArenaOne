@@ -76,12 +76,8 @@ export async function GET(request: Request) {
         superAdmins,
         // Keep backward compatibility - superAdmin field contains the primary owner or first admin
         superAdmin: superAdmins.find((a) => a.isPrimaryOwner) || superAdmins[0] || null,
-        // New structure
         logoData: org.logoData ? JSON.parse(org.logoData) : null,
         bannerData: org.bannerData ? JSON.parse(org.bannerData) : null,
-        // Deprecated - kept for backward compatibility
-        logo: org.logo,
-        heroImage: org.heroImage,
         metadata: org.metadata ? JSON.parse(org.metadata) : null,
         supportedSports: org.supportedSports,
         isPublic: org.isPublic,
@@ -121,8 +117,6 @@ export async function POST(request: Request) {
       contactPhone,
       website,
       address,
-      logo,
-      heroImage,
       logoData,
       bannerData,
       metadata,
@@ -161,10 +155,6 @@ export async function POST(request: Request) {
         contactPhone: contactPhone?.trim() || null,
         website: website?.trim() || null,
         address: address?.trim() || null,
-        // Deprecated - kept for backward compatibility
-        logo: logo?.trim() || null,
-        heroImage: heroImage?.trim() || null,
-        // New structure
         logoData: logoData ? JSON.stringify(logoData) : null,
         bannerData: bannerData ? JSON.stringify(bannerData) : null,
         metadata: metadata ? JSON.stringify(metadata) : null,
@@ -194,12 +184,8 @@ export async function POST(request: Request) {
         createdBy: organization.createdBy,
         superAdmin: null,
         supportedSports: organization.supportedSports,
-        // New structure
         logoData: organization.logoData ? JSON.parse(organization.logoData) : null,
         bannerData: organization.bannerData ? JSON.parse(organization.bannerData) : null,
-        // Deprecated - kept for backward compatibility
-        logo: organization.logo,
-        heroImage: organization.heroImage,
         metadata: organization.metadata ? JSON.parse(organization.metadata) : null,
         isPublic: organization.isPublic,
       },

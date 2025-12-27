@@ -20,8 +20,8 @@ interface GalleryImage {
 interface ClubGalleryViewProps {
   club: ClubDetail;
   onUpdate: (payload: {
-    heroImage: string | null;
-    logo: string | null;
+    bannerData: { url: string } | null;
+    logoData: { url: string } | null;
     gallery: GalleryImage[];
   }) => Promise<unknown>;
 }
@@ -31,8 +31,8 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
-  const [heroImage, setHeroImage] = useState<string | null>(club.heroImage);
-  const [logo, setLogo] = useState<string | null>(club.logo);
+  const [bannerUrl, setBannerUrl] = useState<string | null>(club.bannerData?.url || null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(club.logoData?.url || null);
   const [gallery, setGallery] = useState<GalleryImage[]>(() =>
     club.gallery.map((img) => ({
       id: img.id,
@@ -48,8 +48,8 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const handleEdit = useCallback(() => {
-    setHeroImage(club.heroImage);
-    setLogo(club.logo);
+    setBannerUrl(club.bannerData?.url || null);
+    setLogoUrl(club.logoData?.url || null);
     setGallery(
       club.gallery.map((img) => ({
         id: img.id,
@@ -100,7 +100,7 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
       setError("");
       try {
         const { url } = await uploadFile(file);
-        setHeroImage(url);
+        setBannerUrl(url);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to upload hero image");
       } finally {
@@ -122,7 +122,7 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
       setError("");
       try {
         const { url } = await uploadFile(file);
-        setLogo(url);
+        setLogoUrl(url);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to upload logo");
       } finally {
@@ -194,7 +194,7 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
   }, [club.id, gallery]);
 
   const handleSetHeroFromGallery = useCallback((imageUrl: string) => {
-    setHeroImage(imageUrl);
+    setBannerUrl(imageUrl);
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -202,8 +202,8 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
     setError("");
     try {
       await onUpdate({
-        heroImage,
-        logo,
+        bannerData: bannerUrl ? { url: bannerUrl } : null,
+        logoData: logoUrl ? { url: logoUrl } : null,
         gallery: gallery.map((img, index) => ({
           id: img.id,
           imageUrl: img.imageUrl,
@@ -218,7 +218,7 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
     } finally {
       setIsSaving(false);
     }
-  }, [heroImage, logo, gallery, onUpdate]);
+  }, [bannerUrl, logoUrl, gallery, onUpdate]);
 
   return (
     <>
@@ -235,10 +235,10 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
 
       <div className="im-section-view">
         <div className="im-gallery-view-hero">
-          {isValidImageUrl(club.heroImage) ? (
+          {isValidImageUrl(club.bannerData?.url) ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
-              src={getImageUrl(club.heroImage) ?? ""}
+              src={getImageUrl(club.bannerData?.url) ?? ""}
               alt="Club hero"
               className="im-gallery-view-hero-img"
             />
@@ -274,14 +274,14 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
         <div className="im-gallery-edit-section">
           <h3 className="im-gallery-edit-section-title">Hero Image</h3>
           <div className="im-gallery-edit-hero">
-            {isValidImageUrl(heroImage) ? (
+            {isValidImageUrl(bannerUrl) ? (
               <div className="im-gallery-edit-hero-preview">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={getImageUrl(heroImage) ?? ""} alt="Hero preview" />
+                <img src={getImageUrl(bannerUrl) ?? ""} alt="Hero preview" />
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setHeroImage(null)}
+                  onClick={() => setBannerUrl(null)}
                   className="im-gallery-edit-remove"
                   disabled={isSaving || isUploading}
                 >
@@ -312,14 +312,14 @@ export function ClubGalleryView({ club, onUpdate }: ClubGalleryViewProps) {
         <div className="im-gallery-edit-section">
           <h3 className="im-gallery-edit-section-title">Logo</h3>
           <div className="im-gallery-edit-logo">
-            {isValidImageUrl(logo) ? (
+            {isValidImageUrl(logoUrl) ? (
               <div className="im-gallery-edit-logo-preview">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={getImageUrl(logo) ?? ""} alt="Logo preview" />
+                <img src={getImageUrl(logoUrl) ?? ""} alt="Logo preview" />
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setLogo(null)}
+                  onClick={() => setLogoUrl(null)}
                   className="im-gallery-edit-remove"
                   disabled={isSaving || isUploading}
                 >

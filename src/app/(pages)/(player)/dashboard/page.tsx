@@ -17,7 +17,7 @@ interface Club {
   id: string;
   name: string;
   location: string;
-  logo?: string | null;
+  logoData?: { url: string; altText?: string; thumbnailUrl?: string } | null;
 }
 
 interface ClubCoach {
@@ -114,7 +114,7 @@ export default function PlayerDashboardPage() {
     id: club.id,
     name: club.name,
     location: club.location,
-    logo: club.logo,
+    logoData: club.logoData,
   })), [clubsFromStore]);
 
   // State for bookings

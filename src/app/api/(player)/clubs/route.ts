@@ -58,12 +58,8 @@ export async function GET(request: Request) {
         city: true,
         contactInfo: true,
         openingHours: true,
-        // New structure
         logoData: true,
         bannerData: true,
-        // Deprecated - kept for backward compatibility
-        logo: true,
-        heroImage: true,
         metadata: true,
         tags: true,
         createdAt: true,
@@ -100,12 +96,8 @@ export async function GET(request: Request) {
         city: club.city,
         contactInfo: club.contactInfo,
         openingHours: club.openingHours,
-        // New structure
         logoData: club.logoData ? JSON.parse(club.logoData) : null,
         bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
-        // Deprecated - kept for backward compatibility
-        logo: club.logo,
-        heroImage: club.heroImage,
         metadata: club.metadata,
         tags: club.tags,
         createdAt: club.createdAt,
