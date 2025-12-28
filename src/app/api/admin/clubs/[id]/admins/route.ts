@@ -387,9 +387,8 @@ export async function DELETE(
       },
     });
 
-    if (!targetMembership || !targetMembership.role || 
-        (targetMembership.role !== ClubMembershipRole.CLUB_ADMIN && 
-         targetMembership.role !== ClubMembershipRole.CLUB_OWNER)) {
+    if (!targetMembership?.role || 
+        ![ClubMembershipRole.CLUB_ADMIN, ClubMembershipRole.CLUB_OWNER].includes(targetMembership.role)) {
       return NextResponse.json(
         { error: "User is not a Club Admin of this club" },
         { status: 400 }

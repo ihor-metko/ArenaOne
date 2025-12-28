@@ -186,11 +186,11 @@ export function ClubAdminsSection({
   // Check if user can modify a specific club admin
   const canModifyClubAdmin = (admin: Admin) => {
     // Owner cannot remove themselves
-    if (admin.role === "CLUB_OWNER" && admin.id === user?.id) {
+    if (admin.role === "CLUB_OWNER" && user?.id === admin.id) {
       return false;
     }
     
-    // Can manage if has permission and it's not self-removal
+    // Return general permission check for non-owner cases
     return canManageClubAdmins;
   };
 
