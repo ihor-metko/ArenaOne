@@ -33,6 +33,7 @@ import {
   enforceOwnerUniqueness,
   checkExistingActiveInvite,
 } from "@/lib/inviteHelpers";
+import { sendInviteEmail } from "@/services/emailService";
 import type { InviteRole } from "@prisma/client";
 
 const VALID_INVITE_ROLES: InviteRole[] = [
@@ -178,15 +179,54 @@ export async function POST(request: Request) {
         status: true,
         expiresAt: true,
         createdAt: true,
+        organization: {
+          select: {
+            name: true,
+          },
+        },
+        club: {
+          select: {
+            name: true,
+          },
+        },
+        invitedBy: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
-    // 9. Return success response with token (ONLY returned once, never stored)
+    // 9. Send invite email (graceful failure - don't block invite creation)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const inviteLink = `${appUrl}/invites/accept?token=${token}`;
+
+    // Send email asynchronously without blocking the response
+    sendInviteEmail({
+      to: normalizedEmail,
+      inviteLink,
+      role,
+      organizationName: invite.organization?.name,
+      clubName: invite.club?.name,
+      inviterName: invite.invitedBy?.name || undefined,
+    }).catch((error) => {
+      // Log email failures but don't fail the invite creation
+      console.error("Failed to send invite email (invite was still created):", error);
+    });
+
+    // 10. Return success response with token (ONLY returned once, never stored)
     return NextResponse.json(
       {
         success: true,
         invite: {
-          ...invite,
+          id: invite.id,
+          email: invite.email,
+          role: invite.role,
+          organizationId: invite.organizationId,
+          clubId: invite.clubId,
+          status: invite.status,
+          expiresAt: invite.expiresAt,
+          createdAt: invite.createdAt,
           // Token is only returned on creation, never stored or retrievable again
           token,
         },
