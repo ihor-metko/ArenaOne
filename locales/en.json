@@ -2503,9 +2503,8 @@
       "phoneHint": "Include country code (e.g., +380 for Ukraine)"
     },
     "existingUserSearchStep": {
-      "searchLabel": "Search for User by Email *",
-      "searchPlaceholder": "Enter user email address",
-      "searchButton": "Search",
+      "searchLabel": "Search for User *",
+      "searchPlaceholder": "Type name or email to search...",
       "searching": "Searching...",
       "searchResults": "Search Results",
       "select": "Select",

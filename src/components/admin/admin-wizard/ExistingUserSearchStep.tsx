@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Input, Button } from "@/components/ui";
 import type { ExistingUserData, AdminWizardErrors } from "@/types/adminWizard";
@@ -28,61 +28,151 @@ export function ExistingUserSearchStep({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSearch = useCallback(async () => {
-    if (!searchQuery.trim()) {
-      setSearchError(t("errors.enterEmail"));
-      return;
-    }
-
-    // Basic email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(searchQuery)) {
-      setSearchError(t("errors.invalidEmail"));
+  // Debounced search function
+  const performSearch = useCallback(async (query: string) => {
+    // Don't search for queries shorter than 2 characters
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      setShowDropdown(false);
       return;
     }
 
     setIsSearching(true);
-    setSearchError(null);
-    setSearchResults([]);
 
     try {
-      const response = await fetch(`/api/admin/users/search?email=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(`/api/admin/users/search?q=${encodeURIComponent(query)}`);
       const result = await response.json();
 
       if (!response.ok) {
-        setSearchError(result.error || t("errors.searchFailed"));
+        console.error("Search failed:", result.error);
+        setSearchResults([]);
         return;
       }
 
       if (result.users && result.users.length > 0) {
         setSearchResults(result.users);
+        setShowDropdown(true);
       } else {
-        setSearchError(t("errors.noResults"));
+        setSearchResults([]);
+        setShowDropdown(false);
       }
-    } catch {
-      setSearchError(t("errors.searchError"));
+    } catch (error) {
+      console.error("Search error:", error);
+      setSearchResults([]);
+      setShowDropdown(false);
     } finally {
       setIsSearching(false);
     }
-  }, [searchQuery, t]);
+  }, []);
 
-  const handleSelectUser = (user: SearchResult) => {
+  // Handle input change with debouncing
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setFocusedIndex(-1);
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout for debounced search
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(value);
+    }, 300); // 300ms debounce
+  }, [performSearch]);
+
+  // Handle user selection
+  const handleSelectUser = useCallback((user: SearchResult) => {
     onChange({
       userId: user.id,
       email: user.email,
       name: user.name,
     });
-  };
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowDropdown(false);
+    setFocusedIndex(-1);
+  }, [onChange]);
 
-  const handleClearSelection = () => {
+  // Handle keyboard navigation
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (e.key) {
+      case "ArrowDown":
+        if (showDropdown && searchResults.length > 0) {
+          e.preventDefault();
+          setFocusedIndex((prev) => 
+            prev < searchResults.length - 1 ? prev + 1 : prev
+          );
+        }
+        break;
+      case "ArrowUp":
+        if (showDropdown && searchResults.length > 0) {
+          e.preventDefault();
+          setFocusedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        }
+        break;
+      case "Enter":
+        if (showDropdown && searchResults.length > 0) {
+          e.preventDefault();
+          if (focusedIndex >= 0 && focusedIndex < searchResults.length) {
+            handleSelectUser(searchResults[focusedIndex]);
+          }
+        }
+        break;
+      case "Escape":
+        e.preventDefault();
+        setShowDropdown(false);
+        setFocusedIndex(-1);
+        break;
+    }
+  }, [showDropdown, searchResults, focusedIndex, handleSelectUser]);
+
+  // Handle clear selection
+  const handleClearSelection = useCallback(() => {
     onChange({
       userId: undefined,
       email: undefined,
       name: undefined,
     });
-  };
+  }, [onChange]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(target) &&
+        inputRef.current && !inputRef.current.contains(target)
+      ) {
+        setShowDropdown(false);
+        setFocusedIndex(-1);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="im-wizard-step-content">
@@ -95,64 +185,57 @@ export function ExistingUserSearchStep({
             <label htmlFor="userSearch" className="im-field-label">
               {t("searchLabel")}
             </label>
-            <div className="im-search-field">
+            <div className="im-autocomplete-wrapper">
               <Input
+                ref={inputRef}
                 id="userSearch"
-                type="email"
+                type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
                 placeholder={t("searchPlaceholder")}
-                disabled={disabled || isSearching}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSearch();
-                  }
-                }}
+                disabled={disabled}
+                autoComplete="off"
+                aria-autocomplete="list"
+                aria-controls="user-search-results"
+                aria-expanded={showDropdown}
               />
-              <Button
-                type="button"
-                onClick={handleSearch}
-                disabled={disabled || isSearching || !searchQuery.trim()}
-              >
-                {isSearching ? t("searching") : t("searchButton")}
-              </Button>
+              {isSearching && (
+                <span className="im-autocomplete-loading" aria-live="polite">
+                  {t("searching")}
+                </span>
+              )}
+              {showDropdown && searchResults.length > 0 && (
+                <div
+                  ref={dropdownRef}
+                  id="user-search-results"
+                  className="im-autocomplete-dropdown"
+                  role="listbox"
+                >
+                  {searchResults.map((user, index) => (
+                    <div
+                      key={user.id}
+                      role="option"
+                      aria-selected={index === focusedIndex}
+                      className={`im-autocomplete-item ${index === focusedIndex ? "im-focused" : ""}`}
+                      onClick={() => handleSelectUser(user)}
+                      onMouseEnter={() => setFocusedIndex(index)}
+                    >
+                      <div className="im-autocomplete-item-name">
+                        {user.name || t("noName")}
+                      </div>
+                      <div className="im-autocomplete-item-email">{user.email}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            {searchError && (
-              <span className="im-field-error" role="alert">
-                {searchError}
-              </span>
-            )}
             {errors.userId && (
               <span className="im-field-error" role="alert">
                 {errors.userId}
               </span>
             )}
           </div>
-
-          {searchResults.length > 0 && (
-            <div className="im-search-results">
-              <h4 className="im-search-results-title">{t("searchResults")}</h4>
-              <div className="im-search-results-list">
-                {searchResults.map((user) => (
-                  <div key={user.id} className="im-search-result-item">
-                    <div className="im-search-result-info">
-                      <div className="im-search-result-name">{user.name || t("noName")}</div>
-                      <div className="im-search-result-email">{user.email}</div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleSelectUser(user)}
-                      disabled={disabled}
-                    >
-                      {t("select")}
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </>
       ) : (
         <div className="im-selected-user">

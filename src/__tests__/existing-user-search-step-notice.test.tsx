@@ -9,9 +9,8 @@ import { ExistingUserSearchStep } from "@/components/admin/admin-wizard/Existing
 
 // Mock next-intl
 const mockTranslations: Record<string, string> = {
-  searchLabel: "Search for User by Email *",
-  searchPlaceholder: "Enter user email address",
-  searchButton: "Search",
+  searchLabel: "Search for User *",
+  searchPlaceholder: "Type name or email to search...",
   searching: "Searching...",
   registrationNotice: "To assign an administrator, please select an existing user. If the user does not exist, they must register first.",
   selectedUser: "Selected User",
@@ -39,27 +38,9 @@ jest.mock("@/components/ui", () => ({
   }) => (
     <button onClick={onClick} disabled={disabled}>{children}</button>
   ),
-  Input: ({ 
-    value, 
-    onChange, 
-    placeholder,
-    disabled,
-    onKeyDown,
-  }: { 
-    value: string; 
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    placeholder?: string;
-    disabled?: boolean;
-    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  }) => (
-    <input 
-      value={value} 
-      onChange={onChange} 
-      placeholder={placeholder}
-      disabled={disabled}
-      onKeyDown={onKeyDown}
-    />
-  ),
+  Input: React.forwardRef(function Input(props: React.InputHTMLAttributes<HTMLInputElement>, ref: React.Ref<HTMLInputElement>) {
+    return <input ref={ref} {...props} />;
+  }),
 }));
 
 describe("ExistingUserSearchStep - Registration Notice", () => {
@@ -135,7 +116,16 @@ describe("ExistingUserSearchStep - Registration Notice", () => {
     const notice = screen.getByRole("status");
     expect(notice).toBeInTheDocument();
     
-    const searchInput = screen.getByPlaceholderText("Enter user email address");
+    const searchInput = screen.getByPlaceholderText("Type name or email to search...");
     expect(searchInput).toBeInTheDocument();
+  });
+
+  it("should have autocomplete attributes for live search", () => {
+    render(<ExistingUserSearchStep {...defaultProps} />);
+
+    const searchInput = screen.getByPlaceholderText("Type name or email to search...");
+    // In the DOM, React's autoComplete becomes autocomplete attribute
+    expect(searchInput).toHaveAttribute("aria-autocomplete", "list");
+    expect(searchInput).toHaveAttribute("aria-expanded", "false");
   });
 });
