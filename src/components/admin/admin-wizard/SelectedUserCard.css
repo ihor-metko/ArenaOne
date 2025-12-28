@@ -1,0 +1,80 @@
+/**
+ * SelectedUserCard Component Styles
+ * 
+ * Compact and clean design for displaying selected user in Create Admin wizard
+ * Uses im-* semantic classes and dark theme
+ */
+
+.im-selected-user-card {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: var(--im-selected-card-bg, var(--color-surface-secondary));
+  border: 1px solid var(--im-selected-card-border, var(--color-border));
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.im-selected-user-card-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Avatar - circular with initials */
+.im-selected-user-card-avatar {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--im-avatar-bg, var(--color-primary));
+  color: var(--im-avatar-text, white);
+  text-transform: uppercase;
+}
+
+/* User info section */
+.im-selected-user-card-info {
+  flex: 1;
+  min-width: 0; /* Allow text truncation */
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.im-selected-user-card-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--im-card-name, var(--color-text-primary));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.im-selected-user-card-email {
+  font-size: 0.75rem;
+  color: var(--im-card-email, var(--color-text-secondary));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Change User button */
+.im-selected-user-card-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Responsive - stack on very small screens */
+@media (max-width: 480px) {
+  .im-selected-user-card-content {
+    flex-wrap: wrap;
+  }
+  
+  .im-selected-user-card-button {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+}

@@ -5,3 +5,4 @@ export { UserSourceStep } from "./UserSourceStep";
 export { ExistingUserSearchStep } from "./ExistingUserSearchStep";
 export { UserDataStep } from "./UserDataStep";
 export { ReviewStep } from "./ReviewStep";
+export { SelectedUserCard } from "./SelectedUserCard";
