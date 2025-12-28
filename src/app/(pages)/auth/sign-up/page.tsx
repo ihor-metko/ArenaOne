@@ -108,7 +108,7 @@ export default function RegisterPage() {
         <h1 className="im-auth-card-title">{t("auth.registerTitle")}</h1>
         <p className="im-auth-card-subtitle">
           {isFromInvite 
-            ? "Complete your registration to accept the invitation."
+            ? t("auth.inviteRegisterSubtitle")
             : t("auth.registerSubtitle")
           }
         </p>
@@ -162,7 +162,7 @@ export default function RegisterPage() {
           />
           {isFromInvite && (
             <p className="im-auth-validation" style={{ color: "var(--im-text-secondary)" }}>
-              Email is pre-filled from your invitation
+              {t("auth.emailPrefilledFromInvite")}
             </p>
           )}
         </div>

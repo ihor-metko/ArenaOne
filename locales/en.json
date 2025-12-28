@@ -218,6 +218,7 @@
     "forgotPassword": "Forgot password?",
     "registerTitle": "Create Account",
     "registerSubtitle": "Join us and start booking courts today.",
+    "inviteRegisterSubtitle": "Complete your registration to accept the invitation.",
     "createAccount": "Create Account",
     "creatingAccount": "Creating account...",
     "enterName": "Enter your name",
@@ -231,7 +232,8 @@
     "continueBrowsing": "Continue browsing",
     "signInToBook": "Sign up / Log in to book",
     "signInToBookTooltip": "Sign in to book this court",
-    "welcomeBack": "Welcome back, {name}!"
+    "welcomeBack": "Welcome back, {name}!",
+    "emailPrefilledFromInvite": "Email is pre-filled from your invitation"
   },
   "invites": {
     "errorTitle": "Invitation Error",
@@ -248,7 +250,13 @@
     "acceptInvite": "Accept Invitation",
     "accepting": "Accepting...",
     "inviteAccepted": "Invitation accepted successfully!",
-    "redirecting": "Redirecting to your dashboard..."
+    "redirecting": "Redirecting to your dashboard...",
+    "roles": {
+      "ORGANIZATION_OWNER": "Organization Owner",
+      "ORGANIZATION_ADMIN": "Organization Administrator",
+      "CLUB_OWNER": "Club Owner",
+      "CLUB_ADMIN": "Club Administrator"
+    }
   },
   "clubs": {
     "title": "Clubs",

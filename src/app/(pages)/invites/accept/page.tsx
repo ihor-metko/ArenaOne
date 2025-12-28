@@ -227,7 +227,7 @@ export default function InviteAcceptPage() {
     const isOwnerRole = inviteDetails.role === "ORGANIZATION_OWNER" || inviteDetails.role === "CLUB_OWNER";
     const entityName = inviteDetails.organization?.name || inviteDetails.club?.name || "";
     const entityType = inviteDetails.organizationId ? t("common.organization") : t("common.club");
-    const roleDisplay = formatRoleForDisplay(inviteDetails.role);
+    const roleDisplay = t(`invites.roles.${inviteDetails.role}`);
 
     return (
       <div className="im-auth-card">
@@ -300,15 +300,4 @@ export default function InviteAcceptPage() {
       </div>
     </div>
   );
-}
-
-function formatRoleForDisplay(role: string): string {
-  const roleMap: Record<string, string> = {
-    ORGANIZATION_OWNER: "Organization Owner",
-    ORGANIZATION_ADMIN: "Organization Administrator",
-    CLUB_OWNER: "Club Owner",
-    CLUB_ADMIN: "Club Administrator",
-  };
-
-  return roleMap[role] || role;
 }
