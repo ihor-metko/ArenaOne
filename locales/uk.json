@@ -2441,9 +2441,8 @@
       "phoneHint": "Вкажіть код країни (наприклад, +380 для України)"
     },
     "existingUserSearchStep": {
-      "searchLabel": "Пошук користувача за електронною поштою *",
-      "searchPlaceholder": "Введіть адресу електронної пошти користувача",
-      "searchButton": "Шукати",
+      "searchLabel": "Пошук користувача *",
+      "searchPlaceholder": "Введіть ім'я або електронну пошту для пошуку...",
       "searching": "Пошук...",
       "searchResults": "Результати пошуку",
       "select": "Обрати",
