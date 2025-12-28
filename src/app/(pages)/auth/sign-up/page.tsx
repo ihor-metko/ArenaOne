@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Input, IMLink } from "@/components/ui";
@@ -20,6 +20,16 @@ export default function RegisterPage() {
 
   // Get and validate redirectTo from query params
   const redirectTo = validateRedirectUrl(searchParams.get("redirectTo"));
+  const inviteToken = searchParams.get("inviteToken");
+  const prefilledEmail = searchParams.get("email");
+  const isFromInvite = !!inviteToken;
+
+  // Pre-fill email if coming from invite
+  useEffect(() => {
+    if (prefilledEmail && !email) {
+      setEmail(prefilledEmail);
+    }
+  }, [prefilledEmail, email]);
 
   const isPasswordValid = password.length >= MIN_PASSWORD_LENGTH;
 
@@ -66,7 +76,12 @@ export default function RegisterPage() {
       {/* Header */}
       <div className="im-auth-card-header">
         <h1 className="im-auth-card-title">{t("auth.registerTitle")}</h1>
-        <p className="im-auth-card-subtitle">{t("auth.registerSubtitle")}</p>
+        <p className="im-auth-card-subtitle">
+          {isFromInvite 
+            ? "Complete your registration to accept the invitation."
+            : t("auth.registerSubtitle")
+          }
+        </p>
       </div>
 
       {/* Form */}
@@ -108,7 +123,18 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            readOnly={isFromInvite}
+            disabled={isFromInvite}
+            style={isFromInvite ? { 
+              backgroundColor: "var(--im-input-disabled-bg, #f5f5f5)",
+              cursor: "not-allowed"
+            } : undefined}
           />
+          {isFromInvite && (
+            <p className="im-auth-validation" style={{ color: "var(--im-text-secondary)" }}>
+              Email is pre-filled from your invitation
+            </p>
+          )}
         </div>
 
         {/* Password field */}

@@ -233,6 +233,23 @@
     "signInToBookTooltip": "Sign in to book this court",
     "welcomeBack": "Welcome back, {name}!"
   },
+  "invites": {
+    "errorTitle": "Invitation Error",
+    "invalidToken": "This invitation link is invalid or has been removed.",
+    "expiredToken": "This invitation has expired. Please request a new invitation.",
+    "revokedToken": "This invitation has been revoked.",
+    "alreadyAccepted": "This invitation has already been accepted.",
+    "emailMismatch": "This invitation is for a different email address. Please sign in with the correct account.",
+    "serverError": "An error occurred while processing your invitation. Please try again later.",
+    "confirmTitle": "Accept Invitation",
+    "confirmSubtitle": "Review the invitation details below and confirm to join.",
+    "role": "Role",
+    "ownerWarning": "You are being assigned an owner role. This grants full administrative access.",
+    "acceptInvite": "Accept Invitation",
+    "accepting": "Accepting...",
+    "inviteAccepted": "Invitation accepted successfully!",
+    "redirecting": "Redirecting to your dashboard..."
+  },
   "clubs": {
     "title": "Clubs",
     "subtitle": "Browse available padel clubs",
