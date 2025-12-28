@@ -18,6 +18,10 @@ import "@/components/EntityPageLayout.css";
 
 /**
  * Helper function to get trend information based on occupancy change percentage
+ * @param changePercent - The percentage change in occupancy compared to previous month (null if no data)
+ * @returns Object with:
+ *   - className: CSS class for trend styling ('im-club-preview-trend--up' for positive, 'im-club-preview-trend--down' for negative, 'im-club-preview-trend--neutral' for zero/null)
+ *   - arrow: Visual indicator ('↑' for increase, '↓' for decrease, '→' for no change)
  */
 function getTrendInfo(changePercent: number | null): { 
   className: string; 
@@ -362,6 +366,10 @@ export default function OrganizationDetailPage() {
                   {(org.clubsPreview ?? []).map((club) => {
                     // Find statistics for this club
                     const clubStats = monthlyStatistics.find(stat => stat.clubId === club.id);
+                    // Get trend info if statistics are available
+                    const trendInfo = clubStats?.occupancyChangePercent !== null && clubStats
+                      ? getTrendInfo(clubStats.occupancyChangePercent)
+                      : null;
                     
                     return (
                       <div
@@ -395,19 +403,16 @@ export default function OrganizationDetailPage() {
                                 {t("orgDetail.occupancy")}
                               </span>
                             </div>
-                            {clubStats.occupancyChangePercent !== null && (() => {
-                              const trendInfo = getTrendInfo(clubStats.occupancyChangePercent);
-                              return (
-                                <div className={`im-club-preview-trend ${trendInfo.className}`}>
-                                  <span className="im-club-preview-trend-arrow" aria-hidden="true">
-                                    {trendInfo.arrow}
-                                  </span>
-                                  <span className="im-club-preview-trend-value">
-                                    {Math.abs(clubStats.occupancyChangePercent).toFixed(1)}%
-                                  </span>
-                                </div>
-                              );
-                            })()}
+                            {trendInfo && (
+                              <div className={`im-club-preview-trend ${trendInfo.className}`}>
+                                <span className="im-club-preview-trend-arrow" aria-hidden="true">
+                                  {trendInfo.arrow}
+                                </span>
+                                <span className="im-club-preview-trend-value">
+                                  {Math.abs(clubStats.occupancyChangePercent!).toFixed(1)}%
+                                </span>
+                              </div>
+                            )}
                           </div>
                         )}
                         
