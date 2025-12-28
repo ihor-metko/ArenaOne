@@ -38,8 +38,6 @@ export default function OrganizationDetailPage() {
 
   // Statistics store
   const monthlyStatistics = useClubStatisticsStore((state) => state.monthlyStatistics);
-  const statisticsLoading = useClubStatisticsStore((state) => state.loading);
-  const statisticsError = useClubStatisticsStore((state) => state.error);
   const setMonthlyStatistics = useClubStatisticsStore((state) => state.setMonthlyStatistics);
 
   const [error, setError] = useState("");
