@@ -251,16 +251,11 @@ export default function OrganizationDetailPage() {
           <div className="im-section-card im-org-detail-content--full">
             <OrganizationAdminsTable
               orgId={orgId}
-              admins={(org.superAdmins || []).map(admin => ({
-                id: admin.membershipId,
-                type: "superadmin" as const,
-                userId: admin.id,
-                userName: admin.name,
-                userEmail: admin.email,
-                isPrimaryOwner: admin.isPrimaryOwner,
-                lastLoginAt: admin.lastLoginAt || null,
-                createdAt: new Date(), // Placeholder, not displayed in UI
-              }))}
+              organizationData={{
+                id: org.id,
+                name: org.name,
+                slug: org.slug,
+              }}
               onRefresh={() => fetchOrgDetail(true)}
             />
           </div>
