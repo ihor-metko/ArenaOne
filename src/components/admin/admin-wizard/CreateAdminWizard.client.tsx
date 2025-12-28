@@ -235,21 +235,21 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
     setSubmitError(null);
 
     try {
+      // Determine container type and ID based on role
+      const isOrgRole = formData.role === "ORGANIZATION_OWNER" || formData.role === "ORGANIZATION_ADMIN";
+      const containerType = isOrgRole ? "organization" : "club";
+      const containerId = isOrgRole ? formData.organizationId : formData.clubId;
+
       // Existing user: direct role assignment
       const payload: Record<string, unknown> = {
+        containerType,
+        containerId,
         role: formData.role,
         userSource: formData.userSource,
         userId: formData.userId,
       };
 
-      // Add context (org or club)
-      if (formData.role === "ORGANIZATION_OWNER" || formData.role === "ORGANIZATION_ADMIN") {
-        payload.organizationId = formData.organizationId;
-      } else {
-        payload.clubId = formData.clubId;
-      }
-
-      const response = await fetch("/api/admin/admins/create", {
+      const response = await fetch("/api/admin/admins", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
