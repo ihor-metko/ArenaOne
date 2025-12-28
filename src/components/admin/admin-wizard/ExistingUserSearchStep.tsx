@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Input, Button } from "@/components/ui";
+import { Input } from "@/components/ui";
+import { SelectedUserCard } from "./SelectedUserCard";
 import type { ExistingUserData, AdminWizardErrors } from "@/types/adminWizard";
 
 interface ExistingUserSearchStepProps {
@@ -238,27 +239,12 @@ export function ExistingUserSearchStep({
           </div>
         </>
       ) : (
-        <div className="im-selected-user">
-          <h4 className="im-selected-user-title">{t("selectedUser")}</h4>
-          <div className="im-selected-user-info">
-            <div className="im-review-item">
-              <dt className="im-review-label">{t("name")}</dt>
-              <dd className="im-review-value">{data.name || t("noName")}</dd>
-            </div>
-            <div className="im-review-item">
-              <dt className="im-review-label">{t("email")}</dt>
-              <dd className="im-review-value">{data.email}</dd>
-            </div>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClearSelection}
-            disabled={disabled}
-          >
-            {t("changeUser")}
-          </Button>
-        </div>
+        <SelectedUserCard
+          name={data.name}
+          email={data.email}
+          onChangeUser={handleClearSelection}
+          disabled={disabled}
+        />
       )}
     </div>
   );
