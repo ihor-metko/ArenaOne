@@ -534,5 +534,141 @@ describe("Admin Club Section API", () => {
         expect(prisma.$transaction).toHaveBeenCalled();
       });
     });
+
+    describe("metadata section", () => {
+      it("should update club metadata with logo theme settings", async () => {
+        mockAuth.mockResolvedValue({
+          user: { id: "admin-123", isRoot: true },
+        });
+
+        (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+
+        const updatedClub = {
+          ...mockClub,
+          metadata: JSON.stringify({
+            logoTheme: "dark",
+            secondLogoTheme: "light",
+            logoCount: "two",
+          }),
+          courts: [],
+          coaches: [],
+          gallery: [],
+          businessHours: [],
+          specialHours: [],
+        };
+
+        (prisma.club.update as jest.Mock).mockResolvedValue(updatedClub);
+
+        const request = new Request(
+          "http://localhost:3000/api/admin/clubs/club-123/section",
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              section: "metadata",
+              payload: {
+                metadata: {
+                  logoTheme: "dark",
+                  secondLogoTheme: "light",
+                  logoCount: "two",
+                },
+              },
+            }),
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        const response = await PATCH(request, { params: mockParams });
+        const data = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(prisma.club.update).toHaveBeenCalledWith({
+          where: { id: "club-123" },
+          data: {
+            metadata: JSON.stringify({
+              logoTheme: "dark",
+              secondLogoTheme: "light",
+              logoCount: "two",
+            }),
+          },
+          include: {
+            courts: true,
+            coaches: { include: { user: true } },
+            gallery: { orderBy: { sortOrder: "asc" } },
+            businessHours: { orderBy: { dayOfWeek: "asc" } },
+            specialHours: { orderBy: { date: "asc" } },
+          },
+        });
+        // Verify the metadata is properly stringified in response
+        expect(data.metadata).toBe(JSON.stringify({
+          logoTheme: "dark",
+          secondLogoTheme: "light",
+          logoCount: "two",
+        }));
+      });
+
+      it("should update club metadata with banner alignment", async () => {
+        mockAuth.mockResolvedValue({
+          user: { id: "admin-123", isRoot: true },
+        });
+
+        (prisma.club.findUnique as jest.Mock).mockResolvedValue({
+          ...mockClub,
+          metadata: JSON.stringify({ logoTheme: "light" }),
+        });
+
+        const updatedClub = {
+          ...mockClub,
+          metadata: JSON.stringify({
+            logoTheme: "light",
+            bannerAlignment: "top",
+          }),
+          courts: [],
+          coaches: [],
+          gallery: [],
+          businessHours: [],
+          specialHours: [],
+        };
+
+        (prisma.club.update as jest.Mock).mockResolvedValue(updatedClub);
+
+        const request = new Request(
+          "http://localhost:3000/api/admin/clubs/club-123/section",
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              section: "metadata",
+              payload: {
+                metadata: {
+                  logoTheme: "light",
+                  bannerAlignment: "top",
+                },
+              },
+            }),
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        const response = await PATCH(request, { params: mockParams });
+        const data = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(prisma.club.update).toHaveBeenCalledWith({
+          where: { id: "club-123" },
+          data: {
+            metadata: JSON.stringify({
+              logoTheme: "light",
+              bannerAlignment: "top",
+            }),
+          },
+          include: {
+            courts: true,
+            coaches: { include: { user: true } },
+            gallery: { orderBy: { sortOrder: "asc" } },
+            businessHours: { orderBy: { dayOfWeek: "asc" } },
+            specialHours: { orderBy: { date: "asc" } },
+          },
+        });
+      });
+    });
   });
 });
