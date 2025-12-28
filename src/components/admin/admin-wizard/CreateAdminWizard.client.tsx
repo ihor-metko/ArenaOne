@@ -389,15 +389,11 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
     if (config.onSuccess) {
       // For existing users, we get userId directly
       // For invites, we get invite.id
-      const resultId = responseData.userId || responseData.invite?.id || "";
+      const resultId = responseData.userId || responseData.invite?.id;
       
-      // Only call callback if we have a valid ID
-      if (resultId) {
-        config.onSuccess(resultId);
-      } else {
-        // Fallback: just close if no ID but operation succeeded
-        config.onSuccess("");
-      }
+      // Always call the callback to close the modal
+      // Pass empty string if no specific ID is available (operation still succeeded)
+      config.onSuccess(resultId || "");
     }
   }, [formData.userSource, t, showToast, refetchAdminUsers, config]);
 
