@@ -327,6 +327,9 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
       config.onCancel();
     }
   };
+
+  // Helper function for handling API errors
+  const handleApiError = useCallback((
     response: Response,
     errorData: ErrorResponse
   ) => {
