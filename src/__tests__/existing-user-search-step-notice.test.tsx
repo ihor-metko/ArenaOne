@@ -29,6 +29,22 @@ jest.mock("next-intl", () => ({
   useTranslations: () => (key: string) => mockTranslations[key] || key,
 }));
 
+// Mock SelectedUserCard component
+jest.mock("@/components/admin/admin-wizard/SelectedUserCard", () => ({
+  SelectedUserCard: ({ name, email, onChangeUser }: {
+    name: string;
+    email: string;
+    onChangeUser: () => void;
+  }) => (
+    <div>
+      <h4>Selected User</h4>
+      <div>{name}</div>
+      <div>{email}</div>
+      <button onClick={onChangeUser}>Change User</button>
+    </div>
+  ),
+}));
+
 // Mock UI components
 jest.mock("@/components/ui", () => ({
   Button: ({ children, onClick, disabled }: { 
