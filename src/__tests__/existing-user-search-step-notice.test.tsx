@@ -38,9 +38,9 @@ jest.mock("@/components/ui", () => ({
   }) => (
     <button onClick={onClick} disabled={disabled}>{children}</button>
   ),
-  Input: React.forwardRef((props: React.InputHTMLAttributes<HTMLInputElement>, ref: React.Ref<HTMLInputElement>) => (
-    <input ref={ref} {...props} />
-  )),
+  Input: React.forwardRef(function Input(props: React.InputHTMLAttributes<HTMLInputElement>, ref: React.Ref<HTMLInputElement>) {
+    return <input ref={ref} {...props} />;
+  }),
 }));
 
 describe("ExistingUserSearchStep - Registration Notice", () => {
