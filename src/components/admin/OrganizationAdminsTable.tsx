@@ -1,35 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button, Modal, Badge, Tooltip } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
+import { useAdminsStore } from "@/stores/useAdminsStore";
+import type { Admin } from "@/stores/useAdminsStore";
 import { UserProfileModal } from "./UserProfileModal";
 import { CreateAdminModal } from "./admin-wizard";
 import "./OrganizationAdminsTable.css";
 
-interface OrgAdmin {
-  id: string;
-  type: "superadmin";
-  userId: string;
-  userName: string | null;
-  userEmail: string;
-  isPrimaryOwner: boolean;
-  lastLoginAt: Date | string | null;
-  createdAt: Date;
-}
-
 interface OrganizationAdminsTableProps {
   orgId: string;
-  admins: OrgAdmin[];
-  onRefresh: () => void;
+  onRefresh?: () => void;
+  /**
+   * Optional organization data to avoid fetching when already available
+   * Passed from parent to prevent unnecessary network requests
+   */
+  organizationData?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
 }
 
 export default function OrganizationAdminsTable({
   orgId,
-  admins,
   onRefresh,
+  organizationData,
 }: OrganizationAdminsTableProps) {
   const t = useTranslations();
   const user = useUserStore((state) => state.user);
@@ -38,14 +37,26 @@ export default function OrganizationAdminsTable({
 
   // Get organization detail from store to pass to modal (avoids fetching)
   const getOrganizationDetailById = useOrganizationStore((state) => state.getOrganizationDetailById);
-  const org = getOrganizationDetailById(orgId);
+  const org = organizationData || getOrganizationDetailById(orgId);
+
+  // Use unified admins store
+  const getAdmins = useAdminsStore((state) => state.getAdmins);
+  const fetchAdminsIfNeeded = useAdminsStore((state) => state.fetchAdminsIfNeeded);
+  const storeLoading = useAdminsStore((state) => state.isLoading("organization", orgId));
+  const storeError = useAdminsStore((state) => state.error);
+
+  // Get admins from store
+  const storeAdmins = getAdmins("organization", orgId) || [];
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // Create Admin modal state
   const [isCreateAdminModalOpen, setIsCreateAdminModalOpen] = useState(false);
 
   // Remove admin modal state
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
-  const [adminToRemove, setAdminToRemove] = useState<OrgAdmin | null>(null);
+  const [adminToRemove, setAdminToRemove] = useState<Admin | null>(null);
   const [removeError, setRemoveError] = useState("");
   const [removing, setRemoving] = useState(false);
 
@@ -63,6 +74,38 @@ export default function OrganizationAdminsTable({
     setTimeout(() => setToast(null), 5000);
   };
 
+  // Fetch admins from store
+  const fetchOrgAdmins = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    
+    try {
+      await fetchAdminsIfNeeded("organization", orgId, { force: true });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load organization admins";
+      if (errorMessage.includes("403")) {
+        setError(t("common.forbidden"));
+      } else {
+        setError(errorMessage);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [orgId, fetchAdminsIfNeeded, t]);
+
+  // Sync store error with local error state
+  useEffect(() => {
+    if (storeError) {
+      setError(storeError);
+    }
+  }, [storeError]);
+
+  // Fetch admins only once on mount or when orgId changes
+  useEffect(() => {
+    fetchOrgAdmins();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId]);
+
   // Handle create admin modal
   const handleOpenCreateAdminModal = () => {
     setIsCreateAdminModalOpen(true);
@@ -73,7 +116,7 @@ export default function OrganizationAdminsTable({
   };
 
   // Handle remove admin
-  const handleOpenRemoveModal = (admin: OrgAdmin) => {
+  const handleOpenRemoveModal = (admin: Admin) => {
     setAdminToRemove(admin);
     setRemoveError("");
     setIsRemoveModalOpen(true);
@@ -88,13 +131,16 @@ export default function OrganizationAdminsTable({
     try {
       await removeAdmin({
         organizationId: orgId,
-        userId: adminToRemove.userId,
+        userId: adminToRemove.id,
       });
 
       showToast(t("orgAdmins.adminRemoved"), "success");
       setIsRemoveModalOpen(false);
       setAdminToRemove(null);
-      onRefresh();
+      
+      // Force refetch to get updated admins list
+      fetchOrgAdmins();
+      if (onRefresh) onRefresh();
     } catch (err) {
       setRemoveError(err instanceof Error ? err.message : "Failed to remove admin");
     } finally {
@@ -102,9 +148,9 @@ export default function OrganizationAdminsTable({
     }
   };
 
-  // Root Admin or Organization Owner (isPrimaryOwner) can manage org admins
-  const primaryOwner = admins.find((a) => a.isPrimaryOwner);
-  const isOwner = primaryOwner?.userId === user?.id;
+  // Root Admin or Organization Owner can manage org admins
+  const primaryOwner = storeAdmins.find((a) => a.role === "ORGANIZATION_OWNER");
+  const isOwner = primaryOwner?.id === user?.id;
   const canManageAdmins = isRoot || isOwner;
 
   // Check if an owner already exists to determine allowed roles
@@ -114,19 +160,19 @@ export default function OrganizationAdminsTable({
     : ["ORGANIZATION_OWNER", "ORGANIZATION_ADMIN"];
 
   // Sort admins: Owner first, then Organization Admins
-  const sortedAdmins = [...admins].sort((a, b) => {
-    if (a.isPrimaryOwner) return -1;
-    if (b.isPrimaryOwner) return 1;
+  const sortedAdmins = [...storeAdmins].sort((a, b) => {
+    if (a.role === "ORGANIZATION_OWNER") return -1;
+    if (b.role === "ORGANIZATION_OWNER") return 1;
     return 0;
   });
 
   // Check if user can modify a specific admin
-  const canModifyAdmin = (admin: OrgAdmin) => {
+  const canModifyAdmin = (admin: Admin) => {
     // Root Admin can modify anyone
     if (isRoot) return true;
 
     // Owner cannot be modified by non-root users (including by owner themselves in some cases)
-    if (admin.isPrimaryOwner) {
+    if (admin.role === "ORGANIZATION_OWNER") {
       // Owner can only remove themselves if they want to transfer ownership first
       return false;
     }
@@ -155,6 +201,32 @@ export default function OrganizationAdminsTable({
     return email.substring(0, 2).toUpperCase();
   };
 
+  // Show loading spinner while loading admins
+  if (loading || storeLoading) {
+    return (
+      <div className="im-org-admins-section">
+        <div className="im-section-header">
+          <h3 className="im-section-title">{t("orgAdmins.administratorsAndOwners")}</h3>
+        </div>
+        <div className="im-loading-state">
+          <div className="im-loading-spinner" />
+          <span>{t("common.loading")}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="im-org-admins-section">
+        <div className="im-section-header">
+          <h3 className="im-section-title">{t("orgAdmins.administratorsAndOwners")}</h3>
+        </div>
+        <div className="im-error-state">{error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="im-org-admins-section">
       {toast && (
@@ -180,31 +252,31 @@ export default function OrganizationAdminsTable({
         </div>
       </div>
 
-      {admins.length === 0 ? (
+      {storeAdmins.length === 0 ? (
         <p className="im-empty-state">{t("orgAdmins.noPeople")}</p>
       ) : (
         <div className="im-admins-list">
           {sortedAdmins.map((admin) => {
             const canModify = canModifyAdmin(admin);
-            const tooltipMessage = !canModify && admin.isPrimaryOwner
+            const tooltipMessage = !canModify && admin.role === "ORGANIZATION_OWNER"
               ? t("orgAdmins.ownerProtectionTooltip")
               : "";
-            const isCurrentUserOwner = admin.isPrimaryOwner && admin.userId === user?.id;
+            const isCurrentUserOwner = admin.role === "ORGANIZATION_OWNER" && admin.id === user?.id;
 
             return (
-              <div key={admin.id} className="im-admin-row">
+              <div key={admin.membershipId} className="im-admin-row">
                 <div className="im-admin-avatar">
-                  {getInitials(admin.userName, admin.userEmail)}
+                  {getInitials(admin.name, admin.email)}
                 </div>
                 <div className="im-admin-info">
                   <div className="im-admin-name-row">
                     <span className="im-admin-name">
-                      {admin.userName || admin.userEmail}
+                      {admin.name || admin.email}
                       {isCurrentUserOwner && (
                         <span className="im-admin-you-indicator"> ({t("orgAdmins.you")})</span>
                       )}
                     </span>
-                    {admin.isPrimaryOwner ? (
+                    {admin.role === "ORGANIZATION_OWNER" ? (
                       <Badge variant="success" size="small">
                         {t("orgAdmins.owner")}
                       </Badge>
@@ -214,7 +286,7 @@ export default function OrganizationAdminsTable({
                       </Badge>
                     )}
                   </div>
-                  <span className="im-admin-email">{admin.userEmail}</span>
+                  <span className="im-admin-email">{admin.email}</span>
                   {isRoot && (
                     <span className="im-admin-meta">
                       {t("orgAdmins.lastLogin")}:{" "}
@@ -228,7 +300,7 @@ export default function OrganizationAdminsTable({
                   <Button
                     size="small"
                     variant="outline"
-                    onClick={() => handleViewProfile(admin.userId)}
+                    onClick={() => handleViewProfile(admin.id)}
                   >
                     {t("common.viewProfile")}
                   </Button>
@@ -262,8 +334,9 @@ export default function OrganizationAdminsTable({
           } : undefined,
           allowedRoles: allowedRoles,
           onSuccess: () => {
-            // Refresh the admins list after successful creation
-            onRefresh();
+            // Force refresh the admins list after successful creation
+            fetchOrgAdmins();
+            if (onRefresh) onRefresh();
           },
         }}
       />
@@ -283,7 +356,7 @@ export default function OrganizationAdminsTable({
 
           <p>
             {t("orgAdmins.removeConfirm", {
-              name: adminToRemove?.userName || adminToRemove?.userEmail || "",
+              name: adminToRemove?.name || adminToRemove?.email || "",
             })}
           </p>
 

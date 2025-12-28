@@ -4,17 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button, Modal, Badge } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
-import { useClubAdminsStore } from "@/stores/useClubAdminsStore";
+import { useAdminsStore } from "@/stores/useAdminsStore";
+import type { Admin } from "@/stores/useAdminsStore";
 import { UserProfileModal } from "../UserProfileModal";
 import { CreateAdminModal } from "../admin-wizard";
 import type { AdminRole } from "@/types/adminWizard";
-
-interface ClubAdmin {
-  id: string;
-  name: string | null;
-  email: string;
-  role: "CLUB_OWNER" | "CLUB_ADMIN";
-}
 
 interface ClubAdminsSectionProps {
   clubId: string;
@@ -48,14 +42,14 @@ export function ClubAdminsSection({
   const t = useTranslations();
   const hasAnyRole = useUserStore((state) => state.hasAnyRole);
   
-  // Use club admins store
-  const getClubAdmins = useClubAdminsStore((state) => state.getClubAdmins);
-  const fetchClubAdminsIfNeeded = useClubAdminsStore((state) => state.fetchClubAdminsIfNeeded);
-  const storeLoading = useClubAdminsStore((state) => state.isLoading(clubId));
-  const storeError = useClubAdminsStore((state) => state.error);
+  // Use unified admins store
+  const getAdmins = useAdminsStore((state) => state.getAdmins);
+  const fetchAdminsIfNeeded = useAdminsStore((state) => state.fetchAdminsIfNeeded);
+  const storeLoading = useAdminsStore((state) => state.isLoading("club", clubId));
+  const storeError = useAdminsStore((state) => state.error);
 
   // Get admins from store
-  const admins = getClubAdmins(clubId) || [];
+  const storeAdmins = getAdmins("club", clubId) || [];
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -65,7 +59,7 @@ export function ClubAdminsSection({
 
   // Remove club admin modal state
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
-  const [adminToRemove, setAdminToRemove] = useState<ClubAdmin | null>(null);
+  const [adminToRemove, setAdminToRemove] = useState<Admin | null>(null);
   const [removeError, setRemoveError] = useState("");
   const [removing, setRemoving] = useState(false);
 
@@ -87,19 +81,19 @@ export function ClubAdminsSection({
   const canManageClubAdmins = hasAnyRole(["ROOT_ADMIN", "ORGANIZATION_ADMIN"]);
 
   // Check if a club owner already exists to determine allowed roles
-  const clubOwner = admins.find((admin) => admin.role === "CLUB_OWNER");
+  const clubOwner = storeAdmins.find((admin) => admin.role === "CLUB_OWNER");
   const hasOwner = !!clubOwner;
   const allowedRoles: AdminRole[] = hasOwner 
     ? ["CLUB_ADMIN"] 
     : ["CLUB_OWNER", "CLUB_ADMIN"];
 
-  // Fetch club admins from store - FIXED: Remove fetchClubAdminsIfNeeded from dependencies
+  // Fetch club admins from store
   const fetchClubAdmins = useCallback(async () => {
     setLoading(true);
     setError("");
     
     try {
-      await fetchClubAdminsIfNeeded(clubId, { force: true });
+      await fetchAdminsIfNeeded("club", clubId, { force: true });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load club admins";
       if (errorMessage.includes("403")) {
@@ -110,11 +104,7 @@ export function ClubAdminsSection({
     } finally {
       setLoading(false);
     }
-    // Note: fetchClubAdminsIfNeeded is a Zustand store action with a stable reference.
-    // The translation function 't' also has a stable reference in next-intl.
-    // Including them would not change behavior but could trigger unnecessary re-renders.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clubId, t]);
+  }, [clubId, fetchAdminsIfNeeded, t]);
 
   // Sync store error with local error state
   useEffect(() => {
@@ -126,9 +116,6 @@ export function ClubAdminsSection({
   // Fetch admins only once on mount or when clubId changes
   useEffect(() => {
     fetchClubAdmins();
-    // Note: fetchClubAdmins is defined above with useCallback, but including it in deps
-    // would cause infinite loops due to its internal dependencies.
-    // We only want to fetch when clubId changes, not when the callback changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId]);
 
@@ -142,7 +129,7 @@ export function ClubAdminsSection({
   };
 
   // Handle remove club admin
-  const handleOpenRemoveModal = (admin: ClubAdmin) => {
+  const handleOpenRemoveModal = (admin: Admin) => {
     setAdminToRemove(admin);
     setRemoveError("");
     setIsRemoveModalOpen(true);
@@ -189,7 +176,7 @@ export function ClubAdminsSection({
   };
 
   // Sort admins: Owner first, then Club Admins
-  const sortedAdmins = [...admins].sort((a, b) => {
+  const sortedAdmins = [...storeAdmins].sort((a, b) => {
     if (a.role === "CLUB_OWNER") return -1;
     if (b.role === "CLUB_OWNER") return 1;
     return 0;
@@ -245,7 +232,7 @@ export function ClubAdminsSection({
         </div>
       </div>
 
-      {admins.length === 0 ? (
+      {storeAdmins.length === 0 ? (
         <p className="im-empty-state">{t("clubAdmins.noAdmins")}</p>
       ) : (
         <div className="im-table-container">
