@@ -218,6 +218,7 @@
     "forgotPassword": "Forgot password?",
     "registerTitle": "Create Account",
     "registerSubtitle": "Join us and start booking courts today.",
+    "inviteRegisterSubtitle": "Complete your registration to accept the invitation.",
     "createAccount": "Create Account",
     "creatingAccount": "Creating account...",
     "enterName": "Enter your name",
@@ -231,7 +232,31 @@
     "continueBrowsing": "Continue browsing",
     "signInToBook": "Sign up / Log in to book",
     "signInToBookTooltip": "Sign in to book this court",
-    "welcomeBack": "Welcome back, {name}!"
+    "welcomeBack": "Welcome back, {name}!",
+    "emailPrefilledFromInvite": "Email is pre-filled from your invitation"
+  },
+  "invites": {
+    "errorTitle": "Invitation Error",
+    "invalidToken": "This invitation link is invalid or has been removed.",
+    "expiredToken": "This invitation has expired. Please request a new invitation.",
+    "revokedToken": "This invitation has been revoked.",
+    "alreadyAccepted": "This invitation has already been accepted.",
+    "emailMismatch": "This invitation is for a different email address. Please sign in with the correct account.",
+    "serverError": "An error occurred while processing your invitation. Please try again later.",
+    "confirmTitle": "Accept Invitation",
+    "confirmSubtitle": "Review the invitation details below and confirm to join.",
+    "role": "Role",
+    "ownerWarning": "You are being assigned an owner role. This grants full administrative access.",
+    "acceptInvite": "Accept Invitation",
+    "accepting": "Accepting...",
+    "inviteAccepted": "Invitation accepted successfully!",
+    "redirecting": "Redirecting to your dashboard...",
+    "roles": {
+      "ORGANIZATION_OWNER": "Organization Owner",
+      "ORGANIZATION_ADMIN": "Organization Administrator",
+      "CLUB_OWNER": "Club Owner",
+      "CLUB_ADMIN": "Club Administrator"
+    }
   },
   "clubs": {
     "title": "Clubs",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Input, IMLink } from "@/components/ui";
@@ -20,6 +20,16 @@ export default function RegisterPage() {
 
   // Get and validate redirectTo from query params
   const redirectTo = validateRedirectUrl(searchParams.get("redirectTo"));
+  const inviteToken = searchParams.get("inviteToken");
+  const prefilledEmail = searchParams.get("email");
+  const isFromInvite = !!inviteToken;
+
+  // Pre-fill email if coming from invite
+  useEffect(() => {
+    if (prefilledEmail && !email) {
+      setEmail(prefilledEmail);
+    }
+  }, [prefilledEmail, email]);
 
   const isPasswordValid = password.length >= MIN_PASSWORD_LENGTH;
 
@@ -47,8 +57,38 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         setError(data.error || t("auth.registrationFailed"));
+        setLoading(false);
+        return;
+      }
+
+      // If coming from invite, automatically sign in and redirect back to accept page
+      if (isFromInvite && redirectTo) {
+        try {
+          // Import signIn from next-auth
+          const { signIn } = await import("next-auth/react");
+          
+          const signInResult = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+          });
+
+          if (signInResult?.error) {
+            // If auto sign-in fails, redirect to sign-in page manually
+            const signInUrl = `/auth/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`;
+            router.push(signInUrl);
+          } else {
+            // Successfully signed in, redirect to the invite acceptance page
+            router.push(redirectTo);
+          }
+        } catch (signInError) {
+          console.error("Auto sign-in error:", signInError);
+          // Fallback to manual sign-in redirect
+          const signInUrl = `/auth/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`;
+          router.push(signInUrl);
+        }
       } else {
-        // Preserve redirectTo when redirecting to sign-in after successful registration
+        // Normal registration flow - redirect to sign-in
         const signInUrl = redirectTo 
           ? `/auth/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`
           : "/auth/sign-in";
@@ -66,7 +106,12 @@ export default function RegisterPage() {
       {/* Header */}
       <div className="im-auth-card-header">
         <h1 className="im-auth-card-title">{t("auth.registerTitle")}</h1>
-        <p className="im-auth-card-subtitle">{t("auth.registerSubtitle")}</p>
+        <p className="im-auth-card-subtitle">
+          {isFromInvite 
+            ? t("auth.inviteRegisterSubtitle")
+            : t("auth.registerSubtitle")
+          }
+        </p>
       </div>
 
       {/* Form */}
@@ -108,7 +153,18 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            readOnly={isFromInvite}
+            disabled={isFromInvite}
+            style={isFromInvite ? { 
+              backgroundColor: "var(--im-input-disabled-bg, #f5f5f5)",
+              cursor: "not-allowed"
+            } : undefined}
           />
+          {isFromInvite && (
+            <p className="im-auth-validation" style={{ color: "var(--im-text-secondary)" }}>
+              {t("auth.emailPrefilledFromInvite")}
+            </p>
+          )}
         </div>
 
         {/* Password field */}
