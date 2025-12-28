@@ -1,7 +1,7 @@
 /* Universal Create Admin Wizard Styles */
 
 .im-admin-wizard {
-  max-width: 800px;
+  width: 600px;
   margin: 0 auto;
 }
 
@@ -154,6 +154,17 @@
   color: var(--im-field-hint, var(--color-text-tertiary));
   margin-top: 0.25rem;
   font-style: italic;
+}
+
+.im-registration-notice {
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  background: var(--im-notice-bg, var(--color-info-bg));
+  border: 1px solid var(--im-notice-border, var(--color-info));
+  color: var(--im-notice-text, var(--color-text-primary));
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
 }
 
 /* Review Step */
