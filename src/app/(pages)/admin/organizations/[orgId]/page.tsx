@@ -23,9 +23,9 @@ import "@/components/EntityPageLayout.css";
  *   - className: CSS class for trend styling ('im-club-preview-trend--up' for positive, 'im-club-preview-trend--down' for negative, 'im-club-preview-trend--neutral' for zero/null)
  *   - arrow: Visual indicator ('↑' for increase, '↓' for decrease, '→' for no change)
  */
-function getTrendInfo(changePercent: number | null): { 
-  className: string; 
-  arrow: string; 
+function getTrendInfo(changePercent: number | null): {
+  className: string;
+  arrow: string;
 } {
   if (changePercent === null) {
     return { className: 'im-club-preview-trend--neutral', arrow: '→' };
@@ -145,7 +145,7 @@ export default function OrganizationDetailPage() {
           const stats = (data as OrganizationStatisticsResponse[])
             .filter((item) => item.statistics !== null)
             .map((item) => item.statistics!);
-          
+
           setMonthlyStatistics(stats);
         }
       } catch (err) {
@@ -370,7 +370,7 @@ export default function OrganizationDetailPage() {
                     const trendInfo = clubStats?.occupancyChangePercent !== null && clubStats
                       ? getTrendInfo(clubStats.occupancyChangePercent)
                       : null;
-                    
+
                     return (
                       <div
                         key={club.id}
@@ -391,13 +391,13 @@ export default function OrganizationDetailPage() {
                             {club.city || club.slug} · {club.courtCount} {t("orgDetail.courts")}
                           </span>
                         </div>
-                        
+
                         {/* Inline Statistics */}
-                        {clubStats && (
+                        {(
                           <div className="im-club-preview-stats">
                             <div className="im-club-preview-occupancy">
                               <span className="im-club-preview-occupancy-value">
-                                {clubStats.averageOccupancy.toFixed(1)}%
+                                {clubStats ? clubStats.averageOccupancy.toFixed(1) : "0"}%
                               </span>
                               <span className="im-club-preview-occupancy-label">
                                 {t("orgDetail.occupancy")}
@@ -409,13 +409,13 @@ export default function OrganizationDetailPage() {
                                   {trendInfo.arrow}
                                 </span>
                                 <span className="im-club-preview-trend-value">
-                                  {Math.abs(clubStats.occupancyChangePercent!).toFixed(1)}%
+                                  {clubStats ? Math.abs(clubStats.occupancyChangePercent!).toFixed(1) : "0"}%
                                 </span>
                               </div>
                             )}
                           </div>
                         )}
-                        
+
                         <div className="im-club-preview-status">
                           <span
                             className={`im-status-badge ${club.isPublic ? "im-status-badge--active" : "im-status-badge--draft"}`}
