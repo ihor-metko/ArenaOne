@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       !body.endTime
     ) {
       return NextResponse.json(
-        { error: "Missing required fields: courtId, startTime, and endTime are required" },
+        { error: "Missing required fields: courtId, startTime, endTime" },
         { status: 400 }
       );
     }

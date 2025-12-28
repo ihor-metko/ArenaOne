@@ -106,9 +106,9 @@ export async function getCurrentUser(): Promise<GetCurrentUserResult> {
         data: {
           id: sessionUserId,
           email: sessionUserEmail,
-          name: session.user.name || null,
-          image: session.user.image || null,
-          isRoot: session.user.isRoot || false,
+          name: session.user.name ?? null,
+          image: session.user.image ?? null,
+          isRoot: session.user.isRoot ?? false,
         },
       });
     }
