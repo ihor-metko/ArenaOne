@@ -7,6 +7,7 @@ jest.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
       findUnique: jest.fn(),
+      create: jest.fn(),
     },
     membership: {
       findUnique: jest.fn(),
@@ -52,6 +53,34 @@ const mockPrismaClubMembershipFindFirst = prisma.clubMembership.findFirst as jes
 const mockPrismaUserFindUnique = prisma.user.findUnique as jest.MockedFunction<typeof prisma.user.findUnique>;
 const mockPrismaTransaction = prisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>;
 
+/**
+ * Helper function to mock an authenticated user for getCurrentUser
+ */
+function mockAuthenticatedUser(userId: string, email: string, isRoot: boolean = false, name: string = "Test User") {
+  const user = {
+    id: userId,
+    email,
+    name,
+    emailVerified: null,
+    image: null,
+    password: null,
+    isRoot,
+    blocked: false,
+    lastLoginAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  mockAuth.mockResolvedValue({
+    user: { id: userId, email, name, isRoot },
+  });
+
+  // Mock the user lookup that getCurrentUser performs
+  mockPrismaUserFindUnique.mockResolvedValue(user);
+
+  return user;
+}
+
 describe("Invite API Endpoints", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -75,9 +104,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 400 if email is missing", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
+      mockAuthenticatedUser("user-123", "test@example.com", false);
 
       const request = new Request("http://localhost/api/invites", {
         method: "POST",
@@ -94,9 +121,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 400 if role is invalid", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
+      mockAuthenticatedUser("user-123", "test@example.com", false);
 
       const request = new Request("http://localhost/api/invites", {
         method: "POST",
@@ -114,9 +139,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 400 if email format is invalid", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
+      mockAuthenticatedUser("user-123", "test@example.com", false);
 
       const request = new Request("http://localhost/api/invites", {
         method: "POST",
@@ -134,9 +157,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 400 if organizationId is missing for org role", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
+      mockAuthenticatedUser("user-123", "test@example.com", false);
 
       const request = new Request("http://localhost/api/invites", {
         method: "POST",
@@ -153,9 +174,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 400 if clubId is missing for club role", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
+      mockAuthenticatedUser("user-123", "test@example.com", false);
 
       const request = new Request("http://localhost/api/invites", {
         method: "POST",
@@ -172,9 +191,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 403 if user lacks permission to invite", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
+      mockAuthenticatedUser("user-123", "test@example.com", false);
 
       mockPrismaMembershipFindUnique.mockResolvedValue(null);
 
@@ -192,9 +209,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 409 if organization already has an owner (for ORGANIZATION_OWNER)", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: true },
-      });
+      mockAuthenticatedUser("user-123", "root@example.com", true);
 
       // Mock existing owner
       mockPrismaMembershipFindFirst.mockResolvedValue({
@@ -223,9 +238,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 409 if club already has an owner (for CLUB_OWNER)", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: true },
-      });
+      mockAuthenticatedUser("user-123", "root@example.com", true);
 
       // Mock existing club owner
       mockPrismaClubMembershipFindFirst.mockResolvedValue({
@@ -253,9 +266,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 409 if active invite already exists", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: true },
-      });
+      mockAuthenticatedUser("user-123", "root@example.com", true);
 
       mockPrismaMembershipFindFirst.mockResolvedValue(null);
       mockPrismaInviteFindFirst.mockResolvedValue({
@@ -290,9 +301,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should create invite successfully for root admin", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: true },
-      });
+      mockAuthenticatedUser("user-123", "root@example.com", true);
 
       mockPrismaMembershipFindFirst.mockResolvedValue(null);
       mockPrismaInviteFindFirst.mockResolvedValue(null);
@@ -330,9 +339,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should normalize email before creating invite", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: true },
-      });
+      mockAuthenticatedUser("user-123", "root@example.com", true);
 
       mockPrismaMembershipFindFirst.mockResolvedValue(null);
       mockPrismaInviteFindFirst.mockResolvedValue(null);
@@ -540,9 +547,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 404 if token is invalid", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
+      mockAuthenticatedUser("user-123", "test@example.com", false);
 
       mockPrismaInviteFindUnique.mockResolvedValue(null);
 
@@ -556,9 +561,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should return 403 if user email does not match invite email", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
+      mockAuthenticatedUser("user-123", "different@example.com", false);
 
       const token = "test-token";
       const tokenHash = hashInviteToken(token);
@@ -579,20 +582,6 @@ describe("Invite API Endpoints", () => {
         updatedAt: new Date(),
       });
 
-      mockPrismaUserFindUnique.mockResolvedValue({
-        id: "user-123",
-        email: "different@example.com",
-        name: "Test User",
-        emailVerified: null,
-        image: null,
-        password: null,
-        isRoot: false,
-        blocked: false,
-        lastLoginAt: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
       const request = new Request("http://localhost/api/invites/accept", {
         method: "POST",
         body: JSON.stringify({ token }),
@@ -605,9 +594,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should accept invite and create organization membership", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
+      mockAuthenticatedUser("user-123", "test@example.com", false);
 
       const token = "test-token";
       const tokenHash = hashInviteToken(token);
@@ -624,20 +611,6 @@ describe("Invite API Endpoints", () => {
         invitedByUserId: "user-456",
         acceptedAt: null,
         acceptedByUserId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      mockPrismaUserFindUnique.mockResolvedValue({
-        id: "user-123",
-        email: "test@example.com",
-        name: "Test User",
-        emailVerified: null,
-        image: null,
-        password: null,
-        isRoot: false,
-        blocked: false,
-        lastLoginAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -677,9 +650,7 @@ describe("Invite API Endpoints", () => {
     });
 
     it("should accept invite and create club membership", async () => {
-      mockAuth.mockResolvedValue({
-        user: { id: "user-123", isRoot: false },
-      });
+      mockAuthenticatedUser("user-123", "test@example.com", false);
 
       const token = "test-token";
       const tokenHash = hashInviteToken(token);
@@ -696,20 +667,6 @@ describe("Invite API Endpoints", () => {
         invitedByUserId: "user-456",
         acceptedAt: null,
         acceptedByUserId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      mockPrismaUserFindUnique.mockResolvedValue({
-        id: "user-123",
-        email: "test@example.com",
-        name: "Test User",
-        emailVerified: null,
-        image: null,
-        password: null,
-        isRoot: false,
-        blocked: false,
-        lastLoginAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

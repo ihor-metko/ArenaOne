@@ -17,19 +17,19 @@
  */
 
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/requireRole";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 import { prisma } from "@/lib/prisma";
 import { hashInviteToken, isInviteExpired, verifyInviteToken } from "@/lib/inviteUtils";
 import { mapInviteRoleToMembershipRole } from "@/lib/inviteHelpers";
 
 export async function POST(request: Request) {
-  // 1. Authenticate user
-  const authResult = await requireAuth(request);
-  if (!authResult.authorized) {
-    return authResult.response;
+  // 1. Get the current authenticated user from the database
+  const userResult = await getCurrentUser();
+  if (!userResult.authorized) {
+    return userResult.response;
   }
 
-  const { userId } = authResult;
+  const currentUser = userResult.user;
 
   try {
     // 2. Parse request body
@@ -101,21 +101,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // 9. Get current user's email
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
-
+    // 9. Get current user's email (we already have the full user from getCurrentUser)
     // 10. Validate that the user's email matches the invite email
-    if (user.email.toLowerCase() !== invite.email.toLowerCase()) {
+    if (currentUser.email.toLowerCase() !== invite.email.toLowerCase()) {
       return NextResponse.json(
         { error: "This invite is for a different email address" },
         { status: 403 }
@@ -137,7 +125,7 @@ export async function POST(request: Request) {
         const existingMembership = await tx.membership.findUnique({
           where: {
             userId_organizationId: {
-              userId,
+              userId: currentUser.id,
               organizationId: invite.organizationId,
             },
           },
@@ -153,7 +141,7 @@ export async function POST(request: Request) {
         // Create organization membership
         const membership = await tx.membership.create({
           data: {
-            userId,
+            userId: currentUser.id,
             organizationId: invite.organizationId,
             role: membershipRole,
             isPrimaryOwner: isPrimaryOwner || false,
@@ -166,7 +154,7 @@ export async function POST(request: Request) {
           data: {
             status: "ACCEPTED",
             acceptedAt: new Date(),
-            acceptedByUserId: userId,
+            acceptedByUserId: currentUser.id,
           },
         });
 
@@ -181,7 +169,7 @@ export async function POST(request: Request) {
         const existingMembership = await tx.clubMembership.findUnique({
           where: {
             userId_clubId: {
-              userId,
+              userId: currentUser.id,
               clubId: invite.clubId,
             },
           },
@@ -197,7 +185,7 @@ export async function POST(request: Request) {
         // Create club membership
         const membership = await tx.clubMembership.create({
           data: {
-            userId,
+            userId: currentUser.id,
             clubId: invite.clubId,
             role: clubRole,
           },
@@ -209,7 +197,7 @@ export async function POST(request: Request) {
           data: {
             status: "ACCEPTED",
             acceptedAt: new Date(),
-            acceptedByUserId: userId,
+            acceptedByUserId: currentUser.id,
           },
         });
 

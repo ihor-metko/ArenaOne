@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/requireRole";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 import { getResolvedPriceForSlot } from "@/lib/priceRules";
 import { emitBookingCreated } from "@/lib/socketEmitters";
 import type { OperationsBooking } from "@/types/booking";
@@ -11,7 +11,6 @@ interface BookingRequest {
   courtId: string;
   startTime: string;
   endTime: string;
-  userId: string;
   coachId: string | null;
 }
 
@@ -31,11 +30,13 @@ function formatDateString(date: Date): string {
 
 export async function POST(request: Request) {
   try {
-    // Any authenticated user can create bookings
-    const authResult = await requireAuth(request);
-    if (!authResult.authorized) {
-      return authResult.response;
+    // Get the current authenticated user from the database
+    const userResult = await getCurrentUser();
+    if (!userResult.authorized) {
+      return userResult.response;
     }
+
+    const currentUser = userResult.user;
 
     const body: BookingRequest = await request.json();
 
@@ -43,11 +44,10 @@ export async function POST(request: Request) {
     if (
       !body.courtId ||
       !body.startTime ||
-      !body.endTime ||
-      !body.userId
+      !body.endTime
     ) {
       return NextResponse.json(
-        { error: "Missing required fields: courtId, startTime, endTime, and userId are required" },
+        { error: "Missing required fields: courtId, startTime, and endTime are required" },
         { status: 400 }
       );
     }
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
       const newBooking = await tx.booking.create({
         data: {
           courtId: body.courtId,
-          userId: body.userId,
+          userId: currentUser.id,
           coachId: body.coachId || null,
           start: startTime,
           end: endTime,

@@ -19,7 +19,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/requireRole";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 import { prisma } from "@/lib/prisma";
 import { isValidEmail } from "@/lib/requireRole";
 import {
@@ -43,13 +43,13 @@ const VALID_INVITE_ROLES: InviteRole[] = [
 ];
 
 export async function POST(request: Request) {
-  // 1. Authenticate user
-  const authResult = await requireAuth(request);
-  if (!authResult.authorized) {
-    return authResult.response;
+  // 1. Get the current authenticated user from the database
+  const userResult = await getCurrentUser();
+  if (!userResult.authorized) {
+    return userResult.response;
   }
 
-  const { userId, isRoot } = authResult;
+  const currentUser = userResult.user;
 
   try {
     // 2. Parse and validate request body
@@ -109,8 +109,8 @@ export async function POST(request: Request) {
 
     // 3. Validate inviter permissions
     const permissionCheck = await validateInvitePermissions(
-      userId,
-      isRoot,
+      currentUser.id,
+      currentUser.isRoot,
       role,
       organizationId,
       clubId
@@ -167,7 +167,7 @@ export async function POST(request: Request) {
         status: "PENDING",
         tokenHash,
         expiresAt,
-        invitedByUserId: userId,
+        invitedByUserId: currentUser.id,
       },
       select: {
         id: true,
