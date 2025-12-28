@@ -19,11 +19,31 @@ interface ClubAdmin {
 interface ClubAdminsSectionProps {
   clubId: string;
   onRefresh?: () => void;
+  /**
+   * Optional club data to avoid fetching when already available
+   * Passed from parent to prevent unnecessary network requests
+   */
+  clubData?: {
+    id: string;
+    name: string;
+    organizationId: string;
+  };
+  /**
+   * Optional organization data to avoid fetching
+   * Passed from parent when available
+   */
+  organizationData?: {
+    id: string;
+    name: string;
+    slug: string;
+  };
 }
 
 export function ClubAdminsSection({
   clubId,
   onRefresh,
+  clubData,
+  organizationData,
 }: ClubAdminsSectionProps) {
   const t = useTranslations();
   const hasAnyRole = useUserStore((state) => state.hasAnyRole);
@@ -289,6 +309,8 @@ export function ClubAdminsSection({
         config={{
           context: "club",
           defaultClubId: clubId,
+          clubData: clubData,
+          organizationData: organizationData,
           allowedRoles: allowedRoles,
           onSuccess: () => {
             // Force refresh the admins list after successful creation
