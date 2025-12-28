@@ -41,8 +41,8 @@ interface ClubBookingsState {
   loading: boolean;
   error: string | null;
 
-  // Internal inflight guards - keyed by clubId
-  _inflightFetchByClubId: Record<string, Promise<BookingsPreviewData>> | null;
+  // Internal inflight Promise guards (not exposed)
+  _inflightFetchByClubId: Record<string, Promise<BookingsPreviewData>>;
 
   // Actions
   fetchBookingsPreviewIfNeeded: (
@@ -72,7 +72,7 @@ export const useClubBookingsStore = create<ClubBookingsState>((set, get) => ({
   bookingsPreviewByClubId: {},
   loading: false,
   error: null,
-  _inflightFetchByClubId: null,
+  _inflightFetchByClubId: {},
 
   /**
    * Fetch bookings preview if needed with inflight guard
@@ -93,7 +93,7 @@ export const useClubBookingsStore = create<ClubBookingsState>((set, get) => ({
     }
 
     // If there's already an inflight request for this clubId, return it
-    if (state._inflightFetchByClubId && clubId in state._inflightFetchByClubId) {
+    if (clubId in state._inflightFetchByClubId) {
       return state._inflightFetchByClubId[clubId];
     }
 
@@ -170,7 +170,7 @@ export const useClubBookingsStore = create<ClubBookingsState>((set, get) => ({
 
         // Update cache
         set((state) => {
-          const newInflight = { ...(state._inflightFetchByClubId || {}) };
+          const newInflight = { ...state._inflightFetchByClubId };
           delete newInflight[clubId];
 
           return {
@@ -183,8 +183,7 @@ export const useClubBookingsStore = create<ClubBookingsState>((set, get) => ({
             },
             loading: false,
             error: null,
-            _inflightFetchByClubId:
-              Object.keys(newInflight).length > 0 ? newInflight : null,
+            _inflightFetchByClubId: newInflight,
           };
         });
 
@@ -195,14 +194,13 @@ export const useClubBookingsStore = create<ClubBookingsState>((set, get) => ({
 
         // Clear inflight for this clubId
         set((state) => {
-          const newInflight = { ...(state._inflightFetchByClubId || {}) };
+          const newInflight = { ...state._inflightFetchByClubId };
           delete newInflight[clubId];
 
           return {
             error: errorMessage,
             loading: false,
-            _inflightFetchByClubId:
-              Object.keys(newInflight).length > 0 ? newInflight : null,
+            _inflightFetchByClubId: newInflight,
           };
         });
 
@@ -213,7 +211,7 @@ export const useClubBookingsStore = create<ClubBookingsState>((set, get) => ({
     // Store inflight promise
     set((state) => ({
       _inflightFetchByClubId: {
-        ...(state._inflightFetchByClubId || {}),
+        ...state._inflightFetchByClubId,
         [clubId]: inflightPromise,
       },
     }));
@@ -252,10 +250,6 @@ export const useClubBookingsStore = create<ClubBookingsState>((set, get) => ({
    */
   isLoading: (clubId: string) => {
     const state = get();
-    return !!(
-      state.loading &&
-      state._inflightFetchByClubId &&
-      clubId in state._inflightFetchByClubId
-    );
+    return state.loading && clubId in state._inflightFetchByClubId;
   },
 }));

@@ -33,7 +33,6 @@ export function ClubAdminsSection({
   const fetchClubAdminsIfNeeded = useClubAdminsStore((state) => state.fetchClubAdminsIfNeeded);
   const storeLoading = useClubAdminsStore((state) => state.isLoading(clubId));
   const storeError = useClubAdminsStore((state) => state.error);
-  const invalidateClubAdmins = useClubAdminsStore((state) => state.invalidateClubAdmins);
 
   // Get admins from store
   const admins = getClubAdmins(clubId) || [];
@@ -142,8 +141,7 @@ export function ClubAdminsSection({
       setIsRemoveModalOpen(false);
       setAdminToRemove(null);
       
-      // Invalidate cache and refetch
-      invalidateClubAdmins(clubId);
+      // Force refetch to get updated admins list
       fetchClubAdmins();
       if (onRefresh) onRefresh();
     } catch (err) {
@@ -284,8 +282,7 @@ export function ClubAdminsSection({
           defaultClubId: clubId,
           allowedRoles: allowedRoles,
           onSuccess: () => {
-            // Invalidate cache and refresh the admins list after successful creation
-            invalidateClubAdmins(clubId);
+            // Force refresh the admins list after successful creation
             fetchClubAdmins();
             if (onRefresh) onRefresh();
           },

@@ -28,7 +28,7 @@ interface ClubAdminsState {
   error: string | null;
 
   // Internal inflight guards - keyed by clubId
-  _inflightFetchByClubId: Record<string, Promise<ClubAdmin[]>> | null;
+  _inflightFetchByClubId: Record<string, Promise<ClubAdmin[]>>;
 
   // Actions
   fetchClubAdminsIfNeeded: (
@@ -60,7 +60,7 @@ export const useClubAdminsStore = create<ClubAdminsState>((set, get) => ({
   adminsByClubId: {},
   loading: false,
   error: null,
-  _inflightFetchByClubId: null,
+  _inflightFetchByClubId: {},
 
   /**
    * Fetch club admins if needed with inflight guard
@@ -81,7 +81,7 @@ export const useClubAdminsStore = create<ClubAdminsState>((set, get) => ({
     }
 
     // If there's already an inflight request for this clubId, return it
-    if (state._inflightFetchByClubId && clubId in state._inflightFetchByClubId) {
+    if (clubId in state._inflightFetchByClubId) {
       return state._inflightFetchByClubId[clubId];
     }
 
@@ -103,7 +103,7 @@ export const useClubAdminsStore = create<ClubAdminsState>((set, get) => ({
 
         // Update cache
         set((state) => {
-          const newInflight = { ...(state._inflightFetchByClubId || {}) };
+          const newInflight = { ...state._inflightFetchByClubId };
           delete newInflight[clubId];
 
           return {
@@ -116,8 +116,7 @@ export const useClubAdminsStore = create<ClubAdminsState>((set, get) => ({
             },
             loading: false,
             error: null,
-            _inflightFetchByClubId:
-              Object.keys(newInflight).length > 0 ? newInflight : null,
+            _inflightFetchByClubId: newInflight,
           };
         });
 
@@ -128,14 +127,13 @@ export const useClubAdminsStore = create<ClubAdminsState>((set, get) => ({
 
         // Clear inflight for this clubId
         set((state) => {
-          const newInflight = { ...(state._inflightFetchByClubId || {}) };
+          const newInflight = { ...state._inflightFetchByClubId };
           delete newInflight[clubId];
 
           return {
             error: errorMessage,
             loading: false,
-            _inflightFetchByClubId:
-              Object.keys(newInflight).length > 0 ? newInflight : null,
+            _inflightFetchByClubId: newInflight,
           };
         });
 
@@ -146,7 +144,7 @@ export const useClubAdminsStore = create<ClubAdminsState>((set, get) => ({
     // Store inflight promise
     set((state) => ({
       _inflightFetchByClubId: {
-        ...(state._inflightFetchByClubId || {}),
+        ...state._inflightFetchByClubId,
         [clubId]: inflightPromise,
       },
     }));
@@ -225,10 +223,6 @@ export const useClubAdminsStore = create<ClubAdminsState>((set, get) => ({
    */
   isLoading: (clubId: string) => {
     const state = get();
-    return !!(
-      state.loading &&
-      state._inflightFetchByClubId &&
-      clubId in state._inflightFetchByClubId
-    );
+    return state.loading && clubId in state._inflightFetchByClubId;
   },
 }));

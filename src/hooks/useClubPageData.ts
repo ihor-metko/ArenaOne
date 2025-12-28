@@ -99,7 +99,7 @@ export function useClubPageData(
 
     const fetchClubData = async () => {
       try {
-        // Fetch club info (uses cache if available)
+        // Fetch club info and cache it
         await ensureClubById(clubId, { force: forceRefresh });
         
         // Also update currentClub for consistency with existing code
