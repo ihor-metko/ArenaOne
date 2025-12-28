@@ -193,22 +193,6 @@ export const useAdminsStore = create<AdminsState>((set, get) => ({
           error: null,
         };
       });
-
-      // Optionally add to cache optimistically if we have the admin data
-      if (result.admin) {
-        const cached = get().adminsByContainer[cacheKey];
-        if (cached) {
-          set((state) => ({
-            adminsByContainer: {
-              ...state.adminsByContainer,
-              [cacheKey]: {
-                admins: [...cached.admins, result.admin],
-                fetchedAt: cached.fetchedAt,
-              },
-            },
-          }));
-        }
-      }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to add admin";

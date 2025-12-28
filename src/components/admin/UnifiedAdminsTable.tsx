@@ -8,6 +8,7 @@ import { useAdminsStore } from "@/stores/useAdminsStore";
 import { UserProfileModal } from "./UserProfileModal";
 import { CreateAdminModal } from "./admin-wizard";
 import type { UnifiedAdmin, ContainerType } from "@/types/unifiedAdmin";
+import type { AdminRole } from "@/types/adminWizard";
 import "./OrganizationAdminsTable.css";
 
 interface UnifiedAdminsTableProps {
@@ -130,7 +131,7 @@ export default function UnifiedAdminsTable({
 
   // Check if an owner already exists to determine allowed roles
   const hasOwner = containerType === "organization" && !!primaryOwner;
-  const allowedRoles: import("@/types/adminWizard").AdminRole[] = 
+  const allowedRoles: AdminRole[] = 
     containerType === "organization"
       ? hasOwner
         ? ["ORGANIZATION_ADMIN"]
