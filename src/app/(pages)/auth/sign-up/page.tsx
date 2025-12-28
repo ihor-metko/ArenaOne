@@ -57,8 +57,38 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         setError(data.error || t("auth.registrationFailed"));
+        setLoading(false);
+        return;
+      }
+
+      // If coming from invite, automatically sign in and redirect back to accept page
+      if (isFromInvite && redirectTo) {
+        try {
+          // Import signIn from next-auth
+          const { signIn } = await import("next-auth/react");
+          
+          const signInResult = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+          });
+
+          if (signInResult?.error) {
+            // If auto sign-in fails, redirect to sign-in page manually
+            const signInUrl = `/auth/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`;
+            router.push(signInUrl);
+          } else {
+            // Successfully signed in, redirect to the invite acceptance page
+            router.push(redirectTo);
+          }
+        } catch (signInError) {
+          console.error("Auto sign-in error:", signInError);
+          // Fallback to manual sign-in redirect
+          const signInUrl = `/auth/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`;
+          router.push(signInUrl);
+        }
       } else {
-        // Preserve redirectTo when redirecting to sign-in after successful registration
+        // Normal registration flow - redirect to sign-in
         const signInUrl = redirectTo 
           ? `/auth/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`
           : "/auth/sign-in";

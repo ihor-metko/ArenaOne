@@ -94,10 +94,19 @@ export default function InviteAcceptPage() {
     // Function to check user exists and redirect
     const checkUserExists = async (email: string) => {
       try {
-        // We'll redirect to sign-up with email pre-filled
-        // If user exists, they'll be prompted to sign in instead
-        const redirectUrl = `/auth/sign-up?email=${encodeURIComponent(email)}&inviteToken=${encodeURIComponent(token!)}&redirectTo=${encodeURIComponent(`/invites/accept?token=${token}`)}`;
-        router.push(redirectUrl);
+        // Check if user with this email already exists
+        const response = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+
+        if (data.exists) {
+          // User exists - redirect to sign-in
+          const redirectUrl = `/auth/sign-in?redirectTo=${encodeURIComponent(`/invites/accept?token=${token}`)}`;
+          router.push(redirectUrl);
+        } else {
+          // User doesn't exist - redirect to sign-up with pre-filled email
+          const redirectUrl = `/auth/sign-up?email=${encodeURIComponent(email)}&inviteToken=${encodeURIComponent(token!)}&redirectTo=${encodeURIComponent(`/invites/accept?token=${token}`)}`;
+          router.push(redirectUrl);
+        }
       } catch (error) {
         console.error("Error checking user:", error);
         setErrorState("server_error");
