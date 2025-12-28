@@ -88,6 +88,9 @@ export function ExistingUserSearchStep({
     <div className="im-wizard-step-content">
       {!data.userId ? (
         <>
+          <div className="im-registration-notice" role="status" aria-live="polite">
+            {t("registrationNotice")}
+          </div>
           <div className="im-form-field">
             <label htmlFor="userSearch" className="im-field-label">
               {t("searchLabel")}

@@ -2514,6 +2514,7 @@
       "email": "Email:",
       "changeUser": "Change User",
       "noName": "No name",
+      "registrationNotice": "To assign an administrator, please select an existing user. If the user does not exist, they must register first.",
       "errors": {
         "enterEmail": "Please enter an email address to search",
         "invalidEmail": "Please enter a valid email address",
