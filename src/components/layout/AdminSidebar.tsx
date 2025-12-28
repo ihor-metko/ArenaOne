@@ -599,7 +599,7 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
         id: "my-organization",
         href: `/admin/organizations/${orgId}`,
         labelKey: "sidebar.organization",
-        // Use organization name if available, otherwise fall back to translation
+        // Display organization name when available; when undefined, getLabel falls back to labelKey translation
         dynamicLabel: currentOrg?.name,
         icon: <OrganizationsIcon />,
       };
