@@ -2425,6 +2425,7 @@
       "close": "Close",
       "assignRole": "Assign Role",
       "createAdmin": "Create Admin",
+      "sendInvite": "Send Invite",
       "processing": "Processing...",
       "retry": "Retry",
       "retrying": "Retrying...",
@@ -2517,6 +2518,8 @@
       "actionNew": "A new user will be created and an invitation email will be sent."
     },
     "confirmStep": {
+      "title": "Review & Confirm",
+      "description": "Please review all information carefully before submitting. Once confirmed, the action cannot be undone.",
       "success": "Success!",
       "error": "Error"
     },
