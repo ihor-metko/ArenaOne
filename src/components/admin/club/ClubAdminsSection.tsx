@@ -12,7 +12,6 @@ import type { AdminRole } from "@/types/adminWizard";
 
 interface ClubAdminsSectionProps {
   clubId: string;
-  onRefresh?: () => void;
   /**
    * Optional club data to avoid fetching when already available
    * Passed from parent to prevent unnecessary network requests
@@ -35,7 +34,6 @@ interface ClubAdminsSectionProps {
 
 export function ClubAdminsSection({
   clubId,
-  onRefresh,
   clubData,
   organizationData,
 }: ClubAdminsSectionProps) {
@@ -302,7 +300,7 @@ export function ClubAdminsSection({
           clubData: clubData,
           organizationData: organizationData,
           allowedRoles: allowedRoles,
-          onSuccess: async (userId) => {
+          onSuccess: async () => {
             // Optimistically update the admin list in the store
             // We need to refetch to get the complete admin data with membershipId
             // but we do this silently without triggering page refresh

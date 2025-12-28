@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Button, Modal, Badge, Tooltip } from "@/components/ui";
+import { Button, Modal, Badge } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useAdminsStore } from "@/stores/useAdminsStore";
@@ -13,7 +13,6 @@ import "./OrganizationAdminsTable.css";
 
 interface OrganizationAdminsTableProps {
   orgId: string;
-  onRefresh?: () => void;
   /**
    * Optional organization data to avoid fetching when already available
    * Passed from parent to prevent unnecessary network requests
@@ -27,7 +26,6 @@ interface OrganizationAdminsTableProps {
 
 export default function OrganizationAdminsTable({
   orgId,
-  onRefresh,
   organizationData,
 }: OrganizationAdminsTableProps) {
   const t = useTranslations();
@@ -40,7 +38,6 @@ export default function OrganizationAdminsTable({
   // Use unified admins store
   const getAdmins = useAdminsStore((state) => state.getAdmins);
   const fetchAdminsIfNeeded = useAdminsStore((state) => state.fetchAdminsIfNeeded);
-  const addAdminToStore = useAdminsStore((state) => state.addAdmin);
   const removeAdminFromStore = useAdminsStore((state) => state.removeAdmin);
   const storeLoading = useAdminsStore((state) => state.isLoading("organization", orgId));
   const storeError = useAdminsStore((state) => state.error);
@@ -267,9 +264,6 @@ export default function OrganizationAdminsTable({
         <div className="im-admins-list">
           {sortedAdmins.map((admin) => {
             const canModify = canModifyAdmin(admin);
-            const tooltipMessage = !canModify && admin.role === "ORGANIZATION_OWNER"
-              ? t("orgAdmins.ownerProtectionTooltip")
-              : "";
             const isCurrentUserOwner = admin.role === "ORGANIZATION_OWNER" && admin.id === user?.id;
 
             return (
@@ -342,7 +336,7 @@ export default function OrganizationAdminsTable({
             slug: org.slug,
           } : undefined,
           allowedRoles: allowedRoles,
-          onSuccess: async (userId) => {
+          onSuccess: async () => {
             // Optimistically add the admin to the store
             // We need to refetch to get the complete admin data with membershipId
             // but we do this silently without triggering page refresh

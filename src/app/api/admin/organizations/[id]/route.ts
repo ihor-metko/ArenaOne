@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRootAdmin, requireOrganizationAdmin } from "@/lib/requireRole";
-import { MembershipRole } from "@/constants/roles";
 import { auditLog, AuditAction, TargetType } from "@/lib/auditLog";
 import { SportType } from "@prisma/client";
 
