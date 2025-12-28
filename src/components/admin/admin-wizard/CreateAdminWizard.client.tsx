@@ -93,15 +93,16 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
   useEffect(() => {
     if (config.context === "club" && config.defaultClubId) {
       // If club data is pre-provided, use it directly
-      if (config.clubData?.organizationId) {
+      const clubOrgId = config.clubData?.organizationId;
+      if (clubOrgId) {
         setFormData(prev => ({
           ...prev,
-          organizationId: config.clubData!.organizationId,
+          organizationId: clubOrgId,
         }));
       } else if (clubs.length > 0) {
         // Otherwise, get from fetched clubs
         const club = clubs.find(c => c.id === config.defaultClubId);
-        if (club && club.organizationId) {
+        if (club?.organizationId) {
           setFormData(prev => ({
             ...prev,
             organizationId: club.organizationId,
@@ -115,7 +116,8 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
   // Use pre-provided organization data when available to avoid unnecessary fetching
   const orgOptions: OrganizationOption[] = config.organizationData
     ? [config.organizationData]
-    : (storeOrganizations || []).map(org => ({
+    : // Safety: storeOrganizations should always be an array, but fallback for test mocks
+      (storeOrganizations || []).map(org => ({
         id: org.id,
         name: org.name,
         slug: org.slug,
