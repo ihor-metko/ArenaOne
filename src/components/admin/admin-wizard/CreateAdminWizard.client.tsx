@@ -65,7 +65,11 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
   });
 
   // Get organizations and clubs from stores
-  const organizations = useOrganizationStore((state) => state.getOrganizationsWithAutoFetch());
+  // Only fetch organizations when in root context and no organization data is pre-provided
+  const shouldFetchOrganizations = config.context === "root" && !config.organizationData;
+  const storeOrganizations = useOrganizationStore((state) => 
+    shouldFetchOrganizations ? state.getOrganizationsWithAutoFetch() : state.organizations
+  );
   const clubs = useAdminClubStore((state) => state.clubs);
   const fetchClubsIfNeeded = useAdminClubStore((state) => state.fetchClubsIfNeeded);
   const isLoadingOrgs = useOrganizationStore((state) => state.loading);
@@ -74,44 +78,59 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
   // Get admin users store actions for refreshing data after success
   const refetchAdminUsers = useAdminUsersStore((state) => state.refetch);
 
-  // When club context, fetch clubs and set organization from club
-  // This is only triggered when the modal is opened in club context
+  // When club context, fetch clubs only if club data is not pre-provided
+  // This is only triggered when the modal is opened in club context without pre-populated data
   useEffect(() => {
-    if (config.context === "club" && config.defaultClubId) {
-      // Fetch clubs only when in club context
+    if (config.context === "club" && config.defaultClubId && !config.clubData) {
+      // Fetch clubs only when in club context and club data is not provided
       fetchClubsIfNeeded().catch((error) => {
         console.error("Failed to fetch clubs:", error);
       });
     }
-  }, [config.context, config.defaultClubId, fetchClubsIfNeeded]);
+  }, [config.context, config.defaultClubId, config.clubData, fetchClubsIfNeeded]);
 
-  // Set organization from club when clubs are loaded in club context
+  // Set organization from club when clubs are loaded in club context (only if not pre-provided)
   useEffect(() => {
-    if (config.context === "club" && config.defaultClubId && clubs.length > 0) {
-      const club = clubs.find(c => c.id === config.defaultClubId);
-      if (club && club.organizationId) {
+    if (config.context === "club" && config.defaultClubId) {
+      // If club data is pre-provided, use it directly
+      if (config.clubData?.organizationId) {
         setFormData(prev => ({
           ...prev,
-          organizationId: club.organizationId,
+          organizationId: config.clubData!.organizationId,
         }));
+      } else if (clubs.length > 0) {
+        // Otherwise, get from fetched clubs
+        const club = clubs.find(c => c.id === config.defaultClubId);
+        if (club && club.organizationId) {
+          setFormData(prev => ({
+            ...prev,
+            organizationId: club.organizationId,
+          }));
+        }
       }
     }
-  }, [config.context, config.defaultClubId, clubs]);
+  }, [config.context, config.defaultClubId, config.clubData, clubs]);
 
   // Convert to options format
-  const orgOptions: OrganizationOption[] = organizations.map(org => ({
-    id: org.id,
-    name: org.name,
-    slug: org.slug,
-  }));
+  // Use pre-provided organization data when available to avoid unnecessary fetching
+  const orgOptions: OrganizationOption[] = config.organizationData
+    ? [config.organizationData]
+    : storeOrganizations.map(org => ({
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+      }));
 
   // Map clubs to options, preserving organizationId for filtering
   // The organizationId is used in SelectContextStep to filter clubs by selected organization
-  const clubOptions: ClubOption[] = clubs.map(club => ({
-    id: club.id,
-    name: club.name,
-    organizationId: club.organizationId,
-  }));
+  // Use pre-provided club data when available
+  const clubOptions: ClubOption[] = config.clubData
+    ? [config.clubData]
+    : clubs.map(club => ({
+        id: club.id,
+        name: club.name,
+        organizationId: club.organizationId,
+      }));
 
   const showToast = useCallback((type: "success" | "error", message: string) => {
     setToast({ type, message });

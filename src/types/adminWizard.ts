@@ -28,9 +28,21 @@ export interface CreateAdminWizardConfig {
   defaultOrgId?: string;
   
   /**
+   * Pre-populated organization data (avoids fetching when org is already known)
+   * When provided, the wizard will not fetch organizations from the API
+   */
+  organizationData?: OrganizationOption;
+  
+  /**
    * Pre-selected club ID (when accessed from club context)
    */
   defaultClubId?: string;
+  
+  /**
+   * Pre-populated club data (avoids fetching when club is already known)
+   * When provided, the wizard will use this data instead of fetching
+   */
+  clubData?: ClubOption;
   
   /**
    * Roles that can be assigned based on the creator's permissions

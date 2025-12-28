@@ -35,6 +35,10 @@ export default function OrganizationAdminsTable({
   const user = useUserStore((state) => state.user);
   const isRoot = user?.isRoot ?? false;
   const removeAdmin = useOrganizationStore((state) => state.removeAdmin);
+  
+  // Get organization detail from store to pass to modal (avoids fetching)
+  const getOrganizationDetailById = useOrganizationStore((state) => state.getOrganizationDetailById);
+  const org = getOrganizationDetailById(orgId);
 
   // Create Admin modal state
   const [isCreateAdminModalOpen, setIsCreateAdminModalOpen] = useState(false);
@@ -257,6 +261,11 @@ export default function OrganizationAdminsTable({
         config={{
           context: "organization",
           defaultOrgId: orgId,
+          organizationData: org ? {
+            id: org.id,
+            name: org.name,
+            slug: org.slug,
+          } : undefined,
           allowedRoles: allowedRoles,
           onSuccess: () => {
             // Refresh the admins list after successful creation
