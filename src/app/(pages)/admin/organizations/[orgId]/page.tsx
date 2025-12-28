@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, EntityBanner, MetricCardSkeleton, ClubsPreviewSkeleton, TableSkeleton, DangerZone, Modal, ClubStatisticsCard, ClubStatisticsCardSkeleton } from "@/components/ui";
+import { Button, EntityBanner, MetricCardSkeleton, ClubsPreviewSkeleton, TableSkeleton, DangerZone, Modal } from "@/components/ui";
 import type { DangerAction } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useUserStore } from "@/stores/useUserStore";
@@ -302,69 +302,6 @@ export default function OrganizationDetailPage() {
           </div>
         )}
 
-        {/* Club Statistics */}
-        {isLoadingState || statisticsLoading ? (
-          <div className="im-section-card im-org-detail-content--full">
-            <div className="im-section-header">
-              <div className="im-skeleton im-skeleton-icon--round w-10 h-10" />
-              <div className="im-skeleton h-6 w-48 rounded" />
-            </div>
-            <div className="im-metrics-grid">
-              <ClubStatisticsCardSkeleton />
-              <ClubStatisticsCardSkeleton />
-              <ClubStatisticsCardSkeleton />
-            </div>
-          </div>
-        ) : org && (org.clubsPreview ?? []).length > 0 && (
-          <div className="im-section-card im-org-detail-content--full">
-            <div className="im-section-header">
-              <div className="im-section-icon im-section-icon--metrics">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 3v18h18" />
-                  <path d="M18 17V9" />
-                  <path d="M13 17V5" />
-                  <path d="M8 17v-3" />
-                </svg>
-              </div>
-              <h2 className="im-section-title">{t("orgDetail.clubStatistics")}</h2>
-            </div>
-            
-            {statisticsError ? (
-              <div className="im-preview-empty-state">
-                <p className="im-preview-empty" style={{ color: "var(--im-error)" }}>
-                  {t("orgDetail.statisticsError")}
-                </p>
-              </div>
-            ) : monthlyStatistics.length === 0 ? (
-              <div className="im-preview-empty-state">
-                <p className="im-preview-empty">{t("orgDetail.noStatisticsAvailable")}</p>
-              </div>
-            ) : (
-              <div className="im-metrics-grid">
-                {(org.clubsPreview ?? []).map((club) => {
-                  // Find statistics for this club
-                  const clubStats = monthlyStatistics.find(stat => stat.clubId === club.id);
-                  
-                  if (!clubStats) {
-                    return null;
-                  }
-
-                  return (
-                    <ClubStatisticsCard
-                      key={club.id}
-                      clubId={club.id}
-                      clubName={club.name}
-                      currentOccupancy={clubStats.averageOccupancy}
-                      changePercent={clubStats.occupancyChangePercent}
-                      onClick={() => router.push(`/admin/clubs/${club.id}`)}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Clubs Preview */}
         {isLoadingState ? (
           <ClubsPreviewSkeleton count={3} />
@@ -405,35 +342,71 @@ export default function OrganizationDetailPage() {
             ) : (
               <>
                 <div className="im-clubs-preview-list">
-                  {(org.clubsPreview ?? []).map((club) => (
-                    <div
-                      key={club.id}
-                      className="im-club-preview-item im-club-preview-item--clickable"
-                      onClick={() => router.push(`/admin/clubs/${club.id}`)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          router.push(`/admin/clubs/${club.id}`);
-                        }
-                      }}
-                    >
-                      <div className="im-club-preview-info">
-                        <span className="im-club-preview-name">{club.name}</span>
-                        <span className="im-club-preview-meta">
-                          {club.city || club.slug} · {club.courtCount} {t("orgDetail.courts")}
-                        </span>
+                  {(org.clubsPreview ?? []).map((club) => {
+                    // Find statistics for this club
+                    const clubStats = monthlyStatistics.find(stat => stat.clubId === club.id);
+                    
+                    return (
+                      <div
+                        key={club.id}
+                        className="im-club-preview-item im-club-preview-item--clickable"
+                        onClick={() => router.push(`/admin/clubs/${club.id}`)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            router.push(`/admin/clubs/${club.id}`);
+                          }
+                        }}
+                      >
+                        <div className="im-club-preview-info">
+                          <span className="im-club-preview-name">{club.name}</span>
+                          <span className="im-club-preview-meta">
+                            {club.city || club.slug} · {club.courtCount} {t("orgDetail.courts")}
+                          </span>
+                        </div>
+                        
+                        {/* Inline Statistics */}
+                        {clubStats && (
+                          <div className="im-club-preview-stats">
+                            <div className="im-club-preview-occupancy">
+                              <span className="im-club-preview-occupancy-value">
+                                {clubStats.averageOccupancy.toFixed(1)}%
+                              </span>
+                              <span className="im-club-preview-occupancy-label">
+                                {t("orgDetail.occupancy")}
+                              </span>
+                            </div>
+                            {clubStats.occupancyChangePercent !== null && (
+                              <div className={`im-club-preview-trend ${
+                                clubStats.occupancyChangePercent > 0 
+                                  ? 'im-club-preview-trend--up' 
+                                  : clubStats.occupancyChangePercent < 0 
+                                    ? 'im-club-preview-trend--down' 
+                                    : 'im-club-preview-trend--neutral'
+                              }`}>
+                                <span className="im-club-preview-trend-arrow" aria-hidden="true">
+                                  {clubStats.occupancyChangePercent > 0 ? '↑' : clubStats.occupancyChangePercent < 0 ? '↓' : '→'}
+                                </span>
+                                <span className="im-club-preview-trend-value">
+                                  {Math.abs(clubStats.occupancyChangePercent).toFixed(1)}%
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        <div className="im-club-preview-status">
+                          <span
+                            className={`im-status-badge ${club.isPublic ? "im-status-badge--active" : "im-status-badge--draft"}`}
+                          >
+                            {club.isPublic ? t("common.published") : t("common.unpublished")}
+                          </span>
+                        </div>
                       </div>
-                      <div className="im-club-preview-status">
-                        <span
-                          className={`im-status-badge ${club.isPublic ? "im-status-badge--active" : "im-status-badge--draft"}`}
-                        >
-                          {club.isPublic ? t("common.published") : t("common.unpublished")}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 {(org.metrics?.totalClubs ?? 0) > (org.clubsPreview ?? []).length && (
                   <Button
