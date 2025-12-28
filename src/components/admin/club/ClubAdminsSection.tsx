@@ -90,6 +90,9 @@ export function ClubAdminsSection({
     } finally {
       setLoading(false);
     }
+    // Note: fetchClubAdminsIfNeeded is a Zustand store action with a stable reference.
+    // The translation function 't' also has a stable reference in next-intl.
+    // Including them would not change behavior but could trigger unnecessary re-renders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId, t]);
 
@@ -103,6 +106,9 @@ export function ClubAdminsSection({
   // Fetch admins only once on mount or when clubId changes
   useEffect(() => {
     fetchClubAdmins();
+    // Note: fetchClubAdmins is defined above with useCallback, but including it in deps
+    // would cause infinite loops due to its internal dependencies.
+    // We only want to fetch when clubId changes, not when the callback changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId]);
 

@@ -121,6 +121,9 @@ export function useClubPageData(
     };
 
     fetchClubData();
+    // Note: ensureClubById and fetchClubById are Zustand store actions with stable references
+    // that don't change between renders. Including them would not change behavior.
+    // The club dependency is intentionally omitted to prevent fetching on every club update.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId, forceRefresh]);
 
@@ -141,6 +144,8 @@ export function useClubPageData(
     };
 
     fetchAdmins();
+    // Note: fetchClubAdminsIfNeeded is a Zustand store action with a stable reference.
+    // Including it would not change behavior but could trigger unnecessary re-renders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId, hasLoadedAdmins, forceRefresh]);
 
@@ -161,6 +166,8 @@ export function useClubPageData(
     };
 
     fetchBookings();
+    // Note: fetchBookingsPreviewIfNeeded is a Zustand store action with a stable reference.
+    // Including it would not change behavior but could trigger unnecessary re-renders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId, hasLoadedBookings, forceRefresh]);
 
@@ -185,6 +192,8 @@ export function useClubPageData(
     } catch (error) {
       console.error("Failed to refetch club:", error);
     }
+    // Note: fetchClubById is a Zustand store action with a stable reference.
+    // Including it would not change behavior.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId]);
 
@@ -197,6 +206,8 @@ export function useClubPageData(
     } catch (error) {
       console.error("Failed to refetch admins:", error);
     }
+    // Note: fetchClubAdminsIfNeeded is a Zustand store action with a stable reference.
+    // Including it would not change behavior.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId]);
 
@@ -209,6 +220,8 @@ export function useClubPageData(
     } catch (error) {
       console.error("Failed to refetch bookings:", error);
     }
+    // Note: fetchBookingsPreviewIfNeeded is a Zustand store action with a stable reference.
+    // Including it would not change behavior.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId]);
 
