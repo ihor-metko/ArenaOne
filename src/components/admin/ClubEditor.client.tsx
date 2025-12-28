@@ -127,12 +127,12 @@ export function ClubEditor({
       }
     }
 
-    // Update metadata with logo settings
+    // Update metadata with logo settings - send as object, API will stringify
     await onUpdate("metadata", {
-      metadata: JSON.stringify({
+      metadata: {
         ...existingMetadata,
         ...payload.metadata,
-      }),
+      },
     });
 
     // Upload logo if provided
@@ -185,12 +185,12 @@ export function ClubEditor({
       }
     }
 
-    // Update metadata with alignment
+    // Update metadata with alignment - send as object, API will stringify
     await onUpdate("metadata", {
-      metadata: JSON.stringify({
+      metadata: {
         ...existingMetadata,
         bannerAlignment: alignment,
-      }),
+      },
     });
 
     // Upload file if provided
