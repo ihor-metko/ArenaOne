@@ -2,17 +2,18 @@
  * @jest-environment node
  */
 
+// Set up environment before loading the module
+process.env.RESEND_API_KEY = "test-api-key";
+
 // Mock Resend
 const mockResendSend = jest.fn();
 
 jest.mock("resend", () => {
-  const mockEmails = {
-    send: (...args: any[]) => mockResendSend(...args),
-  };
-  
   return {
     Resend: jest.fn().mockImplementation(() => ({
-      emails: mockEmails,
+      emails: {
+        send: mockResendSend,
+      },
     })),
   };
 });

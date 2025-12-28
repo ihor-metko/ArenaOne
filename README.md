@@ -7,6 +7,8 @@ A booking platform for ArenaOne.
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
+- **Email Service**: Resend (transactional emails)
+- **Database**: PostgreSQL with Prisma ORM
 
 ## System Settings
 
@@ -30,10 +32,29 @@ The architecture is designed to scale. The initial MVP uses Next.js for both fro
 npm install
 ```
 
-2. Run the development server:
+2. Set up environment variables:
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
+- `DATABASE_URL`: PostgreSQL connection string
+- `NEXTAUTH_URL`: Application URL
+- `NEXTAUTH_SECRET`: Secret key for NextAuth
+- `RESEND_API_KEY`: API key for email service (get from https://resend.com)
+
+3. Run the development server:
 
 ```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Documentation
+
+- [Email Service](./docs/email-service.md) - Email sending and invite system documentation
+
