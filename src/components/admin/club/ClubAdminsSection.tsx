@@ -73,7 +73,7 @@ export function ClubAdminsSection({
     ? ["CLUB_ADMIN"] 
     : ["CLUB_OWNER", "CLUB_ADMIN"];
 
-  // Fetch club admins from store
+  // Fetch club admins from store - FIXED: Remove fetchClubAdminsIfNeeded from dependencies
   const fetchClubAdmins = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -90,7 +90,8 @@ export function ClubAdminsSection({
     } finally {
       setLoading(false);
     }
-  }, [clubId, fetchClubAdminsIfNeeded, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clubId, t]);
 
   // Sync store error with local error state
   useEffect(() => {
@@ -99,9 +100,11 @@ export function ClubAdminsSection({
     }
   }, [storeError]);
 
+  // Fetch admins only once on mount or when clubId changes
   useEffect(() => {
     fetchClubAdmins();
-  }, [fetchClubAdmins]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clubId]);
 
   // Handle create admin modal
   const handleOpenCreateAdminModal = () => {
