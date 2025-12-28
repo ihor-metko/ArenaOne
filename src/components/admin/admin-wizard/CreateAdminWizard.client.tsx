@@ -11,7 +11,6 @@ import { UserSourceStep } from "./UserSourceStep";
 import { ExistingUserSearchStep } from "./ExistingUserSearchStep";
 import { UserDataStep } from "./UserDataStep";
 import { ReviewStep } from "./ReviewStep";
-import { ConfirmStep } from "./ConfirmStep";
 import type {
   CreateAdminWizardConfig,
   AdminCreationData,
@@ -43,17 +42,13 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<AdminWizardErrors>({});
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const [confirmSuccess, setConfirmSuccess] = useState(false);
-  const [confirmMessage, setConfirmMessage] = useState("");
-  const [lastSubmitPayload, setLastSubmitPayload] = useState<unknown>(null);
-  const [isNetworkError, setIsNetworkError] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   
   const STEPS = [
     { id: 1, label: t("steps.contextRole") },
     { id: 2, label: t("steps.userSource") },
     { id: 3, label: t("steps.userDetails") },
-    { id: 4, label: t("steps.review") },
-    { id: 5, label: t("steps.confirm") },
+    { id: 4, label: t("steps.confirm") },
   ];
 
   // Initialize form data with defaults from config
@@ -223,20 +218,22 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
 
   const handleNext = useCallback(() => {
     if (validateStep(currentStep)) {
-      if (currentStep < STEPS.length - 1) { // Changed to -1 because step 5 is confirm, not a navigation step
+      if (currentStep < STEPS.length) {
         setCurrentStep((prev) => prev + 1);
       }
     }
   }, [currentStep, validateStep, STEPS.length]);
 
   const handleBack = useCallback(() => {
-    if (currentStep > 1 && currentStep < STEPS.length) { // Can't go back from confirm step
+    if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1);
+      // Clear submit error when going back
+      setSubmitError(null);
     }
-  }, [currentStep, STEPS.length]);
+  }, [currentStep]);
 
   const handleSubmit = async () => {
-    // Validate step 4 (Review)
+    // Validate step 4 (final confirmation)
     if (!validateStep(4)) {
       return;
     }
@@ -257,7 +254,7 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
 
     setIsSubmitting(true);
     setErrors({});
-    setIsNetworkError(false);
+    setSubmitError(null);
 
     try {
       let response: Response;
@@ -280,8 +277,6 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
           payload.clubId = formData.clubId;
         }
 
-        setLastSubmitPayload(payload);
-
         response = await fetch("/api/invites", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -303,8 +298,6 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
         } else {
           payload.clubId = formData.clubId;
         }
-
-        setLastSubmitPayload(payload);
 
         response = await fetch("/api/admin/admins/create", {
           method: "POST",
@@ -334,12 +327,8 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
     } catch (err) {
       // Network error or other unexpected error
       const message = err instanceof Error ? err.message : t("errors.createFailed");
-      setErrors({ general: message });
+      setSubmitError(message);
       showToast("error", message);
-      setConfirmSuccess(false);
-      setConfirmMessage(message);
-      setCurrentStep(5);
-      setIsNetworkError(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -366,56 +355,39 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
         setCurrentStep(3);
         showToast("error", errorData.error || t("errors.phoneInUse"));
       } else if (errorData.field === "owner") {
-        setErrors({ general: errorData.error || t("errors.ownerExists") });
-        showToast("error", errorData.error || t("errors.ownerExists"));
-        setConfirmSuccess(false);
-        setConfirmMessage(errorData.error || t("errors.ownerExists"));
-        setCurrentStep(5);
+        const errorMessage = errorData.error || t("errors.ownerExists");
+        setSubmitError(errorMessage);
+        showToast("error", errorMessage);
       } else if (errorData.existingInviteId) {
         // Handle existing active invite - show warning
         const inviteExistsMessage = errorData.error || t("errors.inviteExists");
-        setErrors({ general: inviteExistsMessage });
+        setSubmitError(inviteExistsMessage);
         showToast("error", inviteExistsMessage);
-        setConfirmSuccess(false);
-        setConfirmMessage(inviteExistsMessage);
-        setCurrentStep(5);
       } else {
         const conflictMessage = errorData.error || t("errors.conflictOccurred");
-        setErrors({ general: conflictMessage });
+        setSubmitError(conflictMessage);
         showToast("error", conflictMessage);
-        setConfirmSuccess(false);
-        setConfirmMessage(conflictMessage);
-        setCurrentStep(5);
       }
     } else if (response.status === 403) {
       // Permission denied - show clear error message
       const permissionMessage = errorData.error || t("errors.permissionDenied");
-      setErrors({ general: permissionMessage });
+      setSubmitError(permissionMessage);
       showToast("error", permissionMessage);
-      setConfirmSuccess(false);
-      setConfirmMessage(permissionMessage);
-      setCurrentStep(5);
     } else {
       const errorMessage = errorData.error || t("errors.createFailed");
-      setErrors({ general: errorMessage });
+      setSubmitError(errorMessage);
       showToast("error", errorMessage);
-      setConfirmSuccess(false);
-      setConfirmMessage(errorMessage);
-      setCurrentStep(5);
     }
   }, [t, showToast]);
 
   // Helper function for handling successful API response
   const handleApiSuccess = useCallback(async (responseData: SuccessResponse) => {
-    // Success! Move to or stay on confirm step
-    setConfirmSuccess(true);
-    setConfirmMessage(
-      formData.userSource === "existing"
-        ? t("messages.successExisting")
-        : t("messages.successInvite")
-    );
-    setCurrentStep(5);
-    showToast("success", t("messages.operationSuccess"));
+    // Success! Show toast notification
+    const successMessage = formData.userSource === "existing"
+      ? t("messages.successExisting")
+      : t("messages.successInvite");
+    
+    showToast("success", successMessage);
 
     // Refresh admin users store to show newly added users
     try {
@@ -425,68 +397,17 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
       console.error("Failed to refresh admin users:", refreshError);
     }
 
-    // Call success callback if provided
+    // Call success callback if provided (this will close the modal)
     if (config.onSuccess) {
       // For existing users, we get userId directly
       // For invites, we get invite.id
-      const resultId = responseData.userId || responseData.invite?.id || "";
+      const resultId = responseData.userId || responseData.invite?.id;
       
-      // Only call callback if we have a valid ID
-      if (resultId) {
-        config.onSuccess(resultId);
-      }
+      // Always call the callback to close the modal
+      // Pass empty string if no specific ID is available (operation still succeeded)
+      config.onSuccess(resultId || "");
     }
   }, [formData.userSource, t, showToast, refetchAdminUsers, config]);
-
-  const handleRetry = async () => {
-    if (!lastSubmitPayload) {
-      // No payload to retry, just go back to review step
-      setCurrentStep(4);
-      setIsNetworkError(false);
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrors({});
-    setIsNetworkError(false);
-
-    try {
-      const endpoint = formData.userSource === "new" ? "/api/invites" : "/api/admin/admins/create";
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(lastSubmitPayload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Handle errors using the same comprehensive error handling
-        const errorData = (typeof data === 'object' && data !== null) 
-          ? data as ErrorResponse 
-          : { error: 'Unknown error' };
-        
-        handleApiError(response, errorData);
-        return;
-      }
-
-      // Success!
-      const responseData = (typeof data === 'object' && data !== null)
-        ? data as SuccessResponse
-        : {};
-      
-      await handleApiSuccess(responseData);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : t("errors.createFailed");
-      setErrors({ general: message });
-      showToast("error", message);
-      setConfirmSuccess(false);
-      setConfirmMessage(message);
-      setIsNetworkError(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   // Render step content
   const renderStepContent = () => {
@@ -572,25 +493,20 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
       case 4:
         return (
           <Card className="im-wizard-section">
-            <h2 className="im-wizard-section-title">{t("reviewStep.title")}</h2>
+            <h2 className="im-wizard-section-title">{t("confirmStep.title")}</h2>
             <p className="im-wizard-section-description">
-              {t("reviewStep.description")}
+              {t("confirmStep.description")}
             </p>
             <ReviewStep
               data={formData}
               organizations={orgOptions}
               clubs={clubOptions}
             />
-          </Card>
-        );
-
-      case 5:
-        return (
-          <Card className="im-wizard-section">
-            <h2 className="im-wizard-section-title">
-              {confirmSuccess ? t("confirmStep.success") : t("confirmStep.error")}
-            </h2>
-            <ConfirmStep success={confirmSuccess} message={confirmMessage} />
+            {submitError && (
+              <div className="im-wizard-error im-submit-error" role="alert">
+                {submitError}
+              </div>
+            )}
           </Card>
         );
 
@@ -642,36 +558,17 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
       {/* Navigation */}
       <div className="im-wizard-navigation">
         <div className="im-wizard-navigation-left">
-          {currentStep < 5 && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
-              {t("navigation.cancel")}
-            </Button>
-          )}
-          {currentStep === 5 && !confirmSuccess && isNetworkError && (
-            <Button
-              type="button"
-              onClick={handleRetry}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? t("navigation.retrying") : t("navigation.retry")}
-            </Button>
-          )}
-          {currentStep === 5 && (confirmSuccess || !isNetworkError) && (
-            <Button
-              type="button"
-              onClick={handleCancel}
-            >
-              {t("navigation.close")}
-            </Button>
-          )}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+          >
+            {t("navigation.cancel")}
+          </Button>
         </div>
         <div className="im-wizard-navigation-right">
-          {currentStep > 1 && currentStep < 5 && (
+          {currentStep > 1 && (
             <Button
               type="button"
               variant="outline"
@@ -696,16 +593,7 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
               onClick={handleSubmit}
               disabled={isSubmitting}
             >
-              {isSubmitting ? t("navigation.processing") : formData.userSource === "existing" ? t("navigation.assignRole") : t("navigation.createAdmin")}
-            </Button>
-          )}
-          {currentStep === 5 && !confirmSuccess && !isNetworkError && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCurrentStep(4)}
-            >
-              {t("navigation.backToReview")}
+              {isSubmitting ? t("navigation.processing") : formData.userSource === "existing" ? t("navigation.assignRole") : t("navigation.sendInvite")}
             </Button>
           )}
         </div>

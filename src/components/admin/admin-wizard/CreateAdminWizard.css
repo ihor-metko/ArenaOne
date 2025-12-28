@@ -104,6 +104,10 @@
   font-size: 0.875rem;
 }
 
+.im-submit-error {
+  margin-top: 1.5rem;
+}
+
 /* Step Content */
 .im-wizard-content {
   min-height: 300px;
