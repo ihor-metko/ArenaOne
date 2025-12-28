@@ -140,7 +140,17 @@ export const useClubBookingsStore = create<ClubBookingsState>((set, get) => ({
         ]);
 
         const previewData: BookingsPreviewData = {
-          items: upcomingData.bookings.map((b: any) => ({
+          items: upcomingData.bookings.map((b: {
+            id: string;
+            courtName: string;
+            clubName: string;
+            userName: string | null;
+            userEmail: string;
+            start: string;
+            end: string;
+            bookingStatus: string;
+            sportType: string;
+          }) => ({
             id: b.id,
             courtName: b.courtName,
             clubName: b.clubName,

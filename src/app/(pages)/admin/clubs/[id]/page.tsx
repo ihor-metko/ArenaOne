@@ -45,7 +45,6 @@ export default function AdminClubDetailPage({
 
   // Store actions for mutations
   const deleteClub = useAdminClubStore((state) => state.deleteClub);
-  const fetchClubById = useAdminClubStore((state) => state.fetchClubById);
 
   // UI-only state
   const [error, setError] = useState("");
