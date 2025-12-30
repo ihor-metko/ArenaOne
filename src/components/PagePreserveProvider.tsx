@@ -20,6 +20,15 @@ const EXCLUDED_PATHS = [
 ];
 
 /**
+ * Paths from which we restore preserved pages
+ * These are typically entry points where users land after reload
+ */
+const RESTORE_FROM_PATHS = [
+  "/",
+  "/admin/dashboard",
+];
+
+/**
  * Check if a path should be excluded from preservation
  */
 function shouldExcludePath(pathname: string): boolean {
@@ -103,9 +112,9 @@ export function PagePreserveProvider({ children }: { children: React.ReactNode }
       // Don't restore if stored page is an excluded path
       if (shouldExcludePath(storedUrl.pathname)) return;
       
-      // Only restore if current page is root or dashboard
+      // Only restore if current page is in the restore-from list
       // This prevents interrupting intentional navigation
-      if (pathname === "/" || pathname === "/admin/dashboard") {
+      if (RESTORE_FROM_PATHS.includes(pathname)) {
         router.push(stored);
       }
     } catch (error) {
@@ -124,8 +133,8 @@ export function PagePreserveProvider({ children }: { children: React.ReactNode }
     // Skip excluded paths
     if (shouldExcludePath(pathname)) return;
     
-    // Skip root path (landing page)
-    if (pathname === "/") return;
+    // Skip paths that we restore from
+    if (RESTORE_FROM_PATHS.includes(pathname)) return;
     
     // Build full URL with query params
     const search = searchParams.toString();
