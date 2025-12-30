@@ -6,6 +6,7 @@ import { Button, Modal, Input, Select } from "@/components/ui";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
 import { UserProfileModal } from "./UserProfileModal";
+import type { SimpleUser } from "@/types/adminUser";
 
 interface ClubAdmin {
   id: string;

@@ -388,7 +388,7 @@ export async function DELETE(
     });
 
     if (!targetMembership?.role || 
-        ![ClubMembershipRole.CLUB_ADMIN, ClubMembershipRole.CLUB_OWNER].includes(targetMembership.role)) {
+        ![ClubMembershipRole.CLUB_ADMIN, ClubMembershipRole.CLUB_OWNER].includes(targetMembership.role as ClubMembershipRole)) {
       return NextResponse.json(
         { error: "User is not a Club Admin of this club" },
         { status: 400 }
