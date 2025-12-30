@@ -8,6 +8,8 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { UserSearchDropdown } from "@/components/ui/UserSearchDropdown";
 import type { SimpleUser } from "@/types/adminUser";
 
+const MIN_SEARCH_LENGTH = 2;
+
 // Mock next-intl
 const mockTranslations: Record<string, string> = {
   searchUsers: "Search Users",
@@ -21,21 +23,38 @@ jest.mock("next-intl", () => ({
 }));
 
 // Mock UI Input component directly to avoid circular dependency
+interface MockInputProps {
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  value: string;
+  placeholder?: string;
+  disabled?: boolean;
+  label?: string;
+  type?: string;
+  id?: string;
+  autoComplete?: string;
+  "aria-autocomplete"?: string;
+  "aria-controls"?: string;
+  "aria-expanded"?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+}
+
 jest.mock("@/components/ui/Input", () => ({
-  Input: React.forwardRef<HTMLInputElement, any>(({ onChange, value, placeholder, disabled, label, ...props }: any, ref) => (
-    <div>
-      {label && <label>{label}</label>}
-      <input
-        ref={ref}
-        type="text"
-        onChange={onChange}
-        value={value}
-        placeholder={placeholder}
-        disabled={disabled}
-        {...props}
-      />
-    </div>
-  )),
+  Input: React.forwardRef<HTMLInputElement, MockInputProps>(function MockInput({ onChange, value, placeholder, disabled, label, ...props }: MockInputProps, ref) {
+    return (
+      <div>
+        {label && <label>{label}</label>}
+        <input
+          ref={ref}
+          type="text"
+          onChange={onChange}
+          value={value}
+          placeholder={placeholder}
+          disabled={disabled}
+          {...props}
+        />
+      </div>
+    );
+  }),
 }));
 
 describe("UserSearchDropdown", () => {
@@ -193,7 +212,7 @@ describe("UserSearchDropdown", () => {
     );
 
     const input = screen.getByRole("textbox");
-    fireEvent.change(input, { target: { value: "ab" } }); // At least 2 chars to trigger search
+    fireEvent.change(input, { target: { value: "ab".substring(0, MIN_SEARCH_LENGTH) } }); // Minimum chars to trigger search
 
     expect(screen.getByText("No users found. Try a different search.")).toBeInTheDocument();
   });

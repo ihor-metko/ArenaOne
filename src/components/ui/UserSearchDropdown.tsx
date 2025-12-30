@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui";
 import type { SimpleUser } from "@/types/adminUser";
 
+const MIN_SEARCH_LENGTH = 2;
+
 export interface UserSearchDropdownProps {
   onSelect: (userId: string) => void;
   users: SimpleUser[];
@@ -191,7 +193,7 @@ export function UserSearchDropdown({
             })}
           </div>
         )}
-        {showDropdown && users.length === 0 && searchQuery.length >= 2 && !isSearching && (
+        {showDropdown && users.length === 0 && searchQuery.length >= MIN_SEARCH_LENGTH && !isSearching && (
           <div ref={dropdownRef} className="im-autocomplete-dropdown">
             <div className="im-autocomplete-item im-autocomplete-item--disabled">
               {t("noUsersFound")}
