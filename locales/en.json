@@ -1619,7 +1619,8 @@
       "deleteFailed": "Failed to delete organization",
       "fetchFailed": "Failed to fetch organization",
       "changeOwnerFailed": "Failed to change owner",
-      "userRequired": "Please select a user"
+      "userRequired": "Please select a user",
+      "imageUploadFailed": "Failed to upload image"
     },
     "imageAlt": {
       "heroImage": "Hero image for {name}",
