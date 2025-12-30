@@ -400,8 +400,8 @@ export default function AdminClubDetailPage({
                 {process.env.NODE_ENV === "production" ? (
                   <Suspense fallback={<MapLoadingPlaceholder message={t("common.loadingMap")} />}>
                     <ClubMap
-                      latitude={club.latitude as number}
-                      longitude={club.longitude as number}
+                      latitude={club.latitude!}
+                      longitude={club.longitude!}
                       clubName={club.name}
                     />
                   </Suspense>
