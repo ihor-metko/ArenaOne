@@ -15,7 +15,6 @@ import {
   PaginationControls,
   QuickPresets,
 } from "@/components/list-controls";
-import { useUserStore } from "@/stores/useUserStore";
 import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import { SPORT_TYPE_OPTIONS, SportType } from "@/constants/sports";
 import "@/components/admin/AdminClubCard.css";

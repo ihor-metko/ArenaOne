@@ -7,7 +7,6 @@ import { IMLink, PageHeader } from "@/components/ui";
 import { CardListSkeleton } from "@/components/ui/skeletons";
 import { CourtCard } from "@/components/courts/CourtCard";
 import type { AdminType } from "@/app/api/me/admin-status/route";
-import { useUserStore } from "@/stores/useUserStore";
 import { SPORT_TYPE_OPTIONS, type SportType } from "@/constants/sports";
 import type { Club } from "@/types/club";
 import type { Organization } from "@/types/organization";

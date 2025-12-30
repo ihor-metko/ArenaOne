@@ -11,7 +11,6 @@ import DashboardShell from "@/components/admin/DashboardShell";
 import { DashboardPlaceholder } from "@/components/ui/skeletons";
 import type { UnifiedDashboardResponse } from "@/app/api/admin/unified-dashboard/route";
 import { fetchUnifiedDashboard } from "@/services/dashboard";
-import { useUserStore } from "@/stores/useUserStore";
 import { useAuthGuardOnce } from "@/hooks";
 import "./RootDashboard.css";
 
@@ -187,8 +186,8 @@ export default function AdminDashboardPage() {
     return t("admin.dashboard.subtitle");
   };
 
-  // Show skeleton while hydrating or loading
-  const isLoadingState = !isHydrated || isLoading || !dashboardData;
+  // Show skeleton while loading or no data yet
+  const isLoadingState = isAuthLoading || !dashboardData;
 
   if (isLoadingState && !error) {
     return (

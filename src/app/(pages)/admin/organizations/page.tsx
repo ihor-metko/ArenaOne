@@ -9,7 +9,6 @@ import { AdminOrganizationCard } from "@/components/admin/AdminOrganizationCard"
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import { useAdminUsersStore } from "@/stores/useAdminUsersStore";
-import { useUserStore } from "@/stores/useUserStore";
 import type { Organization } from "@/types/organization";
 import { SportType, SPORT_TYPE_OPTIONS } from "@/constants/sports";
 import { useListController, useAuthGuardOnce } from "@/hooks";
@@ -70,7 +69,7 @@ export default function AdminOrganizationsPage() {
   const router = useRouter();
   
   // Use auth guard hook (prevents redirect on page reload)
-  const { isLoading: isAuthLoading, user } = useAuthGuardOnce({
+  const { isLoading: isAuthLoading } = useAuthGuardOnce({
     requireAuth: true,
     requireRoot: true,
   });
@@ -660,9 +659,8 @@ export default function AdminOrganizationsPage() {
   };
 
 
-
-  // Combined loading state for consistent loading UI (includes hydration state)
-  const isLoadingState = !isHydrated || isLoading || loading;
+  // Combined loading state for consistent loading UI
+  const isLoadingState = isAuthLoading || loading;
 
   return (
     <ListControllerProvider controller={controller}>
