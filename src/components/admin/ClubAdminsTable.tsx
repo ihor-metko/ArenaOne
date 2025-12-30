@@ -110,12 +110,12 @@ export default function ClubAdminsTable({
     // to prevent conflicting role assignments
     for (const role of user.roles) {
       if (role.type === "organization") {
-        const roleLabel = role.role === "owner" 
+        const roleLabel = role.role === "owner"
           ? t("clubAdmins.alreadyOwnerOf", { context: role.contextName })
           : t("clubAdmins.alreadyAdminOf", { context: role.contextName });
         return { disabled: true, reason: roleLabel };
       }
-      
+
       if (role.type === "club") {
         const roleLabel = role.role === "owner"
           ? t("clubAdmins.alreadyOwnerOf", { context: role.contextName })
@@ -141,14 +141,14 @@ export default function ClubAdminsTable({
       const payload =
         addMode === "invite"
           ? {
-              email: inviteEmail,
-              name: inviteName,
-              clubId: selectedClubId,
-            }
+            email: inviteEmail,
+            name: inviteName,
+            clubId: selectedClubId,
+          }
           : {
-              userId: selectedUserId,
-              clubId: selectedClubId,
-            };
+            userId: selectedUserId,
+            clubId: selectedClubId,
+          };
 
       const response = await fetch(`/api/orgs/${orgId}/club-admins`, {
         method: "POST",
@@ -373,18 +373,16 @@ export default function ClubAdminsTable({
           <div className="im-assign-mode-tabs">
             <button
               type="button"
-              className={`im-assign-mode-tab ${
-                addMode === "existing" ? "im-assign-mode-tab--active" : ""
-              }`}
+              className={`im-assign-mode-tab ${addMode === "existing" ? "im-assign-mode-tab--active" : ""
+                }`}
               onClick={() => setAddMode("existing")}
             >
               {t("clubAdmins.existingUser")}
             </button>
             <button
               type="button"
-              className={`im-assign-mode-tab ${
-                addMode === "invite" ? "im-assign-mode-tab--active" : ""
-              }`}
+              className={`im-assign-mode-tab ${addMode === "invite" ? "im-assign-mode-tab--active" : ""
+                }`}
               onClick={() => setAddMode("invite")}
             >
               {t("clubAdmins.inviteUser")}
