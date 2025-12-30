@@ -149,7 +149,7 @@ export default function AdminManagementSection({
           <h3 className="im-section-title">{t("clubAdmins.title")}</h3>
         </div>
         <div className="im-error-state">
-          {t("common.error")}: Club data is required for club admin management
+          {t("common.error")}
         </div>
       </div>
     );
@@ -440,7 +440,7 @@ export default function AdminManagementSection({
         onClose={handleCloseCreateAdminModal}
         config={{
           context: context,
-          defaultOrgId: context === "organization" ? contextId : clubData!.organizationId,
+          defaultOrgId: context === "organization" ? contextId : clubData?.organizationId,
           defaultClubId: context === "club" ? contextId : undefined,
           organizationData: org ? {
             id: org.id,
