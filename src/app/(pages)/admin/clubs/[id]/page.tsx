@@ -61,6 +61,7 @@ export default function AdminClubDetailPage({
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   const isLoadingStore = useUserStore((state) => state.isLoading);
 
+  // Unwrap params early to enable immediate loading state
   useEffect(() => {
     params.then((resolvedParams) => {
       setClubId(resolvedParams.id);
@@ -203,8 +204,8 @@ export default function AdminClubDetailPage({
     },
   ];
 
-  // Loading skeleton - Only show while club base data is loading
-  if (isClubLoading || isLoadingStore) {
+  // Loading skeleton - Show while params are being resolved OR while club data is loading
+  if (!clubId || isClubLoading || isLoadingStore) {
     return (
       <main className="im-admin-club-detail-page">
         <div className="im-admin-club-skeleton-hero" />
