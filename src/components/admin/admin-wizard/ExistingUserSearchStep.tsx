@@ -13,10 +13,18 @@ interface ExistingUserSearchStepProps {
   disabled: boolean;
 }
 
+interface UserRole {
+  type: "organization" | "club";
+  role: "owner" | "admin";
+  contextId: string;
+  contextName: string;
+}
+
 interface SearchResult {
   id: string;
   name: string;
   email: string;
+  roles: UserRole[];
 }
 
 export function ExistingUserSearchStep({
@@ -34,6 +42,37 @@ export function ExistingUserSearchStep({
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Check if a user should be disabled based on their existing roles
+  const getUserDisabledInfo = useCallback((user: SearchResult): { disabled: boolean; reason?: string } => {
+    if (!user.roles || user.roles.length === 0) {
+      return { disabled: false };
+    }
+
+    // According to requirements: "Identify users who already have a role (either Admin or Owner) 
+    // in any Organization or Club" and "Disable selection for these users so they cannot be added 
+    // again in a conflicting role"
+    // This means users with ANY admin/owner role should be disabled
+
+    // Check if user has any admin/owner role in any organization or club
+    for (const existingRole of user.roles) {
+      if (existingRole.type === "organization") {
+        const roleLabel = existingRole.role === "owner" 
+          ? t("alreadyOwnerOf", { context: existingRole.contextName })
+          : t("alreadyAdminOf", { context: existingRole.contextName });
+        return { disabled: true, reason: roleLabel };
+      }
+      
+      if (existingRole.type === "club") {
+        const roleLabel = existingRole.role === "owner"
+          ? t("alreadyOwnerOf", { context: existingRole.contextName })
+          : t("alreadyAdminOf", { context: existingRole.contextName });
+        return { disabled: true, reason: roleLabel };
+      }
+    }
+
+    return { disabled: false };
+  }, [t]);
 
   // Debounced search function
   const performSearch = useCallback(async (query: string) => {
@@ -91,6 +130,13 @@ export function ExistingUserSearchStep({
 
   // Handle user selection
   const handleSelectUser = useCallback((user: SearchResult) => {
+    // Check if user should be disabled
+    const disabledInfo = getUserDisabledInfo(user);
+    if (disabledInfo.disabled) {
+      // Don't allow selection of disabled users
+      return;
+    }
+
     onChange({
       userId: user.id,
       email: user.email,
@@ -100,7 +146,7 @@ export function ExistingUserSearchStep({
     setSearchResults([]);
     setShowDropdown(false);
     setFocusedIndex(-1);
-  }, [onChange]);
+  }, [onChange, getUserDisabledInfo]);
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -213,21 +259,35 @@ export function ExistingUserSearchStep({
                   className="im-autocomplete-dropdown"
                   role="listbox"
                 >
-                  {searchResults.map((user, index) => (
-                    <div
-                      key={user.id}
-                      role="option"
-                      aria-selected={index === focusedIndex}
-                      className={`im-autocomplete-item ${index === focusedIndex ? "im-focused" : ""}`}
-                      onClick={() => handleSelectUser(user)}
-                      onMouseEnter={() => setFocusedIndex(index)}
-                    >
-                      <div className="im-autocomplete-item-name">
-                        {user.name || t("noName")}
+                  {searchResults.map((user, index) => {
+                    const disabledInfo = getUserDisabledInfo(user);
+                    return (
+                      <div
+                        key={user.id}
+                        role="option"
+                        aria-selected={index === focusedIndex}
+                        aria-disabled={disabledInfo.disabled}
+                        className={`im-autocomplete-item ${
+                          index === focusedIndex ? "im-focused" : ""
+                        } ${disabledInfo.disabled ? "im-autocomplete-item--disabled" : ""}`}
+                        onClick={() => handleSelectUser(user)}
+                        onMouseEnter={() => setFocusedIndex(index)}
+                        title={disabledInfo.reason}
+                      >
+                        <div className="im-autocomplete-item-content">
+                          <div className="im-autocomplete-item-name">
+                            {user.name || t("noName")}
+                          </div>
+                          <div className="im-autocomplete-item-email">{user.email}</div>
+                          {disabledInfo.disabled && disabledInfo.reason && (
+                            <div className="im-autocomplete-item-role-indicator">
+                              {disabledInfo.reason}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="im-autocomplete-item-email">{user.email}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
