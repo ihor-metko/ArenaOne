@@ -144,6 +144,7 @@ export interface ClubDetail {
   organization?: ClubOrganizationInfo;
   name: string;
   slug: string | null;
+  organizationId: string;
   shortDescription: string | null;
   longDescription: string | null;
   location: string;

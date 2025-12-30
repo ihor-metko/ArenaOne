@@ -10,7 +10,7 @@ import { ClubContactsView } from "@/components/admin/club/ClubContactsView";
 import { ClubHoursView } from "@/components/admin/club/ClubHoursView";
 import { ClubCourtsQuickList } from "@/components/admin/club/ClubCourtsQuickList";
 import { ClubGalleryView } from "@/components/admin/club/ClubGalleryView";
-import { ClubAdminsSection } from "@/components/admin/club/ClubAdminsSection";
+import AdminManagementSection from "@/components/admin/AdminManagementSection";
 import { ClubEditor } from "@/components/admin/ClubEditor.client";
 import { WeeklyAvailabilityTimeline } from "@/components/WeeklyAvailabilityTimeline";
 import { GalleryModal } from "@/components/GalleryModal";
@@ -49,7 +49,7 @@ export default function AdminClubDetailPage({
   const [clubId, setClubId] = useState<string | null>(null);
 
   // Use orchestration hook for all club data
-  // Note: loadAdmins is false because ClubAdminsSection fetches independently
+  // Note: loadAdmins is false because AdminManagementSection fetches independently
   const {
     club,
     bookingsPreview,
@@ -321,14 +321,14 @@ export default function AdminClubDetailPage({
       <div className="entity-page-content">
         {/* Club Admins Section */}
         <section className="im-admin-club-admins-section">
-          <ClubAdminsSection 
-            clubId={club.id} 
+          <AdminManagementSection
+            context="club"
+            contextId={club.id}
             clubData={{
               id: club.id,
               name: club.name,
               organizationId: club.organizationId,
             }}
-            organizationData={club.organization}
           />
         </section>
 
