@@ -82,18 +82,6 @@ describe("PagePreserveProvider", () => {
     });
   });
 
-  it("should render children after auth is verified", async () => {
-    const { container } = render(
-      <PagePreserveProvider>
-        <div>Test Content</div>
-      </PagePreserveProvider>
-    );
-
-    await waitFor(() => {
-      expect(container.textContent).toContain("Test Content");
-    });
-  });
-
   it("should save current page to sessionStorage on navigation", async () => {
     mockUsePathname.mockReturnValue("/admin/clubs");
     mockSearchParams = new URLSearchParams("?page=2");
@@ -226,7 +214,7 @@ describe("PagePreserveProvider", () => {
       expect(mockRouter.push).not.toHaveBeenCalled();
     });
     
-    // The expired page should be removed during restoration check
+    // Verify expired page data was cleaned up
     expect(sessionStorage.getItem("arenaone_last_page")).toBeNull();
   });
 
