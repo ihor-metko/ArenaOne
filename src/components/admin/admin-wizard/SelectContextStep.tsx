@@ -16,6 +16,7 @@ interface SelectContextStepProps {
   isClubEditable: boolean;
   isRoleEditable: boolean;
   showClubSelector: boolean;
+  showOrganizationSelector: boolean;
 }
 
 export function SelectContextStep({
@@ -30,6 +31,7 @@ export function SelectContextStep({
   isClubEditable,
   isRoleEditable,
   showClubSelector,
+  showOrganizationSelector,
 }: SelectContextStepProps) {
   const t = useTranslations("createAdminWizard.contextStep");
   
@@ -79,35 +81,37 @@ export function SelectContextStep({
 
   return (
     <div className="im-wizard-step-content">
-      <div className="im-form-field">
-        <Select
-          id="organization"
-          label={t("organization")}
-          options={orgOptions}
-          value={data.organizationId}
-          onChange={(value) => {
-            onChange({ 
-              organizationId: value,
-              // Clear club selection when org changes
-              clubId: undefined,
-            });
-          }}
-          placeholder={t("organizationPlaceholder")}
-          disabled={disabled || !isOrgEditable}
-          required
-          aria-describedby={errors.organizationId ? "org-error" : undefined}
-        />
-        {errors.organizationId && (
-          <span id="org-error" className="im-field-error" role="alert">
-            {errors.organizationId}
-          </span>
-        )}
-        {!isOrgEditable && (
-          <p className="im-field-hint">
-            {t("organizationHint")}
-          </p>
-        )}
-      </div>
+      {showOrganizationSelector && (
+        <div className="im-form-field">
+          <Select
+            id="organization"
+            label={t("organization")}
+            options={orgOptions}
+            value={data.organizationId}
+            onChange={(value) => {
+              onChange({ 
+                organizationId: value,
+                // Clear club selection when org changes
+                clubId: undefined,
+              });
+            }}
+            placeholder={t("organizationPlaceholder")}
+            disabled={disabled || !isOrgEditable}
+            required
+            aria-describedby={errors.organizationId ? "org-error" : undefined}
+          />
+          {errors.organizationId && (
+            <span id="org-error" className="im-field-error" role="alert">
+              {errors.organizationId}
+            </span>
+          )}
+          {!isOrgEditable && (
+            <p className="im-field-hint">
+              {t("organizationHint")}
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="im-form-field">
         <Select
@@ -134,7 +138,9 @@ export function SelectContextStep({
         )}
       </div>
 
-      {showClubSelector && (data.role === "CLUB_ADMIN" || data.role === "CLUB_OWNER") && (
+      {/* In club context: always show club selector (disabled)
+          In other contexts: only show when role is CLUB_ADMIN or CLUB_OWNER */}
+      {(!showClubSelector || (showClubSelector && (data.role === "CLUB_ADMIN" || data.role === "CLUB_OWNER"))) && (
         <div className="im-form-field">
           <Select
             id="club"

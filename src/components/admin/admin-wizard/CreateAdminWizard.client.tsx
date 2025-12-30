@@ -137,6 +137,7 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
   const isClubEditable = (config.context === "root" || config.context === "organization") && !config.defaultClubId;
   const isRoleEditable = config.allowedRoles.length > 1;
   const showClubSelector = config.context !== "club";
+  const showOrganizationSelector = config.context !== "club";
 
   // Update form handlers
   const handleContextChange = useCallback((data: Partial<Pick<AdminCreationData, "organizationId" | "clubId" | "role">>) => {
@@ -369,6 +370,7 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
               isClubEditable={isClubEditable}
               isRoleEditable={isRoleEditable}
               showClubSelector={showClubSelector}
+              showOrganizationSelector={showOrganizationSelector}
             />
           </Card>
         );
