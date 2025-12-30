@@ -42,31 +42,7 @@ function isEntryPath(pathname: string): boolean {
   return ENTRY_PATHS.includes(pathname);
 }
 
-/**
- * Global Loading Gate Component
- * Displays a skeleton loader while authentication state is being verified
- */
-function GlobalLoadingGate({ children }: { children: React.ReactNode }) {
-  const isHydrated = useUserStore((state) => state.isHydrated);
-  const isLoading = useUserStore((state) => state.isLoading);
-  const sessionStatus = useUserStore((state) => state.sessionStatus);
-  
-  // Show loading gate while auth is being verified
-  const isAuthVerifying = !isHydrated || isLoading || sessionStatus === "loading";
-  
-  if (isAuthVerifying) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-600 dark:text-gray-400 text-sm">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  return <>{children}</>;
-}
+
 
 /**
  * PagePreserveProvider
@@ -79,15 +55,13 @@ function GlobalLoadingGate({ children }: { children: React.ReactNode }) {
  * - Restores last page on app initialization (after auth check completes)
  * - Excludes auth pages and other special routes from preservation
  * - Includes timestamp-based expiration (30 minutes)
- * - Shows loading skeleton during auth verification
  * - Works globally for all routes without per-page code
  * 
  * How it works:
- * 1. Blocks rendering with loading gate until auth state is confirmed
- * 2. On initial load, checks if there's a preserved page to restore
- * 3. If user is authenticated and on an entry path, restores the preserved page
- * 4. Saves current page as user navigates (except excluded paths)
- * 5. All content renders only after auth status is verified
+ * 1. On initial load, checks if there's a preserved page to restore
+ * 2. If user is authenticated and on an entry path, restores the preserved page
+ * 3. Saves current page as user navigates (except excluded paths)
+ * 4. Content renders immediately without blocking
  * 
  * Integration:
  * - Add to root layout after AuthProvider
@@ -214,8 +188,6 @@ export function PagePreserveProvider({ children }: { children: React.ReactNode }
   }, [pathname, searchParams, isHydrated]);
 
   return (
-    <GlobalLoadingGate>
-      {children}
-    </GlobalLoadingGate>
+    <>{children}</>
   );
 }

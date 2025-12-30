@@ -49,7 +49,7 @@ describe("PagePreserveProvider", () => {
     jest.clearAllMocks();
   });
 
-  it("should show loading gate while auth is being verified", () => {
+  it("should render children immediately even while auth is being verified", () => {
     mockUseUserStore.mockImplementation((selector) => {
       const state = {
         isHydrated: false,
@@ -65,9 +65,8 @@ describe("PagePreserveProvider", () => {
       </PagePreserveProvider>
     );
 
-    // Should show loading indicator, not content
-    expect(screen.getByText("Loading...")).toBeInTheDocument();
-    expect(screen.queryByText("Test Content")).not.toBeInTheDocument();
+    // Children should render immediately without loading gate
+    expect(screen.getByText("Test Content")).toBeInTheDocument();
   });
 
   it("should render children after auth is verified", async () => {
