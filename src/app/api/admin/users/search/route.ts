@@ -55,7 +55,7 @@ export async function GET(request: Request) {
           },
           {
             name: {
-              contains: query,
+              contains: trimmedQuery,
               mode: "insensitive",
             },
           },

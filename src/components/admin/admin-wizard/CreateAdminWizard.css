@@ -198,7 +198,7 @@
 }
 
 .im-autocomplete-item {
-  background: #000;
+  background: var(--im-item-bg, var(--color-surface-secondary));
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: background-color 0.15s ease;
