@@ -8,7 +8,7 @@ import type { DangerAction } from "@/components/ui";
 import { useOrganizationStore } from "@/stores/useOrganizationStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useClubStatisticsStore } from "@/stores/useClubStatisticsStore";
-import OrganizationAdminsTable from "@/components/admin/OrganizationAdminsTable";
+import AdminManagementSection from "@/components/admin/AdminManagementSection";
 import { OrganizationEditor } from "@/components/admin/OrganizationEditor.client";
 import { parseOrganizationMetadata } from "@/types/organization";
 
@@ -270,8 +270,9 @@ export default function OrganizationDetailPage() {
           </div>
         ) : (
           <div className="im-section-card im-org-detail-content--full">
-            <OrganizationAdminsTable
-              orgId={orgId}
+            <AdminManagementSection
+              context="organization"
+              contextId={orgId}
               organizationData={{
                 id: org.id,
                 name: org.name,
