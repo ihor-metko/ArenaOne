@@ -141,6 +141,7 @@ export interface ClubDetail {
   id: string;
   name: string;
   slug: string | null;
+  organizationId: string;
   shortDescription: string | null;
   longDescription: string | null;
   location: string;
