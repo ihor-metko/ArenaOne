@@ -139,6 +139,8 @@ export interface ClubCoach {
 
 export interface ClubDetail {
   id: string;
+  organizationId: string;
+  organization?: ClubOrganizationInfo;
   name: string;
   slug: string | null;
   shortDescription: string | null;
