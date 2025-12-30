@@ -219,8 +219,7 @@ export function useClubPageData(
   }, [clubId]);
 
   // Page-level loading depends only on club data (base data)
-  // Show loading if clubId is present but club data hasn't loaded yet
-  const isClubLoading = clubLoading || (!!clubId && !clubData && !clubError);
+  const isClubLoading = clubLoading;
   
   // Section-specific loading states
   const isAdminsLoading = hasLoadedAdmins && adminsLoading;

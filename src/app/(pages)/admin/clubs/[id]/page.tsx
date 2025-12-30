@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Card, Modal, IMLink, ImageCarousel, EntityBanner, DangerZone, BookingsPreviewSkeleton } from "@/components/ui";
@@ -31,9 +31,7 @@ export default function AdminClubDetailPage({
 }) {
   const router = useRouter();
   const t = useTranslations();
-  
-  // Unwrap params synchronously using React.use()
-  const { id: clubId } = use(params);
+  const [clubId, setClubId] = useState<string>("");
 
   // Use orchestration hook for all club data
   // Note: loadAdmins is false because ClubAdminsSection fetches independently
@@ -44,7 +42,7 @@ export default function AdminClubDetailPage({
     bookingsLoading,
     error: dataError,
     refetchClub,
-  } = useClubPageData(clubId, { loadAdmins: false });
+  } = useClubPageData(clubId || null, { loadAdmins: false });
 
   // Store actions for mutations
   const deleteClub = useAdminClubStore((state) => state.deleteClub);
@@ -62,6 +60,13 @@ export default function AdminClubDetailPage({
   const adminStatus = useUserStore((state) => state.adminStatus);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   const isLoadingStore = useUserStore((state) => state.isLoading);
+
+  // Unwrap params early to enable immediate loading state
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setClubId(resolvedParams.id);
+    });
+  }, [params]);
 
   // Handle errors from data fetching
   useEffect(() => {
@@ -199,8 +204,8 @@ export default function AdminClubDetailPage({
     },
   ];
 
-  // Loading skeleton - Only show while club base data is loading
-  if (isClubLoading || isLoadingStore) {
+  // Loading skeleton - Show while params are being resolved OR while club data is loading
+  if (!clubId || isClubLoading || isLoadingStore) {
     return (
       <main className="im-admin-club-detail-page">
         <div className="im-admin-club-skeleton-hero" />
