@@ -90,7 +90,8 @@ export default function OrganizationDetailPage() {
       setError(t("orgDetail.failedToLoad"));
       console.error("Failed to load organization:", err);
     }
-  }, [orgId, ensureOrganizationById, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId, t]);
 
   useEffect(() => {
     if (!isHydrated || isLoading) return;
