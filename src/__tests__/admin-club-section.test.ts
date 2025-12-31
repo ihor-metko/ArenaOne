@@ -265,9 +265,14 @@ describe("Admin Club Section API", () => {
         expect(data.name).toBe("Updated Club");
       });
 
-      it("should reject isPublic change when user is not root admin", async () => {
-        mockAuth.mockResolvedValue({
+      it("should enforce isPublic change validation even for root admin", async () => {
+        // First mock for requireRootAdmin check
+        mockAuth.mockResolvedValueOnce({
           user: { id: "admin-123", isRoot: true },
+        });
+        // Second mock for the isPublic validation inside the handler
+        mockAuth.mockResolvedValueOnce({
+          user: { id: "admin-123", isRoot: false },
         });
 
         (prisma.club.findUnique as jest.Mock).mockResolvedValue({
@@ -275,7 +280,6 @@ describe("Admin Club Section API", () => {
           isPublic: true,
         });
 
-        // Simulate a non-root admin trying to change isPublic by re-mocking after initial check
         const request = new Request(
           "http://localhost:3000/api/admin/clubs/club-123/section",
           {
@@ -292,13 +296,6 @@ describe("Admin Club Section API", () => {
             headers: { "Content-Type": "application/json" },
           }
         );
-
-        // Mock auth to return non-root during the isPublic check
-        mockAuth.mockResolvedValueOnce({
-          user: { id: "admin-123", isRoot: true },
-        }).mockResolvedValueOnce({
-          user: { id: "admin-123", isRoot: false },
-        });
 
         const response = await PATCH(request, { params: mockParams });
         const data = await response.json();
