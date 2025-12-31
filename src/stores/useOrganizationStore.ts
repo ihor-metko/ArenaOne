@@ -570,10 +570,13 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
 
   // Ensure organization clubs are loaded by ID with fetch-if-missing pattern
   // This method prevents duplicate fetches and returns cached data when available
+  // Note: Cache is per organization ID. For different pagination params, use force: true to refresh
   ensureOrganizationClubs: async (id: string, options?: { force?: boolean; page?: number; limit?: number }) => {
     const state = get();
     
     // Return cached data if available and not forcing refresh
+    // Note: We cache by organization ID only. If you need different pagination,
+    // use force: true or call fetchOrganizationClubs directly
     if (!options?.force && state.organizationClubsById[id]) {
       return state.organizationClubsById[id];
     }
