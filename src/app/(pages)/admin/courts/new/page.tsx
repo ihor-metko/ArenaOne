@@ -302,8 +302,11 @@ export default function CreateCourtPage({
         }
       } catch (err) {
         console.error("Failed to load club:", err);
-        const errorMessage = err instanceof Error ? err.message : t("admin.courts.new.errors.failedToLoadClub");
-        if (errorMessage.includes("404") || errorMessage.includes("not found")) {
+        // Check for 404 error (club not found)
+        const errorMessage = err instanceof Error ? err.message : "";
+        const is404Error = errorMessage.includes("HTTP 404") || errorMessage.toLowerCase().includes("not found");
+        
+        if (is404Error) {
           setError(t("admin.courts.new.errors.clubNotFound"));
         } else {
           setError(t("admin.courts.new.errors.failedToLoadClub"));
@@ -315,7 +318,8 @@ export default function CreateCourtPage({
     };
 
     loadClub();
-  }, [selectedClubId, ensureClubById, setValue, getValues, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClubId, ensureClubById, t]);
 
   // Auth check - allow any admin
   useEffect(() => {
