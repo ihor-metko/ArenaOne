@@ -44,12 +44,6 @@ interface BusinessHours {
   isClosed: boolean;
 }
 
-interface GalleryImage {
-  id: string;
-  imageUrl: string;
-  altText: string | null;
-}
-
 interface ClubWithDetails {
   id: string;
   name: string;
@@ -119,7 +113,6 @@ export default function ClubDetailPage({
   const getGalleryForClub = usePlayerClubStore((state) => state.getGalleryForClub);
   const loadingClubs = usePlayerClubStore((state) => state.loadingClubs);
   const loadingCourts = usePlayerClubStore((state) => state.loadingCourts);
-  const loadingGallery = usePlayerClubStore((state) => state.loadingGallery);
   const clubsError = usePlayerClubStore((state) => state.clubsError);
 
   // Map currentClub to ClubWithDetails (they should be compatible)

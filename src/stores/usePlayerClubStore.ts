@@ -5,11 +5,6 @@ import { create } from "zustand";
  * These types represent public club information visible to all players
  */
 
-interface PlayerClubCoach {
-  id: string;
-  name: string;
-}
-
 interface PlayerClubCourt {
   id: string;
   name: string;
