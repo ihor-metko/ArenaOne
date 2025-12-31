@@ -199,7 +199,7 @@ export default function AdminClubDetailPage({
   // Determine if user can delete clubs (only root admin)
   const canDelete = adminStatus?.adminType === "root_admin";
   
-  // Determine if user can publish/unpublish clubs (only root admin)
+  // Determine if user can publish/unpublish this club (only root admin)
   const canPublish = hasRole("ROOT_ADMIN");
 
   // Prepare DangerZone actions

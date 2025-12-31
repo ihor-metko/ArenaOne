@@ -227,7 +227,7 @@ export default function OrganizationDetailPage() {
     setIsPublishModalOpen(true);
   };
 
-  // Determine if user can publish/unpublish organizations (only root admin)
+  // Determine if user can publish/unpublish this organization (only root admin)
   const canPublish = hasRole("ROOT_ADMIN");
 
   // Prepare DangerZone actions
