@@ -278,7 +278,7 @@ export default function CreateCourtPage({
   useEffect(() => {
     if (!selectedClubId) {
       setLoading(false);
-      setClub(null);
+      setClub(null); // Clear club state when no club is selected
       return;
     }
 
@@ -304,14 +304,15 @@ export default function CreateCourtPage({
         console.error("Failed to load club:", err);
         // Check for 404 error (club not found)
         const errorMessage = err instanceof Error ? err.message : "";
-        const is404Error = errorMessage.includes("HTTP 404") || errorMessage.toLowerCase().includes("not found");
+        // Handle various 404 error formats: "HTTP 404", "HTTP404", "not found", etc.
+        const is404Error = /HTTP\s*404|not found/i.test(errorMessage);
         
         if (is404Error) {
           setError(t("admin.courts.new.errors.clubNotFound"));
         } else {
           setError(t("admin.courts.new.errors.failedToLoadClub"));
         }
-        setClub(null);
+        setClub(null); // Clear club state on error
       } finally {
         setLoading(false);
       }
