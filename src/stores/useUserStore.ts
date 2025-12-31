@@ -337,12 +337,12 @@ export const useUserStore = create<UserState>()(
       return true;
     }
 
-    // Check if user has club_admin role
-    if (adminStatus?.adminType !== "club_admin") {
+    // Check if user has club_owner role
+    if (adminStatus?.adminType !== "club_owner") {
       return false;
     }
 
-    // If no specific clubId is provided, just check if user is a club admin
+    // If no specific clubId is provided, just check if user is a club owner
     if (!clubId) {
       return true;
     }
@@ -363,25 +363,33 @@ export const useUserStore = create<UserState>()(
    * authorization with the full context.
    */
   isClubAdmin: (clubId?: string) => {
-    const { adminStatus, user } = get();
+    const { adminStatus, user, clubMemberships } = get();
     
     // Root admins have access to all clubs
     if (user?.isRoot) {
       return true;
     }
 
-    // Check if user has club_admin role
-    if (adminStatus?.adminType !== "club_admin") {
+    // Check if user has club_admin or club_owner role
+    if (adminStatus?.adminType !== "club_admin" && adminStatus?.adminType !== "club_owner") {
       return false;
     }
 
-    // If no specific clubId is provided, just check if user is a club admin
+    // If no specific clubId is provided, just check if user is a club admin or owner
     if (!clubId) {
       return true;
     }
 
     // Check if user manages the specific club
-    return adminStatus.managedIds.includes(clubId);
+    // For club owners and admins, check managedIds
+    if (adminStatus.managedIds.includes(clubId)) {
+      return true;
+    }
+
+    // Also check clubMemberships for CLUB_ADMIN or CLUB_OWNER role
+    return clubMemberships.some(
+      (m) => m.clubId === clubId && (m.role === "CLUB_ADMIN" || m.role === "CLUB_OWNER")
+    );
   },
     }),
     {
