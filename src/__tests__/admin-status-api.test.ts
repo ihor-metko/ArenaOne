@@ -114,10 +114,15 @@ describe("Admin Status API", () => {
         user: { id: "club-admin-1", isRoot: false },
       });
       mockMembershipFindMany.mockResolvedValue([]);
-      mockClubMembershipFindMany.mockResolvedValue([
-        { clubId: "club-1", club: { id: "club-1", name: "First Club" } },
-        { clubId: "club-2", club: { id: "club-2", name: "Second Club" } },
-      ] as never[]);
+      
+      // First query returns club owners (empty)
+      // Second query returns club admins
+      mockClubMembershipFindMany
+        .mockResolvedValueOnce([])  // No club owners
+        .mockResolvedValueOnce([    // Club admins found
+          { clubId: "club-1", club: { id: "club-1", name: "First Club" } },
+          { clubId: "club-2", club: { id: "club-2", name: "Second Club" } },
+        ] as never[]);
 
       const response = await GET();
       const data = await response.json();
@@ -132,12 +137,14 @@ describe("Admin Status API", () => {
       });
     });
 
-    it("should return club_admin status for club owners", async () => {
+    it("should return club_owner status for club owners", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "club-owner-1", isRoot: false },
       });
       mockMembershipFindMany.mockResolvedValue([]);
-      mockClubMembershipFindMany.mockResolvedValue([
+      
+      // First query returns club owners (found)
+      mockClubMembershipFindMany.mockResolvedValueOnce([
         { clubId: "club-1", club: { id: "club-1", name: "Owner Club" } },
       ] as never[]);
 
@@ -147,7 +154,7 @@ describe("Admin Status API", () => {
       expect(response.status).toBe(200);
       expect(data).toEqual({
         isAdmin: true,
-        adminType: "club_admin",
+        adminType: "club_owner",
         isRoot: false,
         managedIds: ["club-1"],
         assignedClub: { id: "club-1", name: "Owner Club" },
@@ -215,21 +222,39 @@ describe("Admin Status API", () => {
       });
     });
 
-    it("should query for both CLUB_ADMIN and CLUB_OWNER roles in club memberships", async () => {
+    it("should query for CLUB_OWNER and CLUB_ADMIN roles separately in club memberships", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "user-1", isRoot: false },
       });
       mockMembershipFindMany.mockResolvedValue([]);
-      mockClubMembershipFindMany.mockResolvedValue([]);
+      mockClubMembershipFindMany
+        .mockResolvedValueOnce([])  // No club owners
+        .mockResolvedValueOnce([]);  // No club admins
 
       await GET();
 
-      expect(mockClubMembershipFindMany).toHaveBeenCalledWith({
+      // Should query club owners first
+      expect(mockClubMembershipFindMany).toHaveBeenNthCalledWith(1, {
         where: {
           userId: "user-1",
-          role: {
-            in: ["CLUB_ADMIN", "CLUB_OWNER"],
+          role: "CLUB_OWNER",
+        },
+        select: {
+          clubId: true,
+          club: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
+        },
+      });
+
+      // Should query club admins second
+      expect(mockClubMembershipFindMany).toHaveBeenNthCalledWith(2, {
+        where: {
+          userId: "user-1",
+          role: "CLUB_ADMIN",
         },
         select: {
           clubId: true,
