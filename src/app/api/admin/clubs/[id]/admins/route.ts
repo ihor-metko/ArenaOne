@@ -5,6 +5,24 @@ import { ClubMembershipRole, MembershipRole } from "@/constants/roles";
 import { hash } from "bcryptjs";
 
 /**
+ * Helper function to check if a user has Club Owner or Club Admin role
+ */
+async function hasClubAdminAccess(userId: string, clubId: string): Promise<boolean> {
+  const clubMembership = await prisma.clubMembership.findUnique({
+    where: {
+      userId_clubId: {
+        userId,
+        clubId,
+      },
+    },
+  });
+
+  return clubMembership !== null && 
+    (clubMembership.role === ClubMembershipRole.CLUB_OWNER || 
+     clubMembership.role === ClubMembershipRole.CLUB_ADMIN);
+}
+
+/**
  * GET /api/admin/clubs/[id]/admins
  * Returns list of Club Admins for a specific club.
  */
@@ -40,22 +58,42 @@ export async function GET(
 
     const isRoot = session.user.isRoot ?? false;
 
-    // Check if user has permission (Root, Organization Owner, or Organization Admin)
-    if (!isRoot && club.organizationId) {
-      const orgMembership = await prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId: session.user.id,
-            organizationId: club.organizationId,
+    // Check if user has permission for READ access
+    // Allowed: Root Admin, Organization Admin, Club Owner, Club Admin
+    if (!isRoot) {
+      // First check if user is an Organization Admin for this club's organization
+      if (club.organizationId) {
+        const orgMembership = await prisma.membership.findUnique({
+          where: {
+            userId_organizationId: {
+              userId: session.user.id,
+              organizationId: club.organizationId,
+            },
           },
-        },
-      });
+        });
 
-      if (!orgMembership || orgMembership.role !== MembershipRole.ORGANIZATION_ADMIN) {
-        return NextResponse.json(
-          { error: "Forbidden" },
-          { status: 403 }
-        );
+        // If user is Organization Admin, allow access
+        if (orgMembership?.role === MembershipRole.ORGANIZATION_ADMIN) {
+          // Authorized - continue to fetch admins
+        } else {
+          // Check if user is a Club Owner or Club Admin for this club
+          const hasAccess = await hasClubAdminAccess(session.user.id, clubId);
+          if (!hasAccess) {
+            return NextResponse.json(
+              { error: "Forbidden" },
+              { status: 403 }
+            );
+          }
+        }
+      } else {
+        // No organization - check club membership only
+        const hasAccess = await hasClubAdminAccess(session.user.id, clubId);
+        if (!hasAccess) {
+          return NextResponse.json(
+            { error: "Forbidden" },
+            { status: 403 }
+          );
+        }
       }
     }
 
@@ -145,8 +183,16 @@ export async function POST(
 
     const isRoot = session.user.isRoot ?? false;
 
-    // Check if user has permission (Root or Organization Admin)
-    if (!isRoot && club.organizationId) {
+    // Check if user has permission for WRITE access (Root or Organization Admin only)
+    if (!isRoot) {
+      if (!club.organizationId) {
+        // Club has no organization - only root admin can modify
+        return NextResponse.json(
+          { error: "Forbidden" },
+          { status: 403 }
+        );
+      }
+
       const orgMembership = await prisma.membership.findUnique({
         where: {
           userId_organizationId: {
@@ -358,8 +404,16 @@ export async function DELETE(
 
     const isRoot = session.user.isRoot ?? false;
 
-    // Check if user has permission (Root or Organization Admin)
-    if (!isRoot && club.organizationId) {
+    // Check if user has permission for WRITE access (Root or Organization Admin only)
+    if (!isRoot) {
+      if (!club.organizationId) {
+        // Club has no organization - only root admin can modify
+        return NextResponse.json(
+          { error: "Forbidden" },
+          { status: 403 }
+        );
+      }
+
       const orgMembership = await prisma.membership.findUnique({
         where: {
           userId_organizationId: {
