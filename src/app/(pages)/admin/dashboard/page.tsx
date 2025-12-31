@@ -160,8 +160,9 @@ export default function AdminDashboardPage() {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - fetch only once on mount, preventing multiple calls
-         // Router and translation function are stable and don't need to be dependencies
+         // Note: router and t are intentionally excluded to prevent re-fetches
 
   // Helper to get dashboard title based on admin type
   const getDashboardTitle = () => {

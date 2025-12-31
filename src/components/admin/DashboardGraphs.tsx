@@ -108,7 +108,9 @@ export default function DashboardGraphs({
       setLoading(false);
       setHasInitialized(true);
     }
-  }, [initialData, hasInitialized]);
+    // Note: hasInitialized is intentionally excluded from deps to avoid unnecessary re-runs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData]);
 
   const fetchGraphData = useCallback(async (range: TimeRange) => {
     try {
