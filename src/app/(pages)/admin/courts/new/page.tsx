@@ -60,7 +60,7 @@ interface Club {
     id: string;
     name: string;
   } | null;
-  defaultCurrency?: string;
+  defaultCurrency?: string | null;
   businessHours?: Array<{
     dayOfWeek: number;
     openTime: string | null;
