@@ -13,7 +13,10 @@ jest.mock("@/lib/prisma", () => ({
       count: jest.fn(),
     },
     booking: {
-      count: jest.fn(),
+      groupBy: jest.fn(),
+    },
+    court: {
+      findMany: jest.fn(),
     },
   },
 }));
@@ -93,16 +96,39 @@ describe("GET /api/admin/organizations/[id]/clubs", () => {
       },
     ];
 
+    const mockCourts = [
+      { id: "court-1", clubId: "club-1" },
+      { id: "court-2", clubId: "club-1" },
+      { id: "court-3", clubId: "club-1" },
+      { id: "court-4", clubId: "club-2" },
+      { id: "court-5", clubId: "club-2" },
+      { id: "court-6", clubId: "club-2" },
+      { id: "court-7", clubId: "club-2" },
+      { id: "court-8", clubId: "club-2" },
+    ];
+
+    const mockActiveBookings = [
+      { courtId: "court-1", _count: { id: 3 } },
+      { courtId: "court-2", _count: { id: 2 } },
+      { courtId: "court-4", _count: { id: 1 } },
+      { courtId: "court-5", _count: { id: 2 } },
+    ];
+
+    const mockPastBookings = [
+      { courtId: "court-1", _count: { id: 5 } },
+      { courtId: "court-2", _count: { id: 3 } },
+      { courtId: "court-3", _count: { id: 2 } },
+      { courtId: "court-4", _count: { id: 4 } },
+      { courtId: "court-5", _count: { id: 3 } },
+    ];
+
     (prisma.organization.findUnique as jest.Mock).mockResolvedValue(mockOrg);
     (prisma.club.findMany as jest.Mock).mockResolvedValue(mockClubs);
     (prisma.club.count as jest.Mock).mockResolvedValue(2);
-    
-    // Mock booking counts
-    (prisma.booking.count as jest.Mock)
-      .mockResolvedValueOnce(5) // Active upcoming bookings for club-1
-      .mockResolvedValueOnce(10) // Past bookings for club-1
-      .mockResolvedValueOnce(3) // Active upcoming bookings for club-2
-      .mockResolvedValueOnce(7); // Past bookings for club-2
+    (prisma.booking.groupBy as jest.Mock)
+      .mockResolvedValueOnce(mockActiveBookings)
+      .mockResolvedValueOnce(mockPastBookings);
+    (prisma.court.findMany as jest.Mock).mockResolvedValue(mockCourts);
 
     const request = new Request("http://localhost:3000/api/admin/organizations/org-1/clubs");
     const response = await GET(request, { params: Promise.resolve({ id: "org-1" }) });
@@ -160,6 +186,8 @@ describe("GET /api/admin/organizations/[id]/clubs", () => {
     (prisma.organization.findUnique as jest.Mock).mockResolvedValue(mockOrg);
     (prisma.club.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.club.count as jest.Mock).mockResolvedValue(25);
+    (prisma.booking.groupBy as jest.Mock).mockResolvedValue([]);
+    (prisma.court.findMany as jest.Mock).mockResolvedValue([]);
 
     const request = new Request("http://localhost:3000/api/admin/organizations/org-1/clubs?page=2&limit=5");
     const response = await GET(request, { params: Promise.resolve({ id: "org-1" }) });

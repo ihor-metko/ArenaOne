@@ -56,6 +56,9 @@ function getTrendInfo(changePercent: number | null): {
   return { className: 'im-club-preview-trend--neutral', arrow: '→' };
 }
 
+// Constants
+const CLUBS_PREVIEW_LIMIT = 5;
+
 export default function OrganizationDetailPage() {
   const t = useTranslations();
   const router = useRouter();
@@ -118,10 +121,10 @@ export default function OrganizationDetailPage() {
     try {
       setClubsLoading(true);
       
-      const response = await fetch(`/api/admin/organizations/${orgId}/clubs?limit=5`);
+      const response = await fetch(`/api/admin/organizations/${orgId}/clubs?limit=${CLUBS_PREVIEW_LIMIT}`);
       
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: "Failed to fetch clubs" }));
+        const data = await response.json().catch(() => ({ error: "Invalid response format when fetching clubs" }));
         throw new Error(data.error || `HTTP ${response.status}`);
       }
       

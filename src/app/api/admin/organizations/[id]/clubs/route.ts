@@ -63,47 +63,90 @@ export async function GET(
       }),
     ]);
 
-    // Fetch booking statistics for each club
+    // Get all club IDs for batch fetching booking statistics
+    const clubIds = clubs.map((club) => club.id);
     const now = new Date();
-    const clubsWithStats = await Promise.all(
-      clubs.map(async (club) => {
-        const [activeUpcomingBookings, pastBookings] = await Promise.all([
-          // Active upcoming bookings
-          prisma.booking.count({
-            where: {
-              court: {
-                clubId: club.id,
-              },
-              status: { in: ["pending", "paid", "reserved", "confirmed"] },
-              start: { gte: now },
-            },
-          }),
-          // Past bookings
-          prisma.booking.count({
-            where: {
-              court: {
-                clubId: club.id,
-              },
-              start: { lt: now },
-            },
-          }),
-        ]);
 
-        return {
-          id: club.id,
-          name: club.name,
-          slug: club.slug,
-          city: club.city,
-          isPublic: club.isPublic,
-          createdAt: club.createdAt,
-          statistics: {
-            courtCount: club._count.courts,
-            activeUpcomingBookings,
-            pastBookings,
+    // Batch fetch booking statistics for all clubs to avoid N+1 queries
+    const [activeUpcomingBookings, pastBookings] = await Promise.all([
+      // Active upcoming bookings grouped by club
+      prisma.booking.groupBy({
+        by: ['courtId'],
+        where: {
+          court: {
+            clubId: { in: clubIds },
           },
-        };
-      })
-    );
+          status: { in: ["pending", "paid", "reserved", "confirmed"] },
+          start: { gte: now },
+        },
+        _count: {
+          id: true,
+        },
+      }),
+      // Past bookings grouped by club
+      prisma.booking.groupBy({
+        by: ['courtId'],
+        where: {
+          court: {
+            clubId: { in: clubIds },
+          },
+          start: { lt: now },
+        },
+        _count: {
+          id: true,
+        },
+      }),
+    ]);
+
+    // Fetch court to club mapping for aggregation
+    const courts = await prisma.court.findMany({
+      where: {
+        clubId: { in: clubIds },
+      },
+      select: {
+        id: true,
+        clubId: true,
+      },
+    });
+
+    // Create a map of courtId to clubId
+    const courtToClubMap = new Map<string, string>();
+    courts.forEach((court) => {
+      courtToClubMap.set(court.id, court.clubId);
+    });
+
+    // Aggregate booking counts by club
+    const activeBookingsByClub = new Map<string, number>();
+    const pastBookingsByClub = new Map<string, number>();
+
+    activeUpcomingBookings.forEach((booking) => {
+      const clubId = courtToClubMap.get(booking.courtId);
+      if (clubId) {
+        activeBookingsByClub.set(clubId, (activeBookingsByClub.get(clubId) || 0) + booking._count.id);
+      }
+    });
+
+    pastBookings.forEach((booking) => {
+      const clubId = courtToClubMap.get(booking.courtId);
+      if (clubId) {
+        pastBookingsByClub.set(clubId, (pastBookingsByClub.get(clubId) || 0) + booking._count.id);
+      }
+    });
+
+    // Map clubs with statistics
+    const clubsWithStats = clubs.map((club) => ({
+      id: club.id,
+      name: club.name,
+      slug: club.slug,
+      city: club.city,
+      isPublic: club.isPublic,
+      createdAt: club.createdAt,
+      statistics: {
+        courtCount: club._count.courts,
+        activeUpcomingBookings: activeBookingsByClub.get(club.id) || 0,
+        pastBookings: pastBookingsByClub.get(club.id) || 0,
+      },
+    }));
 
     return NextResponse.json({
       clubs: clubsWithStats,
