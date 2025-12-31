@@ -111,7 +111,7 @@ export function ClubHoursView({ club, onUpdate, disabled = false, disabledToolti
       <div className="im-section-view-header">
         <h2 className="im-club-view-section-title">Business Hours</h2>
         <Tooltip
-          content={disabled && disabledTooltip ? disabledTooltip : ""}
+          content={disabled ? disabledTooltip : undefined}
           position="bottom"
         >
           <Button

@@ -60,7 +60,7 @@ export function ClubCourtsQuickList({ club, disabled = false, disabledTooltip }:
         <h2 className="im-club-view-section-title">Courts</h2>
         <div className="im-courts-quick-actions">
           <Tooltip
-            content={disabled && disabledTooltip ? disabledTooltip : ""}
+            content={disabled ? disabledTooltip : undefined}
             position="bottom"
           >
             <Button
@@ -103,19 +103,21 @@ export function ClubCourtsQuickList({ club, disabled = false, disabledTooltip }:
                 </div>
                 <div className="im-courts-quick-item-actions">
                   <Tooltip
-                    content={disabled && disabledTooltip ? disabledTooltip : ""}
+                    content={disabled ? disabledTooltip : undefined}
                     position="bottom"
                   >
-                    <IMLink
-                      href={disabled ? "#" : `/admin/courts/${court.id}/price-rules`}
-                      className="im-courts-quick-btn"
-                      style={disabled ? { opacity: 0.5, pointerEvents: 'none' } : undefined}
-                    >
-                      Pricing
-                    </IMLink>
+                    <span className={disabled ? 'im-disabled-link-wrapper' : ''}>
+                      <IMLink
+                        href={disabled ? "#" : `/admin/courts/${court.id}/price-rules`}
+                        className="im-courts-quick-btn"
+                        onClick={disabled ? (e: React.MouseEvent) => e.preventDefault() : undefined}
+                      >
+                        Pricing
+                      </IMLink>
+                    </span>
                   </Tooltip>
                   <Tooltip
-                    content={disabled && disabledTooltip ? disabledTooltip : ""}
+                    content={disabled ? disabledTooltip : undefined}
                     position="bottom"
                   >
                     <Button

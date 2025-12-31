@@ -255,15 +255,14 @@ export function EntityBanner({
         </div>
         {onEdit && !hideAdminFeatures && (
           <Tooltip
-            content={editDisabled && editDisabledTooltip ? editDisabledTooltip : ""}
+            content={editDisabled ? editDisabledTooltip : undefined}
             position="bottom"
           >
             <button
               onClick={editDisabled ? undefined : onEdit}
-              className="rsp-entity-banner-edit-btn"
+              className={`rsp-entity-banner-edit-btn ${editDisabled ? 'rsp-entity-banner-edit-btn--disabled' : ''}`}
               aria-label={t('editDetails', { name: title })}
               disabled={editDisabled}
-              style={editDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
