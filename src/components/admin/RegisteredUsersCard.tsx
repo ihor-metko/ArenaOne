@@ -1,12 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import type { RegisteredUsersResponse } from "@/app/api/admin/dashboard/registered-users/route";
+import type { RegisteredUsersData } from "@/app/api/admin/unified-dashboard/route";
 import "./RegisteredUsersCard.css";
 
 interface RegisteredUsersCardProps {
   className?: string;
+  /** Registered users data passed from parent */
+  data?: RegisteredUsersData;
+  /** Loading state */
+  loading?: boolean;
+  /** Error message */
+  error?: string;
 }
 
 /**
@@ -16,37 +21,17 @@ interface RegisteredUsersCardProps {
  * excluding system/admin accounts, with a trend visualization for the last 30 days.
  * 
  * Access: Root Admin only (enforced server-side)
+ * 
+ * Data is now passed as props from the parent component to avoid redundant API calls.
  */
-export function RegisteredUsersCard({ className = "" }: RegisteredUsersCardProps) {
+export function RegisteredUsersCard({ 
+  className = "",
+  data,
+  loading = false,
+  error,
+}: RegisteredUsersCardProps) {
   const t = useTranslations("rootAdmin.dashboard");
   const tCommon = useTranslations("common");
-  const [data, setData] = useState<RegisteredUsersResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/admin/dashboard/registered-users");
-        
-        if (!response.ok) {
-          throw new Error("Failed to fetch registered users data");
-        }
-        
-        const result: RegisteredUsersResponse = await response.json();
-        setData(result);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        setData(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   if (loading) {
     return (

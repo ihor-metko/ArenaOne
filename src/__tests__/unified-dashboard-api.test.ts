@@ -14,9 +14,11 @@ jest.mock("@/lib/prisma", () => ({
     },
     user: {
       count: jest.fn(),
+      findMany: jest.fn(),
     },
     booking: {
       count: jest.fn(),
+      findMany: jest.fn(),
     },
     court: {
       count: jest.fn(),
@@ -82,6 +84,19 @@ describe("Unified Dashboard API", () => {
       (prisma.booking.count as jest.Mock)
         .mockResolvedValueOnce(20) // activeBookingsCount
         .mockResolvedValueOnce(50); // pastBookingsCount
+      
+      // Mock registered users data
+      (prisma.user.findMany as jest.Mock)
+        .mockResolvedValueOnce([]) // Root admins
+        .mockResolvedValueOnce([]) // Org admins
+        .mockResolvedValueOnce([]) // Club admins
+        .mockResolvedValueOnce([]); // Recent users for trend
+      (prisma.user.count as jest.Mock).mockResolvedValue(100);
+      (prisma.membership.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
+      
+      // Mock graphs data
+      (prisma.booking.findMany as jest.Mock).mockResolvedValue([]);
 
       const response = await GET(mockRequest);
       const data = await response.json();
@@ -95,6 +110,10 @@ describe("Unified Dashboard API", () => {
         activeBookingsCount: 20,
         pastBookingsCount: 50,
       });
+      expect(data.registeredUsers).toBeDefined();
+      expect(data.registeredUsers.totalUsers).toBe(100);
+      expect(data.graphsData).toBeDefined();
+      expect(data.graphsData.timeRange).toBe("week");
     });
 
     it("should return aggregated stats for organization admin", async () => {
@@ -113,6 +132,10 @@ describe("Unified Dashboard API", () => {
         .mockResolvedValueOnce(3) // bookingsToday
         .mockResolvedValueOnce(8) // activeBookings
         .mockResolvedValueOnce(15); // pastBookings
+      
+      // Mock graphs data
+      (prisma.booking.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
 
       const response = await GET(mockRequest);
       const data = await response.json();
@@ -127,6 +150,8 @@ describe("Unified Dashboard API", () => {
         activeBookings: 8,
         pastBookings: 15,
       });
+      expect(data.graphsData).toBeDefined();
+      expect(data.graphsData.timeRange).toBe("week");
     });
 
     it("should return aggregated stats for club admin", async () => {
@@ -149,6 +174,9 @@ describe("Unified Dashboard API", () => {
         .mockResolvedValueOnce(5) // bookingsToday
         .mockResolvedValueOnce(12) // activeBookings
         .mockResolvedValueOnce(20); // pastBookings
+      
+      // Mock graphs data
+      (prisma.booking.findMany as jest.Mock).mockResolvedValue([]);
 
       const response = await GET(mockRequest);
       const data = await response.json();
@@ -162,6 +190,8 @@ describe("Unified Dashboard API", () => {
         activeBookings: 12,
         pastBookings: 20,
       });
+      expect(data.graphsData).toBeDefined();
+      expect(data.graphsData.timeRange).toBe("week");
     });
 
     it("should handle database errors gracefully", async () => {
@@ -193,6 +223,10 @@ describe("Unified Dashboard API", () => {
         .mockResolvedValueOnce(3) // bookingsToday
         .mockResolvedValueOnce(6) // activeBookings
         .mockResolvedValueOnce(10); // pastBookings
+      
+      // Mock graphs data
+      (prisma.booking.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
 
       const response = await GET(mockRequest);
       const data = await response.json();
@@ -225,6 +259,9 @@ describe("Unified Dashboard API", () => {
         .mockResolvedValueOnce(5) // bookingsToday
         .mockResolvedValueOnce(8) // activeBookings
         .mockResolvedValueOnce(12); // pastBookings
+      
+      // Mock graphs data
+      (prisma.booking.findMany as jest.Mock).mockResolvedValue([]);
 
       const response = await GET(mockRequest);
       const data = await response.json();

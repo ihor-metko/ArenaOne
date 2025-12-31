@@ -263,7 +263,10 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="im-stats-grid" style={{ gridTemplateColumns: "1fr" }}>
-              <RegisteredUsersCard />
+              <RegisteredUsersCard 
+                data={dashboardData.registeredUsers}
+                loading={false}
+              />
             </div>
 
             {/* Bookings Overview Section */}
@@ -275,7 +278,7 @@ export default function AdminDashboardPage() {
             />
 
             {/* Dashboard Graphs Section */}
-            <DashboardGraphs />
+            <DashboardGraphs initialData={dashboardData.graphsData} />
           </>
         )}
 
@@ -318,7 +321,7 @@ export default function AdminDashboardPage() {
             />
 
             {/* Dashboard Graphs Section */}
-            <DashboardGraphs />
+            <DashboardGraphs initialData={dashboardData.graphsData} />
           </>
         )}
 
@@ -353,7 +356,7 @@ export default function AdminDashboardPage() {
             />
 
             {/* Dashboard Graphs Section */}
-            <DashboardGraphs />
+            <DashboardGraphs initialData={dashboardData.graphsData} />
           </>
         )}
       </DashboardShell>

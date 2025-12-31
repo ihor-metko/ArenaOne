@@ -3,8 +3,9 @@
  */
 
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { RegisteredUsersCard } from "@/components/admin/RegisteredUsersCard";
+import type { RegisteredUsersData } from "@/app/api/admin/unified-dashboard/route";
 
 // Mock next-intl
 jest.mock("next-intl", () => ({
@@ -20,81 +21,43 @@ jest.mock("next-intl", () => ({
 }));
 
 describe("RegisteredUsersCard", () => {
-  beforeEach(() => {
-    // Reset fetch mock before each test
-    global.fetch = jest.fn();
-  });
+  const mockData: RegisteredUsersData = {
+    totalUsers: 1234,
+    trend: Array.from({ length: 30 }, (_, i) => ({
+      date: `2025-12-${String(i + 1).padStart(2, "0")}`,
+      count: Math.floor(Math.random() * 10),
+    })),
+  };
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  it("should render loading state initially", () => {
-    // Mock fetch to never resolve
-    (global.fetch as jest.Mock).mockImplementation(
-      () => new Promise(() => {})
-    );
-
-    render(<RegisteredUsersCard />);
+  it("should render loading state when loading prop is true", () => {
+    render(<RegisteredUsersCard loading={true} />);
 
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
-  it("should render total users count when data is loaded", async () => {
-    const mockData = {
-      totalUsers: 1234,
-      trend: Array.from({ length: 30 }, (_, i) => ({
-        date: `2025-12-${String(i + 1).padStart(2, "0")}`,
-        count: Math.floor(Math.random() * 10),
-      })),
-    };
+  it("should render total users count when data is provided", () => {
+    render(<RegisteredUsersCard data={mockData} />);
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockData,
-    });
-
-    render(<RegisteredUsersCard />);
-
-    await waitFor(() => {
-      expect(screen.getByText("1,234")).toBeInTheDocument();
-    });
-
+    expect(screen.getByText("1,234")).toBeInTheDocument();
     expect(screen.getByText("Registered Users")).toBeInTheDocument();
     expect(screen.getByText("Last 30 days activity")).toBeInTheDocument();
   });
 
-  it("should render error message when fetch fails", async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    });
+  it("should render error message when error prop is provided", () => {
+    render(<RegisteredUsersCard error="Failed to load" />);
 
-    render(<RegisteredUsersCard />);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Failed to load registered users data")
-      ).toBeInTheDocument();
-    });
+    expect(
+      screen.getByText("Failed to load registered users data")
+    ).toBeInTheDocument();
   });
 
-  it("should handle fetch exception", async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(
-      new Error("Network error")
-    );
-
-    render(<RegisteredUsersCard />);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Failed to load registered users data")
-      ).toBeInTheDocument();
-    });
+  it("should render null when no data, no loading, and no error", () => {
+    const { container } = render(<RegisteredUsersCard />);
+    expect(container.firstChild).toBeNull();
   });
 
-  it("should display zero users correctly", async () => {
-    const mockData = {
+  it("should display zero users correctly", () => {
+    const zeroData: RegisteredUsersData = {
       totalUsers: 0,
       trend: Array.from({ length: 30 }, () => ({
         date: "2025-12-01",
@@ -102,53 +65,22 @@ describe("RegisteredUsersCard", () => {
       })),
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockData,
-    });
+    render(<RegisteredUsersCard data={zeroData} />);
 
-    render(<RegisteredUsersCard />);
-
-    await waitFor(() => {
-      expect(screen.getByText("0")).toBeInTheDocument();
-    });
-  });
-
-  it("should call the correct API endpoint", async () => {
-    const mockData = {
-      totalUsers: 100,
-      trend: [],
-    };
-
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockData,
-    });
-
-    render(<RegisteredUsersCard />);
-
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        "/api/admin/dashboard/registered-users"
-      );
-    });
+    expect(screen.getByText("0")).toBeInTheDocument();
   });
 
   it("should apply custom className when provided", () => {
-    (global.fetch as jest.Mock).mockImplementation(
-      () => new Promise(() => {})
-    );
-
     const { container } = render(
-      <RegisteredUsersCard className="custom-class" />
+      <RegisteredUsersCard data={mockData} className="custom-class" />
     );
 
     const card = container.querySelector(".im-registered-users-card");
     expect(card).toHaveClass("custom-class");
   });
 
-  it("should render sparkline with correct number of data points", async () => {
-    const mockData = {
+  it("should render sparkline with correct number of data points", () => {
+    const trendData: RegisteredUsersData = {
       totalUsers: 500,
       trend: Array.from({ length: 30 }, (_, i) => ({
         date: `2025-12-${String(i + 1).padStart(2, "0")}`,
@@ -156,16 +88,9 @@ describe("RegisteredUsersCard", () => {
       })),
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockData,
-    });
+    render(<RegisteredUsersCard data={trendData} />);
 
-    render(<RegisteredUsersCard />);
-
-    await waitFor(() => {
-      expect(screen.getByText("500")).toBeInTheDocument();
-    });
+    expect(screen.getByText("500")).toBeInTheDocument();
 
     // Check that the sparkline SVG is rendered
     const sparklineSvg = screen.getByRole("img", {
