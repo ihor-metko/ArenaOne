@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
 import Link from "next/link";
@@ -100,13 +100,10 @@ function generateSlug(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-export default function CreateCourtPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function CreateCourtPage() {
   const t = useTranslations();
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   // User store for auth and role checks
   const hasRole = useUserStore(state => state.hasRole);
@@ -236,15 +233,14 @@ export default function CreateCourtPage({
     };
   }, [watchedValues]);
 
-  // Initialize clubId from params (if accessing from club context)
+  // Initialize clubId from URL query params (if accessing from club context)
   useEffect(() => {
-    params.then((resolvedParams) => {
-      setClubIdFromUrl(resolvedParams.id);
-      if (resolvedParams.id) {
-        setValue("clubId", resolvedParams.id);
-      }
-    });
-  }, [params, setValue]);
+    const clubIdParam = searchParams.get("clubId");
+    if (clubIdParam) {
+      setClubIdFromUrl(clubIdParam);
+      setValue("clubId", clubIdParam);
+    }
+  }, [searchParams, setValue]);
 
   // Load organizations and clubs data for selection
   useEffect(() => {
@@ -1214,7 +1210,7 @@ export default function CreateCourtPage({
   );
 
   // Loading state
-  if (status === "loading" || loading) {
+  if (isLoading || loading) {
     return (
       <main className="im-create-court-page">
         <PageHeaderSkeleton showDescription />
