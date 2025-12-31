@@ -536,9 +536,13 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
   const getOrganizationSummaryById = useOrganizationStore(state => state.getOrganizationSummaryById);
   const orgLoading = useOrganizationStore(state => state.loading);
 
+  // Check if user is a club admin or organization admin
+  const isClubAdmin = adminStatus?.adminType === "club_admin";
+  const isOrgAdmin = adminStatus?.adminType === "organization_admin";
+
   // Get organization summary for current org admin
-  const orgId = isOrgAdmin && adminStatus?.managedIds && adminStatus.managedIds.length > 0 
-    ? adminStatus.managedIds[0] 
+  const orgId = isOrgAdmin && adminStatus?.managedIds && adminStatus.managedIds.length > 0
+    ? adminStatus.managedIds[0]
     : undefined;
   const orgSummary = orgId ? getOrganizationSummaryById(orgId) : undefined;
 
@@ -569,9 +573,6 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
   // Admin status is now loaded from the store via UserStoreInitializer
   // No need to fetch it separately here
 
-  // Check if user is a club admin or organization admin
-  const isClubAdmin = adminStatus?.adminType === "club_admin";
-  const isOrgAdmin = adminStatus?.adminType === "organization_admin";
 
   // Fetch organization summary for organization admins (lightweight, layout-only)
   // Note: Currently assumes organization admins manage only one organization
