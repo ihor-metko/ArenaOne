@@ -110,10 +110,12 @@ describe("Role Redirect Utilities", () => {
 
     it("should return club_admin for users with CLUB_ADMIN membership", async () => {
       mockMembershipFindMany.mockResolvedValue([]);
-      mockClubMembershipFindMany.mockResolvedValue([
-        { clubId: "club-1" },
-        { clubId: "club-2" },
-      ] as never[]);
+      mockClubMembershipFindMany
+        .mockResolvedValueOnce([])  // No club owners
+        .mockResolvedValueOnce([    // Club admins found
+          { clubId: "club-1" },
+          { clubId: "club-2" },
+        ] as never[]);
 
       const result = await checkUserAdminStatus("user-1", false);
 
@@ -124,9 +126,9 @@ describe("Role Redirect Utilities", () => {
       });
     });
 
-    it("should return club_admin for users with CLUB_OWNER membership", async () => {
+    it("should return club_owner for users with CLUB_OWNER membership", async () => {
       mockMembershipFindMany.mockResolvedValue([]);
-      mockClubMembershipFindMany.mockResolvedValue([
+      mockClubMembershipFindMany.mockResolvedValueOnce([
         { clubId: "club-1" },
       ] as never[]);
 
@@ -134,7 +136,7 @@ describe("Role Redirect Utilities", () => {
 
       expect(result).toEqual({
         isAdmin: true,
-        adminType: "club_admin",
+        adminType: "club_owner",
         managedIds: ["club-1"],
       });
     });
@@ -184,18 +186,30 @@ describe("Role Redirect Utilities", () => {
       });
     });
 
-    it("should query for both CLUB_ADMIN and CLUB_OWNER roles", async () => {
+    it("should query for CLUB_OWNER and CLUB_ADMIN roles separately", async () => {
       mockMembershipFindMany.mockResolvedValue([]);
-      mockClubMembershipFindMany.mockResolvedValue([]);
+      mockClubMembershipFindMany
+        .mockResolvedValueOnce([])  // Club owners
+        .mockResolvedValueOnce([]);  // Club admins
 
       await checkUserAdminStatus("user-1", false);
 
-      expect(mockClubMembershipFindMany).toHaveBeenCalledWith({
+      // Should query club owners
+      expect(mockClubMembershipFindMany).toHaveBeenNthCalledWith(1, {
         where: {
           userId: "user-1",
-          role: {
-            in: ["CLUB_ADMIN", "CLUB_OWNER"],
-          },
+          role: "CLUB_OWNER",
+        },
+        select: {
+          clubId: true,
+        },
+      });
+
+      // Should query club admins
+      expect(mockClubMembershipFindMany).toHaveBeenNthCalledWith(2, {
+        where: {
+          userId: "user-1",
+          role: "CLUB_ADMIN",
         },
         select: {
           clubId: true,

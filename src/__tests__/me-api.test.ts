@@ -195,7 +195,7 @@ describe("/api/me endpoint", () => {
       expect(data.userId).toBe("club-owner-123");
       expect(data.adminStatus).toEqual({
         isAdmin: true,
-        adminType: "club_admin",
+        adminType: "club_owner",
         managedIds: ["club-1"],
         assignedClub: {
           id: "club-1",

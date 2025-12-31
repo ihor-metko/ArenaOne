@@ -6,7 +6,7 @@ import { MembershipRole, ClubMembershipRole } from "@/constants/roles";
 /**
  * Admin type enumeration.
  */
-export type AdminType = "root_admin" | "organization_admin" | "club_admin" | "none";
+export type AdminType = "root_admin" | "organization_admin" | "club_owner" | "club_admin" | "none";
 
 /**
  * Assigned club info for ClubAdmin sidebar navigation.
@@ -109,13 +109,44 @@ export async function GET(): Promise<NextResponse<AdminStatusResponse | { error:
     return NextResponse.json(response);
   }
 
-  // Check if user is a club admin or club owner
+  // Check if user is a club owner (higher privilege than club admin)
+  const clubOwnerMemberships = await prisma.clubMembership.findMany({
+    where: {
+      userId,
+      role: ClubMembershipRole.CLUB_OWNER,
+    },
+    select: {
+      clubId: true,
+      club: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  if (clubOwnerMemberships.length > 0) {
+    // Use the first club as the assigned club for navigation
+    const firstClub = clubOwnerMemberships[0].club;
+    const response: AdminStatusResponse = {
+      isAdmin: true,
+      adminType: "club_owner",
+      isRoot: false,
+      managedIds: clubOwnerMemberships.map((m) => m.clubId),
+      assignedClub: firstClub ? {
+        id: firstClub.id,
+        name: firstClub.name,
+      } : undefined,
+    };
+    return NextResponse.json(response);
+  }
+
+  // Check if user is a club admin
   const clubMemberships = await prisma.clubMembership.findMany({
     where: {
       userId,
-      role: {
-        in: [ClubMembershipRole.CLUB_ADMIN, ClubMembershipRole.CLUB_OWNER],
-      },
+      role: ClubMembershipRole.CLUB_ADMIN,
     },
     select: {
       clubId: true,

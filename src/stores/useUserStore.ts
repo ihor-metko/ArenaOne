@@ -337,12 +337,12 @@ export const useUserStore = create<UserState>()(
       return true;
     }
 
-    // Check if user has club_admin role
-    if (adminStatus?.adminType !== "club_admin") {
+    // Check if user has club_owner role
+    if (adminStatus?.adminType !== "club_owner") {
       return false;
     }
 
-    // If no specific clubId is provided, just check if user is a club admin
+    // If no specific clubId is provided, just check if user is a club owner
     if (!clubId) {
       return true;
     }
@@ -358,7 +358,7 @@ export const useUserStore = create<UserState>()(
    * @returns true if the user is a club admin (and of the specific club if provided), false otherwise
    * 
    * Note: Organization admins have access to all clubs within their organizations.
-   * This check only verifies if the user has the CLUB_ADMIN role for a specific club.
+   * This check only verifies if the user has the CLUB_ADMIN or CLUB_OWNER role for a specific club.
    * For checking access to clubs within an organization's scope, use server-side
    * authorization with the full context.
    */
@@ -370,17 +370,17 @@ export const useUserStore = create<UserState>()(
       return true;
     }
 
-    // Check if user has club_admin role
-    if (adminStatus?.adminType !== "club_admin") {
+    // Check if user has club_admin or club_owner role
+    if (adminStatus?.adminType !== "club_admin" && adminStatus?.adminType !== "club_owner") {
       return false;
     }
 
-    // If no specific clubId is provided, just check if user is a club admin
+    // If no specific clubId is provided, just check if user is a club admin or owner
     if (!clubId) {
       return true;
     }
 
-    // Check if user manages the specific club
+    // Check if user manages the specific club via managedIds from API
     return adminStatus.managedIds.includes(clubId);
   },
     }),

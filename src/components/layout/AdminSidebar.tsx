@@ -479,6 +479,13 @@ function getRoleInfo(adminStatus: AdminStatus | null, t: ReturnType<typeof useTr
     };
   }
 
+  if (adminStatus.adminType === "club_owner") {
+    return {
+      label: t("sidebar.roleClubOwner"),
+      className: "im-sidebar-role im-sidebar-role--club-owner",
+    };
+  }
+
   if (adminStatus.adminType === "club_admin") {
     return {
       label: t("sidebar.roleAdmin"),
@@ -536,8 +543,9 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
   const getOrganizationSummaryById = useOrganizationStore(state => state.getOrganizationSummaryById);
   const orgLoading = useOrganizationStore(state => state.loading);
 
-  // Check if user is a club admin or organization admin
+  // Check if user is a club admin or club owner
   const isClubAdmin = adminStatus?.adminType === "club_admin";
+  const isClubOwner = adminStatus?.adminType === "club_owner";
   const isOrgAdmin = adminStatus?.adminType === "organization_admin";
 
   // Get organization summary for current org admin
@@ -593,7 +601,7 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
   // Get filtered navigation items based on isRoot status and admin type
   const navItems = useMemo(() => {
     const allItems = getNavItems();
-    let filteredItems = filterNavByRoot(allItems, isRoot, isClubAdmin);
+    let filteredItems = filterNavByRoot(allItems, isRoot, isClubAdmin || isClubOwner);
 
     // For OrganizationAdmin (SuperAdmin), insert a direct link to their organization after Dashboard
     // Only show if they have exactly one organization (single org scenario)
@@ -622,8 +630,8 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
       }
     }
 
-    // For ClubAdmin, insert a direct link to their assigned club after Dashboard
-    if (isClubAdmin && adminStatus?.assignedClub) {
+    // For ClubAdmin or ClubOwner, insert a direct link to their assigned club after Dashboard
+    if ((isClubAdmin || isClubOwner) && adminStatus?.assignedClub) {
       const clubLink: NavItem = {
         id: "assigned-club",
         href: `/admin/clubs/${adminStatus.assignedClub.id}`,
@@ -676,8 +684,8 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
       }
     }
 
-    // For Club Admins, add unified Payment Accounts link
-    if (isClubAdmin && adminStatus?.assignedClub) {
+    // For Club Owners and Club Admins, add unified Payment Accounts link
+    if ((isClubOwner || isClubAdmin) && adminStatus?.assignedClub) {
       const paymentAccountsLink: NavItem = {
         id: "payment-accounts",
         href: `/admin/payment-accounts`,
@@ -697,7 +705,7 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
     }
 
     return filteredItems;
-  }, [isRoot, isClubAdmin, isOrgAdmin, adminStatus?.assignedClub, adminStatus?.managedIds, adminStatus?.isPrimaryOwner, orgSummary?.name]);
+  }, [isRoot, isClubAdmin, isClubOwner, isOrgAdmin, adminStatus?.assignedClub, adminStatus?.managedIds, adminStatus?.isPrimaryOwner, orgSummary?.name]);
 
   // Close sidebar when clicking outside on mobile
   const handleClickOutside = useCallback(
@@ -792,8 +800,8 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
       return t("sidebar.title");
     }
 
-    // For Club Admin, show club name
-    if (isClubAdmin && adminStatus?.assignedClub?.name) {
+    // For Club Owner, show club name
+    if ((isClubOwner || isClubAdmin) && adminStatus?.assignedClub?.name) {
       return adminStatus.assignedClub.name;
     }
 
@@ -943,8 +951,8 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
             ))}
           </ul>
 
-          {/* Message for ClubAdmin without assigned club */}
-          {isClubAdmin && !adminStatus?.assignedClub && !isCollapsed && (
+          {/* Message for ClubAdmin or ClubOwner without assigned club */}
+          {(isClubAdmin || isClubOwner) && !adminStatus?.assignedClub && !isCollapsed && (
             <div className="im-sidebar-no-club-message" role="alert">
               <p>{t("sidebar.noClubAssigned")}</p>
             </div>

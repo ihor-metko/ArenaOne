@@ -12,7 +12,7 @@ import { MembershipRole, ClubMembershipRole } from "@/constants/roles";
 /**
  * Admin type enumeration for redirect logic.
  */
-export type AdminType = "root_admin" | "organization_admin" | "club_admin" | "none";
+export type AdminType = "root_admin" | "organization_admin" | "club_owner" | "club_admin" | "none";
 
 /**
  * Admin status result type for the checkUserAdminStatus function.
@@ -84,7 +84,7 @@ export async function checkUserAdminStatus(
   }
 
   // Run both membership queries concurrently for better performance
-  const [organizationMemberships, clubMemberships] = await Promise.all([
+  const [organizationMemberships, clubOwnerMemberships, clubAdminMemberships] = await Promise.all([
     prisma.membership.findMany({
       where: {
         userId,
@@ -97,9 +97,16 @@ export async function checkUserAdminStatus(
     prisma.clubMembership.findMany({
       where: {
         userId,
-        role: {
-          in: [ClubMembershipRole.CLUB_ADMIN, ClubMembershipRole.CLUB_OWNER],
-        },
+        role: ClubMembershipRole.CLUB_OWNER,
+      },
+      select: {
+        clubId: true,
+      },
+    }),
+    prisma.clubMembership.findMany({
+      where: {
+        userId,
+        role: ClubMembershipRole.CLUB_ADMIN,
       },
       select: {
         clubId: true,
@@ -116,12 +123,21 @@ export async function checkUserAdminStatus(
     };
   }
 
+  // Check club owner (higher priority than club admin)
+  if (clubOwnerMemberships.length > 0) {
+    return {
+      isAdmin: true,
+      adminType: "club_owner",
+      managedIds: clubOwnerMemberships.map((m) => m.clubId),
+    };
+  }
+
   // Check club admin
-  if (clubMemberships.length > 0) {
+  if (clubAdminMemberships.length > 0) {
     return {
       isAdmin: true,
       adminType: "club_admin",
-      managedIds: clubMemberships.map((m) => m.clubId),
+      managedIds: clubAdminMemberships.map((m) => m.clubId),
     };
   }
 

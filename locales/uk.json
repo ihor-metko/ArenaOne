@@ -1257,6 +1257,7 @@
     "sportConfig": "Спорт конфігурації",
     "roleRootAdmin": "Головний адмін",
     "roleSuperAdmin": "Супер адмін",
+    "roleClubOwner": "Власник клубу",
     "roleAdmin": "Адміністратор",
     "roleOwner": "Власник",
     "roleOwnerTooltip": "Власник організації — повний контроль над цією організацією",

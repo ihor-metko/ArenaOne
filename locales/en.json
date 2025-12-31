@@ -1361,6 +1361,7 @@
     "sportConfig": "Sport config",
     "roleRootAdmin": "Root Admin",
     "roleSuperAdmin": "Super Admin",
+    "roleClubOwner": "Club Owner",
     "roleAdmin": "Admin",
     "roleOwner": "Owner",
     "roleOwnerTooltip": "Organization Owner — full control over this organization",

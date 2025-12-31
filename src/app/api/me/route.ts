@@ -6,7 +6,7 @@ import { MembershipRole, ClubMembershipRole } from "@/constants/roles";
 /**
  * Admin type enumeration.
  */
-export type AdminType = "root_admin" | "organization_admin" | "club_admin" | "none";
+export type AdminType = "root_admin" | "organization_admin" | "club_owner" | "club_admin" | "none";
 
 /**
  * Assigned club info for ClubAdmin navigation.
@@ -164,18 +164,18 @@ export async function GET(): Promise<NextResponse<MeResponse | { error: string }
         isPrimaryOwner,
       };
     } else {
-      // Check if user is a club admin or club owner
-      const clubAdminMemberships = clubMembershipRecords.filter(
-        (m) => m.role === ClubMembershipRole.CLUB_ADMIN || m.role === ClubMembershipRole.CLUB_OWNER
+      // Check if user is a club owner (higher privilege than club admin)
+      const clubOwnerMemberships = clubMembershipRecords.filter(
+        (m) => m.role === ClubMembershipRole.CLUB_OWNER
       );
 
-      if (clubAdminMemberships.length > 0) {
+      if (clubOwnerMemberships.length > 0) {
         // Use the first club as the assigned club for navigation
-        const firstClub = clubAdminMemberships[0].club;
+        const firstClub = clubOwnerMemberships[0].club;
         adminStatus = {
           isAdmin: true,
-          adminType: "club_admin",
-          managedIds: clubAdminMemberships.map((m) => m.clubId),
+          adminType: "club_owner",
+          managedIds: clubOwnerMemberships.map((m) => m.clubId),
           assignedClub: firstClub
             ? {
                 id: firstClub.id,
@@ -184,12 +184,33 @@ export async function GET(): Promise<NextResponse<MeResponse | { error: string }
             : undefined,
         };
       } else {
-        // User is not an admin
-        adminStatus = {
-          isAdmin: false,
-          adminType: "none",
-          managedIds: [],
-        };
+        // Check if user is a club admin
+        const clubAdminMemberships = clubMembershipRecords.filter(
+          (m) => m.role === ClubMembershipRole.CLUB_ADMIN
+        );
+
+        if (clubAdminMemberships.length > 0) {
+          // Use the first club as the assigned club for navigation
+          const firstClub = clubAdminMemberships[0].club;
+          adminStatus = {
+            isAdmin: true,
+            adminType: "club_admin",
+            managedIds: clubAdminMemberships.map((m) => m.clubId),
+            assignedClub: firstClub
+              ? {
+                  id: firstClub.id,
+                  name: firstClub.name,
+                }
+              : undefined,
+          };
+        } else {
+          // User is not an admin
+          adminStatus = {
+            isAdmin: false,
+            adminType: "none",
+            managedIds: [],
+          };
+        }
       }
     }
   }
