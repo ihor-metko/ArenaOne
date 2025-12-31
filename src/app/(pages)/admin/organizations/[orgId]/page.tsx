@@ -83,7 +83,6 @@ export default function OrganizationDetailPage() {
   // Clubs state - fetched separately from new endpoint
   const [clubs, setClubs] = useState<ClubWithStatistics[]>([]);
   const [clubsLoading, setClubsLoading] = useState(false);
-  const [clubsError, setClubsError] = useState("");
 
   const [error, setError] = useState("");
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
@@ -118,7 +117,6 @@ export default function OrganizationDetailPage() {
   const fetchClubs = useCallback(async () => {
     try {
       setClubsLoading(true);
-      setClubsError("");
       
       const response = await fetch(`/api/admin/organizations/${orgId}/clubs?limit=5`);
       
@@ -130,12 +128,11 @@ export default function OrganizationDetailPage() {
       const data = await response.json();
       setClubs(data.clubs || []);
     } catch (err) {
-      setClubsError(t("orgDetail.failedToLoadClubs"));
       console.error("Failed to load clubs:", err);
     } finally {
       setClubsLoading(false);
     }
-  }, [orgId, t]);
+  }, [orgId]);
 
   useEffect(() => {
     if (!isHydrated || isLoading) return;
