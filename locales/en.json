@@ -413,7 +413,17 @@
     "failedToDeleteClub": "Failed to delete club",
     "clubPublishedSuccess": "Club published successfully",
     "clubUnpublishedSuccess": "Club unpublished successfully",
-    "onlyClubAdminCanEdit": "Only Club Owner or Club Admin can perform this action"
+    "onlyClubAdminCanEdit": "Only Club Owner or Club Admin can perform this action",
+    "publicationRequestSubmitted": "Publication request submitted successfully",
+    "publicationRequestApproved": "Publication request approved. The club is now published.",
+    "publicationRequestRejected": "Publication request rejected",
+    "publicationPending": "Publication request pending",
+    "requestPublicationTitle": "Request Publication",
+    "requestPublicationDescription": "Submit a request to Root Admin to publish this club. Once approved, the club will be visible to all players.",
+    "requestPublicationButton": "Request Publication",
+    "requestPublicationConfirm": "Are you sure you want to request publication for \"{name}\"? A Root Admin will review your request.",
+    "onlyRootAdminCanPublish": "Only Root Admins can publish or unpublish clubs. Organization Admins must request publication.",
+    "publicationAlreadyRequested": "A publication request is already pending for this club"
   },
   "admin": {
     "club": "Club",

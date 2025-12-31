@@ -75,6 +75,14 @@ enum PaymentAccountVerificationLevel {
   VERIFIED     // Real payment verification completed and validated
 }
 
+// Club publication request status
+enum PublicationRequestStatus {
+  PENDING   // Request awaiting review
+  APPROVED  // Request approved, club published
+  REJECTED  // Request rejected by root admin
+  CANCELLED // Request cancelled by requester
+}
+
 model User {
   id              String           @id @default(uuid())
   name            String?
@@ -96,6 +104,8 @@ model User {
   createdOrganizations Organization[] @relation("OrganizationCreator")
   createdClubs    Club[]           @relation("ClubCreator")
   sentInvites     Invite[]         @relation("InviteSender")
+  publicationRequests ClubPublicationRequest[] @relation("PublicationRequestRequester")
+  reviewedPublicationRequests ClubPublicationRequest[] @relation("PublicationRequestReviewer")
 }
 
 // Invite model - unified invite system for organization and club roles
@@ -272,6 +282,7 @@ model Club {
   invites          Invite[]         // Invites for club roles
   dailyStatistics  ClubDailyStatistics[] // Daily occupancy statistics
   monthlyStatistics ClubMonthlyStatistics[] // Monthly occupancy statistics
+  publicationRequests ClubPublicationRequest[] // Publication requests for this club
 
   @@index([organizationId])
 }
@@ -634,4 +645,30 @@ model ClubMonthlyStatistics {
   @@index([month])
   @@index([year])
   @@index([clubId, month, year])
+}
+
+// Club Publication Request - manages workflow for non-root admins to request club publication
+model ClubPublicationRequest {
+  id             String                   @id @default(uuid())
+  clubId         String                   // The club to be published
+  club           Club                     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  
+  requestedById  String                   // User who requested publication (org admin)
+  requestedBy    User                     @relation("PublicationRequestRequester", fields: [requestedById], references: [id])
+  
+  status         PublicationRequestStatus @default(PENDING)
+  
+  reviewedById   String?                  // Root admin who reviewed the request
+  reviewedBy     User?                    @relation("PublicationRequestReviewer", fields: [reviewedById], references: [id])
+  reviewedAt     DateTime?                // When the request was reviewed
+  
+  rejectionReason String?                 @db.Text // Optional reason for rejection
+  
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  
+  @@index([clubId])
+  @@index([requestedById])
+  @@index([status])
+  @@index([createdAt])
 }

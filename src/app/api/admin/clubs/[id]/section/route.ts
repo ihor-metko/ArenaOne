@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRootAdmin } from "@/lib/requireRole";
+import { auth } from "@/lib/auth";
 import { SportType } from "@/constants/sports";
 
 type Section = "header" | "contacts" | "hours" | "gallery" | "coaches" | "metadata" | "location";
@@ -167,6 +168,18 @@ export async function PATCH(
             { error: "Club name is required" },
             { status: 400 }
           );
+        }
+
+        // Enforce: Only ROOT_ADMIN can change isPublic
+        if (headerPayload.isPublic !== undefined && headerPayload.isPublic !== existingClub.isPublic) {
+          // Check if user is root admin
+          const session = await auth();
+          if (!session?.user?.isRoot) {
+            return NextResponse.json(
+              { error: "Only Root Admins can publish or unpublish clubs" },
+              { status: 403 }
+            );
+          }
         }
 
         // Check slug uniqueness if changed

@@ -157,6 +157,12 @@ export async function POST(request: Request) {
 
     // Create club with related records in a transaction
     const club = await prisma.$transaction(async (tx) => {
+      // Enforce: Only ROOT_ADMIN can create published clubs
+      // Organization admins must create unpublished clubs and request publication
+      const isPublic = authResult.adminType === "root_admin" 
+        ? (body.isPublic ?? true) 
+        : false;
+
       // Create the club
       const newClub = await tx.club.create({
         data: {
@@ -177,7 +183,7 @@ export async function POST(request: Request) {
           socialLinks: body.socialLinks || null,
           defaultCurrency: body.defaultCurrency || "USD",
           timezone: body.timezone || "UTC",
-          isPublic: body.isPublic ?? true,
+          isPublic,
           tags: body.tags || null,
           supportedSports: body.supportedSports || ["PADEL"],
           bannerData: body.bannerData ? JSON.stringify(body.bannerData) : null,
