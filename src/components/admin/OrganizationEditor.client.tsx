@@ -13,8 +13,8 @@ interface OrganizationData {
   slug: string;
   description?: string | null;
   address?: string | null;
-  logo?: string | null;
-  heroImage?: string | null;
+  logoData?: { url: string; altText?: string; thumbnailUrl?: string } | null;
+  bannerData?: { url: string; altText?: string; description?: string; position?: string } | null;
   metadata?: Record<string, unknown> | null;
 }
 
@@ -73,14 +73,14 @@ export function OrganizationEditor({
 
   const logoData: LogoData = {
     logoCount: metadata?.logoCount || 'one',
-    logo: organization.logo ? { url: organization.logo, key: "", preview: organization.logo } : null,
+    logo: organization.logoData?.url ? { url: organization.logoData.url, key: "", preview: organization.logoData.url } : null,
     logoTheme: metadata?.logoTheme || 'light',
     secondLogo: metadata?.secondLogo ? { url: metadata.secondLogo, key: "", preview: metadata.secondLogo } : null,
     secondLogoTheme: metadata?.secondLogoTheme || 'dark',
   };
 
   const bannerData: BannerData = {
-    heroImage: organization.heroImage ? { url: organization.heroImage, key: "", preview: organization.heroImage } : null,
+    heroImage: organization.bannerData?.url ? { url: organization.bannerData.url, key: "", preview: organization.bannerData.url } : null,
     bannerAlignment: metadata?.bannerAlignment || 'center',
   };
 
