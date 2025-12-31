@@ -256,15 +256,56 @@ export interface ClubMetadata extends EntityLogoMetadata {
 }
 
 /**
- * Helper function to parse club metadata from JSON string
+ * Helper function to parse club metadata from JSON string or object
+ * 
+ * @param metadata - Can be a JSON string (from database) or already parsed object (from API)
+ * @returns Parsed metadata or undefined if invalid
  */
-export function parseClubMetadata(metadataString: string | null | undefined): ClubMetadata | undefined {
-  if (!metadataString) {
+export function parseClubMetadata(metadata: string | Record<string, unknown> | null | undefined): ClubMetadata | undefined {
+  if (!metadata) {
     return undefined;
   }
 
   try {
-    return JSON.parse(metadataString) as ClubMetadata;
+    let parsed: Record<string, unknown>;
+    
+    // If metadata is already an object (from API response), validate and use it
+    if (typeof metadata === 'object') {
+      // Basic validation - ensure it's a plain object
+      if (Object.prototype.toString.call(metadata) === '[object Object]') {
+        parsed = metadata;
+      } else {
+        return undefined;
+      }
+    } else {
+      // If metadata is a string (from database), parse it
+      parsed = JSON.parse(metadata) as Record<string, unknown>;
+    }
+    
+    // Note: Clubs never used nested logoMetadata structure, but we check for consistency
+    // If a nested structure exists (unlikely), migrate it to flat format
+    if (parsed.logoMetadata && typeof parsed.logoMetadata === 'object') {
+      const logoMetadata = parsed.logoMetadata as Record<string, unknown>;
+      
+      // Migrate nested properties to top level if not already there
+      if (logoMetadata.secondLogo && !parsed.secondLogo) {
+        parsed.secondLogo = logoMetadata.secondLogo;
+      }
+      if (logoMetadata.logoTheme && !parsed.logoTheme) {
+        parsed.logoTheme = logoMetadata.logoTheme;
+      }
+      if (logoMetadata.secondLogoTheme && !parsed.secondLogoTheme) {
+        parsed.secondLogoTheme = logoMetadata.secondLogoTheme;
+      }
+      if (logoMetadata.logoCount && !parsed.logoCount) {
+        parsed.logoCount = logoMetadata.logoCount;
+      }
+      if (logoMetadata.logoBackground && !parsed.logoBackground) {
+        parsed.logoBackground = logoMetadata.logoBackground;
+      }
+    }
+    
+    return parsed as ClubMetadata;
   } catch {
     // Invalid JSON
     return undefined;
