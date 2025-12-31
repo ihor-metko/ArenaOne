@@ -249,6 +249,10 @@ export interface UpdateClubPayload {
 export interface ClubMetadata extends EntityLogoMetadata {
   /** Banner image vertical alignment */
   bannerAlignment?: 'top' | 'center' | 'bottom';
+  /** Logo count: one or two logos */
+  logoCount?: 'one' | 'two';
+  /** Background color for logo preview/display */
+  logoBackground?: 'light' | 'dark';
 }
 
 /**
