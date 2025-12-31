@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input, Select } from "@/components/ui";
+import { Button, Input, Select, TimeInput } from "@/components/ui";
 import { centsToDollars, dollarsToCents } from "@/utils/price";
 
 export interface PriceRuleFormData {
@@ -207,34 +207,22 @@ export function PriceRuleForm({
 
       {/* Time Range */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="rsp-input-wrapper">
-          <label htmlFor="startTime" className="rsp-label mb-1 block text-sm font-medium">
-            Start Time
-          </label>
-          <input
-            type="time"
-            id="startTime"
-            name="startTime"
-            value={formData.startTime}
-            onChange={handleInputChange}
-            disabled={isSubmitting}
-            className="w-full px-3 py-2 border rounded-sm bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-          />
-        </div>
-        <div className="rsp-input-wrapper">
-          <label htmlFor="endTime" className="rsp-label mb-1 block text-sm font-medium">
-            End Time
-          </label>
-          <input
-            type="time"
-            id="endTime"
-            name="endTime"
-            value={formData.endTime}
-            onChange={handleInputChange}
-            disabled={isSubmitting}
-            className="w-full px-3 py-2 border rounded-sm bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-          />
-        </div>
+        <TimeInput
+          id="startTime"
+          name="startTime"
+          label="Start Time"
+          value={formData.startTime}
+          onChange={handleInputChange}
+          disabled={isSubmitting}
+        />
+        <TimeInput
+          id="endTime"
+          name="endTime"
+          label="End Time"
+          value={formData.endTime}
+          onChange={handleInputChange}
+          disabled={isSubmitting}
+        />
       </div>
 
       {/* Price */}
