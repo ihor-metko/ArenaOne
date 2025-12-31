@@ -134,11 +134,11 @@ export default function DashboardGraphs({
     }
   };
 
-  // Use external loading/error states if provided
-  const isLoading = externalLoading || loading;
+  // Use external loading/error states if provided, otherwise use internal state
+  const isLoading = externalLoading !== undefined ? externalLoading : loading;
   const errorMessage = externalError || error;
 
-  if (isLoading) {
+  if (isLoading && !errorMessage) {
     return (
       <div className="im-dashboard-graphs-section">
         <div className="im-dashboard-graphs-header">
