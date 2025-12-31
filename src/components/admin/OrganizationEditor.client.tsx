@@ -310,7 +310,7 @@ export function OrganizationEditor({
         </Tabs>
       </Modal>
 
-      <ConfirmationModal
+      {showUnsavedWarning && <ConfirmationModal
         isOpen={showUnsavedWarning}
         onClose={handleCancelTabChange}
         onConfirm={pendingTabId === null ? handleConfirmClose : handleConfirmTabChange}
@@ -319,7 +319,7 @@ export function OrganizationEditor({
         confirmText={t("common.discardChanges")}
         cancelText={t("common.cancel")}
         variant="danger"
-      />
+      />}
     </>
   );
 }

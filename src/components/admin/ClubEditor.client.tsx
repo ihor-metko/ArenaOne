@@ -300,7 +300,7 @@ export function ClubEditor({
         </Tabs>
       </Modal>
 
-      <ConfirmationModal
+      {showUnsavedWarning && <ConfirmationModal
         isOpen={showUnsavedWarning}
         onClose={handleCancelTabChange}
         onConfirm={pendingTabId === null ? handleConfirmClose : handleConfirmTabChange}
@@ -309,7 +309,7 @@ export function ClubEditor({
         confirmText={t("common.discardChanges")}
         cancelText={t("common.cancel")}
         variant="danger"
-      />
+      />}
     </>
   );
 }
