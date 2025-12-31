@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
 import Link from "next/link";
-import { Button, Card, Breadcrumbs } from "@/components/ui";
+import { Button, Card, Breadcrumbs, TimeInput } from "@/components/ui";
 import { FormSkeleton, PageHeaderSkeleton } from "@/components/ui/skeletons";
 import { formatPrice, dollarsToCents } from "@/utils/price";
 import { useUserStore } from "@/stores/useUserStore";
@@ -944,25 +944,29 @@ export default function CreateCourtPage({
         </p>
 
         <div className="im-create-court-row im-create-court-row--two">
-          <div className="im-create-court-field">
-            <label className="im-create-court-label">{t("admin.courts.new.scheduleStep.openTime")}</label>
-            <input
-              type="time"
-              {...register("courtOpenTime")}
-              className="im-create-court-input"
-              disabled={isSubmitting}
-            />
-          </div>
+          <Controller
+            name="courtOpenTime"
+            control={control}
+            render={({ field }) => (
+              <TimeInput
+                label={t("admin.courts.new.scheduleStep.openTime")}
+                disabled={isSubmitting}
+                {...field}
+              />
+            )}
+          />
 
-          <div className="im-create-court-field">
-            <label className="im-create-court-label">{t("admin.courts.new.scheduleStep.closeTime")}</label>
-            <input
-              type="time"
-              {...register("courtCloseTime")}
-              className="im-create-court-input"
-              disabled={isSubmitting}
-            />
-          </div>
+          <Controller
+            name="courtCloseTime"
+            control={control}
+            render={({ field }) => (
+              <TimeInput
+                label={t("admin.courts.new.scheduleStep.closeTime")}
+                disabled={isSubmitting}
+                {...field}
+              />
+            )}
+          />
         </div>
 
         {timeError && (

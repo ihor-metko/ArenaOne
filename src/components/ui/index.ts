@@ -67,6 +67,7 @@ export type { EntityBannerProps } from "./EntityBanner";
 export { EntityLogo } from "./EntityLogo";
 export type { EntityLogoProps, EntityLogoMetadata } from "./EntityLogo";
 export { DateInput } from "./DateInput";
+export { TimeInput } from "./TimeInput";
 export { CustomCalendar } from "./CustomCalendar";
 export { Portal } from "./Portal";
 export { ImageUpload } from "./ImageUpload";

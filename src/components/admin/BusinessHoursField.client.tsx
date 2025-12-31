@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { Checkbox } from "@/components/ui";
+import { Checkbox, TimeInput } from "@/components/ui";
 import type { BusinessHour } from "@/types/admin";
 import { DAY_NAMES } from "@/constants/workingHours";
 import "./BusinessHoursField.css";
@@ -55,20 +55,16 @@ export function BusinessHoursField({ value, onChange, disabled }: BusinessHoursF
                 <span className="im-business-hours-closed-text">Closed</span>
               ) : (
                 <>
-                  <input
-                    type="time"
+                  <TimeInput
                     value={hour.openTime || ""}
                     onChange={(e) => handleTimeChange(hour.dayOfWeek, "openTime", e.target.value)}
-                    className="im-business-hours-input"
                     disabled={disabled}
                     aria-label={`${DAY_NAMES[hour.dayOfWeek]} opening time`}
                   />
                   <span className="im-business-hours-separator">to</span>
-                  <input
-                    type="time"
+                  <TimeInput
                     value={hour.closeTime || ""}
                     onChange={(e) => handleTimeChange(hour.dayOfWeek, "closeTime", e.target.value)}
-                    className="im-business-hours-input"
                     disabled={disabled}
                     aria-label={`${DAY_NAMES[hour.dayOfWeek]} closing time`}
                   />

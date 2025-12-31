@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, TimeInput } from "@/components/ui";
 import "./SpecialHoursField.css";
 
 export interface SpecialHour {
@@ -86,19 +86,15 @@ export function SpecialHoursField({ value, onChange, disabled }: SpecialHoursFie
                   <span className="im-special-hours-closed-text">Closed</span>
                 ) : (
                   <>
-                    <input
-                      type="time"
+                    <TimeInput
                       value={hour.openTime || ""}
                       onChange={(e) => handleChange(index, "openTime", e.target.value)}
-                      className="im-special-hours-input"
                       disabled={disabled}
                     />
                     <span className="im-special-hours-separator">to</span>
-                    <input
-                      type="time"
+                    <TimeInput
                       value={hour.closeTime || ""}
                       onChange={(e) => handleChange(index, "closeTime", e.target.value)}
-                      className="im-special-hours-input"
                       disabled={disabled}
                     />
                   </>
