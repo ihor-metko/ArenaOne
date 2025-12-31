@@ -1,10 +1,7 @@
 "use client";
 
-import { Card, RadioGroup, Select } from "@/components/ui";
-import { UploadField } from "../UploadField.client";
+import { Card } from "@/components/ui";
 import { useTranslations } from "next-intl";
-import type { SelectOption } from "@/components/ui/Select";
-import type { RadioOption } from "@/components/ui/RadioGroup";
 import "./LogoStep.css";
 
 interface UploadedFile {
@@ -33,39 +30,6 @@ interface LogoStepProps {
 
 export function LogoStep({ formData, fieldErrors, isSubmitting, onChange, translationNamespace = "organizations.stepper" }: LogoStepProps) {
   const t = useTranslations(translationNamespace);
-  const data = formData as LogoFormData;
-  const handleChange = onChange as (field: string, value: UploadedFile | null | boolean | string) => void;
-
-  const logoCountOptions: RadioOption[] = [
-    { 
-      value: 'one', 
-      label: t("logoCountOne"),
-      description: t("logoCountOneDescription")
-    },
-    { 
-      value: 'two', 
-      label: t("logoCountTwo"),
-      description: t("logoCountTwoDescription")
-    },
-  ];
-
-  const themeOptions: SelectOption[] = [
-    { value: 'light', label: t("logoThemeLight") },
-    { value: 'dark', label: t("logoThemeDark") },
-  ];
-
-  const backgroundOptions: RadioOption[] = [
-    { 
-      value: 'light', 
-      label: t("logoBackgroundLight"),
-      description: t("logoBackgroundLightDescription")
-    },
-    { 
-      value: 'dark', 
-      label: t("logoBackgroundDark"),
-      description: t("logoBackgroundDarkDescription")
-    },
-  ];
 
   return (
     <Card className="im-stepper-section">
@@ -74,112 +38,13 @@ export function LogoStep({ formData, fieldErrors, isSubmitting, onChange, transl
         {t("logoDescription")}
       </p>
       <div className="im-step-content">
-        {/* Logo Count Selection */}
         <div className="im-stepper-row">
           <div className="im-stepper-field im-stepper-field--full">
-            <RadioGroup
-              label={t("logoCountLabel")}
-              name="logoCount"
-              options={logoCountOptions}
-              value={data.logoCount}
-              onChange={(value) => handleChange('logoCount', value as 'one' | 'two')}
-              disabled={isSubmitting}
-            />
-          </div>
-        </div>
-
-        {/* Primary Logo Upload */}
-        <div className="im-stepper-row">
-          <div className="im-stepper-field im-stepper-field--full">
-            <UploadField
-              label={data.logoCount === 'one' ? t("primaryLogo") : t("firstLogo")}
-              value={data.logo}
-              onChange={(file) => handleChange('logo', file)}
-              aspectRatio="square"
-              helperText={t("primaryLogoHelperText")}
-              disabled={isSubmitting}
-              allowSVG={true}
-              themeBackground={data.logoTheme}
-            />
-            {fieldErrors.logo && (
-              <span className="im-stepper-field-error">{fieldErrors.logo}</span>
-            )}
-          </div>
-        </div>
-
-        {/* Logo Background Selection - for display in banners and cards */}
-        <div className="im-stepper-row">
-          <div className="im-stepper-field im-stepper-field--full">
-            <RadioGroup
-              label={t("logoBackgroundLabel")}
-              name="logoBackground"
-              options={backgroundOptions}
-              value={data.logoBackground}
-              onChange={(value) => handleChange('logoBackground', value as 'light' | 'dark')}
-              disabled={isSubmitting}
-            />
-            <p className="im-upload-field-helper im-logo-helper-spacing">
-              {t("logoBackgroundHelperText")}
+            <p className="im-upload-field-helper">
+              Logo upload and management will be available in a future update.
             </p>
           </div>
         </div>
-
-        {/* Theme Selection for Primary Logo - Only show for dual logos */}
-        {data.logoCount === 'two' && (
-          <div className="im-stepper-row">
-            <div className="im-stepper-field">
-              <Select
-                label={t("firstLogoThemeLabel")}
-                options={themeOptions}
-                value={data.logoTheme}
-                onChange={(value) => handleChange('logoTheme', value)}
-                disabled={isSubmitting}
-              />
-              <p className="im-upload-field-helper im-logo-helper-spacing">
-                {t("logoThemeHelperText")}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Second Logo Upload (conditional) */}
-        {data.logoCount === 'two' && (
-          <>
-            <div className="im-stepper-row">
-              <div className="im-stepper-field im-stepper-field--full">
-                <UploadField
-                  label={t("secondLogo")}
-                  value={data.secondLogo}
-                  onChange={(file) => handleChange('secondLogo', file)}
-                  aspectRatio="square"
-                  helperText={t("secondLogoHelperText")}
-                  disabled={isSubmitting}
-                  allowSVG={true}
-                  themeBackground={data.secondLogoTheme}
-                />
-                {fieldErrors.secondLogo && (
-                  <span className="im-stepper-field-error">{fieldErrors.secondLogo}</span>
-                )}
-              </div>
-            </div>
-
-            {/* Theme Selection for Second Logo */}
-            <div className="im-stepper-row">
-              <div className="im-stepper-field">
-                <Select
-                  label={t("secondLogoThemeLabel")}
-                  options={themeOptions}
-                  value={data.secondLogoTheme}
-                  onChange={(value) => handleChange('secondLogoTheme', value)}
-                  disabled={isSubmitting}
-                />
-                <p className="im-upload-field-helper im-logo-helper-spacing">
-                  {t("logoThemeHelperText")}
-                </p>
-              </div>
-            </div>
-          </>
-        )}
       </div>
     </Card>
   );
