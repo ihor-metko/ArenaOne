@@ -20,6 +20,11 @@ import "./DashboardGraphs.css";
 
 export interface DashboardGraphsProps {
   /**
+   * Initial graph data (passed from parent to avoid redundant API call on mount).
+   * This should contain the default week view data.
+   */
+  initialData?: DashboardGraphsResponse;
+  /**
    * External loading state (optional).
    * Use this when you want to control loading from a parent component.
    * If not provided, the component manages its own loading state.
@@ -73,22 +78,32 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
  * DashboardGraphs Component
  *
  * Displays booking trends and active users graphs for admin dashboards.
- * - Fetches data from /api/admin/dashboard/graphs
+ * - Receives initial data from parent component (week view by default)
+ * - Only fetches from API when user switches time range
  * - Adapts data scope based on admin role (Root, Organization, Club)
  * - Supports week and month time ranges
  * - Uses dark theme with im-* classes
  * - Responsive and accessible
  */
 export default function DashboardGraphs({
+  initialData,
   loading: externalLoading,
   error: externalError,
   minPointsToRender = DEFAULT_MIN_POINTS_TO_RENDER,
 }: DashboardGraphsProps) {
   const t = useTranslations();
-  const [data, setData] = useState<DashboardGraphsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<DashboardGraphsResponse | null>(initialData || null);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState("");
   const [timeRange, setTimeRange] = useState<TimeRange>("week");
+
+  // Set initial data when it becomes available
+  useEffect(() => {
+    if (initialData && !data) {
+      setData(initialData);
+      setLoading(false);
+    }
+  }, [initialData, data]);
 
   const fetchGraphData = useCallback(async (range: TimeRange) => {
     try {
@@ -111,12 +126,12 @@ export default function DashboardGraphs({
     }
   }, [t]);
 
-  useEffect(() => {
-    fetchGraphData(timeRange);
-  }, [timeRange, fetchGraphData]);
-
   const handleTimeRangeChange = (range: TimeRange) => {
-    setTimeRange(range);
+    // Only fetch if switching to a different range
+    if (range !== timeRange) {
+      setTimeRange(range);
+      fetchGraphData(range);
+    }
   };
 
   // Use external loading/error states if provided
