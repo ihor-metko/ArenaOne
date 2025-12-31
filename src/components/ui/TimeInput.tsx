@@ -5,6 +5,12 @@ import { Portal } from "./Portal";
 import { useDropdownPosition } from "@/hooks/useDropdownPosition";
 import "./TimeInput.css";
 
+// Constants
+const DEFAULT_HOURS = "09";
+const DEFAULT_MINUTES = "00";
+const COMPLETE_TIME_FORMAT_LENGTH = 5; // HH:MM
+const DROPDOWN_CLOSE_DEBOUNCE_MS = 100;
+
 interface TimeInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'> {
   /** Label for the input */
   label?: string;
@@ -69,7 +75,7 @@ export function TimeInput({
   // Parse time value to hours and minutes
   const parseTime = (timeStr: string): { hours: string; minutes: string } => {
     if (!timeStr || !timeStr.includes(":")) {
-      return { hours: "09", minutes: "00" };
+      return { hours: DEFAULT_HOURS, minutes: DEFAULT_MINUTES };
     }
     const [hours, minutes] = timeStr.split(":");
     return {
@@ -120,7 +126,7 @@ export function TimeInput({
     setInputValue(newValue);
     
     // Validate on blur or when complete
-    if (newValue.length >= 5) {
+    if (newValue.length >= COMPLETE_TIME_FORMAT_LENGTH) {
       const formatted = validateAndFormatTime(newValue);
       if (formatted !== null) {
         setInputValue(formatted);
@@ -166,7 +172,7 @@ export function TimeInput({
     setIsOpen(false);
     setTimeout(() => {
       justClosedRef.current = false;
-    }, 100);
+    }, DROPDOWN_CLOSE_DEBOUNCE_MS);
     inputRef.current?.focus();
   };
 
@@ -291,6 +297,16 @@ interface TimePickerDropdownProps {
   onSelect: (hours: string, minutes: string) => void;
 }
 
+// Helper function to scroll selected option into view
+function scrollToSelectedOption(ref: React.RefObject<HTMLDivElement>) {
+  if (ref.current) {
+    const selectedElement = ref.current.querySelector('.im-time-option-selected') as HTMLElement;
+    if (selectedElement) {
+      selectedElement.scrollIntoView({ block: 'center' });
+    }
+  }
+}
+
 function TimePickerDropdown({ currentHours, currentMinutes, onSelect }: TimePickerDropdownProps) {
   const [selectedHours, setSelectedHours] = useState(currentHours);
   const [selectedMinutes, setSelectedMinutes] = useState(currentMinutes);
@@ -303,18 +319,8 @@ function TimePickerDropdown({ currentHours, currentMinutes, onSelect }: TimePick
 
   // Scroll to selected values on mount
   useEffect(() => {
-    if (hoursRef.current) {
-      const selectedElement = hoursRef.current.querySelector('.im-time-option-selected') as HTMLElement;
-      if (selectedElement) {
-        selectedElement.scrollIntoView({ block: 'center' });
-      }
-    }
-    if (minutesRef.current) {
-      const selectedElement = minutesRef.current.querySelector('.im-time-option-selected') as HTMLElement;
-      if (selectedElement) {
-        selectedElement.scrollIntoView({ block: 'center' });
-      }
-    }
+    scrollToSelectedOption(hoursRef);
+    scrollToSelectedOption(minutesRef);
   }, []);
 
   const handleHourClick = (hour: string) => {
