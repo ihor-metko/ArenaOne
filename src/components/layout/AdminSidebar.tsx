@@ -531,10 +531,20 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
 
   const isRoot = user?.isRoot ?? false;
 
-  // Get organization data from store for organization admins
-  const fetchOrganizationById = useOrganizationStore(state => state.fetchOrganizationById);
-  const currentOrg = useOrganizationStore(state => state.currentOrg);
+  // Get organization summary data from store for organization admins (lightweight, layout-only)
+  const ensureOrganizationSummary = useOrganizationStore(state => state.ensureOrganizationSummary);
+  const getOrganizationSummaryById = useOrganizationStore(state => state.getOrganizationSummaryById);
   const orgLoading = useOrganizationStore(state => state.loading);
+
+  // Check if user is a club admin or organization admin
+  const isClubAdmin = adminStatus?.adminType === "club_admin";
+  const isOrgAdmin = adminStatus?.adminType === "organization_admin";
+
+  // Get organization summary for current org admin
+  const orgId = isOrgAdmin && adminStatus?.managedIds && adminStatus.managedIds.length > 0
+    ? adminStatus.managedIds[0]
+    : undefined;
+  const orgSummary = orgId ? getOrganizationSummaryById(orgId) : undefined;
 
   // Load collapsed state from localStorage on mount
   useEffect(() => {
@@ -563,27 +573,22 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
   // Admin status is now loaded from the store via UserStoreInitializer
   // No need to fetch it separately here
 
-  // Check if user is a club admin or organization admin
-  const isClubAdmin = adminStatus?.adminType === "club_admin";
-  const isOrgAdmin = adminStatus?.adminType === "organization_admin";
 
-  // Fetch organization data for organization admins
+  // Fetch organization summary for organization admins (lightweight, layout-only)
   // Note: Currently assumes organization admins manage only one organization
   // by taking the first ID from managedIds. For multiple organizations,
   // this could be enhanced to show a dropdown or aggregate information.
   useEffect(() => {
     if (isOrgAdmin && adminStatus?.managedIds && adminStatus.managedIds.length > 0) {
       const orgId = adminStatus.managedIds[0];
-      // Only fetch if we don't have the org data yet
-      if (!currentOrg || currentOrg.id !== orgId) {
-        fetchOrganizationById(orgId).catch((error) => {
-          console.error(`Failed to fetch organization ${orgId}:`, error);
-          // Note: On error, the contextName will fall back to "Admin Panel"
-          // which provides a graceful degradation for the user
-        });
-      }
+      // ensureOrganizationSummary already implements fetch-if-missing with caching
+      ensureOrganizationSummary(orgId).catch((error) => {
+        console.error(`Failed to fetch organization summary ${orgId}:`, error);
+        // Note: On error, the contextName will fall back to "Admin Panel"
+        // which provides a graceful degradation for the user
+      });
     }
-  }, [isOrgAdmin, adminStatus, currentOrg, fetchOrganizationById]);
+  }, [isOrgAdmin, adminStatus, ensureOrganizationSummary]);
 
   // Get filtered navigation items based on isRoot status and admin type
   const navItems = useMemo(() => {
@@ -600,7 +605,7 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
         href: `/admin/organizations/${orgId}`,
         labelKey: "sidebar.organization",
         // Display organization name when available; when undefined, getLabel falls back to labelKey translation
-        dynamicLabel: currentOrg?.name,
+        dynamicLabel: orgSummary?.name,
         icon: <OrganizationsIcon />,
       };
 
@@ -692,7 +697,7 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
     }
 
     return filteredItems;
-  }, [isRoot, isClubAdmin, isOrgAdmin, adminStatus?.assignedClub, adminStatus?.managedIds, adminStatus?.isPrimaryOwner, currentOrg?.name]);
+  }, [isRoot, isClubAdmin, isOrgAdmin, adminStatus?.assignedClub, adminStatus?.managedIds, adminStatus?.isPrimaryOwner, orgSummary?.name]);
 
   // Close sidebar when clicking outside on mobile
   const handleClickOutside = useCallback(
@@ -777,11 +782,11 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
 
     // For Organization Admin, show organization name or loading state
     if (isOrgAdmin) {
-      if (orgLoading && !currentOrg) {
+      if (orgLoading && !orgSummary) {
         return t("sidebar.title"); // Show generic title while loading
       }
-      if (currentOrg?.name) {
-        return currentOrg.name;
+      if (orgSummary?.name) {
+        return orgSummary.name;
       }
       // If we have an org ID but no name yet, show generic title
       return t("sidebar.title");
@@ -794,7 +799,7 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
 
     // Fallback to generic title
     return t("sidebar.title");
-  }, [isRoot, isOrgAdmin, isClubAdmin, currentOrg, orgLoading, adminStatus, t]);
+  }, [isRoot, isOrgAdmin, isClubAdmin, orgSummary, orgLoading, adminStatus, t]);
 
   // Don't render while loading user data
   if (isLoading) {

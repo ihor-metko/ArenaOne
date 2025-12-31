@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type {
   Organization,
+  OrganizationSummary,
   CreateOrganizationPayload,
   UpdateOrganizationPayload,
 } from "@/types/organization";
@@ -80,6 +81,7 @@ interface OrganizationState {
   // State
   organizations: Organization[];
   organizationsById: Record<string, OrganizationDetail>;
+  organizationSummariesById: Record<string, OrganizationSummary>;
   currentOrg: Organization | null;
   loading: boolean;
   error: string | null;
@@ -87,6 +89,7 @@ interface OrganizationState {
 
   // Internal inflight guards (prevent duplicate concurrent requests)
   _inflightFetchById: Record<string, Promise<OrganizationDetail>>;
+  _inflightFetchSummaryById: Record<string, Promise<OrganizationSummary>>;
 
   // Actions
   setOrganizations: (orgs: Organization[]) => void;
@@ -96,6 +99,8 @@ interface OrganizationState {
   fetchOrganizations: (force?: boolean) => Promise<void>;
   fetchOrganizationById: (id: string) => Promise<void>;
   ensureOrganizationById: (id: string, options?: { force?: boolean }) => Promise<OrganizationDetail>;
+  fetchOrganizationSummary: (id: string) => Promise<OrganizationSummary>;
+  ensureOrganizationSummary: (id: string, options?: { force?: boolean }) => Promise<OrganizationSummary>;
   createOrganization: (payload: CreateOrganizationPayload) => Promise<Organization>;
   updateOrganization: (id: string, payload: UpdateOrganizationPayload) => Promise<Organization>;
   deleteOrganization: (id: string, confirmOrgSlug?: string) => Promise<void>;
@@ -109,6 +114,7 @@ interface OrganizationState {
   // Selectors
   getOrganizationById: (id: string) => Organization | undefined;
   getOrganizationDetailById: (id: string) => OrganizationDetail | undefined;
+  getOrganizationSummaryById: (id: string) => OrganizationSummary | undefined;
   isOrgSelected: (id: string) => boolean;
   getOrganizationsWithAutoFetch: () => Organization[];
 }
@@ -127,11 +133,13 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
   // Initial state
   organizations: [],
   organizationsById: {},
+  organizationSummariesById: {},
   currentOrg: null,
   loading: false,
   error: null,
   hasFetched: false,
   _inflightFetchById: {},
+  _inflightFetchSummaryById: {},
 
   // State setters
   setOrganizations: (orgs) => set({ organizations: orgs }),
@@ -406,6 +414,110 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
     }
   },
 
+  // Fetch organization summary by ID (lightweight, for layout usage)
+  fetchOrganizationSummary: async (id: string) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await fetch(`/api/admin/organizations/${id}/summary`);
+      
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: "Failed to fetch organization summary" }));
+        throw new Error(data.error || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Update organizationSummariesById cache
+      set((state) => ({
+        organizationSummariesById: {
+          ...state.organizationSummariesById,
+          [id]: data,
+        },
+        loading: false,
+      }));
+
+      return data;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch organization summary";
+      set({ error: errorMessage, loading: false });
+      throw error;
+    }
+  },
+
+  // Ensure organization summary is loaded by ID with fetch-if-missing pattern
+  // This method prevents duplicate fetches and returns cached data when available
+  ensureOrganizationSummary: async (id: string, options?: { force?: boolean }) => {
+    const state = get();
+    
+    // Return cached data if available and not forcing refresh
+    if (!options?.force && state.organizationSummariesById[id]) {
+      return state.organizationSummariesById[id];
+    }
+    
+    // If there's already an inflight request for this ID, return it
+    const inflightRequest = state._inflightFetchSummaryById[id];
+    if (inflightRequest) {
+      return inflightRequest;
+    }
+
+    // Create new fetch promise
+    const fetchPromise = (async () => {
+      try {
+        set({ loading: true, error: null });
+        
+        const response = await fetch(`/api/admin/organizations/${id}/summary`);
+        
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({ error: "Failed to fetch organization summary" }));
+          throw new Error(data.error || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // Update cache and clear inflight
+        set((state) => {
+          const newInflight = { ...state._inflightFetchSummaryById };
+          delete newInflight[id];
+          return {
+            organizationSummariesById: {
+              ...state.organizationSummariesById,
+              [id]: data,
+            },
+            loading: false,
+            _inflightFetchSummaryById: newInflight,
+          };
+        });
+        
+        return data;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to fetch organization summary";
+        
+        // Clear inflight and set error
+        set((state) => {
+          const newInflight = { ...state._inflightFetchSummaryById };
+          delete newInflight[id];
+          return {
+            error: errorMessage,
+            loading: false,
+            _inflightFetchSummaryById: newInflight,
+          };
+        });
+        
+        throw error;
+      }
+    })();
+
+    // Store inflight promise
+    set((state) => ({
+      _inflightFetchSummaryById: {
+        ...state._inflightFetchSummaryById,
+        [id]: fetchPromise,
+      },
+    }));
+
+    return fetchPromise;
+  },
+
   // Force refetch organizations (clears cache and fetches fresh data)
   refetch: async () => {
     const { fetchOrganizations } = get();
@@ -489,6 +601,11 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
   // Selector: Get organization detail by ID from the organizationsById cache
   getOrganizationDetailById: (id: string) => {
     return get().organizationsById[id];
+  },
+
+  // Selector: Get organization summary by ID from the organizationSummariesById cache
+  getOrganizationSummaryById: (id: string) => {
+    return get().organizationSummariesById[id];
   },
 
   // Selector: Check if an organization is currently selected

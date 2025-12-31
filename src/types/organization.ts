@@ -25,6 +25,16 @@ export interface BannerData {
 }
 
 /**
+ * Lightweight organization summary for layout usage
+ * Only contains essential fields needed for sidebar, header, breadcrumbs
+ */
+export interface OrganizationSummary {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/**
  * Organization entity
  */
 export interface Organization {
