@@ -127,11 +127,36 @@ export async function POST(
         },
       });
     } else {
-      // For logo and heroImage, update the direct columns
+      // For logo and heroImage, update the logoData and bannerData fields with full JSON objects
+      const fieldName = imageType === "logo" ? "logoData" : "bannerData";
+      
+      // Get existing data to preserve any metadata
+      const club = await prisma.club.findUnique({
+        where: { id: clubId },
+        select: { logoData: true, bannerData: true },
+      });
+
+      let existingData: Record<string, unknown> = {};
+      const existingField = club?.[fieldName as keyof typeof club];
+      if (existingField) {
+        try {
+          existingData = JSON.parse(existingField);
+        } catch {
+          // Invalid JSON in database - start fresh
+          // This is intentional to handle corrupted data gracefully
+          existingData = {};
+        }
+      }
+
+      const imageData = {
+        ...existingData,
+        url,
+      };
+
       await prisma.club.update({
         where: { id: clubId },
         data: {
-          [imageType]: url,
+          [fieldName]: JSON.stringify(imageData),
         },
       });
     }
