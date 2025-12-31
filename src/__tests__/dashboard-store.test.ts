@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { useDashboardStore } from "@/stores/useDashboardStore";
 import type { UnifiedDashboardResponse } from "@/app/api/admin/dashboard/route";
 
@@ -222,11 +222,7 @@ describe("useDashboardStore", () => {
     const { result } = renderHook(() => useDashboardStore());
 
     await act(async () => {
-      try {
-        await result.current.fetchDashboardOnce();
-      } catch (error) {
-        // Should not throw, returns null
-      }
+      await result.current.fetchDashboardOnce();
     });
 
     // Error should not be set for aborted requests
