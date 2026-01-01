@@ -57,11 +57,11 @@ export default function AdminClubDetailPage({
     isClubLoading,
     bookingsLoading,
     error: dataError,
-    refetchClub,
   } = useClubPageData(clubId, { loadAdmins: false });
 
   // Store actions for mutations
   const deleteClub = useAdminClubStore((state) => state.deleteClub);
+  const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
 
   // UI-only state
   const [error, setError] = useState("");
@@ -160,7 +160,12 @@ export default function AdminClubDetailPage({
         throw new Error(data.error || "Failed to update club");
       }
 
-      await refetchClub();
+      // Get updated club data from response
+      const updatedClub = await response.json();
+
+      // Update store reactively - no page reload needed
+      updateClubInStore(clubId, updatedClub);
+
       setIsPublishModalOpen(false);
       showToast("success", club.isPublic ? t("clubDetail.clubUnpublishedSuccess") : t("clubDetail.clubPublishedSuccess"));
     } catch (err) {
@@ -595,7 +600,6 @@ export default function AdminClubDetailPage({
           isOpen={isEditingDetails}
           onClose={() => setIsEditingDetails(false)}
           club={club}
-          onRefresh={refetchClub}
         />
       )}
     </main>

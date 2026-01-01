@@ -7,6 +7,7 @@ import {
   getUploadedImageUrl,
 } from "@/lib/fileUpload";
 import { prisma } from "@/lib/prisma";
+import { fetchFormattedClub } from "@/lib/clubHelpers";
 
 /**
  * POST /api/images/clubs/:id/upload
@@ -18,7 +19,7 @@ import { prisma } from "@/lib/prisma";
  * @body file - The image file to upload
  * @body type - Image type: "logo" or "heroImage"
  *
- * @returns JSON with the uploaded image URL
+ * @returns JSON with the full updated club object
  */
 export async function POST(
   request: NextRequest,
@@ -163,12 +164,13 @@ export async function POST(
 
     console.log(`[Club Upload] Database updated successfully for club ${clubId}, ${imageType}: ${url}`);
 
-    return NextResponse.json({
-      success: true,
-      url,
-      filename,
-      type: imageType,
-    });
+    // Fetch and return the updated club object
+    const updatedClub = await fetchFormattedClub(clubId);
+    if (!updatedClub) {
+      return NextResponse.json({ error: "Club not found after update" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedClub);
   } catch (error) {
     // Log detailed error information for debugging
     console.error(`[Club Upload] Error uploading image for club ${clubId}:`, {

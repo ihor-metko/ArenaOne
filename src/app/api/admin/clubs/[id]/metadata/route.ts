@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import { canAccessClub } from "@/lib/permissions/clubAccess";
+import { fetchFormattedClub } from "@/lib/clubHelpers";
 
 /**
  * PATCH /api/admin/clubs/[id]/metadata
@@ -58,7 +59,13 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json({ success: true });
+    // Fetch and return the updated club object
+    const updatedClub = await fetchFormattedClub(clubId);
+    if (!updatedClub) {
+      return NextResponse.json({ error: "Club not found after update" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedClub);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error updating club metadata:", error);

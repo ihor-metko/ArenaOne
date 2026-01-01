@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin, requireRootAdmin } from "@/lib/requireRole";
 import { canAccessClub } from "@/lib/permissions/clubAccess";
+import { fetchFormattedClub } from "@/lib/clubHelpers";
 
 export async function GET(
   request: Request,
@@ -28,50 +29,11 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      include: {
-        organization: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        courts: {
-          orderBy: { name: "asc" },
-        },
-        coaches: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-              },
-            },
-          },
-        },
-        gallery: {
-          orderBy: { sortOrder: "asc" },
-        },
-        businessHours: {
-          orderBy: { dayOfWeek: "asc" },
-        },
-      },
-    });
+    const formattedClub = await fetchFormattedClub(clubId);
 
-    if (!club) {
+    if (!formattedClub) {
       return NextResponse.json({ error: "Club not found" }, { status: 404 });
     }
-
-    // Parse JSON fields
-    const formattedClub = {
-      ...club,
-      logoData: club.logoData ? JSON.parse(club.logoData) : null,
-      bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
-    };
 
     return NextResponse.json(formattedClub);
   } catch (error) {
@@ -163,7 +125,13 @@ export async function PATCH(
       data: updateData,
     });
 
-    return NextResponse.json({ success: true });
+    // Fetch and return the updated club object
+    const updatedClub = await fetchFormattedClub(clubId);
+    if (!updatedClub) {
+      return NextResponse.json({ error: "Club not found after update" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedClub);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error updating club:", error);
