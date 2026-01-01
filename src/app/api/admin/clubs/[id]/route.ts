@@ -59,9 +59,6 @@ export async function GET(
         businessHours: {
           orderBy: { dayOfWeek: "asc" },
         },
-        specialHours: {
-          orderBy: { date: "asc" },
-        },
       },
     });
 

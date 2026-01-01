@@ -114,19 +114,6 @@ describe("Admin Club Detail API - GET", () => {
         updatedAt: new Date().toISOString(),
       },
     ],
-    specialHours: [
-      {
-        id: "special-1",
-        clubId: "club-123",
-        date: "2024-12-25",
-        openTime: null,
-        closeTime: null,
-        isClosed: true,
-        reason: "Christmas",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ],
   };
 
   describe("GET /api/admin/clubs/[id]", () => {
@@ -211,7 +198,6 @@ describe("Admin Club Detail API - GET", () => {
       expect(data.coaches).toHaveLength(1);
       expect(data.gallery).toHaveLength(1);
       expect(data.businessHours).toHaveLength(1);
-      expect(data.specialHours).toHaveLength(1);
 
       // Verify Prisma was called with correct include options
       expect(prisma.club.findUnique).toHaveBeenCalledWith({
@@ -232,7 +218,6 @@ describe("Admin Club Detail API - GET", () => {
           },
           gallery: { orderBy: { sortOrder: "asc" } },
           businessHours: { orderBy: { dayOfWeek: "asc" } },
-          specialHours: { orderBy: { date: "asc" } },
           organization: {
             select: {
               id: true,

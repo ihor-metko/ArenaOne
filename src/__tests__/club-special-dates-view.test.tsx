@@ -6,13 +6,54 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { ClubSpecialDatesView } from "@/components/admin/club/ClubSpecialDatesView";
-import type { ClubDetail } from "@/types/club";
+import type { ClubDetail, ClubSpecialHours } from "@/types/club";
 
-// Mock useAdminClubStore
-const mockUpdateClubInStore = jest.fn();
-jest.mock("@/stores/useAdminClubStore", () => ({
-  useAdminClubStore: (selector: (state: { updateClubInStore: typeof mockUpdateClubInStore }) => unknown) => {
-    return selector({ updateClubInStore: mockUpdateClubInStore });
+// Mock useClubSpecialDatesStore
+const mockSpecialDates: ClubSpecialHours[] = [
+  {
+    id: "special-1",
+    clubId: "club-1",
+    date: "2024-12-25T00:00:00.000Z",
+    openTime: null,
+    closeTime: null,
+    isClosed: true,
+    reason: "Christmas",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+  {
+    id: "special-2",
+    clubId: "club-1",
+    date: "2024-02-14T00:00:00.000Z",
+    openTime: "10:00",
+    closeTime: "18:00",
+    isClosed: false,
+    reason: "Valentine's Day",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-01T00:00:00.000Z",
+  },
+];
+
+const mockFetchSpecialDates = jest.fn();
+const mockAddSpecialDate = jest.fn();
+const mockUpdateSpecialDate = jest.fn();
+const mockRemoveSpecialDate = jest.fn();
+
+jest.mock("@/stores/useClubSpecialDatesStore", () => ({
+  useClubSpecialDatesStore: (selector: (state: {
+    specialDates: ClubSpecialHours[];
+    fetchSpecialDates: typeof mockFetchSpecialDates;
+    addSpecialDate: typeof mockAddSpecialDate;
+    updateSpecialDate: typeof mockUpdateSpecialDate;
+    removeSpecialDate: typeof mockRemoveSpecialDate;
+  }) => unknown) => {
+    return selector({
+      specialDates: mockSpecialDates,
+      fetchSpecialDates: mockFetchSpecialDates,
+      addSpecialDate: mockAddSpecialDate,
+      updateSpecialDate: mockUpdateSpecialDate,
+      removeSpecialDate: mockRemoveSpecialDate,
+    });
   },
 }));
 
@@ -124,43 +165,19 @@ const mockClub: ClubDetail = {
   coaches: [],
   gallery: [],
   businessHours: [],
-  specialHours: [
-    {
-      id: "special-1",
-      clubId: "club-1",
-      date: "2024-12-25T00:00:00.000Z",
-      openTime: null,
-      closeTime: null,
-      isClosed: true,
-      reason: "Christmas",
-      createdAt: "2024-01-01T00:00:00.000Z",
-      updatedAt: "2024-01-01T00:00:00.000Z",
-    },
-    {
-      id: "special-2",
-      clubId: "club-1",
-      date: "2024-02-14T00:00:00.000Z",
-      openTime: "10:00",
-      closeTime: "18:00",
-      isClosed: false,
-      reason: "Valentine's Day",
-      createdAt: "2024-01-01T00:00:00.000Z",
-      updatedAt: "2024-01-01T00:00:00.000Z",
-    },
-  ],
 };
 
 describe("ClubSpecialDatesView", () => {
   beforeEach(() => {
-    // Mock fetch globally
-    global.fetch = jest.fn();
+    jest.clearAllMocks();
+    mockFetchSpecialDates.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
     jest.resetAllMocks();
   });
 
-  it("should render special dates list", () => {
+  it("should render special dates list from store", () => {
     render(
       <ClubSpecialDatesView
         club={mockClub}
@@ -176,16 +193,14 @@ describe("ClubSpecialDatesView", () => {
     expect(screen.getByText("(Valentine's Day)")).toBeInTheDocument();
   });
 
-  it("should show empty state when no special dates", () => {
-    const clubWithNoSpecialDates = { ...mockClub, specialHours: [] };
-    
+  it("should fetch special dates on mount", () => {
     render(
       <ClubSpecialDatesView
-        club={clubWithNoSpecialDates}
+        club={mockClub}
       />
     );
 
-    expect(screen.getByText("No special dates set")).toBeInTheDocument();
+    expect(mockFetchSpecialDates).toHaveBeenCalledWith("club-1");
   });
 
   it("should open modal when Edit button is clicked", () => {
@@ -202,13 +217,7 @@ describe("ClubSpecialDatesView", () => {
     expect(screen.getByText("Edit Special Dates")).toBeInTheDocument();
   });
 
-  it("should save changes successfully", async () => {
-    const mockUpdatedClub = { ...mockClub };
-    (global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      json: async () => mockUpdatedClub,
-    });
-    
+  it("should save changes without refetching club detail", async () => {
     render(
       <ClubSpecialDatesView
         club={mockClub}
@@ -219,16 +228,19 @@ describe("ClubSpecialDatesView", () => {
     const editButton = screen.getByRole("button", { name: /edit/i });
     fireEvent.click(editButton);
 
-    // Save changes (with no modifications, no API calls should be made except for refresh)
+    // Save changes (with no modifications, no API calls should be made)
     const saveButton = screen.getByRole("button", { name: /save/i });
     fireEvent.click(saveButton);
 
     await waitFor(() => {
-      // Should only fetch updated club data (no special hours changes)
-      expect(global.fetch).toHaveBeenCalledWith(
-        `/api/admin/clubs/${mockClub.id}`
-      );
+      // Modal should close
+      expect(screen.queryByTestId("modal")).not.toBeInTheDocument();
     });
+
+    // Should NOT call any store actions since nothing changed
+    expect(mockAddSpecialDate).not.toHaveBeenCalled();
+    expect(mockUpdateSpecialDate).not.toHaveBeenCalled();
+    expect(mockRemoveSpecialDate).not.toHaveBeenCalled();
   });
 
   it("should disable Edit button when disabled prop is true", () => {

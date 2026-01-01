@@ -183,7 +183,7 @@ export interface ClubDetail {
   coaches: ClubCoach[];
   gallery: ClubGalleryImage[];
   businessHours: ClubBusinessHours[];
-  specialHours: ClubSpecialHours[];
+  specialHours?: ClubSpecialHours[];
 }
 
 /**
