@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { Button, Card, Modal, IMLink, ImageCarousel, EntityBanner, DangerZone, BookingsPreviewSkeleton } from "@/components/ui";
+import { Button, Card, Modal, IMLink, ImageCarousel, EntityBanner, DangerZone } from "@/components/ui";
 import type { DangerAction } from "@/components/ui";
 import { ClubContactsView } from "@/components/admin/club/ClubContactsView";
 import { ClubHoursView } from "@/components/admin/club/ClubHoursView";
@@ -13,6 +13,7 @@ import { ClubGalleryView } from "@/components/admin/club/ClubGalleryView";
 import AdminManagementSection from "@/components/admin/AdminManagementSection";
 import { ClubEditor } from "@/components/admin/ClubEditor.client";
 import { GalleryModal } from "@/components/GalleryModal";
+import BookingsOverview from "@/components/admin/BookingsOverview";
 import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import { useClubPageData } from "@/hooks/useClubPageData";
 import { useCanEditClub } from "@/hooks/useCanEditClub";
@@ -456,81 +457,14 @@ export default function AdminClubDetailPage({
           )}
         </section>
 
-        {/* Bookings Summary */}
-        {bookingsLoading ? (
-          <BookingsPreviewSkeleton count={5} className="im-admin-club-bookings-section" />
-        ) : bookingsPreview && club && (
-          <section className="im-admin-club-bookings-section">
-            <div className="im-section-card">
-              <div className="im-section-header">
-                <div className="im-section-icon im-section-icon--bookings">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
-                </div>
-                <h2 className="im-section-title">{t("orgDetail.bookingsOverview")}</h2>
-                <div className="im-section-actions">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push(`/admin/bookings?clubId=${club.id}`)}
-                  >
-                    {t("orgDetail.viewAllBookings")}
-                  </Button>
-                </div>
-              </div>
-              <div className="im-bookings-summary">
-                <div className="im-bookings-summary-item">
-                  <span className="im-bookings-summary-value">{bookingsPreview.summary.todayCount}</span>
-                  <span className="im-bookings-summary-label">{t("orgDetail.bookingsToday")}</span>
-                </div>
-                <div className="im-bookings-summary-item">
-                  <span className="im-bookings-summary-value">{bookingsPreview.summary.weekCount}</span>
-                  <span className="im-bookings-summary-label">{t("orgDetail.bookingsThisWeek")}</span>
-                </div>
-                <div className="im-bookings-summary-item">
-                  <span className="im-bookings-summary-value">{bookingsPreview.summary.totalUpcoming}</span>
-                  <span className="im-bookings-summary-label">{t("orgDetail.totalUpcoming")}</span>
-                </div>
-              </div>
-              {bookingsPreview.items.length === 0 ? (
-                <p className="im-preview-empty">{t("orgDetail.noBookings")}</p>
-              ) : (
-                <div className="im-bookings-preview-list">
-                  <h4 className="im-bookings-preview-title">{t("orgDetail.upcomingBookings")}</h4>
-                  {bookingsPreview.items.map((booking) => {
-                    const startDate = new Date(booking.start);
-                    const endDate = new Date(booking.end);
-
-                    return (
-                      <div key={booking.id} className="im-booking-preview-item">
-                        <div className="im-booking-preview-info">
-                          <span className="im-booking-preview-court">{booking.courtName}</span>
-                          <span className="im-booking-preview-meta">
-                            {booking.userName || booking.userEmail} · {booking.sportType}
-                          </span>
-                        </div>
-                        <div className="im-booking-preview-time">
-                          <span className="im-booking-preview-date">
-                            {startDate.toLocaleDateString()}
-                          </span>
-                          <span className="im-booking-preview-hours">
-                            {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <span className={`im-status-badge im-status-badge--${booking.status.toLowerCase()}`}>
-                          {booking.status}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </section>
-        )}
+        {/* Bookings Overview */}
+        <section className="im-admin-club-bookings-section">
+          <BookingsOverview
+            activeBookings={bookingsPreview?.summary.totalUpcoming ?? 0}
+            pastBookings={0}
+            loading={bookingsLoading}
+          />
+        </section>
 
         {/* Danger Zone Section - At the very bottom */}
         <section className="im-admin-club-danger-zone-section">
