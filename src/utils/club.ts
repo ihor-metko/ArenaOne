@@ -40,28 +40,9 @@ interface CourtWithIndoor {
 }
 
 /**
- * Count courts by indoor/outdoor type
- * @param courts - Array of courts with indoor property
- * @returns Object with indoor and outdoor counts
- */
-export function getCourtCounts(courts: CourtWithIndoor[]): { indoor: number; outdoor: number } {
-  return courts.reduce(
-    (acc, court) => {
-      if (court.indoor) {
-        acc.indoor++;
-      } else {
-        acc.outdoor++;
-      }
-      return acc;
-    },
-    { indoor: 0, outdoor: 0 }
-  );
-}
-
-/**
  * Safely construct Google Maps embed URL with validated coordinates
  * @param latitude - Latitude coordinate
- * @param longitude - Longitude coordinate  
+ * @param longitude - Longitude coordinate
  * @param apiKey - Google Maps API key
  * @returns Full embed URL or null if coordinates are invalid
  */
@@ -80,11 +61,11 @@ export function getGoogleMapsEmbedUrl(
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
     return null;
   }
-  
+
   // Use encodeURIComponent for safety and construct URL with validated coordinates
   const lat = encodeURIComponent(latitude.toString());
   const lng = encodeURIComponent(longitude.toString());
   const key = encodeURIComponent(apiKey || "");
-  
+
   return `https://www.google.com/maps/embed/v1/place?key=${key}&q=${lat},${lng}&zoom=15`;
 }

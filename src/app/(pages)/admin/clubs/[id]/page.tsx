@@ -18,7 +18,7 @@ import { useClubPageData } from "@/hooks/useClubPageData";
 import { useCanEditClub } from "@/hooks/useCanEditClub";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { formatPrice } from "@/utils/price";
-import { parseTags, getPriceRange, getCourtCounts } from "@/utils/club";
+import { parseTags, getPriceRange } from "@/utils/club";
 import { parseClubMetadata } from "@/types/club";
 import { useUserStore } from "@/stores/useUserStore";
 import "./page.css";
@@ -261,7 +261,6 @@ export default function AdminClubDetailPage({
   // Prepare derived data
   const clubTags = parseTags(club.tags);
   const priceRange = getPriceRange(club.courts);
-  const courtCounts = getCourtCounts(club.courts);
   const hasValidCoordinates = club.latitude != null && club.longitude != null;
 
   // Format location display
@@ -356,22 +355,6 @@ export default function AdminClubDetailPage({
               <div className="im-section-view-header">
                 <h2 className="im-club-view-section-title">{t("clubDetail.details")}</h2>
               </div>
-
-              {/* Court type badges */}
-              {(courtCounts.indoor > 0 || courtCounts.outdoor > 0) && (
-                <div className="im-admin-club-courts-summary">
-                  {courtCounts.indoor > 0 && (
-                    <span className="im-admin-club-badge im-admin-club-badge-indoor">
-                      <span className="im-admin-club-court-type-count">{courtCounts.indoor}</span> {t("clubs.indoor")}
-                    </span>
-                  )}
-                  {courtCounts.outdoor > 0 && (
-                    <span className="im-admin-club-badge im-admin-club-badge-outdoor">
-                      <span className="im-admin-club-court-type-count">{courtCounts.outdoor}</span> {t("clubs.outdoor")}
-                    </span>
-                  )}
-                </div>
-              )}
 
               {/* Price range */}
               {priceRange && (
