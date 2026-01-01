@@ -397,7 +397,6 @@ export default function AdminClubDetailPage({
             <Card className="im-admin-club-info-card">
               <ClubContactsView
                 club={club}
-                onUpdate={(payload) => handleSectionUpdate("contacts", payload)}
                 disabled={!canEdit}
                 disabledTooltip={editDisabledTooltip}
               />
@@ -407,7 +406,6 @@ export default function AdminClubDetailPage({
             <Card className="im-admin-club-info-card">
               <ClubHoursView
                 club={club}
-                onUpdate={(payload) => handleSectionUpdate("hours", payload)}
                 disabled={!canEdit}
                 disabledTooltip={editDisabledTooltip}
               />
@@ -420,7 +418,6 @@ export default function AdminClubDetailPage({
           <Card className="im-admin-club-info-card">
             <ClubGalleryView
               club={club}
-              onUpdate={(payload) => handleSectionUpdate("gallery", payload)}
               disabled={!canEdit}
               disabledTooltip={editDisabledTooltip}
             />

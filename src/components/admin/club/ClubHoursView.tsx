@@ -12,10 +12,6 @@ import "./ClubHoursView.css";
 
 interface ClubHoursViewProps {
   club: ClubDetail;
-  onUpdate: (payload: {
-    businessHours: BusinessHour[];
-    specialHours: SpecialHour[];
-  }) => Promise<unknown>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
@@ -63,7 +59,7 @@ function formatSpecialHours(special: ClubSpecialHours[]): SpecialHour[] {
   }));
 }
 
-export function ClubHoursView({ club, onUpdate, disabled = false, disabledTooltip }: ClubHoursViewProps) {
+export function ClubHoursView({ club, disabled = false, disabledTooltip }: ClubHoursViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -97,14 +93,41 @@ export function ClubHoursView({ club, onUpdate, disabled = false, disabledToolti
     setIsSaving(true);
     setError("");
     try {
-      await onUpdate({ businessHours, specialHours });
+      // Update business hours via /business-hours endpoint
+      const businessHoursResponse = await fetch(`/api/admin/clubs/${club.id}/business-hours`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessHours: businessHours,
+        }),
+      });
+
+      if (!businessHoursResponse.ok) {
+        const data = await businessHoursResponse.json();
+        throw new Error(data.error || "Failed to update business hours");
+      }
+
+      // Update special hours via /special-hours endpoint
+      const specialHoursResponse = await fetch(`/api/admin/clubs/${club.id}/special-hours`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          specialHours: specialHours,
+        }),
+      });
+
+      if (!specialHoursResponse.ok) {
+        const data = await specialHoursResponse.json();
+        throw new Error(data.error || "Failed to update special hours");
+      }
+
       setIsEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save changes");
     } finally {
       setIsSaving(false);
     }
-  }, [businessHours, specialHours, onUpdate]);
+  }, [businessHours, specialHours, club.id]);
 
   return (
     <>
