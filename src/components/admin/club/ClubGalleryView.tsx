@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { Button, Tooltip } from "@/components/ui";
 import { SectionEditModal } from "./SectionEditModal";
+import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import type { ClubDetail } from "@/types/club";
 import "./ClubGalleryView.css";
@@ -25,6 +26,7 @@ interface ClubGalleryViewProps {
 }
 
 export function ClubGalleryView({ club, onRefresh, disabled = false, disabledTooltip }: ClubGalleryViewProps) {
+  const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -220,10 +222,11 @@ export function ClubGalleryView({ club, onRefresh, disabled = false, disabledToo
         throw new Error(data.error || "Failed to update media");
       }
 
-      // Refresh club data to reflect changes
-      if (onRefresh) {
-        await onRefresh();
-      }
+      // Get updated club data from response
+      const updatedClub = await response.json();
+
+      // Update store reactively - no page reload needed
+      updateClubInStore(club.id, updatedClub);
 
       setIsEditing(false);
     } catch (err) {
@@ -231,7 +234,7 @@ export function ClubGalleryView({ club, onRefresh, disabled = false, disabledToo
     } finally {
       setIsSaving(false);
     }
-  }, [bannerUrl, logoUrl, gallery, club.id, onRefresh]);
+  }, [bannerUrl, logoUrl, gallery, club.id, updateClubInStore]);
 
   return (
     <>

@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { Button, Input, Tooltip } from "@/components/ui";
 import { SectionEditModal } from "./SectionEditModal";
+import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import type { ClubDetail } from "@/types/club";
 import "./ClubContactsView.css";
 
@@ -14,6 +15,7 @@ interface ClubContactsViewProps {
 }
 
 export function ClubContactsView({ club, onRefresh, disabled = false, disabledTooltip }: ClubContactsViewProps) {
+  const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -118,10 +120,11 @@ export function ClubContactsView({ club, onRefresh, disabled = false, disabledTo
         throw new Error(data.error || "Failed to update contacts");
       }
 
-      // Refresh club data to reflect changes
-      if (onRefresh) {
-        await onRefresh();
-      }
+      // Get updated club data from either response (both return full club)
+      const updatedClub = await contactsResponse.json();
+
+      // Update store reactively - no page reload needed
+      updateClubInStore(club.id, updatedClub);
 
       setIsEditing(false);
     } catch (err) {
@@ -129,7 +132,7 @@ export function ClubContactsView({ club, onRefresh, disabled = false, disabledTo
     } finally {
       setIsSaving(false);
     }
-  }, [formData, club.id, onRefresh]);
+  }, [formData, club.id, updateClubInStore]);
 
   const hasCoordinates = club.latitude && club.longitude;
 
