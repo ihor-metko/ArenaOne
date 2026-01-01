@@ -223,7 +223,7 @@ export default function CourtDetailPage({
         show: canManageCourt,
       },
     ];
-  }, [court?.isActive, canManageCourt, isTogglingActive, submitting, t, handleOpenToggleActiveModal]);
+  }, [court, canManageCourt, isTogglingActive, submitting, t, handleOpenToggleActiveModal]);
 
   const handleOpenDetailsEdit = () => {
     setIsEditingDetails(true);

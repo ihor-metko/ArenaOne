@@ -156,7 +156,7 @@ export function ClubCourtsQuickList({ club, disabled = false, disabledTooltip }:
         title={t("clubDetail.deleteCourt")}
       >
         <p className="mb-4">
-          {t("clubDetail.deleteCourtConfirm", { name: deletingCourt?.name })}
+          {t("clubDetail.deleteCourtConfirm", { name: deletingCourt?.name || "" })}
         </p>
         <div className="flex justify-end gap-2">
           <Button

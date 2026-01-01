@@ -1,12 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useUserStore } from "@/stores/useUserStore";
+import type { User } from "@/stores/useUserStore";
 
 interface UseRoleGuardResult {
   isLoading: boolean;
   isAuthorized: boolean;
+}
+
+interface UseAuthGuardOnceOptions {
+  requireAuth?: boolean;
+  redirectTo?: string;
+}
+
+interface UseAuthGuardOnceResult {
+  isHydrated: boolean;
+  isLoading: boolean;
+  isLoggedIn: boolean;
+  user: User | null;
 }
 
 /**
@@ -66,5 +79,47 @@ export function useAuthGuard(): UseRoleGuardResult {
   return {
     isLoading,
     isAuthorized,
+  };
+}
+
+/**
+ * Hook to guard routes that require authentication.
+ * Runs auth check only once after hydration to prevent unnecessary redirects.
+ * 
+ * @param options - Configuration options
+ * @param options.requireAuth - If true, redirects unauthenticated users to sign-in
+ * @param options.redirectTo - Custom redirect path (defaults to /auth/sign-in)
+ * @returns Auth state with hydration status
+ */
+export function useAuthGuardOnce(options: UseAuthGuardOnceOptions = {}): UseAuthGuardOnceResult {
+  const { requireAuth = false, redirectTo = "/auth/sign-in" } = options;
+  const router = useRouter();
+  const hasRedirected = useRef(false);
+  
+  const isHydrated = useUserStore(state => state.isHydrated);
+  const isLoading = useUserStore(state => state.isLoading);
+  const sessionStatus = useUserStore(state => state.sessionStatus);
+  const user = useUserStore(state => state.user);
+  const isLoggedIn = useUserStore(state => state.isLoggedIn);
+
+  useEffect(() => {
+    // Wait until hydrated and not loading
+    if (!isHydrated || isLoading) return;
+    
+    // Only redirect once
+    if (hasRedirected.current) return;
+
+    // If auth is required and user is not authenticated, redirect
+    if (requireAuth && sessionStatus === "unauthenticated") {
+      hasRedirected.current = true;
+      router.push(redirectTo);
+    }
+  }, [isHydrated, isLoading, requireAuth, sessionStatus, redirectTo, router]);
+
+  return {
+    isHydrated,
+    isLoading,
+    isLoggedIn,
+    user,
   };
 }

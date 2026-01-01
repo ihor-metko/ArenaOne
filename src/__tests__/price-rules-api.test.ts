@@ -756,7 +756,6 @@ describe("Price Rules API", () => {
       expect(response.status).toBe(404);
       expect(data.error).toBe("Holiday not found");
     });
-    });
   });
 
   describe("PUT /api/courts/:courtId/price-rules/:ruleId", () => {

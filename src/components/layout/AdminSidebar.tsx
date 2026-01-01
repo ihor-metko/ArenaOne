@@ -807,7 +807,7 @@ export default function AdminSidebar({ hasHeader = true, onCollapsedChange }: Ad
 
     // Fallback to generic title
     return t("sidebar.title");
-  }, [isRoot, isOrgAdmin, isClubAdmin, orgSummary, orgLoading, adminStatus, t]);
+  }, [isRoot, isOrgAdmin, isClubOwner, isClubAdmin, orgSummary, orgLoading, adminStatus, t]);
 
   // Don't render while loading user data
   if (isLoading) {

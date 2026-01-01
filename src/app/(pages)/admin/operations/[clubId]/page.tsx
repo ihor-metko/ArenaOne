@@ -431,7 +431,7 @@ export default function ClubOperationsPage() {
           }}
           onBookingComplete={handleBookingSuccess}
           predefinedData={wizardPredefinedData || undefined}
-          adminType={adminStatus.adminType}
+          adminType={adminStatus.adminType === "club_owner" ? "club_admin" : adminStatus.adminType}
           managedIds={adminStatus.managedIds}
         />
       )}

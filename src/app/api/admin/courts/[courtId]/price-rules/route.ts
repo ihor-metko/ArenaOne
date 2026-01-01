@@ -83,7 +83,7 @@ export async function POST(
     }
 
     // Validate ruleType
-    if (!VALID_PRICE_RULE_TYPES.includes(ruleType as any)) {
+    if (!VALID_PRICE_RULE_TYPES.includes(ruleType as typeof VALID_PRICE_RULE_TYPES[number])) {
       return NextResponse.json(
         { error: `Invalid ruleType. Must be one of: ${VALID_PRICE_RULE_TYPES.join(", ")}` },
         { status: 400 }
