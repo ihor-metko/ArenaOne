@@ -262,7 +262,7 @@ function UsersIcon() {
   );
 }
 
-function CourtsIcon() {
+export function CourtsIcon() {
   return (
     <svg
       className="im-sidebar-icon"

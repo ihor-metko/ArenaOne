@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui";
 import type { ClubDetail } from "@/types/club";
 import "./ClubCourtsPreview.css";
+import { CourtsIcon } from "@/components/layout/AdminSidebar";
 
 interface ClubCourtsPreviewProps {
   club: ClubDetail;
@@ -28,11 +29,9 @@ export function ClubCourtsPreview({ club, disabled = false }: ClubCourtsPreviewP
     <div className="im-section-card">
       <div className="im-section-header">
         <div className="im-section-icon im-section-icon--courts">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
+          <CourtsIcon />
         </div>
+
         <h2 className="im-section-title">{t("clubDetail.courts")}</h2>
         {!disabled && (
           <div className="im-section-actions">
@@ -43,6 +42,15 @@ export function ClubCourtsPreview({ club, disabled = false }: ClubCourtsPreviewP
               {t("clubDetail.addCourt")}
             </Button>
           </div>
+        )}
+
+        {club.courts.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/admin/courts?clubId=${club.id}`)}
+          >
+            {t("clubDetail.viewAllCourts")}
+          </Button>
         )}
       </div>
       {!club.courts || club.courts.length === 0 ? (
@@ -101,16 +109,6 @@ export function ClubCourtsPreview({ club, disabled = false }: ClubCourtsPreviewP
               );
             })}
           </div>
-          {club.courts.length > 0 && (
-            <Button
-              variant="outline"
-              size="small"
-              onClick={() => router.push(`/admin/courts?clubId=${club.id}`)}
-              className="im-view-all-btn"
-            >
-              {t("clubDetail.viewAllCourts")} ({club.courts.length})
-            </Button>
-          )}
         </>
       )}
     </div>

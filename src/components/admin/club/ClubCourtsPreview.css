@@ -146,3 +146,16 @@
     gap: 0.5rem;
   }
 }
+
+.im-section-icon {
+  @apply flex items-center justify-center w-10 h-10 rounded-lg flex-shrink-0;
+  transition: background-color 0.2s ease;
+}
+
+.im-section-icon--courts {
+  background-color: rgba(59, 130, 246, 0.15);
+
+  svg {
+    stroke: #3b82f6;
+  }
+}
