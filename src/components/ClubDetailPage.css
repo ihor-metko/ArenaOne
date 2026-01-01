@@ -381,12 +381,23 @@
 }
 
 .rsp-club-courts-header {
-  @apply flex items-center justify-between mb-6;
+  @apply flex flex-col gap-2 mb-6;
+}
+
+@media (min-width: 640px) {
+  .rsp-club-courts-header {
+    @apply flex-row items-center justify-between;
+  }
 }
 
 .rsp-club-courts-title {
   @apply text-xl md:text-2xl font-bold;
   color: var(--rsp-foreground);
+}
+
+.rsp-club-courts-price-range {
+  @apply text-sm md:text-base font-medium;
+  color: var(--rsp-primary);
 }
 
 .rsp-club-courts-grid {

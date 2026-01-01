@@ -18,6 +18,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useActiveClub } from "@/contexts/ClubContext";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { parseClubMetadata } from "@/types/club";
+import { calculatePriceRange, formatPriceRange } from "@/utils/price";
 import type { Court, AvailabilitySlot, AvailabilityResponse, CourtAvailabilityStatus } from "@/types/court";
 import "@/components/ClubDetailPage.css";
 import "@/components/EntityPageLayout.css";
@@ -121,6 +122,10 @@ export default function ClubDetailPage({
   // Get courts and gallery from store (wrapped in useMemo to prevent dependency issues)
   const courts = useMemo(() => club ? getCourtsForClub(club.id) : [], [club, getCourtsForClub]);
   const gallery = useMemo(() => club ? getGalleryForClub(club.id) : [], [club, getGalleryForClub]);
+  
+  // Calculate price range from courts
+  const priceRange = useMemo(() => calculatePriceRange(courts), [courts]);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCourtId, setSelectedCourtId] = useState<string | null>(null);
   const [courtAvailability, setCourtAvailability] = useState<Record<string, AvailabilitySlot[]>>({});
@@ -645,6 +650,11 @@ export default function ClubDetailPage({
         <section className="rsp-club-courts-section">
           <div className="rsp-club-courts-header">
             <h2 className="rsp-club-courts-title">{t("clubDetail.availableCourts")}</h2>
+            {priceRange && (
+              <p className="rsp-club-courts-price-range" data-testid="courts-price-range">
+                {formatPriceRange(priceRange.minPrice, priceRange.maxPrice)} {t("common.perHour")}
+              </p>
+            )}
           </div>
           {loadingCourts ? (
             <div className="rsp-club-loading-courts">
