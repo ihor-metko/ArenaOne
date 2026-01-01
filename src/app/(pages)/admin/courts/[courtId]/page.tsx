@@ -193,6 +193,7 @@ export default function CourtDetailPage({
   // Prepare DangerZone actions (memoized to prevent unnecessary re-renders)
   // NOTE: Must be called before any early returns to follow Rules of Hooks
   const dangerActions: DangerAction[] = useMemo(() => {
+    // Return empty array if no court data or no permission to manage
     if (!court || !canManageCourt) return [];
     
     return [
@@ -219,7 +220,7 @@ export default function CourtDetailPage({
         show: canManageCourt,
       },
     ];
-  }, [court, canManageCourt, isTogglingActive, submitting, t, handleOpenToggleActiveModal]);
+  }, [court?.isActive, canManageCourt, isTogglingActive, submitting, t, handleOpenToggleActiveModal]);
 
   // Loading skeleton
   if (loadingCourts || isLoading) {
