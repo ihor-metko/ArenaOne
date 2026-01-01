@@ -14,7 +14,6 @@ import "./ClubHoursView.css";
 
 interface ClubHoursViewProps {
   club: ClubDetail;
-  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
@@ -51,7 +50,7 @@ function initializeBusinessHours(existing: ClubBusinessHours[]): BusinessHour[] 
   return hours;
 }
 
-export function ClubHoursView({ club, onRefresh, disabled = false, disabledTooltip }: ClubHoursViewProps) {
+export function ClubHoursView({ club, disabled = false, disabledTooltip }: ClubHoursViewProps) {
   const t = useTranslations();
   const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
   const [isEditing, setIsEditing] = useState(false);

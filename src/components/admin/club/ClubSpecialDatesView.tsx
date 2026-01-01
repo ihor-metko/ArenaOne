@@ -12,7 +12,6 @@ import "./ClubSpecialDatesView.css";
 
 interface ClubSpecialDatesViewProps {
   club: ClubDetail;
-  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
@@ -44,7 +43,7 @@ function formatDateShort(dateString: string): string {
   return `${month} ${day}`;
 }
 
-export function ClubSpecialDatesView({ club, onRefresh, disabled = false, disabledTooltip }: ClubSpecialDatesViewProps) {
+export function ClubSpecialDatesView({ club, disabled = false, disabledTooltip }: ClubSpecialDatesViewProps) {
   const t = useTranslations("clubDetail");
   const tCommon = useTranslations("common");
   const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);

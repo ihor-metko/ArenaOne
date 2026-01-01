@@ -20,12 +20,11 @@ interface GalleryImage {
 
 interface ClubGalleryViewProps {
   club: ClubDetail;
-  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
 
-export function ClubGalleryView({ club, onRefresh, disabled = false, disabledTooltip }: ClubGalleryViewProps) {
+export function ClubGalleryView({ club, disabled = false, disabledTooltip }: ClubGalleryViewProps) {
   const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

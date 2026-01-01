@@ -9,12 +9,11 @@ import "./ClubContactsView.css";
 
 interface ClubContactsViewProps {
   club: ClubDetail;
-  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
 
-export function ClubContactsView({ club, onRefresh, disabled = false, disabledTooltip }: ClubContactsViewProps) {
+export function ClubContactsView({ club, disabled = false, disabledTooltip }: ClubContactsViewProps) {
   const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
