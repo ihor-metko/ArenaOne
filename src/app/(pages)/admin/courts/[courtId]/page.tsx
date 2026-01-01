@@ -186,9 +186,9 @@ export default function CourtDetailPage({
     }
   };
 
-  const handleOpenToggleActiveModal = () => {
+  const handleOpenToggleActiveModal = useCallback(() => {
     setIsToggleActiveModalOpen(true);
-  };
+  }, []);
 
   // Loading skeleton
   if (loadingCourts || isLoading) {
