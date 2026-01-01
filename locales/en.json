@@ -853,8 +853,7 @@
           "openTime": "Open Time",
           "closeTime": "Close Time",
           "timeError": "Open time must be before close time",
-          "clubHoursHint": "Club hours will be used if not specified here.",
-          "noClubHoursHint": "No club hours configured. Court hours are recommended."
+          "workingHoursHint": "If court working hours are not specified, club working hours will be used as a fallback."
         },
         "mediaStep": {
           "title": "Media",
