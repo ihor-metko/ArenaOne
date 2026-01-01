@@ -430,6 +430,8 @@
     "noSpecialDates": "No special dates set",
     "specialDateOverrides": "Special Date Overrides",
     "addDate": "Add Date",
+    "selectDate": "Select date",
+    "date": "Date",
     "reason": "Reason (optional)",
     "noSpecialHours": "No special hours set",
     "to": "to",

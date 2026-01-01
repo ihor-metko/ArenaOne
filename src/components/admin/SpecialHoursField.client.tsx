@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Button, Input, TimeInput } from "@/components/ui";
+import { Button, Input, TimeInput, DateInput, Checkbox } from "@/components/ui";
 import "./SpecialHoursField.css";
 
 export interface SpecialHour {
@@ -78,12 +78,14 @@ export function SpecialHoursField({ value, onChange, disabled }: SpecialHoursFie
         <div className="im-special-hours-list">
           {value.map((hour, index) => (
             <div key={index} className="im-special-hours-row">
-              <Input
-                type="date"
-                value={hour.date}
-                onChange={(e) => handleChange(index, "date", e.target.value)}
-                disabled={disabled}
-              />
+              <div className="im-special-hours-date-field">
+                <DateInput
+                  value={hour.date}
+                  onChange={(date) => handleChange(index, "date", date)}
+                  placeholder={t("selectDate")}
+                  aria-label={t("date")}
+                />
+              </div>
               <div className="im-special-hours-times">
                 {hour.isClosed ? (
                   <span className="im-special-hours-closed-text">{t("closed")}</span>
@@ -103,21 +105,22 @@ export function SpecialHoursField({ value, onChange, disabled }: SpecialHoursFie
                   </>
                 )}
               </div>
-              <label className="im-special-hours-toggle">
-                <input
-                  type="checkbox"
+              <div className="im-special-hours-toggle">
+                <Checkbox
                   checked={hour.isClosed}
                   onChange={(e) => handleChange(index, "isClosed", e.target.checked)}
                   disabled={disabled}
+                  label={t("closed")}
                 />
-                <span>{t("closed")}</span>
-              </label>
-              <Input
-                placeholder={t("reason")}
-                value={hour.reason}
-                onChange={(e) => handleChange(index, "reason", e.target.value)}
-                disabled={disabled}
-              />
+              </div>
+              <div className="im-special-hours-reason-field">
+                <Input
+                  placeholder={t("reason")}
+                  value={hour.reason}
+                  onChange={(e) => handleChange(index, "reason", e.target.value)}
+                  disabled={disabled}
+                />
+              </div>
               <Button
                 type="button"
                 variant="outline"

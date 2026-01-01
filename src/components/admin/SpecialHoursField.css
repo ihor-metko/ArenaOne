@@ -6,11 +6,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .im-special-hours-title {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   margin: 0;
   color: var(--rsp-foreground);
@@ -23,21 +23,33 @@
 .im-special-hours-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .im-special-hours-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) 1fr auto auto auto;
+  grid-template-areas: 
+    "date times toggle reason remove";
+  align-items: start;
+  gap: 0.75rem;
+  padding: 1rem;
   background-color: var(--rsp-background);
   border: 1px solid var(--rsp-border);
   border-radius: 0.75rem;
+  transition: border-color 0.2s ease;
+}
+
+.im-special-hours-row:hover {
+  border-color: var(--rsp-primary);
+}
+
+.im-special-hours-date-field {
+  grid-area: date;
 }
 
 .im-special-hours-times {
+  grid-area: times;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -45,45 +57,40 @@
   min-width: 200px;
 }
 
-.im-special-hours-input {
-  padding: 0.375rem 0.5rem;
-  border: 1px solid var(--rsp-border);
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  background-color: var(--rsp-background);
-  color: var(--rsp-foreground);
+.im-special-hours-toggle {
+  grid-area: toggle;
+  display: flex;
+  align-items: center;
+  padding-top: 0.5rem;
 }
 
-.im-special-hours-input:focus {
-  outline: none;
-  border-color: var(--rsp-primary);
+.im-special-hours-reason-field {
+  grid-area: reason;
+  flex: 1;
+  min-width: 150px;
 }
 
 .im-special-hours-separator {
   font-size: 0.875rem;
   color: var(--rsp-foreground);
   opacity: 0.6;
-}
-
-.im-special-hours-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.875rem;
-  cursor: pointer;
-  color: var(--rsp-foreground);
+  white-space: nowrap;
 }
 
 .im-special-hours-closed-text {
   font-size: 0.875rem;
   color: var(--rsp-foreground);
-  opacity: 0.5;
+  opacity: 0.6;
   font-style: italic;
+  padding: 0.5rem 0;
 }
 
 .im-special-hours-remove-btn {
-  padding: 0.25rem 0.5rem;
+  grid-area: remove;
+  padding: 0.5rem 0.75rem;
   color: #ef4444;
+  align-self: start;
+  margin-top: 0.25rem;
 }
 
 .dark .im-special-hours-remove-btn {
@@ -95,6 +102,51 @@
   color: var(--rsp-foreground);
   opacity: 0.6;
   font-style: italic;
-  padding: 1rem;
+  padding: 1.5rem;
   text-align: center;
+  background-color: var(--rsp-background);
+  border: 1px dashed var(--rsp-border);
+  border-radius: 0.75rem;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 1024px) {
+  .im-special-hours-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+      "date date"
+      "times toggle"
+      "reason remove";
+    gap: 0.75rem 0.5rem;
+  }
+  
+  .im-special-hours-times {
+    min-width: unset;
+  }
+  
+  .im-special-hours-reason-field {
+    min-width: unset;
+  }
+}
+
+@media (max-width: 640px) {
+  .im-special-hours-row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 
+      "date remove"
+      "times times"
+      "toggle toggle"
+      "reason reason";
+    gap: 0.75rem;
+  }
+  
+  .im-special-hours-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .im-special-hours-add-btn {
+    width: 100%;
+  }
 }
