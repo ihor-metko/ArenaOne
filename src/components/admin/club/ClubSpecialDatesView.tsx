@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button, Tooltip } from "@/components/ui";
 import { SectionEditModal } from "./SectionEditModal";
 import { SpecialHoursField, type SpecialHour } from "../SpecialHoursField.client";
-import { useAdminClubStore } from "@/stores/useAdminClubStore";
-import type { ClubDetail, ClubSpecialHours } from "@/types/club";
+import { useClubSpecialDatesStore } from "@/stores/useClubSpecialDatesStore";
+import type { ClubDetail } from "@/types/club";
 import { validateSpecialHours } from "../WorkingHoursEditor.client";
 import "./ClubSpecialDatesView.css";
 
@@ -25,17 +25,6 @@ function formatTime(time: string | null, t: (key: string) => string): string {
   return `${h12}:${minutes} ${ampm}`;
 }
 
-function formatSpecialHours(special: ClubSpecialHours[]): SpecialHour[] {
-  return special.map((h) => ({
-    id: h.id,
-    date: h.date.split("T")[0],
-    openTime: h.openTime,
-    closeTime: h.closeTime,
-    isClosed: h.isClosed,
-    reason: h.reason || "",
-  }));
-}
-
 function formatDateShort(dateString: string): string {
   const date = new Date(dateString);
   const month = date.toLocaleDateString('en-US', { month: 'short' });
@@ -46,19 +35,43 @@ function formatDateShort(dateString: string): string {
 export function ClubSpecialDatesView({ club, disabled = false, disabledTooltip }: ClubSpecialDatesViewProps) {
   const t = useTranslations("clubDetail");
   const tCommon = useTranslations("common");
-  const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
+  
+  // Use the dedicated special dates store
+  const specialDatesFromStore = useClubSpecialDatesStore((state) => state.specialDates);
+  const fetchSpecialDates = useClubSpecialDatesStore((state) => state.fetchSpecialDates);
+  const addSpecialDate = useClubSpecialDatesStore((state) => state.addSpecialDate);
+  const updateSpecialDate = useClubSpecialDatesStore((state) => state.updateSpecialDate);
+  const removeSpecialDate = useClubSpecialDatesStore((state) => state.removeSpecialDate);
+  
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
-  const [specialHours, setSpecialHours] = useState<SpecialHour[]>(() =>
-    formatSpecialHours(club.specialHours)
-  );
+  const [specialHours, setSpecialHours] = useState<SpecialHour[]>([]);
+
+  // Fetch special dates on mount
+  useEffect(() => {
+    fetchSpecialDates(club.id).catch(() => {
+      // Error is already set in the store
+    });
+  }, [club.id, fetchSpecialDates]);
+
+  // Convert store special dates to SpecialHour format for editing
+  const formatSpecialHours = useCallback((): SpecialHour[] => {
+    return specialDatesFromStore.map((h) => ({
+      id: h.id,
+      date: h.date.split("T")[0],
+      openTime: h.openTime,
+      closeTime: h.closeTime,
+      isClosed: h.isClosed,
+      reason: h.reason || "",
+    }));
+  }, [specialDatesFromStore]);
 
   const handleEdit = useCallback(() => {
-    setSpecialHours(formatSpecialHours(club.specialHours));
+    setSpecialHours(formatSpecialHours());
     setError("");
     setIsEditing(true);
-  }, [club]);
+  }, [formatSpecialHours]);
 
   const handleClose = useCallback(() => {
     setIsEditing(false);
@@ -80,49 +93,27 @@ export function ClubSpecialDatesView({ club, disabled = false, disabledTooltip }
       const promises = specialHours.map(async (hour) => {
         if (hour._action === 'delete' && hour.id) {
           // Delete existing special date
-          const response = await fetch(`/api/admin/clubs/${club.id}/special-dates/${hour.id}`, {
-            method: "DELETE",
-          });
-          if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || t("failedToDeleteSpecialDate"));
-          }
+          await removeSpecialDate(club.id, hour.id);
           return { type: 'delete', id: hour.id, success: true };
         } else if (hour._action === 'create' || !hour.id) {
           // Create new special date
-          const response = await fetch(`/api/admin/clubs/${club.id}/special-dates`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              date: hour.date,
-              openTime: hour.openTime,
-              closeTime: hour.closeTime,
-              isClosed: hour.isClosed,
-              reason: hour.reason,
-            }),
+          await addSpecialDate(club.id, {
+            date: hour.date,
+            openTime: hour.openTime,
+            closeTime: hour.closeTime,
+            isClosed: hour.isClosed,
+            reason: hour.reason,
           });
-          if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || t("failedToCreateSpecialDate"));
-          }
           return { type: 'create', success: true };
         } else if (hour._action === 'update' && hour.id) {
           // Update existing special date
-          const response = await fetch(`/api/admin/clubs/${club.id}/special-dates/${hour.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              date: hour.date,
-              openTime: hour.openTime,
-              closeTime: hour.closeTime,
-              isClosed: hour.isClosed,
-              reason: hour.reason,
-            }),
+          await updateSpecialDate(club.id, hour.id, {
+            date: hour.date,
+            openTime: hour.openTime,
+            closeTime: hour.closeTime,
+            isClosed: hour.isClosed,
+            reason: hour.reason,
           });
-          if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || t("failedToUpdateSpecialDate"));
-          }
           return { type: 'update', id: hour.id, success: true };
         }
         // If no action, it's an unchanged existing item - do nothing
@@ -139,24 +130,13 @@ export function ClubSpecialDatesView({ club, disabled = false, disabledTooltip }
         throw firstError instanceof Error ? firstError : new Error(t("failedToSaveChanges"));
       }
 
-      // Fetch the updated club data to refresh the UI
-      const clubResponse = await fetch(`/api/admin/clubs/${club.id}`);
-      if (!clubResponse.ok) {
-        throw new Error(t("failedToRefreshClubData"));
-      }
-      
-      const updatedClub = await clubResponse.json();
-
-      // Update store reactively - no page reload needed
-      updateClubInStore(club.id, updatedClub);
-
       setIsEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("failedToSaveChanges"));
     } finally {
       setIsSaving(false);
     }
-  }, [specialHours, club.id, t, updateClubInStore]);
+  }, [specialHours, club.id, t, addSpecialDate, updateSpecialDate, removeSpecialDate]);
 
   return (
     <>
@@ -177,9 +157,9 @@ export function ClubSpecialDatesView({ club, disabled = false, disabledTooltip }
       </div>
 
       <div className="im-section-view">
-        {club.specialHours.length > 0 ? (
+        {specialDatesFromStore.length > 0 ? (
           <div className="im-special-dates-list">
-            {club.specialHours.map((hour) => (
+            {specialDatesFromStore.map((hour) => (
               <div key={hour.id} className="im-special-dates-row">
                 <span className="im-special-dates-date">
                   {formatDateShort(hour.date)}
