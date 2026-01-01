@@ -25,6 +25,9 @@ const RULE_TYPE_LABELS: Record<string, string> = {
   HOLIDAY: "Holiday",
 };
 
+// Default rule type when none is specified
+const DEFAULT_RULE_TYPE = "ALL_DAYS" as const;
+
 // Order for displaying rule type groups
 const RULE_TYPE_ORDER = ["WEEKDAYS", "WEEKENDS", "ALL_DAYS", "SPECIFIC_DAY", "SPECIFIC_DATE", "HOLIDAY"];
 
@@ -32,7 +35,7 @@ function groupRulesByType(rules: CourtPriceRule[]): Map<string, CourtPriceRule[]
   const grouped = new Map<string, CourtPriceRule[]>();
   
   for (const rule of rules) {
-    const key = rule.ruleType || "ALL_DAYS";
+    const key = rule.ruleType || DEFAULT_RULE_TYPE;
     if (!grouped.has(key)) {
       grouped.set(key, []);
     }
@@ -45,6 +48,16 @@ function groupRulesByType(rules: CourtPriceRule[]): Map<string, CourtPriceRule[]
 function getDayLabel(dayOfWeek: number | null, t: (key: string) => string): string {
   if (dayOfWeek === null) return "";
   return t(DAY_TRANSLATION_KEYS[dayOfWeek]);
+}
+
+function formatDate(dateStr: string): string {
+  // Format date consistently in YYYY-MM-DD format or using locale
+  // Using ISO date format for consistency across locales
+  const date = new Date(dateStr);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export function CourtPricingBlock({ court }: CourtPricingBlockProps) {
@@ -111,7 +124,7 @@ export function CourtPricingBlock({ court }: CourtPricingBlockProps) {
                           )}
                           {rule.ruleType === "SPECIFIC_DATE" && rule.date && (
                             <span className="im-pricing-rule-date-label">
-                              {new Date(rule.date).toLocaleDateString()}
+                              {formatDate(rule.date)}
                             </span>
                           )}
                         </div>
