@@ -8,11 +8,12 @@ import "./ClubContactsView.css";
 
 interface ClubContactsViewProps {
   club: ClubDetail;
+  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
 
-export function ClubContactsView({ club, disabled = false, disabledTooltip }: ClubContactsViewProps) {
+export function ClubContactsView({ club, onRefresh, disabled = false, disabledTooltip }: ClubContactsViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -117,13 +118,18 @@ export function ClubContactsView({ club, disabled = false, disabledTooltip }: Cl
         throw new Error(data.error || "Failed to update contacts");
       }
 
+      // Refresh club data to reflect changes
+      if (onRefresh) {
+        await onRefresh();
+      }
+
       setIsEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save changes");
     } finally {
       setIsSaving(false);
     }
-  }, [formData, club.id]);
+  }, [formData, club.id, onRefresh]);
 
   const hasCoordinates = club.latitude && club.longitude;
 

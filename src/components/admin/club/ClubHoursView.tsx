@@ -12,6 +12,7 @@ import "./ClubHoursView.css";
 
 interface ClubHoursViewProps {
   club: ClubDetail;
+  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
@@ -59,7 +60,7 @@ function formatSpecialHours(special: ClubSpecialHours[]): SpecialHour[] {
   }));
 }
 
-export function ClubHoursView({ club, disabled = false, disabledTooltip }: ClubHoursViewProps) {
+export function ClubHoursView({ club, onRefresh, disabled = false, disabledTooltip }: ClubHoursViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -121,13 +122,18 @@ export function ClubHoursView({ club, disabled = false, disabledTooltip }: ClubH
         throw new Error(data.error || "Failed to update special hours");
       }
 
+      // Refresh club data to reflect changes
+      if (onRefresh) {
+        await onRefresh();
+      }
+
       setIsEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save changes");
     } finally {
       setIsSaving(false);
     }
-  }, [businessHours, specialHours, club.id]);
+  }, [businessHours, specialHours, club.id, onRefresh]);
 
   return (
     <>

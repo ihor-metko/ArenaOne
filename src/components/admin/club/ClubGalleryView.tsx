@@ -19,11 +19,12 @@ interface GalleryImage {
 
 interface ClubGalleryViewProps {
   club: ClubDetail;
+  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
 
-export function ClubGalleryView({ club, disabled = false, disabledTooltip }: ClubGalleryViewProps) {
+export function ClubGalleryView({ club, onRefresh, disabled = false, disabledTooltip }: ClubGalleryViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -219,13 +220,18 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
         throw new Error(data.error || "Failed to update media");
       }
 
+      // Refresh club data to reflect changes
+      if (onRefresh) {
+        await onRefresh();
+      }
+
       setIsEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save changes");
     } finally {
       setIsSaving(false);
     }
-  }, [bannerUrl, logoUrl, gallery, club.id]);
+  }, [bannerUrl, logoUrl, gallery, club.id, onRefresh]);
 
   return (
     <>
