@@ -143,7 +143,11 @@ export function PriceRuleForm({
           { value: "date", label: "Specific Date" },
         ]}
         value={ruleType}
-        onChange={(value) => handleRuleTypeChange(value as "weekly" | "date")}
+        onChange={(value) => {
+          if (value === "weekly" || value === "date") {
+            handleRuleTypeChange(value);
+          }
+        }}
         disabled={isSubmitting}
       />
 

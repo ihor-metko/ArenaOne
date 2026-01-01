@@ -206,7 +206,7 @@ export function DateInput({
         <button
           type="button"
           className="im-date-input-icon"
-          onClick={() => !disabled && setIsOpen(!isOpen)}
+          onClick={disabled ? undefined : () => setIsOpen(!isOpen)}
           aria-label="Open calendar"
           tabIndex={disabled ? -1 : 0}
           disabled={disabled}
