@@ -60,7 +60,7 @@ interface Club {
     id: string;
     name: string;
   } | null;
-  defaultCurrency?: string;
+  defaultCurrency?: string | null;
   businessHours?: Array<{
     dayOfWeek: number;
     openTime: string | null;
@@ -115,8 +115,7 @@ export default function CreateCourtPage() {
 
   // Organization and Club stores
   const { organizations, fetchOrganizations, loading: orgsLoading } = useOrganizationStore();
-  const { clubs, fetchClubsIfNeeded, loadingClubs: clubsLoading } = useAdminClubStore();
-
+  const { clubs, fetchClubsIfNeeded, loadingClubs: clubsLoading, ensureClubById } = useAdminClubStore();
   const [clubIdFromUrl, setClubIdFromUrl] = useState<string | null>(null);
   const [club, setClub] = useState<Club | null>(null);
   const [loading, setLoading] = useState(true);
@@ -268,48 +267,55 @@ export default function CreateCourtPage() {
     }
   }, [isOrgAdmin, isClubAdmin, adminStatus, setValue]);
 
-  // Fetch club data when clubId is set
+  // Fetch club data when clubId is set using Zustand store
   const selectedClubId = watch("clubId") || clubIdFromUrl;
 
   useEffect(() => {
     if (!selectedClubId) {
       setLoading(false);
+      setClub(null); // Clear club state when no club is selected
       return;
     }
 
-    const fetchClub = async () => {
+    const loadClub = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/clubs/${selectedClubId}`);
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError(t("admin.courts.new.errors.clubNotFound"));
-            return;
-          }
-          throw new Error(t("admin.courts.new.errors.failedToLoadClub"));
-        }
-        const data = await response.json();
-        setClub(data);
+        setError(null);
+
+        // Use Zustand store to get club data (cache-first, prevents redundant requests)
+        const clubData = await ensureClubById(selectedClubId);
+        setClub(clubData);
 
         // Set default currency from club
-        if (data.defaultCurrency) {
-          setValue("currency", data.defaultCurrency);
+        if (clubData.defaultCurrency) {
+          setValue("currency", clubData.defaultCurrency);
         }
 
         // Set organization ID from club if not already set
-        if (data.organizationId && !getValues("organizationId")) {
-          setValue("organizationId", data.organizationId);
+        if (clubData.organizationId && !getValues("organizationId")) {
+          setValue("organizationId", clubData.organizationId);
         }
       } catch (err) {
         console.error("Failed to load club:", err);
-        setError(t("admin.courts.new.errors.failedToLoadClub"));
+        // Check for 404 error (club not found) by looking for HTTP 404 status
+        const errorMessage = err instanceof Error ? err.message : "";
+        const is404Error = /HTTP\s*404/i.test(errorMessage);
+
+        if (is404Error) {
+          setError(t("admin.courts.new.errors.clubNotFound"));
+        } else {
+          setError(t("admin.courts.new.errors.failedToLoadClub"));
+        }
+        setClub(null); // Clear club state on error
       } finally {
         setLoading(false);
       }
     };
 
-    fetchClub();
-  }, [selectedClubId, setValue, getValues, t]);
+    loadClub();
+    // Note: setValue and getValues are stable refs from react-hook-form and don't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClubId, ensureClubById, t]);
 
   // Auth check - allow any admin
   useEffect(() => {
