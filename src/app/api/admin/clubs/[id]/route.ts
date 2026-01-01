@@ -158,12 +158,49 @@ export async function PATCH(
     if (isPublic !== undefined) updateData.isPublic = isPublic;
     if (supportedSports !== undefined) updateData.supportedSports = supportedSports;
 
-    await prisma.club.update({
+    const updatedClub = await prisma.club.update({
       where: { id: clubId },
       data: updateData,
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        courts: {
+          orderBy: { name: "asc" },
+        },
+        coaches: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        },
+        gallery: {
+          orderBy: { sortOrder: "asc" },
+        },
+        businessHours: {
+          orderBy: { dayOfWeek: "asc" },
+        },
+      },
     });
 
-    return NextResponse.json({ success: true });
+    // Parse JSON fields
+    const formattedClub = {
+      ...updatedClub,
+      logoData: updatedClub.logoData ? JSON.parse(updatedClub.logoData) : null,
+      bannerData: updatedClub.bannerData ? JSON.parse(updatedClub.bannerData) : null,
+    };
+
+    return NextResponse.json(formattedClub);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error updating club:", error);

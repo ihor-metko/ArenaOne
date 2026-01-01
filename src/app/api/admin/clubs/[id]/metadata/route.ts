@@ -51,14 +51,51 @@ export async function PATCH(
       );
     }
 
-    await prisma.club.update({
+    const updatedClub = await prisma.club.update({
       where: { id: clubId },
       data: {
         metadata: JSON.stringify(metadata),
       },
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        courts: {
+          orderBy: { name: "asc" },
+        },
+        coaches: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        },
+        gallery: {
+          orderBy: { sortOrder: "asc" },
+        },
+        businessHours: {
+          orderBy: { dayOfWeek: "asc" },
+        },
+      },
     });
 
-    return NextResponse.json({ success: true });
+    // Parse JSON fields
+    const formattedClub = {
+      ...updatedClub,
+      logoData: updatedClub.logoData ? JSON.parse(updatedClub.logoData) : null,
+      bannerData: updatedClub.bannerData ? JSON.parse(updatedClub.bannerData) : null,
+    };
+
+    return NextResponse.json(formattedClub);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error updating club metadata:", error);

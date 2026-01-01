@@ -97,7 +97,53 @@ export async function PATCH(
       }
     });
 
-    return NextResponse.json({ success: true });
+    // Fetch updated club with all relations
+    const updatedClub = await prisma.club.findUnique({
+      where: { id: clubId },
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        courts: {
+          orderBy: { name: "asc" },
+        },
+        coaches: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        },
+        gallery: {
+          orderBy: { sortOrder: "asc" },
+        },
+        businessHours: {
+          orderBy: { dayOfWeek: "asc" },
+        },
+      },
+    });
+
+    if (!updatedClub) {
+      return NextResponse.json({ error: "Club not found after update" }, { status: 404 });
+    }
+
+    // Parse JSON fields
+    const formattedClub = {
+      ...updatedClub,
+      logoData: updatedClub.logoData ? JSON.parse(updatedClub.logoData) : null,
+      bannerData: updatedClub.bannerData ? JSON.parse(updatedClub.bannerData) : null,
+    };
+
+    return NextResponse.json(formattedClub);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error updating business hours:", error);
