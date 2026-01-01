@@ -440,6 +440,10 @@
     "duplicateDates": "Duplicate dates in special hours",
     "invalidSpecialHours": "Invalid special hours for {date}: opening time must be before closing time",
     "failedToUpdateSpecialHours": "Failed to update special hours",
+    "failedToCreateSpecialDate": "Failed to create special date",
+    "failedToUpdateSpecialDate": "Failed to update special date",
+    "failedToDeleteSpecialDate": "Failed to delete special date",
+    "failedToRefreshClubData": "Failed to refresh club data",
     "am": "AM",
     "pm": "PM"
   },

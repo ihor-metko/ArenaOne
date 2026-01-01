@@ -76,21 +76,65 @@ export function ClubSpecialDatesView({ club, disabled = false, disabledTooltip }
     setIsSaving(true);
     setError("");
     try {
-      const specialHoursResponse = await fetch(`/api/admin/clubs/${club.id}/special-hours`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          specialHours,
-        }),
+      // Process each special hour based on its action
+      const promises = specialHours.map(async (hour) => {
+        if (hour._action === 'delete' && hour.id) {
+          // Delete existing special date
+          const response = await fetch(`/api/admin/clubs/${club.id}/special-dates/${hour.id}`, {
+            method: "DELETE",
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || t("failedToDeleteSpecialDate"));
+          }
+        } else if (hour._action === 'create' || !hour.id) {
+          // Create new special date
+          const response = await fetch(`/api/admin/clubs/${club.id}/special-dates`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              date: hour.date,
+              openTime: hour.openTime,
+              closeTime: hour.closeTime,
+              isClosed: hour.isClosed,
+              reason: hour.reason,
+            }),
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || t("failedToCreateSpecialDate"));
+          }
+        } else if (hour._action === 'update' && hour.id) {
+          // Update existing special date
+          const response = await fetch(`/api/admin/clubs/${club.id}/special-dates/${hour.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              date: hour.date,
+              openTime: hour.openTime,
+              closeTime: hour.closeTime,
+              isClosed: hour.isClosed,
+              reason: hour.reason,
+            }),
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || t("failedToUpdateSpecialDate"));
+          }
+        }
+        // If no action, it's an unchanged existing item - do nothing
       });
 
-      if (!specialHoursResponse.ok) {
-        const data = await specialHoursResponse.json();
-        throw new Error(data.error || t("failedToUpdateSpecialHours"));
-      }
+      // Wait for all operations to complete
+      await Promise.all(promises);
 
-      // Get updated club data from response
-      const updatedClub = await specialHoursResponse.json();
+      // Fetch the updated club data to refresh the UI
+      const clubResponse = await fetch(`/api/admin/clubs/${club.id}`);
+      if (!clubResponse.ok) {
+        throw new Error(t("failedToRefreshClubData"));
+      }
+      
+      const updatedClub = await clubResponse.json();
 
       // Update store reactively - no page reload needed
       updateClubInStore(club.id, updatedClub);

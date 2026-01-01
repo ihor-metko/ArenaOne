@@ -12,6 +12,7 @@ export interface SpecialHour {
   closeTime: string | null;
   isClosed: boolean;
   reason: string;
+  _action?: 'create' | 'update' | 'delete'; // Track operation type
 }
 
 interface SpecialHoursFieldProps {
@@ -33,27 +34,46 @@ export function SpecialHoursField({ value, onChange, disabled }: SpecialHoursFie
         closeTime: null,
         isClosed: true,
         reason: "",
+        _action: 'create', // Mark as new
       },
     ]);
   }, [value, onChange]);
 
   const handleRemove = useCallback((index: number) => {
-    onChange(value.filter((_, i) => i !== index));
+    const hourToRemove = value[index];
+    
+    // If it has an ID (existing item), mark it for deletion instead of removing immediately
+    if (hourToRemove.id) {
+      onChange(value.map((hour, i) => 
+        i === index ? { ...hour, _action: 'delete' as const } : hour
+      ));
+    } else {
+      // If no ID (new item), just remove it from the array
+      onChange(value.filter((_, i) => i !== index));
+    }
   }, [value, onChange]);
 
   const handleChange = useCallback(
     (index: number, field: keyof SpecialHour, newValue: string | boolean) => {
       const newHours = value.map((hour, i) => {
         if (i !== index) return hour;
-        if (field === "isClosed") {
-          return {
-            ...hour,
-            isClosed: newValue as boolean,
-            openTime: newValue ? null : "09:00",
-            closeTime: newValue ? null : "21:00",
-          };
+        
+        const updatedHour = { ...hour };
+        
+        // Mark as updated if it has an ID and not already marked for action
+        if (hour.id && !hour._action) {
+          updatedHour._action = 'update';
         }
-        return { ...hour, [field]: newValue || null };
+        
+        if (field === "isClosed") {
+          updatedHour.isClosed = newValue as boolean;
+          updatedHour.openTime = newValue ? null : "09:00";
+          updatedHour.closeTime = newValue ? null : "21:00";
+        } else if (field !== "_action") {
+          updatedHour[field] = (newValue || null) as never;
+        }
+        
+        return updatedHour;
       });
       onChange(newHours);
     },
@@ -76,8 +96,12 @@ export function SpecialHoursField({ value, onChange, disabled }: SpecialHoursFie
       </div>
       {value.length > 0 ? (
         <div className="im-special-hours-list">
-          {value.map((hour, index) => (
-            <div key={index} className="im-special-hours-row">
+          {value.map((hour, index) => {
+            // Skip rendering items marked for deletion
+            if (hour._action === 'delete') return null;
+            
+            return (
+            <div key={hour.id || index} className="im-special-hours-row">
               <div className="im-special-hours-date-field">
                 <DateInput
                   value={hour.date}
@@ -131,7 +155,8 @@ export function SpecialHoursField({ value, onChange, disabled }: SpecialHoursFie
                 ✕
               </Button>
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <p className="im-special-hours-empty">{t("noSpecialHours")}</p>
