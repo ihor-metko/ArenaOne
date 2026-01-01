@@ -338,7 +338,7 @@ export const useAdminCourtsStore = create<AdminCourtsState>((set, get) => ({
       set((state) => {
         const clubCourts = state.courtsByClubId[clubId] || [];
         const updatedClubCourts = clubCourts.map((court) =>
-          court.id === courtId ? { ...court, ...updatedCourt, id: court.id } : court
+          court.id === courtId ? { ...court, ...updatedCourt } : court
         );
         
         return {
@@ -346,11 +346,11 @@ export const useAdminCourtsStore = create<AdminCourtsState>((set, get) => ({
           courtsById: {
             ...state.courtsById,
             [courtId]: state.courtsById[courtId] 
-              ? { ...state.courtsById[courtId], ...updatedCourt, id: courtId }
+              ? { ...state.courtsById[courtId], ...updatedCourt }
               : updatedCourt
           },
           currentCourt: state.currentCourt?.id === courtId 
-            ? { ...state.currentCourt, ...updatedCourt, id: state.currentCourt.id } 
+            ? { ...state.currentCourt, ...updatedCourt } 
             : state.currentCourt,
           loading: false,
           lastFetchedByClubId: { ...state.lastFetchedByClubId, [clubId]: Date.now() }
