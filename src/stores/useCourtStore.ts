@@ -9,13 +9,18 @@ import type {
 /**
  * Zustand store for managing courts for clubs
  * 
+ * **IMPORTANT**: This store is primarily designed for admin contexts.
+ * - List operations (fetchCourtsIfNeeded, fetchCourtsByClubId, createCourt) use admin endpoints
+ * - Individual court fetching (ensureCourtById) has fallback logic for player access
+ * - For player court lists, use `usePlayerClubStore` instead
+ * 
  * This store provides a centralized, reusable state management solution for courts
  * that can be used across admin dashboards, booking pages, and club management pages.
  * 
  * Features:
  * - Fetch courts by club ID with inflight request guards (prevents duplicate concurrent requests)
  * - Fetch-if-missing pattern: returns cached data when available, fetches only when needed
- * - Fetch individual court details with caching
+ * - Fetch individual court details with caching and player fallback
  * - Create, update, and delete courts with optimistic updates
  * - Helper methods for court selection and lookup
  * - Error and loading state management
@@ -27,18 +32,18 @@ import type {
  * 
  * @example
  * ```tsx
- * // Fetch courts if not already loaded
+ * // Fetch courts if not already loaded (admin context)
  * const courts = useCourtStore(state => state.courts);
  * const fetchCourtsIfNeeded = useCourtStore(state => state.fetchCourtsIfNeeded);
  * 
  * useEffect(() => {
- *   fetchCourtsIfNeeded().catch(console.error);
- * }, [fetchCourtsIfNeeded]);
+ *   fetchCourtsIfNeeded({ clubId }).catch(console.error);
+ * }, [fetchCourtsIfNeeded, clubId]);
  * ```
  * 
  * @example
  * ```tsx
- * // Ensure a specific court is loaded
+ * // Ensure a specific court is loaded (works in both admin and player contexts)
  * const ensureCourtById = useCourtStore(state => state.ensureCourtById);
  * const court = useCourtStore(state => state.courtsById[courtId]);
  * 
@@ -192,17 +197,19 @@ export const useCourtStore = create<CourtState>((set, get) => ({
     const fetchPromise = (async () => {
       set({ loadingCourts: true, courtsError: null });
       try {
-        // Try multiple endpoints based on what's available
-        // Prefer the new admin endpoint, fallback to club-based or player endpoint
+        // Try multiple endpoints based on context
+        // Admin contexts: Use /api/admin/courts/[courtId] or /api/admin/clubs/[clubId]/courts/[courtId]
+        // Player contexts: Will get 403 from admin endpoint, then fallback to /api/courts/[courtId]
+        // This allows ensureCourtById to work in both admin and player contexts
         let response;
         if (clubId) {
           response = await fetch(`/api/admin/clubs/${clubId}/courts/${courtId}`);
         } else {
-          // Try the new admin endpoint first
+          // Try the admin endpoint first (will succeed for admins)
           response = await fetch(`/api/admin/courts/${courtId}`);
           
-          // If not found, try player endpoint as fallback
-          if (!response.ok && response.status === 404) {
+          // If 403/404, try player endpoint as fallback (will succeed for players viewing public courts)
+          if (!response.ok && (response.status === 404 || response.status === 403)) {
             response = await fetch(`/api/courts/${courtId}`);
           }
         }
