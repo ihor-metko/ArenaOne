@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Modal, IMLink, DangerZone } from "@/components/ui";
@@ -191,7 +191,7 @@ export default function CourtDetailPage({
   };
 
   // Loading skeleton
-  if (loadingCourts) {
+  if (loadingCourts || isLoading) {
     return (
       <main className="im-court-detail-page">
         <div className="im-court-detail-skeleton">
@@ -228,8 +228,8 @@ export default function CourtDetailPage({
     return null;
   }
 
-  // Prepare DangerZone actions
-  const dangerActions: DangerAction[] = [
+  // Prepare DangerZone actions (memoized to prevent unnecessary re-renders)
+  const dangerActions: DangerAction[] = useMemo(() => [
     {
       id: 'toggleActive',
       title: court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt"),
@@ -252,7 +252,7 @@ export default function CourtDetailPage({
       variant: 'danger',
       show: canManageCourt,
     },
-  ];
+  ], [court.isActive, canManageCourt, isTogglingActive, submitting, t, handleOpenToggleActiveModal]);
 
   return (
     <main className="im-court-detail-page">
