@@ -1010,31 +1010,6 @@
           "eur": "EUR (€)",
           "gbp": "GBP (£)",
           "uah": "UAH (₴)"
-        },
-        "preview": {
-          "title": "Preview",
-          "show": "Show Preview ▼",
-          "hide": "Hide Preview ▲",
-          "readyToPublish": "Ready to publish",
-          "draft": "Draft",
-          "courtNamePlaceholder": "Court Name",
-          "newCourt": "new court",
-          "addImage": "Add an image",
-          "previewImageAlt": "Preview image for {name}",
-          "mainImageAlt": "Main image for {name}",
-          "galleryImageAlt": "Gallery image {index} for {name}",
-          "perMinutes": "min"
-        },
-        "toast": {
-          "pleaseSelectClub": "Please select a club",
-          "fixValidationErrors": "Please fix validation errors before publishing",
-          "slugAlreadyExists": "Slug already exists. Try a different slug like: {suggestion}",
-          "courtCreatedSuccess": "Court created successfully!"
-        },
-        "aria": {
-          "removeMainImage": "Remove main image",
-          "setAsMainImage": "Set gallery image {index} as main image",
-          "removeGalleryImage": "Remove gallery image {index}"
         }
       }
     },
