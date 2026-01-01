@@ -245,9 +245,7 @@
 }
 
 /* ===== Gallery Section ===== */
-.im-admin-club-gallery-section {
-  @apply mt-8;
-}
+.im-admin-club-gallery-section {}
 
 .im-admin-club-gallery-carousel {
   @apply mt-6;

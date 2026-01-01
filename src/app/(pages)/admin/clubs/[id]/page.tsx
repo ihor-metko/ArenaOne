@@ -321,19 +321,123 @@ export default function AdminClubDetailPage({
           />
         </section>
 
-        {/* Courts Preview Section */}
-        <section className="im-admin-club-courts-section">
-          <ClubCourtsPreview
-            club={club}
-            disabled={!canEdit}
-            disabledTooltip={editDisabledTooltip}
-          />
-        </section>
-
         {/* Info Grid - matching player page layout */}
         <div className="im-admin-club-info-grid">
           {/* Left Column - Description & Details */}
           <div className="im-admin-club-info-column">
+            {/* Map Section */}
+            {hasValidCoordinates && (
+              <Card className="im-admin-club-info-card">
+                <div className="im-admin-club-section-header">
+                  <h2 className="im-admin-club-section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2 1,6" />
+                      <line x1="8" y1="2" x2="8" y2="18" />
+                      <line x1="16" y1="6" x2="16" y2="22" />
+                    </svg>
+                    {t("clubs.location")}
+                  </h2>
+                </div>
+                {process.env.NODE_ENV === "production" ? (
+                  <Suspense fallback={<MapLoadingPlaceholder message={t("common.loadingMap")} />}>
+                    <ClubMap
+                      latitude={club.latitude!}
+                      longitude={club.longitude!}
+                      clubName={club.name}
+                    />
+                  </Suspense>
+                ) : (
+                  <div>{t("common.mapHiddenInDev")}</div>
+                )}
+                <p className="im-admin-club-map-address">{club.location}</p>
+              </Card>
+            )}
+
+            {/* Courts Preview Section */}
+            <section className="im-admin-club-courts-section">
+              <ClubCourtsPreview
+                club={club}
+                disabled={!canEdit}
+                disabledTooltip={editDisabledTooltip}
+              />
+            </section>
+
+            {/* Bookings Summary */}
+            {bookingsLoading ? (
+              <BookingsPreviewSkeleton count={5} className="im-admin-club-bookings-section" />
+            ) : bookingsPreview && club && (
+              <section className="im-admin-club-bookings-section">
+                <div className="im-section-card">
+                  <div className="im-section-header">
+                    <div className="im-section-icon im-section-icon--bookings">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                    </div>
+                    <h2 className="im-section-title">{t("orgDetail.bookingsOverview")}</h2>
+                    <div className="im-section-actions">
+                      <Button
+                        variant="outline"
+                        onClick={() => router.push(`/admin/bookings?clubId=${club.id}`)}
+                      >
+                        {t("orgDetail.viewAllBookings")}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="im-bookings-summary">
+                    <div className="im-bookings-summary-item">
+                      <span className="im-bookings-summary-value">{bookingsPreview.summary.todayCount}</span>
+                      <span className="im-bookings-summary-label">{t("orgDetail.bookingsToday")}</span>
+                    </div>
+                    <div className="im-bookings-summary-item">
+                      <span className="im-bookings-summary-value">{bookingsPreview.summary.weekCount}</span>
+                      <span className="im-bookings-summary-label">{t("orgDetail.bookingsThisWeek")}</span>
+                    </div>
+                    <div className="im-bookings-summary-item">
+                      <span className="im-bookings-summary-value">{bookingsPreview.summary.totalUpcoming}</span>
+                      <span className="im-bookings-summary-label">{t("orgDetail.totalUpcoming")}</span>
+                    </div>
+                  </div>
+                  {bookingsPreview.items.length === 0 ? (
+                    <p className="im-preview-empty">{t("orgDetail.noBookings")}</p>
+                  ) : (
+                    <div className="im-bookings-preview-list">
+                      <h4 className="im-bookings-preview-title">{t("orgDetail.upcomingBookings")}</h4>
+                      {bookingsPreview.items.map((booking) => {
+                        const startDate = new Date(booking.start);
+                        const endDate = new Date(booking.end);
+
+                        return (
+                          <div key={booking.id} className="im-booking-preview-item">
+                            <div className="im-booking-preview-info">
+                              <span className="im-booking-preview-court">{booking.courtName}</span>
+                              <span className="im-booking-preview-meta">
+                                {booking.userName || booking.userEmail} · {booking.sportType}
+                              </span>
+                            </div>
+                            <div className="im-booking-preview-time">
+                              <span className="im-booking-preview-date">
+                                {startDate.toLocaleDateString()}
+                              </span>
+                              <span className="im-booking-preview-hours">
+                                {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                              </span>
+                            </div>
+                            <span className={`im-status-badge im-status-badge--${booking.status.toLowerCase()}`}>
+                              {booking.status}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
             {/* Club Details Card */}
             <Card className="im-admin-club-info-card">
               <div className="im-section-view-header">
@@ -362,34 +466,6 @@ export default function AdminClubDetailPage({
                 </div>
               )}
             </Card>
-
-            {/* Map Section */}
-            {hasValidCoordinates && (
-              <Card className="im-admin-club-info-card">
-                <div className="im-admin-club-section-header">
-                  <h2 className="im-admin-club-section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2 1,6" />
-                      <line x1="8" y1="2" x2="8" y2="18" />
-                      <line x1="16" y1="6" x2="16" y2="22" />
-                    </svg>
-                    {t("clubs.location")}
-                  </h2>
-                </div>
-                {process.env.NODE_ENV === "production" ? (
-                  <Suspense fallback={<MapLoadingPlaceholder message={t("common.loadingMap")} />}>
-                    <ClubMap
-                      latitude={club.latitude!}
-                      longitude={club.longitude!}
-                      clubName={club.name}
-                    />
-                  </Suspense>
-                ) : (
-                  <div>{t("common.mapHiddenInDev")}</div>
-                )}
-                <p className="im-admin-club-map-address">{club.location}</p>
-              </Card>
-            )}
           </div>
 
           {/* Right Column - Contact & Hours */}
@@ -446,86 +522,12 @@ export default function AdminClubDetailPage({
           )}
         </section>
 
-        {/* Bookings Summary */}
-        {bookingsLoading ? (
-          <BookingsPreviewSkeleton count={5} className="im-admin-club-bookings-section" />
-        ) : bookingsPreview && club && (
-          <section className="im-admin-club-bookings-section">
-            <div className="im-section-card">
-              <div className="im-section-header">
-                <div className="im-section-icon im-section-icon--bookings">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
-                </div>
-                <h2 className="im-section-title">{t("orgDetail.bookingsOverview")}</h2>
-                <div className="im-section-actions">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push(`/admin/bookings?clubId=${club.id}`)}
-                  >
-                    {t("orgDetail.viewAllBookings")}
-                  </Button>
-                </div>
-              </div>
-              <div className="im-bookings-summary">
-                <div className="im-bookings-summary-item">
-                  <span className="im-bookings-summary-value">{bookingsPreview.summary.todayCount}</span>
-                  <span className="im-bookings-summary-label">{t("orgDetail.bookingsToday")}</span>
-                </div>
-                <div className="im-bookings-summary-item">
-                  <span className="im-bookings-summary-value">{bookingsPreview.summary.weekCount}</span>
-                  <span className="im-bookings-summary-label">{t("orgDetail.bookingsThisWeek")}</span>
-                </div>
-                <div className="im-bookings-summary-item">
-                  <span className="im-bookings-summary-value">{bookingsPreview.summary.totalUpcoming}</span>
-                  <span className="im-bookings-summary-label">{t("orgDetail.totalUpcoming")}</span>
-                </div>
-              </div>
-              {bookingsPreview.items.length === 0 ? (
-                <p className="im-preview-empty">{t("orgDetail.noBookings")}</p>
-              ) : (
-                <div className="im-bookings-preview-list">
-                  <h4 className="im-bookings-preview-title">{t("orgDetail.upcomingBookings")}</h4>
-                  {bookingsPreview.items.map((booking) => {
-                    const startDate = new Date(booking.start);
-                    const endDate = new Date(booking.end);
-
-                    return (
-                      <div key={booking.id} className="im-booking-preview-item">
-                        <div className="im-booking-preview-info">
-                          <span className="im-booking-preview-court">{booking.courtName}</span>
-                          <span className="im-booking-preview-meta">
-                            {booking.userName || booking.userEmail} · {booking.sportType}
-                          </span>
-                        </div>
-                        <div className="im-booking-preview-time">
-                          <span className="im-booking-preview-date">
-                            {startDate.toLocaleDateString()}
-                          </span>
-                          <span className="im-booking-preview-hours">
-                            {startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
-                          </span>
-                        </div>
-                        <span className={`im-status-badge im-status-badge--${booking.status.toLowerCase()}`}>
-                          {booking.status}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+        {/* Danger Zone Section - At the very bottom */}
+        {dangerActions.filter((action) => action.show).length > 0 && (
+          <section className="im-admin-club-danger-zone-section">
+            <DangerZone actions={dangerActions} />
           </section>
         )}
-
-        {/* Danger Zone Section - At the very bottom */}
-        <section className="im-admin-club-danger-zone-section">
-          <DangerZone actions={dangerActions} />
-        </section>
       </div>
 
       {/* Delete Confirmation Modal */}
