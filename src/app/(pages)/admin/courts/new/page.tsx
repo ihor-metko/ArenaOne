@@ -18,7 +18,6 @@ import {
   Tab,
   TabPanel,
   PageHeader,
-  ImageUpload,
 } from "@/components/ui";
 import type { SelectOption } from "@/components/ui/Select";
 import { FormSkeleton, PageHeaderSkeleton } from "@/components/ui/skeletons";
@@ -293,6 +292,7 @@ export default function CreateCourtPage() {
   }, []);
 
   // Calculate progress percentage
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const progressPercentage = useMemo(() => {
     const requiredFields = ["name"];
     const optionalFields = [
@@ -362,7 +362,7 @@ export default function CreateCourtPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Upload failed");
+        throw new Error(data.error || t("admin.courts.new.errors.uploadFailed"));
       }
 
       return response.json();
@@ -403,7 +403,7 @@ export default function CreateCourtPage() {
         file,
         preview,
         uploading: false,
-        error: "Upload failed",
+        error: t("admin.courts.new.errors.uploadFailed"),
       });
     }
   };
@@ -443,7 +443,7 @@ export default function CreateCourtPage() {
         updatedGallery[imageIndex] = {
           ...updatedGallery[imageIndex],
           uploading: false,
-          error: "Upload failed",
+          error: t("admin.courts.new.errors.uploadFailed"),
         };
       }
 
@@ -536,7 +536,7 @@ export default function CreateCourtPage() {
     const targetClubId = data.clubId || clubIdFromUrl;
 
     if (!targetClubId) {
-      showToast("error", "Please select a club");
+      showToast("error", t("admin.courts.new.toast.pleaseSelectClub"));
       return;
     }
 
@@ -548,7 +548,7 @@ export default function CreateCourtPage() {
     }
 
     if (!allValid && visibility === "published") {
-      showToast("error", "Please fix validation errors before publishing");
+      showToast("error", t("admin.courts.new.toast.fixValidationErrors"));
       return;
     }
 
@@ -591,20 +591,20 @@ export default function CreateCourtPage() {
           // Slug conflict
           setStepErrors((prev) => ({ ...prev, basic: true }));
           setCurrentTab("basic");
-          showToast("error", `Slug already exists. Try a different slug like: ${data.slug}-1`);
+          showToast("error", t("admin.courts.new.toast.slugAlreadyExists", { suggestion: `${data.slug}-1` }));
           return;
         }
-        throw new Error(result.error || "Failed to create court");
+        throw new Error(result.error || t("admin.courts.new.errors.failedToCreateCourt"));
       }
 
-      showToast("success", "Court created successfully!");
+      showToast("success", t("admin.courts.new.toast.courtCreatedSuccess"));
 
       // Redirect to admin courts list page
       setTimeout(() => {
         router.push("/admin/courts");
       }, 1500);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to create court";
+      const message = err instanceof Error ? err.message : t("admin.courts.new.errors.failedToCreateCourt");
       setError(message);
       showToast("error", message);
     } finally {
@@ -946,7 +946,7 @@ export default function CreateCourtPage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={mainImage.preview || mainImage.url}
-                      alt={mainImage.alt || `Main image for ${watchedValues.name || "new court"}`}
+                      alt={t("admin.courts.new.preview.mainImageAlt", { name: watchedValues.name || t("admin.courts.new.preview.newCourt") })}
                       className="im-create-court-gallery-image"
                     />
                     <div className="im-create-court-gallery-actions">
@@ -954,7 +954,7 @@ export default function CreateCourtPage() {
                         type="button"
                         className="im-create-court-gallery-btn"
                         onClick={handleRemoveMainImage}
-                        aria-label="Remove main image"
+                        aria-label={t("admin.courts.new.aria.removeMainImage")}
                         disabled={isSubmitting}
                       >
                         ✕
@@ -1007,7 +1007,7 @@ export default function CreateCourtPage() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={image.preview || image.url}
-                        alt={image.alt || `Gallery image ${index + 1} for ${watchedValues.name || "new court"}`}
+                        alt={t("admin.courts.new.preview.galleryImageAlt", { index: index + 1, name: watchedValues.name || t("admin.courts.new.preview.newCourt") })}
                         className="im-create-court-gallery-image"
                         onClick={() => handleSetAsMain(index)}
                         onKeyDown={(e) => {
@@ -1019,14 +1019,14 @@ export default function CreateCourtPage() {
                         style={{ cursor: "pointer" }}
                         tabIndex={0}
                         role="button"
-                        aria-label={`Set gallery image ${index + 1} as main image`}
+                        aria-label={t("admin.courts.new.aria.setAsMainImage", { index: index + 1 })}
                       />
                       <div className="im-create-court-gallery-actions">
                         <button
                           type="button"
                           className="im-create-court-gallery-btn"
                           onClick={() => handleRemoveGalleryImage(index)}
-                          aria-label={`Remove gallery image ${index + 1}`}
+                          aria-label={t("admin.courts.new.aria.removeGalleryImage", { index: index + 1 })}
                           disabled={isSubmitting}
                         >
                           ✕
@@ -1273,16 +1273,16 @@ export default function CreateCourtPage() {
             className="im-create-court-preview-toggle"
             onClick={() => setPreviewCollapsed(!previewCollapsed)}
           >
-            {previewCollapsed ? "Show Preview ▼" : "Hide Preview ▲"}
+            {previewCollapsed ? t("admin.courts.new.preview.show") : t("admin.courts.new.preview.hide")}
           </button>
 
           <div className="im-create-court-preview">
             <div className="im-create-court-preview-header">
-              <h3 className="im-create-court-preview-title">Preview</h3>
+              <h3 className="im-create-court-preview-title">{t("admin.courts.new.preview.title")}</h3>
               <span
                 className={`im-create-court-preview-status ${canPublish ? "im-create-court-preview-status--ready" : "im-create-court-preview-status--draft"}`}
               >
-                {canPublish ? "Ready to publish" : "Draft"}
+                {canPublish ? t("admin.courts.new.preview.readyToPublish") : t("admin.courts.new.preview.draft")}
               </span>
             </div>
 
@@ -1292,12 +1292,12 @@ export default function CreateCourtPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={previewData.mainImage.preview || previewData.mainImage.url}
-                  alt={`Preview image for ${previewData.name || "new court"}`}
+                  alt={t("admin.courts.new.preview.previewImageAlt", { name: previewData.name || t("admin.courts.new.preview.newCourt") })}
                 />
               ) : (
                 <div className="im-create-court-preview-placeholder">
                   <span className="im-create-court-preview-placeholder-icon">📷</span>
-                  <span>Add an image</span>
+                  <span>{t("admin.courts.new.preview.addImage")}</span>
                 </div>
               )}
             </div>
@@ -1305,17 +1305,17 @@ export default function CreateCourtPage() {
             {/* Preview Body */}
             <div className="im-create-court-preview-body">
               <h4 className="im-create-court-preview-name">
-                {previewData.name || "Court Name"}
+                {previewData.name || t("admin.courts.new.preview.courtNamePlaceholder")}
               </h4>
 
               <div className="im-create-court-preview-badges">
                 {previewData.indoor ? (
                   <span className="im-create-court-preview-badge im-create-court-preview-badge--indoor">
-                    Indoor
+                    {t("common.indoor")}
                   </span>
                 ) : (
                   <span className="im-create-court-preview-badge im-create-court-preview-badge--outdoor">
-                    Outdoor
+                    {t("common.outdoor")}
                   </span>
                 )}
                 {previewData.type && (
@@ -1331,7 +1331,7 @@ export default function CreateCourtPage() {
               </div>
 
               <div className="im-create-court-preview-price">
-                {formatPrice(dollarsToCents(previewData.defaultPrice))} / {previewData.defaultSlotLengthMinutes} min
+                {formatPrice(dollarsToCents(previewData.defaultPrice))} / {previewData.defaultSlotLengthMinutes} {t("admin.courts.new.preview.perMinutes")}
               </div>
 
               {previewData.shortDescription && (

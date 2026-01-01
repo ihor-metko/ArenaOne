@@ -834,18 +834,18 @@
         "actions": {
           "saveDraft": "Зберегти чернетку",
           "saveAndPublish": "Зберегти та опублікувати",
-          "backToClubs": "← До клубів"
+          "backToClubs": "← Назад до клубів"
         },
         "submitting": {
           "creating": "Створення корту..."
         },
         "errors": {
           "nameRequired": "Назва обов'язкова",
-          "nameMinLength": "Назва має бути мінімум 2 символи",
-          "nameMaxLength": "Назва має бути максимум 120 символів",
+          "nameMinLength": "Назва має містити принаймні 2 символи",
+          "nameMaxLength": "Назва має містити не більше 120 символів",
           "slugPattern": "Slug може містити лише малі літери, цифри та дефіси",
           "priceNegative": "Ціна не може бути від'ємною",
-          "maxPlayersMin": "Має бути мінімум 1",
+          "maxPlayersMin": "Має бути принаймні 1",
           "maxPlayersMax": "Не може перевищувати 20",
           "organizationRequired": "Будь ласка, оберіть організацію",
           "clubRequired": "Будь ласка, оберіть клуб",
@@ -863,8 +863,8 @@
         },
         "surfaces": {
           "artificialGrass": "Штучна трава",
-          "clay": "Грунт",
-          "hard": "Твердий",
+          "clay": "Ґрунт",
+          "hard": "Тверде покриття",
           "grass": "Трава",
           "carpet": "Килим"
         },
@@ -879,6 +879,106 @@
           "eur": "EUR (€)",
           "gbp": "GBP (£)",
           "uah": "UAH (₴)"
+        },
+        "pageTitle": "Створити новий корт",
+        "pageDescription": "Додати новий корт до вашого клубу",
+        "tabs": {
+          "context": "Контекст",
+          "basic": "Основна інформація",
+          "pricingSchedule": "Ціни та розклад",
+          "media": "Медіа",
+          "settings": "Налаштування"
+        },
+        "contextTab": {
+          "title": "Вибір організації та клубу",
+          "description": "Оберіть організацію та клуб, де буде розташований цей корт.",
+          "organization": "Організація",
+          "selectOrganization": "Оберіть організацію...",
+          "club": "Клуб",
+          "selectClub": "Оберіть клуб...",
+          "orgAdminHint": "Показано клуби вашої організації",
+          "clubAdminHint": "Ваш клуб вже обрано"
+        },
+        "basicTab": {
+          "title": "Основна інформація",
+          "description": "Введіть основні відомості про ваш корт.",
+          "courtName": "Назва корту",
+          "courtNamePlaceholder": "Введіть назву корту",
+          "slug": "Slug",
+          "slugPlaceholder": "nazva-kortu-slug",
+          "slugHint": "Автоматично генерується з назви, якщо порожньо",
+          "courtType": "Тип корту",
+          "selectType": "Оберіть тип...",
+          "surface": "Покриття",
+          "selectSurface": "Оберіть покриття...",
+          "indoorCourt": "Закритий корт",
+          "shortDescription": "Короткий опис",
+          "shortDescriptionPlaceholder": "Короткий опис корту..."
+        },
+        "pricingScheduleTab": {
+          "pricingTitle": "Налаштування цін",
+          "pricingDescription": "Встановіть базові ціни для цього корту.",
+          "scheduleTitle": "Години роботи",
+          "scheduleDescription": "Встановіть робочі години для корту. Залиште порожнім, щоб використовувати години клубу.",
+          "defaultPrice": "Базова ціна",
+          "pricePlaceholder": "0.00",
+          "currency": "Валюта",
+          "currencyHint": "За замовчуванням валюта клубу",
+          "defaultSlotLength": "Базова тривалість слоту",
+          "openTime": "Час відкриття",
+          "closeTime": "Час закриття",
+          "timeError": "Час відкриття має бути раніше часу закриття",
+          "clubHoursHint": "Якщо не вказано, будуть використані години клубу.",
+          "noClubHoursHint": "Години клубу не налаштовані. Рекомендується встановити години корту."
+        },
+        "mediaTab": {
+          "title": "Зображення та медіа",
+          "description": "Завантажте зображення для цього корту. Головне зображення буде показано як основне фото.",
+          "mainImage": "Головне зображення",
+          "uploading": "Завантаження...",
+          "addMainImage": "Додати головне зображення",
+          "gallery": "Галерея",
+          "galleryHint": "Додайте додаткові фото. Натисніть на зображення, щоб встановити його як головне.",
+          "add": "Додати"
+        },
+        "settingsTab": {
+          "title": "Додаткові налаштування",
+          "description": "Налаштуйте видимість та додаткові опції.",
+          "visibility": "Видимість",
+          "visibilityDraft": "Чернетка (не видима публічно)",
+          "visibilityPublished": "Опубліковано (видима публічно)",
+          "tags": "Теги",
+          "tagsPlaceholder": "напр., для початківців, турнір",
+          "tagsHint": "Теги через кому",
+          "maxPlayers": "Макс. гравців",
+          "notes": "Примітки",
+          "notesPlaceholder": "Додаткові примітки або інструкції...",
+          "notesHint": "Внутрішні примітки, не показуються публічно"
+        },
+        "preview": {
+          "title": "Попередній перегляд",
+          "show": "Показати попередній перегляд ▼",
+          "hide": "Сховати попередній перегляд ▲",
+          "readyToPublish": "Готово до публікації",
+          "draft": "Чернетка",
+          "courtNamePlaceholder": "Назва корту",
+          "newCourt": "новий корт",
+          "addImage": "Додати зображення",
+          "previewImageAlt": "Попередній перегляд зображення для {name}",
+          "mainImageAlt": "Головне зображення для {name}",
+          "galleryImageAlt": "Зображення галереї {index} для {name}",
+          "perMinutes": "хв"
+        },
+        "toast": {
+          "pleaseSelectClub": "Будь ласка, оберіть клуб",
+          "fixValidationErrors": "Будь ласка, виправте помилки валідації перед публікацією",
+          "slugAlreadyExists": "Slug вже існує. Спробуйте інший slug, наприклад: {suggestion}",
+          "courtCreatedSuccess": "Корт успішно створено!"
+        },
+        "aria": {
+          "removeMainImage": "Видалити головне зображення",
+          "setAsMainImage": "Встановити зображення галереї {index} як головне",
+          "removeGalleryImage": "Видалити зображення галереї {index}"
         }
       }
     },
