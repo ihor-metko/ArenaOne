@@ -52,23 +52,6 @@ interface CourtFormData {
   notes: string;
 }
 
-interface Club {
-  id: string;
-  name: string;
-  organizationId?: string;
-  organization?: {
-    id: string;
-    name: string;
-  } | null;
-  defaultCurrency?: string | null;
-  businessHours?: Array<{
-    dayOfWeek: number;
-    openTime: string | null;
-    closeTime: string | null;
-    isClosed: boolean;
-  }>;
-}
-
 const defaultFormValues: CourtFormData = {
   organizationId: "",
   clubId: "",
@@ -115,10 +98,8 @@ export default function CreateCourtPage() {
 
   // Organization and Club stores
   const { organizations, fetchOrganizations, loading: orgsLoading } = useOrganizationStore();
-  const { clubs, fetchClubsIfNeeded, loadingClubs: clubsLoading, ensureClubById } = useAdminClubStore();
+  const { clubs, fetchClubsIfNeeded, loadingClubs: clubsLoading } = useAdminClubStore();
   const [clubIdFromUrl, setClubIdFromUrl] = useState<string | null>(null);
-  const [club, setClub] = useState<Club | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -266,56 +247,6 @@ export default function CreateCourtPage() {
       setValue("clubId", clubId);
     }
   }, [isOrgAdmin, isClubAdmin, adminStatus, setValue]);
-
-  // Fetch club data when clubId is set using Zustand store
-  const selectedClubId = watch("clubId") || clubIdFromUrl;
-
-  useEffect(() => {
-    if (!selectedClubId) {
-      setLoading(false);
-      setClub(null); // Clear club state when no club is selected
-      return;
-    }
-
-    const loadClub = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Use Zustand store to get club data (cache-first, prevents redundant requests)
-        const clubData = await ensureClubById(selectedClubId);
-        setClub(clubData);
-
-        // Set default currency from club
-        if (clubData.defaultCurrency) {
-          setValue("currency", clubData.defaultCurrency);
-        }
-
-        // Set organization ID from club if not already set
-        if (clubData.organizationId && !getValues("organizationId")) {
-          setValue("organizationId", clubData.organizationId);
-        }
-      } catch (err) {
-        console.error("Failed to load club:", err);
-        // Check for 404 error (club not found) by looking for HTTP 404 status
-        const errorMessage = err instanceof Error ? err.message : "";
-        const is404Error = /HTTP\s*404/i.test(errorMessage);
-
-        if (is404Error) {
-          setError(t("admin.courts.new.errors.clubNotFound"));
-        } else {
-          setError(t("admin.courts.new.errors.failedToLoadClub"));
-        }
-        setClub(null); // Clear club state on error
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadClub();
-    // Note: setValue and getValues are stable refs from react-hook-form and don't need to be in deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedClubId, ensureClubById, t]);
 
   // Auth check - allow any admin
   useEffect(() => {
@@ -979,9 +910,7 @@ export default function CreateCourtPage() {
 
         <div className="im-create-court-row">
           <span className="im-create-court-hint">
-            {club?.businessHours && club.businessHours.length > 0
-              ? t("admin.courts.new.scheduleStep.clubHoursHint")
-              : t("admin.courts.new.scheduleStep.noClubHoursHint")}
+            {t("admin.courts.new.scheduleStep.workingHoursHint")}
           </span>
         </div>
       </div>
@@ -1216,7 +1145,7 @@ export default function CreateCourtPage() {
   );
 
   // Loading state
-  if (isLoading || loading) {
+  if (isLoading) {
     return (
       <main className="im-create-court-page">
         <PageHeaderSkeleton showDescription />
@@ -1228,7 +1157,7 @@ export default function CreateCourtPage() {
   }
 
   // Error state
-  if (error && !club) {
+  if (error) {
     return (
       <main className="im-create-court-page">
         <div className="im-create-court-layout">
