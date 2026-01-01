@@ -46,10 +46,31 @@ export async function fetchFormattedClub(clubId: string) {
     return null;
   }
 
-  // Parse JSON fields
+  // Parse JSON fields with error handling
+  let logoData = null;
+  let bannerData = null;
+
+  if (club.logoData) {
+    try {
+      logoData = JSON.parse(club.logoData);
+    } catch (error) {
+      console.error(`Failed to parse logoData for club ${clubId}:`, error);
+      // Leave logoData as null if parsing fails
+    }
+  }
+
+  if (club.bannerData) {
+    try {
+      bannerData = JSON.parse(club.bannerData);
+    } catch (error) {
+      console.error(`Failed to parse bannerData for club ${clubId}:`, error);
+      // Leave bannerData as null if parsing fails
+    }
+  }
+
   return {
     ...club,
-    logoData: club.logoData ? JSON.parse(club.logoData) : null,
-    bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
+    logoData,
+    bannerData,
   };
 }
