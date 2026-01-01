@@ -446,6 +446,10 @@
     "duplicateDates": "Дублікати дат у спеціальних годинах",
     "invalidSpecialHours": "Неправильні спеціальні години для {date}: час відкриття повинен бути раніше часу закриття",
     "failedToUpdateSpecialHours": "Не вдалося оновити спеціальні години",
+    "failedToCreateSpecialDate": "Не вдалося створити спеціальну дату",
+    "failedToUpdateSpecialDate": "Не вдалося оновити спеціальну дату",
+    "failedToDeleteSpecialDate": "Не вдалося видалити спеціальну дату",
+    "failedToRefreshClubData": "Не вдалося оновити дані клубу",
     "am": "ДП",
     "pm": "ПП"
   },

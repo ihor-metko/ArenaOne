@@ -219,17 +219,14 @@ describe("ClubSpecialDatesView", () => {
     const editButton = screen.getByRole("button", { name: /edit/i });
     fireEvent.click(editButton);
 
-    // Save changes
+    // Save changes (with no modifications, no API calls should be made except for refresh)
     const saveButton = screen.getByRole("button", { name: /save/i });
     fireEvent.click(saveButton);
 
     await waitFor(() => {
+      // Should only fetch updated club data (no special hours changes)
       expect(global.fetch).toHaveBeenCalledWith(
-        `/api/admin/clubs/${mockClub.id}/special-hours`,
-        expect.objectContaining({
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-        })
+        `/api/admin/clubs/${mockClub.id}`
       );
     });
   });
