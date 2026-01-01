@@ -27,9 +27,11 @@ jest.mock("@/lib/prisma", () => ({
     },
     membership: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
     },
     clubMembership: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
     },
     $transaction: jest.fn(),
   },
@@ -50,6 +52,8 @@ describe("Club Section Update Permissions", () => {
     // Default: non-admin user has no memberships
     (prisma.membership.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.membership.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue(null);
   });
 
   const mockClub = {
@@ -75,12 +79,14 @@ describe("Club Section Update Permissions", () => {
         user: { id: "user-owner", isRoot: false },
       });
 
-      // Club owner membership
-      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([
-        { clubId: "club-123", role: "CLUB_OWNER" },
-      ]);
+      // Club owner membership - use findUnique for new guards
+      (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue({
+        role: "CLUB_OWNER",
+      });
+      (prisma.club.findUnique as jest.Mock)
+        .mockResolvedValueOnce(mockClub) // First call in canManageClub
+        .mockResolvedValueOnce(mockClub); // Second call in PATCH handler
 
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
       (prisma.club.update as jest.Mock).mockResolvedValue({
         ...mockClub,
         name: "Updated Name",
@@ -115,11 +121,12 @@ describe("Club Section Update Permissions", () => {
         user: { id: "user-owner", isRoot: false },
       });
 
-      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([
-        { clubId: "club-123", role: "CLUB_OWNER" },
-      ]);
-
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+      (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue({
+        role: "CLUB_OWNER",
+      });
+      (prisma.club.findUnique as jest.Mock)
+        .mockResolvedValueOnce(mockClub) // First call in canManageClub
+        .mockResolvedValueOnce(mockClub); // Second call in PATCH handler
 
       // Mock transaction
       (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
@@ -165,10 +172,9 @@ describe("Club Section Update Permissions", () => {
         user: { id: "user-owner", isRoot: false },
       });
 
-      // Club owner for a different club
-      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([
-        { clubId: "club-other", role: "CLUB_OWNER" },
-      ]);
+      // Club owner for a different club - they don't have access to club-123
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+      (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue(null);
 
       const request = new Request(
         "http://localhost:3000/api/admin/clubs/club-123/section",
@@ -201,11 +207,13 @@ describe("Club Section Update Permissions", () => {
         user: { id: "user-admin", isRoot: false },
       });
 
-      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([
-        { clubId: "club-123", role: "CLUB_ADMIN" },
-      ]);
+      (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue({
+        role: "CLUB_ADMIN",
+      });
+      (prisma.club.findUnique as jest.Mock)
+        .mockResolvedValueOnce(mockClub) // First call in canManageClub
+        .mockResolvedValueOnce(mockClub); // Second call in PATCH handler
 
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
       (prisma.club.update as jest.Mock).mockResolvedValue({
         ...mockClub,
         phone: "123-456-7890",
@@ -237,11 +245,12 @@ describe("Club Section Update Permissions", () => {
         user: { id: "user-admin", isRoot: false },
       });
 
-      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([
-        { clubId: "club-123", role: "CLUB_ADMIN" },
-      ]);
-
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+      (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue({
+        role: "CLUB_ADMIN",
+      });
+      (prisma.club.findUnique as jest.Mock)
+        .mockResolvedValueOnce(mockClub) // First call in canManageClub
+        .mockResolvedValueOnce(mockClub); // Second call in PATCH handler
 
       // Mock transaction
       (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
@@ -283,10 +292,9 @@ describe("Club Section Update Permissions", () => {
         user: { id: "user-admin", isRoot: false },
       });
 
-      // Club admin for a different club
-      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([
-        { clubId: "club-other", role: "CLUB_ADMIN" },
-      ]);
+      // Club admin for a different club - they don't have access to club-123
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+      (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue(null);
 
       const request = new Request(
         "http://localhost:3000/api/admin/clubs/club-123/section",
@@ -319,11 +327,14 @@ describe("Club Section Update Permissions", () => {
         user: { id: "user-org-admin", isRoot: false },
       });
 
-      (prisma.membership.findMany as jest.Mock).mockResolvedValue([
-        { organizationId: "org-123", role: "ORGANIZATION_ADMIN" },
-      ]);
+      (prisma.membership.findUnique as jest.Mock).mockResolvedValue({
+        role: "ORGANIZATION_ADMIN",
+        isPrimaryOwner: false,
+      });
+      (prisma.club.findUnique as jest.Mock)
+        .mockResolvedValueOnce(mockClub) // First call in canManageClub
+        .mockResolvedValueOnce(mockClub); // Second call in PATCH handler
 
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
       (prisma.club.update as jest.Mock).mockResolvedValue({
         ...mockClub,
         name: "Updated by Org Admin",
@@ -358,11 +369,8 @@ describe("Club Section Update Permissions", () => {
         user: { id: "user-org-admin", isRoot: false },
       });
 
-      // Org admin for a different organization
-      (prisma.membership.findMany as jest.Mock).mockResolvedValue([
-        { organizationId: "org-other", role: "ORGANIZATION_ADMIN" },
-      ]);
-
+      // Org admin for a different organization - they don't have access to org-123
+      (prisma.membership.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
 
       const request = new Request(

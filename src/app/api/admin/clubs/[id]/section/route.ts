@@ -1,43 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAnyAdmin } from "@/lib/requireRole";
+import { requireClubAdmin } from "@/lib/permissions/guards";
 import { SportType } from "@/constants/sports";
 
 type Section = "header" | "contacts" | "hours" | "gallery" | "coaches" | "metadata" | "location";
-
-/**
- * Check if an admin has access to a specific club
- */
-async function canAccessClub(
-  adminType: "root_admin" | "organization_admin" | "club_owner" | "club_admin",
-  managedIds: string[],
-  clubId: string
-): Promise<boolean> {
-  if (adminType === "root_admin") {
-    return true;
-  }
-
-  if (adminType === "club_owner") {
-    return managedIds.includes(clubId);
-  }
-
-  if (adminType === "club_admin") {
-    return managedIds.includes(clubId);
-  }
-
-  if (adminType === "organization_admin") {
-    // Check if club belongs to one of the managed organizations
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      select: { organizationId: true },
-    });
-    return club?.organizationId ? managedIds.includes(club.organizationId) : false;
-  }
-
-  return false;
-}
-
-
 interface HeaderPayload {
   name: string;
   slug: string;
@@ -153,27 +119,16 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authResult = await requireAnyAdmin(request);
+  const resolvedParams = await params;
+  const clubId = resolvedParams.id;
+
+  const authResult = await requireClubAdmin(clubId);
 
   if (!authResult.authorized) {
     return authResult.response;
   }
 
   try {
-    const resolvedParams = await params;
-    const clubId = resolvedParams.id;
-
-    // Check access permission for non-root admins
-    if (authResult.adminType !== "root_admin") {
-      const hasAccess = await canAccessClub(
-        authResult.adminType,
-        authResult.managedIds,
-        clubId
-      );
-      if (!hasAccess) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
-    }
 
     const existingClub = await prisma.club.findUnique({
       where: { id: clubId },

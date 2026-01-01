@@ -11,9 +11,11 @@ jest.mock("@/lib/prisma", () => ({
     },
     membership: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
     },
     clubMembership: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
     },
   },
 }));
@@ -33,6 +35,8 @@ describe("Club Update Permissions", () => {
     // Default: non-admin user has no memberships
     (prisma.membership.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.membership.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue(null);
   });
 
   const mockClub = {
@@ -57,12 +61,15 @@ describe("Club Update Permissions", () => {
         user: { id: "user-owner", isRoot: false },
       });
 
-      // Club owner membership
-      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([
-        { clubId: "club-123", role: "CLUB_OWNER" },
-      ]);
+      // Club owner membership - use findUnique for new guards
+      (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue({
+        role: "CLUB_OWNER",
+      });
+      (prisma.club.findUnique as jest.Mock)
+        .mockResolvedValueOnce(mockClub) // First call in canManageClub
+        .mockResolvedValueOnce(mockClub) // Second call in PUT handler
+        .mockResolvedValueOnce(mockUpdatedClub); // Third call for update result
 
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
       (prisma.club.update as jest.Mock).mockResolvedValue(mockUpdatedClub);
 
       const request = new Request(
@@ -98,10 +105,9 @@ describe("Club Update Permissions", () => {
         user: { id: "user-owner", isRoot: false },
       });
 
-      // Club owner for a different club
-      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([
-        { clubId: "club-other", role: "CLUB_OWNER" },
-      ]);
+      // Club owner for a different club - they don't have access to club-123
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+      (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue(null);
 
       const request = new Request(
         "http://localhost:3000/api/admin/clubs/club-123",
@@ -134,11 +140,14 @@ describe("Club Update Permissions", () => {
       });
 
       // Club admin membership
-      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([
-        { clubId: "club-123", role: "CLUB_ADMIN" },
-      ]);
+      (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue({
+        role: "CLUB_ADMIN",
+      });
+      (prisma.club.findUnique as jest.Mock)
+        .mockResolvedValueOnce(mockClub) // First call in canManageClub
+        .mockResolvedValueOnce(mockClub) // Second call in PUT handler
+        .mockResolvedValueOnce(mockUpdatedClub); // Third call for update result
 
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
       (prisma.club.update as jest.Mock).mockResolvedValue(mockUpdatedClub);
 
       const request = new Request(
@@ -174,10 +183,9 @@ describe("Club Update Permissions", () => {
         user: { id: "user-admin", isRoot: false },
       });
 
-      // Club admin for a different club
-      (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([
-        { clubId: "club-other", role: "CLUB_ADMIN" },
-      ]);
+      // Club admin for a different club - they don't have access to club-123
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+      (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue(null);
 
       const request = new Request(
         "http://localhost:3000/api/admin/clubs/club-123",
@@ -209,11 +217,15 @@ describe("Club Update Permissions", () => {
       });
 
       // Organization admin
-      (prisma.membership.findMany as jest.Mock).mockResolvedValue([
-        { organizationId: "org-123", role: "ORGANIZATION_ADMIN" },
-      ]);
+      (prisma.membership.findUnique as jest.Mock).mockResolvedValue({
+        role: "ORGANIZATION_ADMIN",
+        isPrimaryOwner: false,
+      });
+      (prisma.club.findUnique as jest.Mock)
+        .mockResolvedValueOnce(mockClub) // First call in canManageClub
+        .mockResolvedValueOnce(mockClub) // Second call in PUT handler
+        .mockResolvedValueOnce(mockUpdatedClub); // Third call for update result
 
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
       (prisma.club.update as jest.Mock).mockResolvedValue(mockUpdatedClub);
 
       const request = new Request(
@@ -242,12 +254,8 @@ describe("Club Update Permissions", () => {
         user: { id: "user-org-admin", isRoot: false },
       });
 
-      // Organization admin for a different org
-      (prisma.membership.findMany as jest.Mock).mockResolvedValue([
-        { organizationId: "org-other", role: "ORGANIZATION_ADMIN" },
-      ]);
-
-      // Club belongs to different organization
+      // Organization admin for a different org - they don't have access to org-123
+      (prisma.membership.findUnique as jest.Mock).mockResolvedValue(null);
       (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
 
       const request = new Request(
@@ -310,12 +318,16 @@ describe("Club Update Permissions", () => {
         user: { id: "user-mixed", isRoot: false },
       });
 
-      // User is org admin (takes priority in requireAnyAdmin)
-      (prisma.membership.findMany as jest.Mock).mockResolvedValue([
-        { organizationId: "org-123", role: "ORGANIZATION_ADMIN" },
-      ]);
+      // User is org admin (has access via org admin role)
+      (prisma.membership.findUnique as jest.Mock).mockResolvedValue({
+        role: "ORGANIZATION_ADMIN",
+        isPrimaryOwner: false,
+      });
+      (prisma.club.findUnique as jest.Mock)
+        .mockResolvedValueOnce(mockClub) // First call in canManageClub
+        .mockResolvedValueOnce(mockClub) // Second call in PUT handler
+        .mockResolvedValueOnce(mockUpdatedClub); // Third call for update result
 
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
       (prisma.club.update as jest.Mock).mockResolvedValue(mockUpdatedClub);
 
       const request = new Request(
