@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Modal, IMLink } from "@/components/ui";
+import { useTranslations } from "next-intl";
+import { Button, Modal, IMLink, DangerZone } from "@/components/ui";
+import type { DangerAction } from "@/components/ui";
 import {
   CourtBasicBlock,
   CourtPricingBlock,
@@ -23,16 +25,20 @@ export default function CourtDetailPage({
   params: Promise<{ courtId: string }>;
 }) {
   const router = useRouter();
+  const t = useTranslations();
 
   // Use store for auth
   const isHydrated = useUserStore((state) => state.isHydrated);
   const isLoading = useUserStore((state) => state.isLoading);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+  const hasRole = useUserStore((state) => state.hasRole);
 
   const [courtId, setCourtId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isToggleActiveModalOpen, setIsToggleActiveModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isTogglingActive, setIsTogglingActive] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   // Use court store
@@ -136,11 +142,50 @@ export default function CourtDetailPage({
       showToast("error", err instanceof Error ? err.message : "Failed to delete court");
     } finally {
       setSubmitting(false);
+      setIsDeleteModalOpen(false);
     }
   };
 
+  const handleToggleActive = async () => {
+    if (!court) return;
+
+    setIsTogglingActive(true);
+    try {
+      const response = await fetch(`/api/admin/courts/${courtId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isActive: !court.isActive,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update court");
+      }
+
+      await fetchCourt();
+      setIsToggleActiveModalOpen(false);
+      showToast(
+        "success",
+        court.isActive
+          ? t("courts.courtDeactivatedSuccess")
+          : t("courts.courtActivatedSuccess")
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to save changes";
+      showToast("error", message);
+    } finally {
+      setIsTogglingActive(false);
+    }
+  };
+
+  const handleOpenToggleActiveModal = () => {
+    setIsToggleActiveModalOpen(true);
+  };
+
   // Loading skeleton
-  if (status === "loading" || loadingCourts) {
+  if (loadingCourts) {
     return (
       <main className="im-court-detail-page">
         <div className="im-court-detail-skeleton">
@@ -177,6 +222,32 @@ export default function CourtDetailPage({
     return null;
   }
 
+  // Prepare DangerZone actions
+  const dangerActions: DangerAction[] = [
+    {
+      id: 'toggleActive',
+      title: court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt"),
+      description: court.isActive
+        ? t("dangerZone.deactivateCourtDescription")
+        : t("dangerZone.activateCourtDescription"),
+      buttonLabel: court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt"),
+      onAction: handleOpenToggleActiveModal,
+      isProcessing: isTogglingActive,
+      variant: court.isActive ? 'danger' : 'warning',
+      show: true,
+    },
+    {
+      id: 'delete',
+      title: t("dangerZone.deleteCourt"),
+      description: t("dangerZone.deleteCourtDescription"),
+      buttonLabel: t("common.delete"),
+      onAction: () => setIsDeleteModalOpen(true),
+      isProcessing: submitting,
+      variant: 'danger',
+      show: true,
+    },
+  ];
+
   return (
     <main className="im-court-detail-page">
       {/* Toast Notification */}
@@ -190,19 +261,12 @@ export default function CourtDetailPage({
       )}
 
       <div className="entity-page-content entity-page-content--narrow">
-        {/* Toolbar */}
+        {/* Toolbar - now empty but kept for future actions */}
         <div className="im-court-detail-toolbar">
           <div className="im-court-detail-toolbar-left">
           </div>
 
           <div className="im-court-detail-toolbar-right">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteModalOpen(true)}
-              className="im-court-delete-btn"
-            >
-              Delete Court
-            </Button>
           </div>
         </div>
 
@@ -234,28 +298,61 @@ export default function CourtDetailPage({
             <CourtPreview court={court as unknown as Parameters<typeof CourtPreview>[0]['court']} clubId={court.clubId} />
           </div>
         </div>
+
+        {/* Danger Zone Section - At the very bottom */}
+        <section className="im-admin-court-danger-zone-section">
+          <DangerZone actions={dangerActions} />
+        </section>
       </div>
+
+      {/* Toggle Active/Inactive Confirmation Modal */}
+      <Modal
+        isOpen={isToggleActiveModalOpen}
+        onClose={() => setIsToggleActiveModalOpen(false)}
+        title={court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt")}
+      >
+        <p className="mb-4">
+          {court.isActive
+            ? t("dangerZone.deactivateCourtConfirm", { name: court.name })
+            : t("dangerZone.activateCourtConfirm", { name: court.name })
+          }
+        </p>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setIsToggleActiveModalOpen(false)}>
+            {t("common.cancel")}
+          </Button>
+          <Button
+            onClick={handleToggleActive}
+            disabled={isTogglingActive}
+            className={court.isActive ? "bg-red-500 hover:bg-red-600" : ""}
+          >
+            {isTogglingActive ? t("common.processing") : (court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt"))}
+          </Button>
+        </div>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Court"
+        title={t("dangerZone.deleteCourt")}
       >
         <p className="mb-4">
-          Are you sure you want to delete &quot;{court.name}&quot;? This action
-          cannot be undone and will also delete all associated price rules and bookings.
+          {t("courts.deleteConfirm", { name: court.name })}
+        </p>
+        <p className="mb-4 text-sm opacity-70">
+          {t("courts.deleteWarning")}
         </p>
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleDelete}
             disabled={submitting}
             className="bg-red-500 hover:bg-red-600"
           >
-            {submitting ? "Deleting..." : "Delete"}
+            {submitting ? t("common.processing") : t("common.delete")}
           </Button>
         </div>
       </Modal>

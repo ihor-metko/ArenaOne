@@ -780,6 +780,9 @@
       "editCourt": "Edit Court",
       "deleteCourt": "Delete Court",
       "deleteConfirm": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+      "deleteWarning": "This will permanently delete all associated price rules and bookings.",
+      "courtActivatedSuccess": "Court activated successfully",
+      "courtDeactivatedSuccess": "Court deactivated successfully",
       "clubLabel": "Club",
       "surface": "Surface",
       "type": "Type",
@@ -2555,7 +2558,15 @@
     "publishOrgDescription": "Make this organization visible to the public. Clubs under this organization can be accessed by players.",
     "unpublishOrgDescription": "Hide this organization from public view. Players will not be able to access clubs under this organization. This action is reversible.",
     "publishOrgConfirm": "Are you sure you want to publish \"{name}\"? It will become visible to all players.",
-    "unpublishOrgConfirm": "Are you sure you want to unpublish \"{name}\"? It will be hidden from public view."
+    "unpublishOrgConfirm": "Are you sure you want to unpublish \"{name}\"? It will be hidden from public view.",
+    "activateCourtDescription": "Make this court active and available for booking. Players will be able to see and book this court.",
+    "deactivateCourtDescription": "Deactivate this court. Players will not be able to see or book this court. This action is reversible.",
+    "deleteCourtDescription": "Permanently delete this court and all associated data (bookings, price rules). This action cannot be undone.",
+    "activateCourtConfirm": "Are you sure you want to activate \"{name}\"? It will become available for booking.",
+    "deactivateCourtConfirm": "Are you sure you want to deactivate \"{name}\"? It will be hidden from players.",
+    "activateCourt": "Activate Court",
+    "deactivateCourt": "Deactivate Court",
+    "deleteCourt": "Delete Court"
   },
   "createAdminWizard": {
     "title": "Create Administrator",
