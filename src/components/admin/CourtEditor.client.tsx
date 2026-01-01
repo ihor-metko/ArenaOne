@@ -53,15 +53,19 @@ export function CourtEditor({
   }, []);
 
   const handleBannerSave = useCallback(async (file: File | null, alignment: 'top' | 'center' | 'bottom') => {
+    // Parse existing metadata and merge with new alignment
+    const existingMetadata = parseCourtMetadata(court.metadata);
+    const newMetadata = {
+      ...existingMetadata,
+      bannerAlignment: alignment,
+    };
+
     // Update metadata with alignment first
     const response = await fetch(`/api/admin/courts/${court.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        metadata: {
-          ...(court.metadata as object || {}),
-          bannerAlignment: alignment,
-        },
+        metadata: newMetadata,
       }),
     });
 
