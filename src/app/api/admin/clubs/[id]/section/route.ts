@@ -1,9 +1,42 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRootAdmin } from "@/lib/requireRole";
+import { requireAnyAdmin } from "@/lib/requireRole";
 import { SportType } from "@/constants/sports";
 
 type Section = "header" | "contacts" | "hours" | "gallery" | "coaches" | "metadata" | "location";
+
+/**
+ * Check if an admin has access to a specific club
+ */
+async function canAccessClub(
+  adminType: "root_admin" | "organization_admin" | "club_owner" | "club_admin",
+  managedIds: string[],
+  clubId: string
+): Promise<boolean> {
+  if (adminType === "root_admin") {
+    return true;
+  }
+
+  if (adminType === "club_owner") {
+    return managedIds.includes(clubId);
+  }
+
+  if (adminType === "club_admin") {
+    return managedIds.includes(clubId);
+  }
+
+  if (adminType === "organization_admin") {
+    // Check if club belongs to one of the managed organizations
+    const club = await prisma.club.findUnique({
+      where: { id: clubId },
+      select: { organizationId: true },
+    });
+    return club?.organizationId ? managedIds.includes(club.organizationId) : false;
+  }
+
+  return false;
+}
+
 
 interface HeaderPayload {
   name: string;
@@ -120,7 +153,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authResult = await requireRootAdmin(request);
+  const authResult = await requireAnyAdmin(request);
 
   if (!authResult.authorized) {
     return authResult.response;
@@ -129,6 +162,18 @@ export async function PATCH(
   try {
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
+
+    // Check access permission for non-root admins
+    if (authResult.adminType !== "root_admin") {
+      const hasAccess = await canAccessClub(
+        authResult.adminType,
+        authResult.managedIds,
+        clubId
+      );
+      if (!hasAccess) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
 
     const existingClub = await prisma.club.findUnique({
       where: { id: clubId },

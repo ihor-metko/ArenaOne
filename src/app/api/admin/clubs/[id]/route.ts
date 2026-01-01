@@ -129,17 +129,13 @@ export async function PUT(
     return authResult.response;
   }
 
-  // Only root admins and organization admins can edit clubs
-  if (authResult.adminType === "club_admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
   try {
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
-    // Check access permission for organization admins
-    if (authResult.adminType === "organization_admin") {
+    // Check access permission for non-root admins
+    // Root admin has access to all clubs, others need to check permissions
+    if (authResult.adminType !== "root_admin") {
       const hasAccess = await canAccessClub(
         authResult.adminType,
         authResult.managedIds,

@@ -25,6 +25,12 @@ jest.mock("@/lib/prisma", () => ({
     coach: {
       updateMany: jest.fn(),
     },
+    membership: {
+      findMany: jest.fn(),
+    },
+    clubMembership: {
+      findMany: jest.fn(),
+    },
     $transaction: jest.fn(),
   },
 }));
@@ -41,6 +47,9 @@ import { prisma } from "@/lib/prisma";
 describe("Admin Club Section API", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default: non-admin user has no memberships
+    (prisma.membership.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.clubMembership.findMany as jest.Mock).mockResolvedValue([]);
   });
 
   const mockClub = {
