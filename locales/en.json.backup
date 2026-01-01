@@ -1011,8 +1011,7 @@
           "gbp": "GBP (£)",
           "uah": "UAH (₴)"
         }
-      },
-      "group": "Group"
+      }
     },
     "sportConfig": {
       "title": "Sport Configuration",

@@ -290,6 +290,18 @@ export function CourtCard({
                 {isActive ? t("admin.courts.active") : t("admin.courts.inactive")}
               </span>
             </div>
+
+            {/* Court Group Info */}
+            {court.group && (
+              <div className="im-court-card-info-item">
+                <span className="im-court-card-info-label">
+                  {t("admin.courts.group")}:{" "}
+                </span>
+                <span className="im-court-card-info-value">
+                  {court.group.name}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
