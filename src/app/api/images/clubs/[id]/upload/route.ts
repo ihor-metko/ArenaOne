@@ -9,6 +9,57 @@ import {
 import { prisma } from "@/lib/prisma";
 
 /**
+ * Helper function to fetch and format a club with all related data
+ * Used to ensure consistent club object structure across all endpoints
+ */
+async function fetchFormattedClub(clubId: string) {
+  const club = await prisma.club.findUnique({
+    where: { id: clubId },
+    include: {
+      organization: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      courts: {
+        orderBy: { name: "asc" },
+      },
+      coaches: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      },
+      gallery: {
+        orderBy: { sortOrder: "asc" },
+      },
+      businessHours: {
+        orderBy: { dayOfWeek: "asc" },
+      },
+    },
+  });
+
+  if (!club) {
+    return null;
+  }
+
+  // Parse JSON fields
+  return {
+    ...club,
+    logoData: club.logoData ? JSON.parse(club.logoData) : null,
+    bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
+  };
+}
+
+/**
  * POST /api/images/clubs/:id/upload
  *
  * Upload an image for a club.
@@ -18,7 +69,7 @@ import { prisma } from "@/lib/prisma";
  * @body file - The image file to upload
  * @body type - Image type: "logo" or "heroImage"
  *
- * @returns JSON with the uploaded image URL
+ * @returns JSON with the full updated club object
  */
 export async function POST(
   request: NextRequest,
@@ -163,12 +214,13 @@ export async function POST(
 
     console.log(`[Club Upload] Database updated successfully for club ${clubId}, ${imageType}: ${url}`);
 
-    return NextResponse.json({
-      success: true,
-      url,
-      filename,
-      type: imageType,
-    });
+    // Fetch and return the updated club object
+    const updatedClub = await fetchFormattedClub(clubId);
+    if (!updatedClub) {
+      return NextResponse.json({ error: "Club not found after update" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedClub);
   } catch (error) {
     // Log detailed error information for debugging
     console.error(`[Club Upload] Error uploading image for club ${clubId}:`, {

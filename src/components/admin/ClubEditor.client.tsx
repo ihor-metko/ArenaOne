@@ -14,14 +14,16 @@ interface ClubEditorProps {
   isOpen: boolean;
   onClose: () => void;
   club: ClubDetail;
-  onRefresh: () => Promise<void>;
+  /**
+   * @deprecated No longer needed - store updates are now handled reactively via updateClubInStore
+   */
+  onRefresh?: () => Promise<void>;
 }
 
 export function ClubEditor({
   isOpen,
   onClose,
   club,
-  onRefresh,
 }: ClubEditorProps) {
   const t = useTranslations();
   const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
@@ -174,6 +176,9 @@ export function ClubEditor({
       throw new Error(errorData.error || t("clubDetail.failedToSaveChanges"));
     }
 
+    // Get updated club data from metadata response
+    let updatedClub = await response.json();
+
     // Upload logo if provided
     if (payload.logo) {
       const logoFormData = new FormData();
@@ -189,6 +194,9 @@ export function ClubEditor({
         const errorData = await logoResponse.json();
         throw new Error(errorData.error || t("clubs.errors.imageUploadFailed"));
       }
+
+      // Get updated club data from logo upload response
+      updatedClub = await logoResponse.json();
     }
 
     // Upload second logo if provided
@@ -206,16 +214,16 @@ export function ClubEditor({
         const errorData = await secondLogoResponse.json();
         throw new Error(errorData.error || t("clubs.errors.imageUploadFailed"));
       }
+
+      // Get updated club data from second logo upload response
+      updatedClub = await secondLogoResponse.json();
     }
 
-    // Refetch club data after all operations complete
-    // This is necessary because file upload endpoints don't return the full club object
-    if (onRefresh) {
-      await onRefresh();
-    }
+    // Update store reactively - no page reload needed
+    updateClubInStore(club.id, updatedClub);
     
     setHasUnsavedChanges(false);
-  }, [club.id, club.metadata, onRefresh, t]);
+  }, [club.id, club.metadata, t, updateClubInStore]);
 
   const handleBannerSave = useCallback(async (file: File | null, alignment: 'top' | 'center' | 'bottom') => {
     // Parse existing metadata
@@ -246,6 +254,9 @@ export function ClubEditor({
       throw new Error(errorData.error || t("clubDetail.failedToSaveChanges"));
     }
 
+    // Get updated club data from metadata response
+    let updatedClub = await response.json();
+
     // Upload file if provided
     if (file) {
       const heroFormData = new FormData();
@@ -261,16 +272,16 @@ export function ClubEditor({
         const errorData = await heroResponse.json();
         throw new Error(errorData.error || t("clubs.errors.imageUploadFailed"));
       }
+
+      // Get updated club data from image upload response
+      updatedClub = await heroResponse.json();
     }
 
-    // Refetch club data after all operations complete
-    // This is necessary because file upload endpoints don't return the full club object
-    if (onRefresh) {
-      await onRefresh();
-    }
+    // Update store reactively - no page reload needed
+    updateClubInStore(club.id, updatedClub);
     
     setHasUnsavedChanges(false);
-  }, [club.id, club.metadata, onRefresh, t]);
+  }, [club.id, club.metadata, t, updateClubInStore]);
 
   return (
     <>
