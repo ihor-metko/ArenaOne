@@ -53,8 +53,8 @@ export async function PATCH(
     const body = await request.json();
     const { bannerData, logoData, gallery } = body;
 
-    // Update in transaction
-    await prisma.$transaction(async (tx) => {
+    // Update media and fetch updated club in a transaction
+    const updatedClub = await prisma.$transaction(async (tx) => {
       // Update banner and logo data if provided
       const updateData: Record<string, unknown> = {};
       if (bannerData !== undefined) {
@@ -90,12 +90,12 @@ export async function PATCH(
           });
         }
       }
-    });
 
-    // Fetch updated club with all relations
-    const updatedClub = await prisma.club.findUnique({
-      where: { id: clubId },
-      include: CLUB_DETAIL_INCLUDE,
+      // Fetch and return the updated club with all relations
+      return await tx.club.findUnique({
+        where: { id: clubId },
+        include: CLUB_DETAIL_INCLUDE,
+      });
     });
 
     if (!updatedClub) {

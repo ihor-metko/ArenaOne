@@ -82,9 +82,12 @@ export async function PATCH(
       );
     }
 
-    await prisma.$transaction(async (tx) => {
+    // Update business hours and fetch updated club in a transaction
+    const updatedClub = await prisma.$transaction(async (tx) => {
+      // Delete existing business hours
       await tx.clubBusinessHours.deleteMany({ where: { clubId } });
 
+      // Create new business hours if provided
       if (businessHours.length > 0) {
         await tx.clubBusinessHours.createMany({
           data: businessHours.map((hour) => ({
@@ -96,12 +99,12 @@ export async function PATCH(
           })),
         });
       }
-    });
 
-    // Fetch updated club with all relations
-    const updatedClub = await prisma.club.findUnique({
-      where: { id: clubId },
-      include: CLUB_DETAIL_INCLUDE,
+      // Fetch and return the updated club with all relations
+      return await tx.club.findUnique({
+        where: { id: clubId },
+        include: CLUB_DETAIL_INCLUDE,
+      });
     });
 
     if (!updatedClub) {
