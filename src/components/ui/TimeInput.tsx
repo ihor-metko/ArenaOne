@@ -459,7 +459,7 @@ function TimePickerDropdown({
         <button
           type="button"
           className="im-time-picker-confirm"
-          onClick={handleConfirm}
+          onClick={(e) => handleConfirm(e)}
           onMouseDown={(e) => e.preventDefault()}
         >
           Confirm
