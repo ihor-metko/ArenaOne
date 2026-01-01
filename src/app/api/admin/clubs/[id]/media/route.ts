@@ -1,0 +1,121 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { requireAnyAdmin } from "@/lib/requireRole";
+import { canAccessClub } from "@/lib/permissions/clubAccess";
+
+interface GalleryImage {
+  id?: string;
+  imageUrl: string;
+  imageKey?: string | null;
+  altText?: string | null;
+  sortOrder: number;
+}
+
+/**
+ * PATCH /api/admin/clubs/[id]/media
+ * Update club media (logo, banner, gallery)
+ */
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const authResult = await requireAnyAdmin(request);
+
+  if (!authResult.authorized) {
+    return authResult.response;
+  }
+
+  // Only root admins, organization admins, and club owners can edit clubs
+  // Club admins have read-only access to club data
+  if (authResult.adminType === "club_admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    const resolvedParams = await params;
+    const clubId = resolvedParams.id;
+
+    // Check access permission for organization admins and club owners
+    if (authResult.adminType === "organization_admin" || authResult.adminType === "club_owner") {
+      const hasAccess = await canAccessClub(
+        authResult.adminType,
+        authResult.managedIds,
+        clubId
+      );
+      if (!hasAccess) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
+
+    const existingClub = await prisma.club.findUnique({
+      where: { id: clubId },
+    });
+
+    if (!existingClub) {
+      return NextResponse.json({ error: "Club not found" }, { status: 404 });
+    }
+
+    const body = await request.json();
+    const { bannerData, logoData, gallery } = body;
+
+    // Update in transaction
+    const updatedClub = await prisma.$transaction(async (tx) => {
+      // Update banner and logo data if provided
+      const updateData: Record<string, unknown> = {};
+      if (bannerData !== undefined) {
+        updateData.bannerData = bannerData ? JSON.stringify(bannerData) : null;
+      }
+      if (logoData !== undefined) {
+        updateData.logoData = logoData ? JSON.stringify(logoData) : null;
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        await tx.club.update({
+          where: { id: clubId },
+          data: updateData,
+        });
+      }
+
+      // Update gallery if provided
+      if (gallery !== undefined && Array.isArray(gallery)) {
+        // Delete existing gallery and replace
+        await tx.clubGallery.deleteMany({
+          where: { clubId },
+        });
+
+        if (gallery.length > 0) {
+          await tx.clubGallery.createMany({
+            data: gallery.map((image: GalleryImage, index: number) => ({
+              clubId,
+              imageUrl: image.imageUrl,
+              imageKey: image.imageKey || null,
+              altText: image.altText || null,
+              sortOrder: image.sortOrder ?? index,
+            })),
+          });
+        }
+      }
+
+      return tx.club.findUnique({
+        where: { id: clubId },
+        include: {
+          courts: true,
+          coaches: { include: { user: true } },
+          gallery: { orderBy: { sortOrder: "asc" } },
+          businessHours: { orderBy: { dayOfWeek: "asc" } },
+          specialHours: { orderBy: { date: "asc" } },
+        },
+      });
+    });
+
+    return NextResponse.json(updatedClub);
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error updating club media:", error);
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
