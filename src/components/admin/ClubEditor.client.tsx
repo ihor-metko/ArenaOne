@@ -109,8 +109,13 @@ export function ClubEditor({
       throw new Error(errorData.error || t("clubDetail.failedToSaveChanges"));
     }
 
-    // Get updated club data from response
-    const updatedClub = await response.json();
+    // Fetch the updated club data to refresh the UI
+    const clubResponse = await fetch(`/api/admin/clubs/${club.id}`);
+    if (!clubResponse.ok) {
+      throw new Error(t("clubDetail.failedToRefreshClubData"));
+    }
+    
+    const updatedClub = await clubResponse.json();
 
     // Update store reactively - no page reload needed
     updateClubInStore(club.id, updatedClub);
@@ -136,8 +141,13 @@ export function ClubEditor({
       throw new Error(errorData.error || t("clubDetail.failedToSaveChanges"));
     }
 
-    // Get updated club data from response
-    const updatedClub = await response.json();
+    // Fetch the updated club data to refresh the UI
+    const clubResponse = await fetch(`/api/admin/clubs/${club.id}`);
+    if (!clubResponse.ok) {
+      throw new Error(t("clubDetail.failedToRefreshClubData"));
+    }
+    
+    const updatedClub = await clubResponse.json();
 
     // Update store reactively - no page reload needed
     updateClubInStore(club.id, updatedClub);

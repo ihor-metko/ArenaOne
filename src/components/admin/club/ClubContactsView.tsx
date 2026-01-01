@@ -119,8 +119,13 @@ export function ClubContactsView({ club, disabled = false, disabledTooltip }: Cl
         throw new Error(data.error || "Failed to update contacts");
       }
 
-      // Get updated club data from either response (both return full club)
-      const updatedClub = await contactsResponse.json();
+      // Fetch the updated club data to refresh the UI
+      const clubResponse = await fetch(`/api/admin/clubs/${club.id}`);
+      if (!clubResponse.ok) {
+        throw new Error("Failed to refresh club data");
+      }
+      
+      const updatedClub = await clubResponse.json();
 
       // Update store reactively - no page reload needed
       updateClubInStore(club.id, updatedClub);

@@ -221,8 +221,13 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
         throw new Error(data.error || "Failed to update media");
       }
 
-      // Get updated club data from response
-      const updatedClub = await response.json();
+      // Fetch the updated club data to refresh the UI
+      const clubResponse = await fetch(`/api/admin/clubs/${club.id}`);
+      if (!clubResponse.ok) {
+        throw new Error("Failed to refresh club data");
+      }
+      
+      const updatedClub = await clubResponse.json();
 
       // Update store reactively - no page reload needed
       updateClubInStore(club.id, updatedClub);
