@@ -6,6 +6,7 @@ import {
   normalizeTime,
   findConflictingRule,
 } from "@/lib/priceRules";
+import { VALID_PRICE_RULE_TYPES } from "@/constants/priceRules";
 
 export async function GET(
   request: Request,
@@ -82,10 +83,9 @@ export async function POST(
     }
 
     // Validate ruleType
-    const validRuleTypes = ["SPECIFIC_DAY", "SPECIFIC_DATE", "WEEKDAYS", "WEEKENDS", "ALL_DAYS", "HOLIDAY"];
-    if (!validRuleTypes.includes(ruleType)) {
+    if (!VALID_PRICE_RULE_TYPES.includes(ruleType as any)) {
       return NextResponse.json(
-        { error: `Invalid ruleType. Must be one of: ${validRuleTypes.join(", ")}` },
+        { error: `Invalid ruleType. Must be one of: ${VALID_PRICE_RULE_TYPES.join(", ")}` },
         { status: 400 }
       );
     }

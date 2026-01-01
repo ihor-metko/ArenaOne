@@ -206,6 +206,16 @@ function getRulePriority(ruleType: string): number {
 }
 
 /**
+ * Helper to check if a rule is a valid holiday rule.
+ */
+function isValidHolidayRule(
+  rule: { ruleType: string; holidayId: string | null },
+  validHolidayIds: Set<string>
+): boolean {
+  return rule.ruleType !== "HOLIDAY" || (rule.holidayId !== null && validHolidayIds.has(rule.holidayId));
+}
+
+/**
  * Get price timeline for a day - returns list of time segments with resolved price.
  * Used for court page and club today preview.
  * 
@@ -237,21 +247,33 @@ export async function getPriceTimelineForDay(
     where: {
       clubId: court.clubId,
       OR: [
-        { date: dateObj },
-        // Recurring holidays with same month-day
+        // Exact date match
+        { date: dateObj, recurring: false },
+        // Recurring holidays - match by month and day only
         {
           recurring: true,
           date: {
-            gte: new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()),
-            lt: new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate() + 1),
+            // For recurring holidays, we need to check if month and day match
+            // We'll fetch all recurring holidays and filter in memory
           },
         },
       ],
     },
   });
 
-  const holidayDates = new Set(holidays.map((h) => h.date.toISOString().split("T")[0]));
-  const holidayIds = new Set(holidays.map((h) => h.id));
+  // Filter recurring holidays by month and day
+  const matchingHolidays = holidays.filter((h) => {
+    if (!h.recurring) {
+      // Non-recurring: exact date match already handled by query
+      return h.date.toISOString().split("T")[0] === dateObj.toISOString().split("T")[0];
+    } else {
+      // Recurring: match month and day regardless of year
+      return h.date.getMonth() === dateObj.getMonth() && h.date.getDate() === dateObj.getDate();
+    }
+  });
+
+  const holidayDates = new Set(matchingHolidays.map((h) => h.date.toISOString().split("T")[0]));
+  const holidayIds = new Set(matchingHolidays.map((h) => h.id));
 
   // Fetch all rules for this court
   const allRules = await prisma.courtPriceRule.findMany({
@@ -271,7 +293,7 @@ export async function getPriceTimelineForDay(
       dateObj,
       dayOfWeek,
       holidayDates
-    ) && (rule.ruleType !== "HOLIDAY" || (rule.holidayId && holidayIds.has(rule.holidayId)))
+    ) && isValidHolidayRule(rule, holidayIds)
   );
 
   if (applicableRules.length === 0) {
