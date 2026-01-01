@@ -10,9 +10,7 @@ import "./ClubSpecialDatesView.css";
 
 interface ClubSpecialDatesViewProps {
   club: ClubDetail;
-  onUpdate: (payload: {
-    specialHours: SpecialHour[];
-  }) => Promise<unknown>;
+  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
@@ -44,7 +42,7 @@ function formatDateShort(dateString: string): string {
   return `${month} ${day}`;
 }
 
-export function ClubSpecialDatesView({ club, onUpdate, disabled = false, disabledTooltip }: ClubSpecialDatesViewProps) {
+export function ClubSpecialDatesView({ club, onRefresh, disabled = false, disabledTooltip }: ClubSpecialDatesViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -74,14 +72,33 @@ export function ClubSpecialDatesView({ club, onUpdate, disabled = false, disable
     setIsSaving(true);
     setError("");
     try {
-      await onUpdate({ specialHours });
+      const [specialHoursResponse] = await Promise.all([
+        fetch(`/api/admin/clubs/${club.id}/special-hours`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            specialHours,
+          }),
+        }),
+      ]);
+
+      if (!specialHoursResponse.ok) {
+        const data = await specialHoursResponse.json();
+        throw new Error(data.error || "Failed to update special hours");
+      }
+
+      // Refresh club data to reflect changes
+      if (onRefresh) {
+        await onRefresh();
+      }
+
       setIsEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save changes");
     } finally {
       setIsSaving(false);
     }
-  }, [specialHours, onUpdate]);
+  }, [specialHours, club.id, onRefresh]);
 
   return (
     <>
@@ -137,7 +154,7 @@ export function ClubSpecialDatesView({ club, onUpdate, disabled = false, disable
         isSaving={isSaving}
       >
         {error && <div className="im-section-edit-modal-error">{error}</div>}
-        
+
         <SpecialHoursField
           value={specialHours}
           onChange={setSpecialHours}
