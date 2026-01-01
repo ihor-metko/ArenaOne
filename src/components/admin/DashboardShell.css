@@ -4,7 +4,6 @@
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
-  min-height: 100vh;
 }
 
 .im-dashboard-shell-header {
@@ -38,11 +37,11 @@
   .im-dashboard-shell-content {
     gap: 2rem;
   }
-  
+
   .im-dashboard-shell {
     gap: 2rem;
   }
-  
+
   .im-dashboard-shell-main {
     gap: 2rem;
   }

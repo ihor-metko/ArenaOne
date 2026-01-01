@@ -102,7 +102,7 @@ export async function GET(request: Request) {
     // If court count filter is specified, we need to fetch all clubs first then filter
     // Otherwise use standard pagination
     const needsPostFilterPagination = courtCountMin || courtCountMax;
-    
+
     // For post-filtering, limit to a reasonable maximum to prevent memory issues
     const MAX_CLUBS_FOR_POST_FILTER = 1000;
 
@@ -121,7 +121,6 @@ export async function GET(request: Request) {
         openingHours: true,
         logoData: true,
         bannerData: true,
-        metadata: true,
         tags: true,
         isPublic: true,
         status: true,
@@ -185,7 +184,7 @@ export async function GET(request: Request) {
     if (courtCountMin || courtCountMax) {
       const minCount = courtCountMin ? parseInt(courtCountMin, 10) : 0;
       const maxCount = courtCountMax ? parseInt(courtCountMax, 10) : Infinity;
-      
+
       // Validate parsed values
       if ((courtCountMin && isNaN(minCount)) || (courtCountMax && isNaN(maxCount))) {
         return NextResponse.json(
@@ -193,7 +192,7 @@ export async function GET(request: Request) {
           { status: 400 }
         );
       }
-      
+
       clubsWithCounts = clubsWithCounts.filter((club) => {
         return club.courtCount >= minCount && club.courtCount <= maxCount;
       });
@@ -201,7 +200,7 @@ export async function GET(request: Request) {
 
     // Calculate total count before pagination
     const totalCount = needsPostFilterPagination ? clubsWithCounts.length : totalCountBeforeCourtFilter;
-    
+
     // Apply pagination if we did post-filtering
     if (needsPostFilterPagination) {
       const startIndex = skip;
@@ -209,6 +208,7 @@ export async function GET(request: Request) {
       clubsWithCounts = clubsWithCounts.slice(startIndex, endIndex);
     }
 
+    console.log(`Fetched ${clubsWithCounts.length} clubs (page ${page})`, clubsWithCounts);
     return NextResponse.json({
       clubs: clubsWithCounts,
       pagination: {

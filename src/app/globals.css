@@ -949,3 +949,9 @@ body {
 .entity-card-booking:hover {
   border-color: var(--entity-color-booking);
 }
+
+.rsp-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
