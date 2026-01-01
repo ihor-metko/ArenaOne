@@ -1,25 +1,26 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Button, Tooltip } from "@/components/ui";
 import { SectionEditModal } from "./SectionEditModal";
 import { SpecialHoursField, type SpecialHour } from "../SpecialHoursField.client";
+import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import type { ClubDetail, ClubSpecialHours } from "@/types/club";
 import { validateSpecialHours } from "../WorkingHoursEditor.client";
 import "./ClubSpecialDatesView.css";
 
 interface ClubSpecialDatesViewProps {
   club: ClubDetail;
-  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
 
-function formatTime(time: string | null): string {
+function formatTime(time: string | null, t: (key: string) => string): string {
   if (!time) return "";
   const [hours, minutes] = time.split(":");
   const h = parseInt(hours, 10);
-  const ampm = h >= 12 ? "PM" : "AM";
+  const ampm = h >= 12 ? t("pm") : t("am");
   const h12 = h % 12 || 12;
   return `${h12}:${minutes} ${ampm}`;
 }
@@ -42,7 +43,10 @@ function formatDateShort(dateString: string): string {
   return `${month} ${day}`;
 }
 
-export function ClubSpecialDatesView({ club, onRefresh, disabled = false, disabledTooltip }: ClubSpecialDatesViewProps) {
+export function ClubSpecialDatesView({ club, disabled = false, disabledTooltip }: ClubSpecialDatesViewProps) {
+  const t = useTranslations("clubDetail");
+  const tCommon = useTranslations("common");
+  const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -63,7 +67,7 @@ export function ClubSpecialDatesView({ club, onRefresh, disabled = false, disabl
 
   const handleSave = useCallback(async () => {
     // Validate special hours
-    const validationError = validateSpecialHours(specialHours);
+    const validationError = validateSpecialHours(specialHours, t);
     if (validationError) {
       setError(validationError);
       return;
@@ -72,38 +76,37 @@ export function ClubSpecialDatesView({ club, onRefresh, disabled = false, disabl
     setIsSaving(true);
     setError("");
     try {
-      const [specialHoursResponse] = await Promise.all([
-        fetch(`/api/admin/clubs/${club.id}/special-hours`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            specialHours,
-          }),
+      const specialHoursResponse = await fetch(`/api/admin/clubs/${club.id}/special-hours`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          specialHours,
         }),
-      ]);
+      });
 
       if (!specialHoursResponse.ok) {
         const data = await specialHoursResponse.json();
-        throw new Error(data.error || "Failed to update special hours");
+        throw new Error(data.error || t("failedToUpdateSpecialHours"));
       }
 
-      // Refresh club data to reflect changes
-      if (onRefresh) {
-        await onRefresh();
-      }
+      // Get updated club data from response
+      const updatedClub = await specialHoursResponse.json();
+
+      // Update store reactively - no page reload needed
+      updateClubInStore(club.id, updatedClub);
 
       setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save changes");
+      setError(err instanceof Error ? err.message : t("failedToSaveChanges"));
     } finally {
       setIsSaving(false);
     }
-  }, [specialHours, club.id, onRefresh]);
+  }, [specialHours, club.id, t, updateClubInStore]);
 
   return (
     <>
       <div className="im-section-view-header">
-        <h2 className="im-club-view-section-title">Special Dates</h2>
+        <h2 className="im-club-view-section-title">{t("specialDates")}</h2>
         <Tooltip
           content={disabled ? disabledTooltip : undefined}
           position="bottom"
@@ -111,10 +114,9 @@ export function ClubSpecialDatesView({ club, onRefresh, disabled = false, disabl
           <Button
             variant="outline"
             onClick={handleEdit}
-            className="im-section-edit-btn"
             disabled={disabled}
           >
-            Edit
+            {tCommon("edit")}
           </Button>
         </Tooltip>
       </div>
@@ -130,8 +132,8 @@ export function ClubSpecialDatesView({ club, onRefresh, disabled = false, disabl
                 <span className="im-special-dates-separator">—</span>
                 <span className="im-special-dates-status">
                   {hour.isClosed
-                    ? "Closed"
-                    : `${formatTime(hour.openTime)} - ${formatTime(hour.closeTime)}`}
+                    ? t("closed")
+                    : `${formatTime(hour.openTime, t)} - ${formatTime(hour.closeTime, t)}`}
                 </span>
                 {hour.reason && (
                   <span className="im-special-dates-reason">
@@ -142,14 +144,14 @@ export function ClubSpecialDatesView({ club, onRefresh, disabled = false, disabl
             ))}
           </div>
         ) : (
-          <p className="im-section-view-value--empty">No special dates set</p>
+          <p className="im-section-view-value--empty">{t("noSpecialDates")}</p>
         )}
       </div>
 
       <SectionEditModal
         isOpen={isEditing}
         onClose={handleClose}
-        title="Edit Special Dates"
+        title={t("specialDatesEdit")}
         onSave={handleSave}
         isSaving={isSaving}
       >

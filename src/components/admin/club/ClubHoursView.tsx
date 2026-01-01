@@ -1,18 +1,19 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Button, Tooltip } from "@/components/ui";
 import { SectionEditModal } from "./SectionEditModal";
 import { BusinessHoursField } from "../BusinessHoursField.client";
 import { validateBusinessHours } from "../WorkingHoursEditor.client";
+import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import type { BusinessHour } from "@/types/admin";
 import type { ClubDetail, ClubBusinessHours } from "@/types/club";
-import { DAY_NAMES } from "@/constants/workingHours";
+import { DAY_TRANSLATION_KEYS } from "@/constants/workingHours";
 import "./ClubHoursView.css";
 
 interface ClubHoursViewProps {
   club: ClubDetail;
-  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
@@ -49,7 +50,9 @@ function initializeBusinessHours(existing: ClubBusinessHours[]): BusinessHour[] 
   return hours;
 }
 
-export function ClubHoursView({ club, onRefresh, disabled = false, disabledTooltip }: ClubHoursViewProps) {
+export function ClubHoursView({ club, disabled = false, disabledTooltip }: ClubHoursViewProps) {
+  const t = useTranslations();
+  const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -79,25 +82,24 @@ export function ClubHoursView({ club, onRefresh, disabled = false, disabledToolt
     setIsSaving(true);
     setError("");
     try {
-      const [businessHoursResponse] = await Promise.all([
-        fetch(`/api/admin/clubs/${club.id}/business-hours`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            businessHours,
-          }),
+      const businessHoursResponse = await fetch(`/api/admin/clubs/${club.id}/business-hours`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessHours,
         }),
-      ]);
+      });
 
       if (!businessHoursResponse.ok) {
         const data = await businessHoursResponse.json();
         throw new Error(data.error || "Failed to update business hours");
       }
 
-      // Refresh club data to reflect changes
-      if (onRefresh) {
-        await onRefresh();
-      }
+      // Get updated club data from response
+      const updatedClub = await businessHoursResponse.json();
+
+      // Update store reactively - no page reload needed
+      updateClubInStore(club.id, updatedClub);
 
       setIsEditing(false);
     } catch (err) {
@@ -105,12 +107,12 @@ export function ClubHoursView({ club, onRefresh, disabled = false, disabledToolt
     } finally {
       setIsSaving(false);
     }
-  }, [businessHours, club.id, onRefresh]);
+  }, [businessHours, club.id, updateClubInStore]);
 
   return (
     <>
       <div className="im-section-view-header">
-        <h2 className="im-club-view-section-title">Business Hours</h2>
+        <h2 className="im-club-view-section-title">{t("businessHours.title")}</h2>
         <Tooltip
           content={disabled ? disabledTooltip : undefined}
           position="bottom"
@@ -118,10 +120,9 @@ export function ClubHoursView({ club, onRefresh, disabled = false, disabledToolt
           <Button
             variant="outline"
             onClick={handleEdit}
-            className="im-section-edit-btn"
             disabled={disabled}
           >
-            Edit
+            {t("common.edit")}
           </Button>
         </Tooltip>
       </div>
@@ -132,17 +133,17 @@ export function ClubHoursView({ club, onRefresh, disabled = false, disabledToolt
             club.businessHours.map((hour) => (
               <div key={hour.dayOfWeek} className="im-hours-view-row">
                 <span className="im-hours-view-day">
-                  {DAY_NAMES[hour.dayOfWeek]}
+                  {t(DAY_TRANSLATION_KEYS[hour.dayOfWeek])}
                 </span>
                 <span className="im-hours-view-time">
                   {hour.isClosed
-                    ? "Closed"
+                    ? t("businessHours.closed")
                     : `${formatTime(hour.openTime)} - ${formatTime(hour.closeTime)}`}
                 </span>
               </div>
             ))
           ) : (
-            <p className="im-section-view-value--empty">No hours set</p>
+            <p className="im-section-view-value--empty">{t("businessHours.noHoursSet")}</p>
           )}
         </div>
       </div>
@@ -150,7 +151,7 @@ export function ClubHoursView({ club, onRefresh, disabled = false, disabledToolt
       <SectionEditModal
         isOpen={isEditing}
         onClose={handleClose}
-        title="Edit Business Hours"
+        title={t("businessHours.editTitle")}
         onSave={handleSave}
         isSaving={isSaving}
       >

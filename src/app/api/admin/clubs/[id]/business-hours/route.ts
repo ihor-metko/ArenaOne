@@ -81,12 +81,8 @@ export async function PATCH(
       );
     }
 
-    // Update in transaction
     const updatedClub = await prisma.$transaction(async (tx) => {
-      // Delete existing business hours and replace
-      await tx.clubBusinessHours.deleteMany({
-        where: { clubId },
-      });
+      await tx.clubBusinessHours.deleteMany({ where: { clubId } });
 
       if (businessHours.length > 0) {
         await tx.clubBusinessHours.createMany({

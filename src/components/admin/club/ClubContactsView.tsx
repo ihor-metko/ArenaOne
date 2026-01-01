@@ -3,17 +3,18 @@
 import { useState, useCallback } from "react";
 import { Button, Input, Tooltip } from "@/components/ui";
 import { SectionEditModal } from "./SectionEditModal";
+import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import type { ClubDetail } from "@/types/club";
 import "./ClubContactsView.css";
 
 interface ClubContactsViewProps {
   club: ClubDetail;
-  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
 
-export function ClubContactsView({ club, onRefresh, disabled = false, disabledTooltip }: ClubContactsViewProps) {
+export function ClubContactsView({ club, disabled = false, disabledTooltip }: ClubContactsViewProps) {
+  const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -118,10 +119,11 @@ export function ClubContactsView({ club, onRefresh, disabled = false, disabledTo
         throw new Error(data.error || "Failed to update contacts");
       }
 
-      // Refresh club data to reflect changes
-      if (onRefresh) {
-        await onRefresh();
-      }
+      // Get updated club data from either response (both return full club)
+      const updatedClub = await contactsResponse.json();
+
+      // Update store reactively - no page reload needed
+      updateClubInStore(club.id, updatedClub);
 
       setIsEditing(false);
     } catch (err) {
@@ -129,7 +131,7 @@ export function ClubContactsView({ club, onRefresh, disabled = false, disabledTo
     } finally {
       setIsSaving(false);
     }
-  }, [formData, club.id, onRefresh]);
+  }, [formData, club.id, updateClubInStore]);
 
   const hasCoordinates = club.latitude && club.longitude;
 
@@ -144,7 +146,6 @@ export function ClubContactsView({ club, onRefresh, disabled = false, disabledTo
           <Button
             variant="outline"
             onClick={handleEdit}
-            className="im-section-edit-btn"
             disabled={disabled}
           >
             Edit
@@ -168,9 +169,8 @@ export function ClubContactsView({ club, onRefresh, disabled = false, disabledTo
         <div className="im-section-view-row">
           <span className="im-section-view-label">Phone:</span>
           <span
-            className={`im-section-view-value ${
-              !club.phone ? "im-section-view-value--empty" : ""
-            }`}
+            className={`im-section-view-value ${!club.phone ? "im-section-view-value--empty" : ""
+              }`}
           >
             {club.phone || "Not set"}
           </span>
@@ -178,9 +178,8 @@ export function ClubContactsView({ club, onRefresh, disabled = false, disabledTo
         <div className="im-section-view-row">
           <span className="im-section-view-label">Email:</span>
           <span
-            className={`im-section-view-value ${
-              !club.email ? "im-section-view-value--empty" : ""
-            }`}
+            className={`im-section-view-value ${!club.email ? "im-section-view-value--empty" : ""
+              }`}
           >
             {club.email || "Not set"}
           </span>
@@ -188,9 +187,8 @@ export function ClubContactsView({ club, onRefresh, disabled = false, disabledTo
         <div className="im-section-view-row">
           <span className="im-section-view-label">Website:</span>
           <span
-            className={`im-section-view-value ${
-              !club.website ? "im-section-view-value--empty" : ""
-            }`}
+            className={`im-section-view-value ${!club.website ? "im-section-view-value--empty" : ""
+              }`}
           >
             {club.website ? (
               <a

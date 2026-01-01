@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, Modal, IMLink, DangerZone } from "@/components/ui";
+import { Button, Modal, IMLink, DangerZone, EntityBanner } from "@/components/ui";
 import type { DangerAction } from "@/components/ui";
 import {
   CourtBasicBlock,
@@ -12,9 +12,11 @@ import {
   CourtMetaBlock,
   CourtPreview,
 } from "@/components/admin/court";
+import { CourtEditor } from "@/components/admin/CourtEditor.client";
 import { useCourtStore } from "@/stores/useCourtStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useCanEditClub } from "@/hooks/useCanEditClub";
+import { parseCourtMetadata } from "@/utils/court-metadata";
 import type { CourtDetail as StoreCourtDetail } from "@/types/court";
 
 import "./page.css";
@@ -37,6 +39,7 @@ export default function CourtDetailPage({
   const [error, setError] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isToggleActiveModalOpen, setIsToggleActiveModalOpen] = useState(false);
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isTogglingActive, setIsTogglingActive] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -195,7 +198,7 @@ export default function CourtDetailPage({
   const dangerActions: DangerAction[] = useMemo(() => {
     // Return empty array if no court data or no permission to manage
     if (!court || !canManageCourt) return [];
-    
+
     return [
       {
         id: 'toggleActive',
@@ -221,6 +224,10 @@ export default function CourtDetailPage({
       },
     ];
   }, [court?.isActive, canManageCourt, isTogglingActive, submitting, t, handleOpenToggleActiveModal]);
+
+  const handleOpenDetailsEdit = () => {
+    setIsEditingDetails(true);
+  };
 
   // Loading skeleton
   if (loadingCourts || isLoading) {
@@ -260,6 +267,9 @@ export default function CourtDetailPage({
     return null;
   }
 
+  // Parse court metadata for banner alignment
+  const courtMetadata = parseCourtMetadata(court.metadata);
+
   return (
     <main className="im-court-detail-page">
       {/* Toast Notification */}
@@ -272,6 +282,16 @@ export default function CourtDetailPage({
         </div>
       )}
 
+      {/* Entity Banner Section - no location/address for courts */}
+      <EntityBanner
+        title={court.name}
+        subtitle={court.type || (court.indoor ? "Indoor Court" : "Outdoor Court")}
+        imageUrl={court.bannerData?.url}
+        bannerAlignment={courtMetadata?.bannerAlignment || 'center'}
+        imageAlt={`${court.name} banner`}
+        onEdit={handleOpenDetailsEdit}
+      />
+
       <div className="entity-page-content entity-page-content--narrow">
         {/* Toolbar - now empty but kept for future actions */}
         <div className="im-court-detail-toolbar">
@@ -281,19 +301,6 @@ export default function CourtDetailPage({
           <div className="im-court-detail-toolbar-right">
           </div>
         </div>
-
-        {/* Header */}
-        <header className="im-court-detail-header">
-          <div className="im-court-detail-header-info">
-            <h1 className="im-court-detail-title">{court.name}</h1>
-            <div className="im-court-detail-subtitle">
-              <span className={`im-court-status-badge ${court.indoor ? "im-court-status-badge--indoor" : "im-court-status-badge--outdoor"}`}>
-                {court.indoor ? "Indoor" : "Outdoor"}
-              </span>
-              {court.type && <span className="im-court-detail-type">{court.type}</span>}
-            </div>
-          </div>
-        </header>
 
         {/* Main Content */}
         <div className="im-court-detail-content">
@@ -368,6 +375,16 @@ export default function CourtDetailPage({
           </Button>
         </div>
       </Modal>
+
+      {/* Court Editor Modal */}
+      {court && (
+        <CourtEditor
+          isOpen={isEditingDetails}
+          onClose={() => setIsEditingDetails(false)}
+          court={court}
+          onRefresh={fetchCourt}
+        />
+      )}
     </main>
   );
 }

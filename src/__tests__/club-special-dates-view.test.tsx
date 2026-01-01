@@ -8,6 +8,49 @@ import "@testing-library/jest-dom";
 import { ClubSpecialDatesView } from "@/components/admin/club/ClubSpecialDatesView";
 import type { ClubDetail } from "@/types/club";
 
+// Mock useAdminClubStore
+const mockUpdateClubInStore = jest.fn();
+jest.mock("@/stores/useAdminClubStore", () => ({
+  useAdminClubStore: (selector: (state: { updateClubInStore: typeof mockUpdateClubInStore }) => unknown) => {
+    return selector({ updateClubInStore: mockUpdateClubInStore });
+  },
+}));
+
+// Mock next-intl
+jest.mock("next-intl", () => ({
+  useTranslations: (namespace: string) => {
+    const translations: Record<string, Record<string, string>> = {
+      clubDetail: {
+        specialDates: "Special Dates",
+        specialDatesEdit: "Edit Special Dates",
+        noSpecialDates: "No special dates set",
+        closed: "Closed",
+        failedToUpdateSpecialHours: "Failed to update special hours",
+        failedToSaveChanges: "Failed to save changes",
+        am: "AM",
+        pm: "PM",
+        duplicateDates: "Duplicate dates in special hours",
+        invalidSpecialHours: "Invalid special hours for {date}: opening time must be before closing time",
+        saveChanges: "Save Changes",
+        saving: "Saving...",
+      },
+      common: {
+        edit: "Edit",
+        cancel: "Cancel",
+      },
+    };
+    return (key: string, params?: Record<string, string>) => {
+      let value = translations[namespace]?.[key] || key;
+      if (params) {
+        Object.entries(params).forEach(([param, val]) => {
+          value = value.replace(`{${param}}`, val);
+        });
+      }
+      return value;
+    };
+  },
+}));
+
 // Mock the UI components
 jest.mock("@/components/ui", () => ({
   Button: ({ children, onClick, disabled }: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) => (
@@ -108,13 +151,19 @@ const mockClub: ClubDetail = {
 };
 
 describe("ClubSpecialDatesView", () => {
+  beforeEach(() => {
+    // Mock fetch globally
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
   it("should render special dates list", () => {
-    const mockUpdate = jest.fn();
-    
     render(
       <ClubSpecialDatesView
         club={mockClub}
-        onUpdate={mockUpdate}
       />
     );
 
@@ -129,12 +178,10 @@ describe("ClubSpecialDatesView", () => {
 
   it("should show empty state when no special dates", () => {
     const clubWithNoSpecialDates = { ...mockClub, specialHours: [] };
-    const mockUpdate = jest.fn();
     
     render(
       <ClubSpecialDatesView
         club={clubWithNoSpecialDates}
-        onUpdate={mockUpdate}
       />
     );
 
@@ -142,12 +189,9 @@ describe("ClubSpecialDatesView", () => {
   });
 
   it("should open modal when Edit button is clicked", () => {
-    const mockUpdate = jest.fn();
-    
     render(
       <ClubSpecialDatesView
         club={mockClub}
-        onUpdate={mockUpdate}
       />
     );
 
@@ -158,13 +202,16 @@ describe("ClubSpecialDatesView", () => {
     expect(screen.getByText("Edit Special Dates")).toBeInTheDocument();
   });
 
-  it("should call onUpdate when saving changes", async () => {
-    const mockUpdate = jest.fn().mockResolvedValue({});
+  it("should save changes successfully", async () => {
+    const mockUpdatedClub = { ...mockClub };
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => mockUpdatedClub,
+    });
     
     render(
       <ClubSpecialDatesView
         club={mockClub}
-        onUpdate={mockUpdate}
       />
     );
 
@@ -177,34 +224,20 @@ describe("ClubSpecialDatesView", () => {
     fireEvent.click(saveButton);
 
     await waitFor(() => {
-      expect(mockUpdate).toHaveBeenCalledWith({
-        specialHours: expect.arrayContaining([
-          expect.objectContaining({
-            id: "special-1",
-            date: "2024-12-25",
-            isClosed: true,
-            reason: "Christmas",
-          }),
-          expect.objectContaining({
-            id: "special-2",
-            date: "2024-02-14",
-            isClosed: false,
-            openTime: "10:00",
-            closeTime: "18:00",
-            reason: "Valentine's Day",
-          }),
-        ]),
-      });
+      expect(global.fetch).toHaveBeenCalledWith(
+        `/api/admin/clubs/${mockClub.id}/special-hours`,
+        expect.objectContaining({
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+        })
+      );
     });
   });
 
   it("should disable Edit button when disabled prop is true", () => {
-    const mockUpdate = jest.fn();
-    
     render(
       <ClubSpecialDatesView
         club={mockClub}
-        onUpdate={mockUpdate}
         disabled={true}
       />
     );

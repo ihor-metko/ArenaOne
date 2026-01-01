@@ -424,7 +424,34 @@
     "deleteCourt": "Delete Court",
     "deleteCourtConfirm": "Are you sure you want to delete court \"{name}\"? This action cannot be undone.",
     "deleting": "Deleting...",
-    "usesClubHours": "Uses club hours"
+    "usesClubHours": "Uses club hours",
+    "specialDates": "Special Dates",
+    "specialDatesEdit": "Edit Special Dates",
+    "noSpecialDates": "No special dates set",
+    "specialDateOverrides": "Special Date Overrides",
+    "addDate": "Add Date",
+    "selectDate": "Select date",
+    "date": "Date",
+    "reason": "Reason (optional)",
+    "noSpecialHours": "No special hours set",
+    "to": "to",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "duplicateDates": "Duplicate dates in special hours",
+    "invalidSpecialHours": "Invalid special hours for {date}: opening time must be before closing time",
+    "failedToUpdateSpecialHours": "Failed to update special hours",
+    "am": "AM",
+    "pm": "PM"
+  },
+  "businessHours": {
+    "title": "Business Hours",
+    "editTitle": "Edit Business Hours",
+    "noHoursSet": "No hours set",
+    "closed": "Closed",
+    "to": "to",
+    "closedLabel": "Closed",
+    "openingTime": "{day} opening time",
+    "closingTime": "{day} closing time"
   },
   "admin": {
     "club": "Club",
@@ -1039,6 +1066,13 @@
           "setAsMainImage": "Set gallery image {index} as main image",
           "removeGalleryImage": "Remove gallery image {index}"
         }
+      },
+      "editor": {
+        "title": "Edit Court Details"
+      },
+      "errors": {
+        "updateFailed": "Failed to update court",
+        "imageUploadFailed": "Failed to upload image"
       }
     },
     "sportConfig": {
