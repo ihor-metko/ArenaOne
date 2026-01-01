@@ -17,7 +17,7 @@ export async function PATCH(
     return authResult.response;
   }
 
-  // Only root admins and organization admins can edit clubs
+  // Only root admins, organization admins, and club owners can edit clubs
   // Club admins have read-only access to club data
   if (authResult.adminType === "club_admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -27,8 +27,8 @@ export async function PATCH(
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
-    // Check access permission for organization admins
-    if (authResult.adminType === "organization_admin") {
+    // Check access permission for organization admins and club owners
+    if (authResult.adminType === "organization_admin" || authResult.adminType === "club_owner") {
       const hasAccess = await canAccessClub(
         authResult.adminType,
         authResult.managedIds,

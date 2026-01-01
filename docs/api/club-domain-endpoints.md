@@ -16,7 +16,8 @@ All club update endpoints follow a domain-driven design where each endpoint is r
 All endpoints require authentication and admin privileges:
 - **Root Admin**: Full access to all clubs
 - **Organization Admin**: Access to clubs within their managed organizations
-- **Club Owner/Admin**: Access to their specific clubs (some endpoints restricted)
+- **Club Owner**: Access to their own clubs for full edit permissions
+- **Club Admin**: Read-only access to club data (cannot edit via these endpoints)
 
 ## Endpoints
 
@@ -46,7 +47,7 @@ Updates general club information including name, slug, description, visibility, 
 
 **Response:** Full club object with all relations
 
-**Permissions:** Root Admin, Organization Admin (for clubs in their orgs)
+**Permissions:** Root Admin, Organization Admin, Club Owner (for clubs in their orgs)
 
 ---
 
@@ -83,7 +84,7 @@ Updates the club's regular weekly business hours.
 
 **Response:** Full club object with updated business hours
 
-**Permissions:** Root Admin, Organization Admin
+**Permissions:** Root Admin, Organization Admin, Club Owner
 
 ---
 
@@ -122,7 +123,7 @@ Updates special hours for specific dates (holidays, events, etc.).
 
 **Response:** Full club object with updated special hours
 
-**Permissions:** Root Admin, Organization Admin
+**Permissions:** Root Admin, Organization Admin, Club Owner
 
 ---
 
@@ -163,7 +164,7 @@ Updates club media including logo, banner, and gallery images.
 
 **Response:** Full club object with updated media
 
-**Permissions:** Root Admin, Organization Admin
+**Permissions:** Root Admin, Organization Admin, Club Owner
 
 **Note:** This endpoint updates metadata only. Actual file uploads should be done via the `/api/images/clubs/:clubId/upload` endpoint.
 
@@ -191,7 +192,7 @@ Updates club contact information.
 
 **Response:** Full club object with updated contact info
 
-**Permissions:** Root Admin, Organization Admin
+**Permissions:** Root Admin, Organization Admin, Club Owner
 
 ---
 
@@ -224,7 +225,7 @@ Updates club location details.
 
 **Response:** Full club object with updated location
 
-**Permissions:** Root Admin, Organization Admin
+**Permissions:** Root Admin, Organization Admin, Club Owner
 
 ---
 
@@ -251,7 +252,7 @@ Updates club metadata (custom settings, theme preferences, etc.).
 
 **Response:** Full club object with updated metadata
 
-**Permissions:** Root Admin, Organization Admin
+**Permissions:** Root Admin, Organization Admin, Club Owner
 
 **Note:** Metadata is stored as a JSON string. Common fields include:
 - `logoTheme`: "light" | "dark"
@@ -285,7 +286,7 @@ Updates coach assignments for the club.
 
 **Response:** Full club object with updated coach assignments
 
-**Permissions:** Root Admin, Organization Admin
+**Permissions:** Root Admin, Organization Admin, Club Owner
 
 ---
 

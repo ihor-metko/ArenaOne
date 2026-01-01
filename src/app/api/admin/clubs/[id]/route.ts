@@ -1,38 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin, requireRootAdmin } from "@/lib/requireRole";
-
-/**
- * Check if an admin has access to a specific club
- */
-async function canAccessClub(
-  adminType: "root_admin" | "organization_admin" | "club_owner" | "club_admin",
-  managedIds: string[],
-  clubId: string
-): Promise<boolean> {
-  if (adminType === "root_admin") {
-    return true;
-  }
-
-  if (adminType === "club_owner") {
-    return managedIds.includes(clubId);
-  }
-
-  if (adminType === "club_admin") {
-    return managedIds.includes(clubId);
-  }
-
-  if (adminType === "organization_admin") {
-    // Check if club belongs to one of the managed organizations
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      select: { organizationId: true },
-    });
-    return club?.organizationId ? managedIds.includes(club.organizationId) : false;
-  }
-
-  return false;
-}
+import { canAccessClub } from "@/lib/permissions/clubAccess";
 
 export async function GET(
   request: Request,
@@ -133,7 +102,7 @@ export async function PATCH(
     return authResult.response;
   }
 
-  // Only root admins and organization admins can edit clubs
+  // Only root admins, organization admins, and club owners can edit clubs
   if (authResult.adminType === "club_admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -142,8 +111,8 @@ export async function PATCH(
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
-    // Check access permission for organization admins
-    if (authResult.adminType === "organization_admin") {
+    // Check access permission for organization admins and club owners
+    if (authResult.adminType === "organization_admin" || authResult.adminType === "club_owner") {
       const hasAccess = await canAccessClub(
         authResult.adminType,
         authResult.managedIds,
@@ -242,7 +211,7 @@ export async function PUT(
     return authResult.response;
   }
 
-  // Only root admins and organization admins can edit clubs
+  // Only root admins, organization admins, and club owners can edit clubs
   if (authResult.adminType === "club_admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -251,8 +220,8 @@ export async function PUT(
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
-    // Check access permission for organization admins
-    if (authResult.adminType === "organization_admin") {
+    // Check access permission for organization admins and club owners
+    if (authResult.adminType === "organization_admin" || authResult.adminType === "club_owner") {
       const hasAccess = await canAccessClub(
         authResult.adminType,
         authResult.managedIds,
