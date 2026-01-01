@@ -461,7 +461,7 @@ export default function AdminClubDetailPage({
         <section className="im-admin-club-bookings-section">
           <BookingsOverview
             activeBookings={bookingsPreview?.summary.totalUpcoming ?? 0}
-            pastBookings={0}
+            pastBookings={0} // Past bookings data not available from current API endpoint
             loading={bookingsLoading}
           />
         </section>
