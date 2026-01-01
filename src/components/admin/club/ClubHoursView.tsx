@@ -120,7 +120,6 @@ export function ClubHoursView({ club, onRefresh, disabled = false, disabledToolt
           <Button
             variant="outline"
             onClick={handleEdit}
-            className="im-section-edit-btn"
             disabled={disabled}
           >
             {t("common.edit")}
