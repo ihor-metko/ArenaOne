@@ -334,10 +334,12 @@ export const useAdminClubStore = create<AdminClubState>((set, get) => ({
       let newClubs = state.clubs;
       if (clubIndex >= 0) {
         newClubs = [...state.clubs];
-        // Merge updated data while preserving the original structure
+        // Merge updated data while preserving ClubWithCounts structure
+        // The clubs array contains ClubWithCounts (with courtCount, bookingCount, etc.)
+        // We merge the updated ClubDetail data while keeping the count fields
         newClubs[clubIndex] = { 
-          ...newClubs[clubIndex],
-          ...updatedClub,
+          ...newClubs[clubIndex], // Keep existing ClubWithCounts fields (counts, etc.)
+          ...updatedClub,          // Merge in updated ClubDetail fields
         };
       }
 
