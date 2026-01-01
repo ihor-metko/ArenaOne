@@ -319,6 +319,12 @@ export const useAdminClubStore = create<AdminClubState>((set, get) => ({
    * Use this after PATCH/PUT operations to avoid full page reloads
    */
   updateClubInStore: (clubId: string, updatedClub: ClubDetail) => {
+    // Validate that the updated club has the correct ID
+    if (updatedClub.id !== clubId) {
+      console.error(`updateClubInStore: ID mismatch. Expected ${clubId}, got ${updatedClub.id}`);
+      return;
+    }
+
     set((state) => {
       // Update clubsById cache
       const newClubsById = { ...state.clubsById, [clubId]: updatedClub };
@@ -328,11 +334,10 @@ export const useAdminClubStore = create<AdminClubState>((set, get) => ({
       let newClubs = state.clubs;
       if (clubIndex >= 0) {
         newClubs = [...state.clubs];
-        // Merge updated data while preserving counts from the list view
+        // Merge updated data while preserving the original structure
         newClubs[clubIndex] = { 
           ...newClubs[clubIndex],
           ...updatedClub,
-          id: clubId, // Preserve id
         };
       }
 
