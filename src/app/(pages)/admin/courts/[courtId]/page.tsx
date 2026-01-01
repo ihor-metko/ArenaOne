@@ -32,7 +32,6 @@ export default function CourtDetailPage({
   const isHydrated = useUserStore((state) => state.isHydrated);
   const isLoading = useUserStore((state) => state.isLoading);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
-  const hasRole = useUserStore((state) => state.hasRole);
 
   const [courtId, setCourtId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -47,6 +46,12 @@ export default function CourtDetailPage({
 
   // Local state for court - using store's CourtDetail type
   const [court, setCourt] = useState<StoreCourtDetail | null>(null);
+
+  // Check if user can manage this court (must be called at top level)
+  // Based on API logic: club admins can manage courts in their clubs,
+  // organization admins can manage courts in clubs under their organization,
+  // and root admins can manage all courts
+  const canManageCourt = useCanEditClub(court?.clubId);
 
   useEffect(() => {
     params.then((resolvedParams) => {
@@ -222,12 +227,6 @@ export default function CourtDetailPage({
   if (!court) {
     return null;
   }
-
-  // Check if user can manage this court
-  // Based on API logic: club admins can manage courts in their clubs,
-  // organization admins can manage courts in clubs under their organization,
-  // and root admins can manage all courts
-  const canManageCourt = useCanEditClub(court.clubId);
 
   // Prepare DangerZone actions
   const dangerActions: DangerAction[] = [
