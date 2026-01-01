@@ -421,18 +421,6 @@ export default function AdminClubDetailPage({
                 onRefresh={refetchClub}
                 disabled={!canEdit}
                 disabledTooltip={editDisabledTooltip}
-              // onUpdate={async (payload) => {
-              //   // When updating special hours, preserve existing business hours
-              //   return handleSectionUpdate("hours", {
-              //     businessHours: club.businessHours.map(h => ({
-              //       dayOfWeek: h.dayOfWeek,
-              //       openTime: h.openTime,
-              //       closeTime: h.closeTime,
-              //       isClosed: h.isClosed,
-              //     })),
-              //     specialHours: payload.specialHours,
-              //   });
-              // }}
               />
             </Card>
           </div>
