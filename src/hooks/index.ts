@@ -1,4 +1,4 @@
-export { useRootAdminGuard, useAuthGuard } from "./useRoleGuard";
+export { useRootAdminGuard, useAuthGuard, useAuthGuardOnce } from "./useRoleGuard";
 export { useListController } from "./useListController";
 export type { ListState, UseListControllerOptions, UseListControllerReturn } from "./useListController";
 export { useDropdownPosition } from "./useDropdownPosition";

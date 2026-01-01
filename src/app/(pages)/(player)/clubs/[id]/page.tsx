@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -118,9 +118,9 @@ export default function ClubDetailPage({
   // Map currentClub to ClubWithDetails (they should be compatible)
   const club = currentClub as ClubWithDetails | null;
   
-  // Get courts and gallery from store
-  const courts = club ? getCourtsForClub(club.id) : [];
-  const gallery = club ? getGalleryForClub(club.id) : [];
+  // Get courts and gallery from store (wrapped in useMemo to prevent dependency issues)
+  const courts = useMemo(() => club ? getCourtsForClub(club.id) : [], [club, getCourtsForClub]);
+  const gallery = useMemo(() => club ? getGalleryForClub(club.id) : [], [club, getGalleryForClub]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCourtId, setSelectedCourtId] = useState<string | null>(null);
   const [courtAvailability, setCourtAvailability] = useState<Record<string, AvailabilitySlot[]>>({});

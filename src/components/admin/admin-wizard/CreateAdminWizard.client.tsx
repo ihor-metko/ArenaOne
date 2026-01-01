@@ -391,9 +391,6 @@ export function CreateAdminWizard({ config }: CreateAdminWizardProps) {
               onChange={handleUserDataChange}
               errors={errors}
               disabled={isSubmitting}
-              organizationId={formData.organizationId}
-              clubId={formData.clubId}
-              role={formData.role}
             />
           </Card>
         );

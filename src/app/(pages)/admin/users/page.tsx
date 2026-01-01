@@ -160,6 +160,11 @@ export default function AdminUsersPage() {
   const error = useAdminUsersStore((state) => state.error);
   const fetchUsersFromStore = useAdminUsersStore((state) => state.fetchUsers);
 
+  // Get user store state for hydration check
+  const isHydrated = useUserStore((state) => state.isHydrated);
+  const isLoading = useUserStore((state) => state.isLoading);
+  const hasAnyRole = useUserStore((state) => state.hasAnyRole);
+
   // Use deferred loading to prevent flicker on fast responses
   const deferredLoading = useDeferredLoading(loading);
 

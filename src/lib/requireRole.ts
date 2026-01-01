@@ -664,6 +664,125 @@ export async function requireClubAdminManagement(
 }
 
 /**
+ * Result type for club management permission check.
+ */
+export type ClubManagementResult = RoleCheckResult;
+
+/**
+ * Check if the current user has permission to manage a specific club.
+ * 
+ * This function allows:
+ * - Root Admin: Can manage any club
+ * - Organization Admin: Can manage clubs within their organization
+ * - Club Owner: Can manage their club
+ * - Club Admin: Can manage their club
+ * 
+ * @param clubId - The club ID to check access for
+ * @returns Promise resolving to authorized status with user info or error response
+ * 
+ * @example
+ * const authResult = await requireClubManagement(clubId);
+ * if (!authResult.authorized) return authResult.response;
+ * // User can manage this club
+ */
+export async function requireClubManagement(
+  clubId: string
+): Promise<ClubManagementResult> {
+  const session = await auth();
+
+  if (!session?.user) {
+    return {
+      authorized: false,
+      response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    };
+  }
+
+  const userId = session.user.id;
+  const isRoot = session.user.isRoot ?? false;
+
+  // Root admins can manage any club
+  if (isRoot) {
+    return {
+      authorized: true,
+      userId,
+      isRoot: true,
+      userRole: "root_admin",
+    };
+  }
+
+  // Fetch the club with organization info
+  const club = await prisma.club.findUnique({
+    where: { id: clubId },
+    select: {
+      id: true,
+      organizationId: true,
+    },
+  });
+
+  if (!club) {
+    return {
+      authorized: false,
+      response: NextResponse.json({ error: "Club not found" }, { status: 404 }),
+    };
+  }
+
+  // Check if user is a club owner or club admin
+  const clubMembership = await prisma.clubMembership.findUnique({
+    where: {
+      userId_clubId: {
+        userId,
+        clubId,
+      },
+    },
+    select: {
+      role: true,
+    },
+  });
+
+  if (clubMembership) {
+    const role = clubMembership.role as ClubMembershipRole;
+    if (role === ClubMembershipRole.CLUB_OWNER || role === ClubMembershipRole.CLUB_ADMIN) {
+      return {
+        authorized: true,
+        userId,
+        isRoot: false,
+        userRole: role,
+      };
+    }
+  }
+
+  // Check if user is an organization admin for this club's organization
+  if (club.organizationId) {
+    const orgMembership = await prisma.membership.findUnique({
+      where: {
+        userId_organizationId: {
+          userId,
+          organizationId: club.organizationId,
+        },
+      },
+      select: {
+        role: true,
+      },
+    });
+
+    if (orgMembership && orgMembership.role === MembershipRole.ORGANIZATION_ADMIN) {
+      return {
+        authorized: true,
+        userId,
+        isRoot: false,
+        userRole: orgMembership.role as AllowedRole,
+      };
+    }
+  }
+
+  // User doesn't have permission to manage this club
+  return {
+    authorized: false,
+    response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+  };
+}
+
+/**
  * Success result type for court management permission check.
  */
 export interface CourtManagementSuccess {

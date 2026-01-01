@@ -529,7 +529,7 @@ export default function AdminBookingsPage() {
                 onClose={handleCloseBookingWizard}
                 onBookingComplete={handleBookingComplete}
                 predefinedData={wizardPredefinedData}
-                adminType={adminStatus.adminType}
+                adminType={adminStatus.adminType === "club_owner" ? "club_admin" : adminStatus.adminType}
                 managedIds={adminStatus.managedIds}
               />
             )}

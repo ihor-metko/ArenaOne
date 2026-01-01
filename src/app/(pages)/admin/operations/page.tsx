@@ -64,8 +64,8 @@ export default function OperationsListPage() {
   }
 
   // Check if Club Admin has no assigned club
-  const isClubAdmin = adminStatus.adminType === "club_admin";
-  if (isClubAdmin && !adminStatus.assignedClub) {
+  const isClubAdmin = adminStatus?.adminType === "club_admin" || adminStatus?.adminType === "club_owner";
+  if (isClubAdmin && !adminStatus?.assignedClub) {
     return (
       <main className="im-club-operations-page">
         <PageHeader

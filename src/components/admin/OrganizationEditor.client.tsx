@@ -14,7 +14,7 @@ interface OrganizationData {
   description?: string | null;
   address?: string | null;
   logoData?: { url: string; altText?: string; thumbnailUrl?: string } | null;
-  bannerData?: { url: string; altText?: string; description?: string; position?: string } | null;
+  bannerData?: { url: string; altText?: string; description?: string; position?: 'top' | 'center' | 'bottom' } | null;
   metadata?: Record<string, unknown> | null;
 }
 

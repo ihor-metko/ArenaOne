@@ -34,7 +34,7 @@ const MIME_TO_EXTENSION: Record<string, string> = {
 /**
  * Allowed entity types for image upload
  */
-export const ALLOWED_UPLOAD_ENTITIES = ["organizations", "clubs", "users", "bookings"] as const;
+export const ALLOWED_UPLOAD_ENTITIES = ["organizations", "clubs", "courts", "users", "bookings"] as const;
 export type UploadEntityType = typeof ALLOWED_UPLOAD_ENTITIES[number];
 
 /**
