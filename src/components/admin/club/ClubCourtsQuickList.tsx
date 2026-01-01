@@ -95,7 +95,7 @@ export function ClubCourtsQuickList({ club, disabled = false, disabledTooltip }:
                   <div className="im-courts-quick-name-row">
                     <span className="im-courts-quick-name">{court.name}</span>
                     <span
-                      className={`im-status-badge ${court.isActive ? "im-status-badge--active" : "im-status-badge--inactive"}`}
+                      className={`im-status-badge ${court.isActive ? "im-status-badge--active" : "im-status-badge--draft"}`}
                     >
                       {court.isActive ? t("common.active") : t("common.inactive")}
                     </span>
