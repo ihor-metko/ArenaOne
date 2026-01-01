@@ -32,7 +32,7 @@ jest.mock("@/lib/auth", () => ({
 }));
 
 import { POST, GET as GetList } from "@/app/api/admin/clubs/[id]/special-dates/route";
-import { GET, PATCH, DELETE } from "@/app/api/admin/clubs/[id]/special-dates/[dateId]/route";
+import { PATCH, DELETE } from "@/app/api/admin/clubs/[id]/special-dates/[dateId]/route";
 import { prisma } from "@/lib/prisma";
 
 describe("Special Dates CRUD APIs", () => {

@@ -514,7 +514,7 @@ describe("Admin Club Domain-Specific APIs", () => {
       );
 
       const response = await PatchMetadata(request, { params: mockParams });
-      const data = await response.json();
+      await response.json();
 
       expect(response.status).toBe(200);
       expect(prisma.club.update).toHaveBeenCalledWith({
