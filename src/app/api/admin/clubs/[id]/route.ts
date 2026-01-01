@@ -1,38 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin, requireRootAdmin } from "@/lib/requireRole";
-
-/**
- * Check if an admin has access to a specific club
- */
-async function canAccessClub(
-  adminType: "root_admin" | "organization_admin" | "club_owner" | "club_admin",
-  managedIds: string[],
-  clubId: string
-): Promise<boolean> {
-  if (adminType === "root_admin") {
-    return true;
-  }
-
-  if (adminType === "club_owner") {
-    return managedIds.includes(clubId);
-  }
-
-  if (adminType === "club_admin") {
-    return managedIds.includes(clubId);
-  }
-
-  if (adminType === "organization_admin") {
-    // Check if club belongs to one of the managed organizations
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      select: { organizationId: true },
-    });
-    return club?.organizationId ? managedIds.includes(club.organizationId) : false;
-  }
-
-  return false;
-}
+import { canAccessClub } from "@/lib/permissions/clubAccess";
 
 export async function GET(
   request: Request,
@@ -119,6 +88,119 @@ export async function GET(
   }
 }
 
+/**
+ * PATCH /api/admin/clubs/[id]
+ * Update general club information (name, slug, description, isPublic, supportedSports)
+ */
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const authResult = await requireAnyAdmin(request);
+
+  if (!authResult.authorized) {
+    return authResult.response;
+  }
+
+  // Only root admins, organization admins, and club owners can edit clubs
+  if (authResult.adminType === "club_admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    const resolvedParams = await params;
+    const clubId = resolvedParams.id;
+
+    // Check access permission for organization admins and club owners
+    if (authResult.adminType === "organization_admin" || authResult.adminType === "club_owner") {
+      const hasAccess = await canAccessClub(
+        authResult.adminType,
+        authResult.managedIds,
+        clubId
+      );
+      if (!hasAccess) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
+
+    const existingClub = await prisma.club.findUnique({
+      where: { id: clubId },
+    });
+
+    if (!existingClub) {
+      return NextResponse.json({ error: "Club not found" }, { status: 404 });
+    }
+
+    const body = await request.json();
+    const { name, slug, shortDescription, isPublic, supportedSports } = body;
+
+    // Validate required fields
+    if (name !== undefined && !name.trim()) {
+      return NextResponse.json(
+        { error: "Club name is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check slug uniqueness if provided and changed
+    if (slug && slug !== existingClub.slug) {
+      const slugExists = await prisma.club.findFirst({
+        where: {
+          slug,
+          id: { not: clubId },
+        },
+      });
+      if (slugExists) {
+        return NextResponse.json(
+          { error: "A club with this slug already exists" },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Build update data object with only provided fields
+    const updateData: Record<string, unknown> = {};
+    if (name !== undefined) updateData.name = name.trim();
+    if (slug !== undefined) updateData.slug = slug.trim() || existingClub.slug;
+    if (shortDescription !== undefined) updateData.shortDescription = shortDescription?.trim() || null;
+    if (isPublic !== undefined) updateData.isPublic = isPublic;
+    if (supportedSports !== undefined) updateData.supportedSports = supportedSports;
+
+    const updatedClub = await prisma.club.update({
+      where: { id: clubId },
+      data: updateData,
+      include: {
+        courts: true,
+        coaches: { include: { user: true } },
+        gallery: { orderBy: { sortOrder: "asc" } },
+        businessHours: { orderBy: { dayOfWeek: "asc" } },
+        specialHours: { orderBy: { date: "asc" } },
+      },
+    });
+
+    return NextResponse.json(updatedClub);
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error updating club:", error);
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * @deprecated Use PATCH instead for partial updates
+ * PUT /api/admin/clubs/[id]
+ * Update club (legacy - kept for backward compatibility)
+ * 
+ * This endpoint will be removed in a future version.
+ * Please migrate to using PATCH /api/admin/clubs/[id] for general info updates
+ * or the specific domain endpoints for other updates.
+ * 
+ * Migration Guide: See /docs/api/club-domain-endpoints.md
+ */
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -129,7 +211,7 @@ export async function PUT(
     return authResult.response;
   }
 
-  // Only root admins and organization admins can edit clubs
+  // Only root admins, organization admins, and club owners can edit clubs
   if (authResult.adminType === "club_admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -138,8 +220,8 @@ export async function PUT(
     const resolvedParams = await params;
     const clubId = resolvedParams.id;
 
-    // Check access permission for organization admins
-    if (authResult.adminType === "organization_admin") {
+    // Check access permission for organization admins and club owners
+    if (authResult.adminType === "organization_admin" || authResult.adminType === "club_owner") {
       const hasAccess = await canAccessClub(
         authResult.adminType,
         authResult.managedIds,

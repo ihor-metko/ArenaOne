@@ -12,9 +12,7 @@ import "./ClubHoursView.css";
 
 interface ClubHoursViewProps {
   club: ClubDetail;
-  onUpdate: (payload: {
-    businessHours: BusinessHour[];
-  }) => Promise<unknown>;
+  onRefresh?: () => Promise<void>;
   disabled?: boolean;
   disabledTooltip?: string;
 }
@@ -51,7 +49,7 @@ function initializeBusinessHours(existing: ClubBusinessHours[]): BusinessHour[] 
   return hours;
 }
 
-export function ClubHoursView({ club, onUpdate, disabled = false, disabledTooltip }: ClubHoursViewProps) {
+export function ClubHoursView({ club, onRefresh, disabled = false, disabledTooltip }: ClubHoursViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -81,14 +79,33 @@ export function ClubHoursView({ club, onUpdate, disabled = false, disabledToolti
     setIsSaving(true);
     setError("");
     try {
-      await onUpdate({ businessHours });
+      const [businessHoursResponse] = await Promise.all([
+        fetch(`/api/admin/clubs/${club.id}/business-hours`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            businessHours,
+          }),
+        }),
+      ]);
+
+      if (!businessHoursResponse.ok) {
+        const data = await businessHoursResponse.json();
+        throw new Error(data.error || "Failed to update business hours");
+      }
+
+      // Refresh club data to reflect changes
+      if (onRefresh) {
+        await onRefresh();
+      }
+
       setIsEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save changes");
     } finally {
       setIsSaving(false);
     }
-  }, [businessHours, onUpdate]);
+  }, [businessHours, club.id, onRefresh]);
 
   return (
     <>
@@ -138,7 +155,7 @@ export function ClubHoursView({ club, onUpdate, disabled = false, disabledToolti
         isSaving={isSaving}
       >
         {error && <div className="im-section-edit-modal-error">{error}</div>}
-        
+
         <BusinessHoursField
           value={businessHours}
           onChange={setBusinessHours}

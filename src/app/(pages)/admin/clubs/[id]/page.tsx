@@ -125,35 +125,6 @@ export default function AdminClubDetailPage({
     setTimeout(() => setToast(null), 4000);
   }, []);
 
-  const handleSectionUpdate = useCallback(async (section: string, payload: Record<string, unknown>) => {
-    if (!clubId) return;
-
-    try {
-      // Section updates still use direct API call as they're not part of the basic store
-      // This is a specialized admin endpoint for partial updates
-      const response = await fetch(`/api/admin/clubs/${clubId}/section`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ section, payload }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to update section");
-      }
-
-      const updatedClub = await response.json();
-      // Refresh club data from store to keep it in sync
-      await refetchClub();
-      showToast("success", t("clubDetail.changesSavedSuccess"));
-      return updatedClub;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : t("clubDetail.failedToSaveChanges");
-      showToast("error", message);
-      throw err;
-    }
-  }, [clubId, refetchClub, showToast, t]);
-
   const handleDelete = async () => {
     if (!clubId) return;
 
@@ -173,16 +144,28 @@ export default function AdminClubDetailPage({
 
     setIsTogglingPublish(true);
     try {
-      await handleSectionUpdate("header", {
-        name: club.name,
-        slug: club.slug,
-        shortDescription: club.shortDescription,
-        isPublic: !club.isPublic,
+      const response = await fetch(`/api/admin/clubs/${clubId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: club.name,
+          slug: club.slug,
+          shortDescription: club.shortDescription,
+          isPublic: !club.isPublic,
+        }),
       });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update club");
+      }
+
+      await refetchClub();
       setIsPublishModalOpen(false);
       showToast("success", club.isPublic ? t("clubDetail.clubUnpublishedSuccess") : t("clubDetail.clubPublishedSuccess"));
-    } catch {
-      // Error already handled in handleSectionUpdate
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t("clubDetail.failedToSaveChanges");
+      showToast("error", message);
     } finally {
       setIsTogglingPublish(false);
     }
@@ -415,7 +398,7 @@ export default function AdminClubDetailPage({
             <Card className="im-admin-club-info-card">
               <ClubContactsView
                 club={club}
-                onUpdate={(payload) => handleSectionUpdate("contacts", payload)}
+                onRefresh={refetchClub}
                 disabled={!canEdit}
                 disabledTooltip={editDisabledTooltip}
               />
@@ -425,20 +408,7 @@ export default function AdminClubDetailPage({
             <Card className="im-admin-club-info-card">
               <ClubHoursView
                 club={club}
-                onUpdate={async (payload) => {
-                  // When updating business hours, preserve existing special hours
-                  return handleSectionUpdate("hours", {
-                    businessHours: payload.businessHours,
-                    specialHours: club.specialHours.map(h => ({
-                      id: h.id,
-                      date: h.date.split("T")[0],
-                      openTime: h.openTime,
-                      closeTime: h.closeTime,
-                      isClosed: h.isClosed,
-                      reason: h.reason || "",
-                    })),
-                  });
-                }}
+                onRefresh={refetchClub}
                 disabled={!canEdit}
                 disabledTooltip={editDisabledTooltip}
               />
@@ -448,20 +418,21 @@ export default function AdminClubDetailPage({
             <Card className="im-admin-club-info-card">
               <ClubSpecialDatesView
                 club={club}
-                onUpdate={async (payload) => {
-                  // When updating special hours, preserve existing business hours
-                  return handleSectionUpdate("hours", {
-                    businessHours: club.businessHours.map(h => ({
-                      dayOfWeek: h.dayOfWeek,
-                      openTime: h.openTime,
-                      closeTime: h.closeTime,
-                      isClosed: h.isClosed,
-                    })),
-                    specialHours: payload.specialHours,
-                  });
-                }}
+                onRefresh={refetchClub}
                 disabled={!canEdit}
                 disabledTooltip={editDisabledTooltip}
+              // onUpdate={async (payload) => {
+              //   // When updating special hours, preserve existing business hours
+              //   return handleSectionUpdate("hours", {
+              //     businessHours: club.businessHours.map(h => ({
+              //       dayOfWeek: h.dayOfWeek,
+              //       openTime: h.openTime,
+              //       closeTime: h.closeTime,
+              //       isClosed: h.isClosed,
+              //     })),
+              //     specialHours: payload.specialHours,
+              //   });
+              // }}
               />
             </Card>
           </div>
@@ -472,7 +443,7 @@ export default function AdminClubDetailPage({
           <Card className="im-admin-club-info-card">
             <ClubGalleryView
               club={club}
-              onUpdate={(payload) => handleSectionUpdate("gallery", payload)}
+              onRefresh={refetchClub}
               disabled={!canEdit}
               disabledTooltip={editDisabledTooltip}
             />
@@ -640,7 +611,6 @@ export default function AdminClubDetailPage({
           isOpen={isEditingDetails}
           onClose={() => setIsEditingDetails(false)}
           club={club}
-          onUpdate={handleSectionUpdate}
           onRefresh={refetchClub}
         />
       )}
