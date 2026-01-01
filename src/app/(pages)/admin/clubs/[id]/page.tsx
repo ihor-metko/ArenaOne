@@ -18,7 +18,6 @@ import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import { useClubPageData } from "@/hooks/useClubPageData";
 import { useCanEditClub } from "@/hooks/useCanEditClub";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
-import { formatPrice } from "@/utils/price";
 import { parseTags, getPriceRange } from "@/utils/club";
 import { parseClubMetadata } from "@/types/club";
 import { useUserStore } from "@/stores/useUserStore";
@@ -437,35 +436,6 @@ export default function AdminClubDetailPage({
                 </div>
               </section>
             )}
-
-            {/* Club Details Card */}
-            <Card className="im-admin-club-info-card">
-              <div className="im-section-view-header">
-                <h2 className="im-club-view-section-title">{t("clubDetail.details")}</h2>
-              </div>
-
-              {/* Price range */}
-              {priceRange && (
-                <div className="im-admin-club-price-range">
-                  <span className="im-admin-club-price-label">{t("clubs.priceRangeLabel")}</span>
-                  <span className="im-admin-club-price-value">
-                    {priceRange.min === priceRange.max
-                      ? formatPrice(priceRange.min)
-                      : `${formatPrice(priceRange.min)} - ${formatPrice(priceRange.max)}`}
-                  </span>
-                  <span className="im-admin-club-price-label">{t("clubs.perHour")}</span>
-                </div>
-              )}
-
-              {/* Tags */}
-              {clubTags.length > 0 && (
-                <div className="im-admin-club-tags-list">
-                  {clubTags.map((tag, index) => (
-                    <span key={index} className="im-admin-club-tag">{tag}</span>
-                  ))}
-                </div>
-              )}
-            </Card>
           </div>
 
           {/* Right Column - Contact & Hours */}
