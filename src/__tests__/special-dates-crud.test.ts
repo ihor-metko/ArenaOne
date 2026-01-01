@@ -147,6 +147,33 @@ describe("Special Dates CRUD APIs", () => {
       expect(data.error).toBe("A special date for this day already exists");
     });
 
+    it("should return 400 when open but missing times", async () => {
+      mockAuth.mockResolvedValue({
+        user: { id: "admin-123", isRoot: true },
+      });
+
+      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+
+      const request = new Request(
+        "http://localhost:3000/api/admin/clubs/club-123/special-dates",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            date: "2024-12-25",
+            isClosed: false,
+            // Missing openTime and closeTime
+          }),
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      const response = await POST(request, { params: Promise.resolve({ id: "club-123" }) });
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Opening and closing times are required when the club is open");
+    });
+
     it("should create special date successfully", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "admin-123", isRoot: true },

@@ -60,8 +60,14 @@ export async function POST(
       );
     }
 
-    // Validate that times are correct if not closed
-    if (!isClosed && openTime && closeTime) {
+    // Validate that times are provided if not closed
+    if (!isClosed) {
+      if (!openTime || !closeTime) {
+        return NextResponse.json(
+          { error: "Opening and closing times are required when the club is open" },
+          { status: 400 }
+        );
+      }
       if (openTime >= closeTime) {
         return NextResponse.json(
           { error: "Opening time must be before closing time" },

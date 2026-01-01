@@ -87,6 +87,7 @@ export function ClubSpecialDatesView({ club, disabled = false, disabledTooltip }
             const data = await response.json();
             throw new Error(data.error || t("failedToDeleteSpecialDate"));
           }
+          return { type: 'delete', id: hour.id, success: true };
         } else if (hour._action === 'create' || !hour.id) {
           // Create new special date
           const response = await fetch(`/api/admin/clubs/${club.id}/special-dates`, {
@@ -104,6 +105,7 @@ export function ClubSpecialDatesView({ club, disabled = false, disabledTooltip }
             const data = await response.json();
             throw new Error(data.error || t("failedToCreateSpecialDate"));
           }
+          return { type: 'create', success: true };
         } else if (hour._action === 'update' && hour.id) {
           // Update existing special date
           const response = await fetch(`/api/admin/clubs/${club.id}/special-dates/${hour.id}`, {
@@ -121,12 +123,21 @@ export function ClubSpecialDatesView({ club, disabled = false, disabledTooltip }
             const data = await response.json();
             throw new Error(data.error || t("failedToUpdateSpecialDate"));
           }
+          return { type: 'update', id: hour.id, success: true };
         }
         // If no action, it's an unchanged existing item - do nothing
+        return { type: 'skip', success: true };
       });
 
-      // Wait for all operations to complete
-      await Promise.all(promises);
+      // Wait for all operations to complete, collecting both successes and failures
+      const results = await Promise.allSettled(promises);
+      
+      // Check if any operations failed
+      const failures = results.filter(r => r.status === 'rejected');
+      if (failures.length > 0) {
+        const firstError = (failures[0] as PromiseRejectedResult).reason;
+        throw firstError instanceof Error ? firstError : new Error(t("failedToSaveChanges"));
+      }
 
       // Fetch the updated club data to refresh the UI
       const clubResponse = await fetch(`/api/admin/clubs/${club.id}`);

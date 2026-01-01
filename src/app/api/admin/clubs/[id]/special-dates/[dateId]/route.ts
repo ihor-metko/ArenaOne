@@ -109,8 +109,14 @@ export async function PATCH(
     const body = await request.json();
     const { date, openTime, closeTime, isClosed, reason } = body;
 
-    // Validate that times are correct if not closed
-    if (isClosed === false && openTime && closeTime) {
+    // Validate that times are provided and correct if not closed
+    if (isClosed === false) {
+      if (!openTime || !closeTime) {
+        return NextResponse.json(
+          { error: "Opening and closing times are required when the club is open" },
+          { status: 400 }
+        );
+      }
       if (openTime >= closeTime) {
         return NextResponse.json(
           { error: "Opening time must be before closing time" },

@@ -69,9 +69,16 @@ export function SpecialHoursField({ value, onChange, disabled }: SpecialHoursFie
           updatedHour.isClosed = newValue as boolean;
           updatedHour.openTime = newValue ? null : "09:00";
           updatedHour.closeTime = newValue ? null : "21:00";
-        } else if (field !== "_action") {
-          updatedHour[field] = (newValue || null) as never;
+        } else if (field === "date") {
+          updatedHour.date = newValue as string;
+        } else if (field === "openTime") {
+          updatedHour.openTime = newValue as string | null;
+        } else if (field === "closeTime") {
+          updatedHour.closeTime = newValue as string | null;
+        } else if (field === "reason") {
+          updatedHour.reason = newValue as string;
         }
+        // Ignore _action and id fields as they are not user-editable
         
         return updatedHour;
       });
