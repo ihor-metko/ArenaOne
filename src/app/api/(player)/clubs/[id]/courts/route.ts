@@ -46,7 +46,7 @@ export async function GET(
       },
     });
 
-    return NextResponse.json({ courts });
+    return NextResponse.json(courts);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error fetching courts:", error);
