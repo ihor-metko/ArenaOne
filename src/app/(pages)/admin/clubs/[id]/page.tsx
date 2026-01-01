@@ -8,6 +8,7 @@ import { Button, Card, Modal, IMLink, ImageCarousel, EntityBanner, DangerZone, B
 import type { DangerAction } from "@/components/ui";
 import { ClubContactsView } from "@/components/admin/club/ClubContactsView";
 import { ClubHoursView } from "@/components/admin/club/ClubHoursView";
+import { ClubSpecialDatesView } from "@/components/admin/club/ClubSpecialDatesView";
 import { ClubCourtsPreview } from "@/components/admin/club/ClubCourtsPreview";
 import { ClubGalleryView } from "@/components/admin/club/ClubGalleryView";
 import AdminManagementSection from "@/components/admin/AdminManagementSection";
@@ -406,6 +407,16 @@ export default function AdminClubDetailPage({
             {/* Business Hours Card with Edit */}
             <Card className="im-admin-club-info-card">
               <ClubHoursView
+                club={club}
+                onRefresh={refetchClub}
+                disabled={!canEdit}
+                disabledTooltip={editDisabledTooltip}
+              />
+            </Card>
+
+            {/* Special Dates Card with Edit */}
+            <Card className="im-admin-club-info-card">
+              <ClubSpecialDatesView
                 club={club}
                 onRefresh={refetchClub}
                 disabled={!canEdit}
