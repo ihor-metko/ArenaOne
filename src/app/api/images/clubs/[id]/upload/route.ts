@@ -16,7 +16,7 @@ import { prisma } from "@/lib/prisma";
  *
  * @param id - Club ID
  * @body file - The image file to upload
- * @body type - Image type: "logo" or "heroImage"
+ * @body type - Image type: "logo" (updates logoData), "heroImage" (updates bannerData), "secondLogo" (updates metadata), or "gallery" (file only)
  *
  * @returns JSON with the uploaded image URL
  */
@@ -131,6 +131,8 @@ export async function POST(
           metadata: JSON.stringify(metadata),
         },
       });
+
+      console.log(`[Club Upload] Database updated successfully for club ${clubId}, ${imageType}: ${url}`);
     } else {
       // For logo and heroImage, update the logoData and bannerData fields with full JSON objects
       const fieldName = imageType === "logo" ? "logoData" : "bannerData";
@@ -164,9 +166,9 @@ export async function POST(
           [fieldName]: JSON.stringify(imageData),
         },
       });
-    }
 
-    console.log(`[Club Upload] Database updated successfully for club ${clubId}, ${imageType}: ${url}`);
+      console.log(`[Club Upload] Database updated successfully for club ${clubId}, ${imageType}: ${url}`);
+    }
 
     return NextResponse.json({
       success: true,
