@@ -378,9 +378,7 @@ describe("POST /api/admin/clubs/:clubId/courts - Authorization", () => {
         },
       });
 
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
-
-      // User is a Club Admin
+      // User is a Club Admin (but club doesn't exist)
       (prisma.clubMembership.findUnique as jest.Mock).mockResolvedValue({
         userId,
         clubId,
