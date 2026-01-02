@@ -284,7 +284,7 @@ export default function Header({ showSearch = false, hideProfile = false }: Head
                   <IMLink href="/auth/sign-in" className="im-header-auth-link">
                     {t("common.signIn")}
                   </IMLink>
-                  <IMLink href="/auth/sign-up" className="im-header-auth-link im-header-auth-link--primary">
+                  <IMLink href="/auth/sign-up" asButton>
                     {t("common.register")}
                   </IMLink>
                 </div>

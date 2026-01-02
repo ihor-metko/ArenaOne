@@ -203,16 +203,6 @@
   color: var(--im-primary);
 }
 
-.im-header-auth-link--primary {
-  background-color: var(--im-primary);
-  color: white;
-}
-
-.im-header-auth-link--primary:hover {
-  background-color: var(--im-primary-hover);
-  color: white;
-}
-
 /* Search input */
 .im-header-search {
   @apply hidden lg:flex items-center;
