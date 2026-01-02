@@ -229,7 +229,6 @@ export async function POST(
       }
     }
 
-
     // Verify club exists
     const club = await prisma.club.findUnique({
       where: { id: clubId },
