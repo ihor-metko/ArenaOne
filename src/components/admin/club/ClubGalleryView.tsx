@@ -76,11 +76,12 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
     setError("");
   }, [gallery]);
 
-  const uploadFile = useCallback(async (file: File): Promise<{ url: string; key: string }> => {
+  const uploadFile = useCallback(async (file: File, type: "logo" | "heroImage" | "gallery"): Promise<{ url: string; key?: string; filename: string }> => {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("type", type);
 
-    const response = await fetch(`/api/admin/clubs/${club.id}/images`, {
+    const response = await fetch(`/api/images/clubs/${club.id}/upload`, {
       method: "POST",
       body: formData,
     });
@@ -90,7 +91,12 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
       throw new Error(data.error || t("failedToUploadImages"));
     }
 
-    return response.json();
+    const result = await response.json();
+    return {
+      url: result.url,
+      key: result.filename || `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      filename: result.filename,
+    };
   }, [club.id, t]);
 
   const handleHeroUpload = useCallback(
@@ -101,7 +107,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
       setIsUploading(true);
       setError("");
       try {
-        const { url } = await uploadFile(file);
+        const { url } = await uploadFile(file, "heroImage");
         setBannerUrl(url);
       } catch (err) {
         setError(err instanceof Error ? err.message : t("failedToUploadHeroImage"));
@@ -123,7 +129,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
       setIsUploading(true);
       setError("");
       try {
-        const { url } = await uploadFile(file);
+        const { url } = await uploadFile(file, "logo");
         setLogoUrl(url);
       } catch (err) {
         setError(err instanceof Error ? err.message : t("failedToUploadLogo"));
@@ -147,7 +153,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
       try {
         const newImages: GalleryImage[] = [];
         for (const file of files) {
-          const { url, key } = await uploadFile(file);
+          const { url, key } = await uploadFile(file, "gallery");
           newImages.push({
             imageUrl: url,
             imageKey: key,
@@ -168,32 +174,18 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
     [gallery.length, uploadFile, t]
   );
 
-  const handleRemoveGalleryImage = useCallback(async (index: number) => {
+  const handleRemoveGalleryImage = useCallback((index: number) => {
     const image = gallery[index];
-
-    // If image has an ID, delete from server
-    if (image.id) {
-      try {
-        const response = await fetch(
-          `/api/admin/clubs/${club.id}/images/${image.id}`,
-          { method: "DELETE" }
-        );
-        if (!response.ok) {
-          throw new Error(t("failedToDeleteImage"));
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : t("failedToDeleteImage"));
-        return;
-      }
-    }
 
     // Revoke blob URL if exists
     if (image.preview) {
       URL.revokeObjectURL(image.preview);
     }
 
+    // Remove from local state
+    // The actual database update will happen when Save is clicked
     setGallery((prev) => prev.filter((_, i) => i !== index));
-  }, [club.id, gallery, t]);
+  }, [gallery]);
 
   const handleSetHeroFromGallery = useCallback((imageUrl: string) => {
     setBannerUrl(imageUrl);
@@ -224,11 +216,23 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
         throw new Error(data.error || t("failedToUpdateMedia"));
       }
 
-      // Get updated club data from response
-      const updatedClub = await response.json();
-
-      // Update store reactively - no page reload needed
-      updateClubInStore(club.id, updatedClub);
+      const result = await response.json();
+      
+      // According to the migration guide, this endpoint returns { success: true }
+      // We need to optimistically update the club in the store
+      if (result.success) {
+        updateClubInStore(club.id, {
+          bannerData: bannerUrl ? { url: bannerUrl } : null,
+          logoData: logoUrl ? { url: logoUrl } : null,
+          gallery: gallery.map((img, index) => ({
+            id: img.id || crypto.randomUUID(),
+            imageUrl: img.imageUrl,
+            imageKey: img.imageKey || null,
+            altText: img.altText || null,
+            sortOrder: index,
+          })),
+        });
+      }
 
       setIsEditing(false);
     } catch (err) {
