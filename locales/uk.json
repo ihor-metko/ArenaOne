@@ -481,7 +481,11 @@
     "emailPlaceholder": "contact@club.com",
     "websitePlaceholder": "https://www.club.com",
     "heroPreviewAlt": "Попередній перегляд головного зображення",
-    "galleryImageIndexAlt": "Зображення галереї {index}"
+    "galleryImageIndexAlt": "Зображення галереї {index}",
+    "failedToRemoveClubAdmin": "Не вдалося видалити адміністратора клубу",
+    "failedToDeleteCourt": "Не вдалося видалити корт",
+    "failedToUpdateBusinessHours": "Не вдалося оновити години роботи",
+    "failedToLoadClubAdmins": "Не вдалося завантажити адміністраторів клубу"
   },
   "businessHours": {
     "title": "Години роботи",

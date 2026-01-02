@@ -179,7 +179,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
           { method: "DELETE" }
         );
         if (!response.ok) {
-          throw new Error("Failed to delete image");
+          throw new Error(t("failedToDeleteImage"));
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : t("failedToDeleteImage"));

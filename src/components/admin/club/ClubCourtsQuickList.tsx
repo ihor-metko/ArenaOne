@@ -38,14 +38,14 @@ export function ClubCourtsQuickList({ club, disabled = false, disabledTooltip }:
 
       if (!response.ok && response.status !== 204) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to delete court");
+        throw new Error(data.error || t("clubDetail.failedToDeleteCourt"));
       }
 
       setIsDeleteModalOpen(false);
       setDeletingCourt(null);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete court");
+      setError(err instanceof Error ? err.message : t("clubDetail.failedToDeleteCourt"));
     } finally {
       setSubmitting(false);
     }

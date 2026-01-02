@@ -475,7 +475,11 @@
     "emailPlaceholder": "contact@club.com",
     "websitePlaceholder": "https://www.club.com",
     "heroPreviewAlt": "Hero preview",
-    "galleryImageIndexAlt": "Gallery image {index}"
+    "galleryImageIndexAlt": "Gallery image {index}",
+    "failedToRemoveClubAdmin": "Failed to remove club admin",
+    "failedToDeleteCourt": "Failed to delete court",
+    "failedToUpdateBusinessHours": "Failed to update business hours",
+    "failedToLoadClubAdmins": "Failed to load club admins"
   },
   "businessHours": {
     "title": "Business Hours",
