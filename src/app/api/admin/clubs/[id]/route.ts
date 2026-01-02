@@ -38,6 +38,7 @@ export async function GET(
             slug: true,
           },
         },
+        metadata: false,
         courts: {
           orderBy: { name: "asc" },
         },

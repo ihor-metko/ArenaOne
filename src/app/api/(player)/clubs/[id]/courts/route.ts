@@ -42,7 +42,7 @@ export async function GET(
         sportType: true,
         defaultPriceCents: true,
         bannerData: true,
-        metadata: true,
+        metadata: false,
         createdAt: true,
         updatedAt: true,
       },
@@ -52,7 +52,7 @@ export async function GET(
     const formattedCourts = courts.map(court => {
       let bannerData = null;
       let metadata = null;
-      
+
       try {
         bannerData = court.bannerData ? JSON.parse(court.bannerData) : null;
       } catch (error) {
@@ -60,7 +60,7 @@ export async function GET(
           console.error(`Failed to parse bannerData for court ${court.id}:`, error);
         }
       }
-      
+
       try {
         metadata = court.metadata ? JSON.parse(court.metadata) : null;
       } catch (error) {
@@ -68,7 +68,7 @@ export async function GET(
           console.error(`Failed to parse metadata for court ${court.id}:`, error);
         }
       }
-      
+
       return {
         ...court,
         bannerData,
