@@ -78,6 +78,7 @@
     "or": "або",
     "totalPrice": "Загальна ціна",
     "remove": "Видалити",
+    "role": "Роль",
     "never": "Ніколи",
     "previous": "Попередня",
     "next": "Наступна",
@@ -2093,8 +2094,12 @@
     "inviteUser": "Запросити користувача",
     "lastLogin": "Останній вхід",
     "noAdmins": "Адмінів клубів ще не призначено.",
+    "owner": "Власник клубу",
+    "admin": "Адмін клубу",
+    "removeAdmin": "Видалити адміна",
     "alreadyOwnerOf": "Вже власник {context}",
-    "alreadyAdminOf": "Вже адмін {context}"
+    "alreadyAdminOf": "Вже адмін {context}",
+    "searching": "Пошук..."
   },
   "orgDetail": {
     "title": "Деталі організації",

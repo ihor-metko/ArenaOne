@@ -79,6 +79,7 @@
     "or": "or",
     "totalPrice": "Total Price",
     "remove": "Remove",
+    "role": "Role",
     "never": "Never",
     "viewProfile": "View Profile",
     "from": "From",
@@ -2209,6 +2210,7 @@
     "noAdmins": "No club admins assigned yet.",
     "owner": "Club Owner",
     "admin": "Club Admin",
+    "removeAdmin": "Remove Admin",
     "alreadyOwnerOf": "Already Owner of {context}",
     "alreadyAdminOf": "Already Admin in {context}",
     "searching": "Searching..."

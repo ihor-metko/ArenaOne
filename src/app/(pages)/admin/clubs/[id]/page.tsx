@@ -381,7 +381,7 @@ export default function AdminClubDetailPage({
                         variant="primary"
                         onClick={() => router.push(`/admin/operations/${club.id}`)}
                       >
-                        {t("bookings.addBooking")}
+                        {t("booking.addBooking")}
                       </Button>
                       <Button
                         variant="outline"
@@ -413,7 +413,7 @@ export default function AdminClubDetailPage({
                         size="small"
                         onClick={() => router.push(`/admin/operations/${club.id}`)}
                       >
-                        {t("bookings.createFirstBooking")}
+                        {t("booking.createFirstBooking")}
                       </Button>
                     </div>
                   ) : (
