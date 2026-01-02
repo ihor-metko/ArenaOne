@@ -49,7 +49,9 @@ export function PublicSearchBar({
   
   // Track if we're syncing from URL to prevent triggering debounced search
   const isSyncingFromUrl = useRef(false);
+  // Track initial mount to distinguish from prop changes (for URL sync)
   const isInitialMount = useRef(true);
+  // Skip next debounce when we manually call onSearch (e.g., clear filters)
   const skipNextDebounce = useRef(false);
 
   // Sync with URL changes (for back/forward navigation)
@@ -63,11 +65,10 @@ export function PublicSearchBar({
     isSyncingFromUrl.current = true;
     setQ(initialQ);
     setCity(initialCity);
-    // Reset the flag after a short delay to allow state updates to complete
-    const timer = setTimeout(() => {
+    // Reset the flag on next tick to allow React state updates to complete
+    Promise.resolve().then(() => {
       isSyncingFromUrl.current = false;
-    }, 0);
-    return () => clearTimeout(timer);
+    });
   }, [initialQ, initialCity, initialIndoor]);
 
   // Build URL with query params
