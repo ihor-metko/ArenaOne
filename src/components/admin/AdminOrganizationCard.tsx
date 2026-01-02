@@ -5,6 +5,8 @@ import { Button, EntityLogo } from "@/components/ui";
 import { SportType } from "@/constants/sports";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { parseOrganizationMetadata } from "@/types/organization";
+import { formatAddress as formatAddressObj } from "@/types/address";
+import type { Address } from "@/types/address";
 
 export interface AdminOrganizationCardProps {
   organization: {
@@ -12,7 +14,8 @@ export interface AdminOrganizationCardProps {
     name: string;
     slug: string;
     description?: string | null;
-    address?: string | null;
+    // Support both legacy string and new Address object
+    address?: string | Address | null;
     createdAt: string;
     clubCount?: number;
     supportedSports?: SportType[];
@@ -165,7 +168,7 @@ export function AdminOrganizationCard({
               <circle cx="12" cy="10" r="3" />
             </svg>
             <span className="im-admin-org-address-text">
-              {organization.address}
+              {typeof organization.address === 'string' ? organization.address : formatAddressObj(organization.address)}
             </span>
           </div>
         )}

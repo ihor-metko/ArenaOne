@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { parseAddress } from "@/types/address";
 
 // Public endpoint - no authentication required
 export async function GET(request: Request) {
@@ -56,11 +57,11 @@ export async function GET(request: Request) {
         shortDescription: true,
         location: true,
         city: true,
+        address: true,
         contactInfo: true,
         openingHours: true,
         logoData: true,
         bannerData: true,
-        metadata: false,
         tags: true,
         createdAt: true,
         isPublic: true,
@@ -88,17 +89,22 @@ export async function GET(request: Request) {
         return null;
       }
 
+      // Parse address from JSON if available
+      const parsedAddress = parseAddress(club.address);
+
       return {
         id: club.id,
         name: club.name,
         shortDescription: club.shortDescription,
-        location: club.location,
-        city: club.city,
+        // New address object (primary)
+        address: parsedAddress || null,
+        // Legacy fields for backward compatibility
+        location: parsedAddress?.formattedAddress || club.location || null,
+        city: parsedAddress?.city || club.city || null,
         contactInfo: club.contactInfo,
         openingHours: club.openingHours,
         logoData: club.logoData ? JSON.parse(club.logoData) : null,
         bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
-        metadata: club.metadata,
         tags: club.tags,
         createdAt: club.createdAt,
         indoorCount,

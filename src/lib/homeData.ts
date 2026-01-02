@@ -30,7 +30,7 @@ export async function getPopularClubs(limit: number = 4): Promise<ClubWithCounts
     return clubs.map((club) => ({
       id: club.id,
       name: club.name,
-      location: club.location,
+      location: club.location || "",
       contactInfo: club.contactInfo,
       openingHours: club.openingHours,
       shortDescription: club.shortDescription,
