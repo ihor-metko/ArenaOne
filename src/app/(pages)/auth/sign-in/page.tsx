@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Input, IMLink } from "@/components/ui";
+import { ImAuthInput, IMLink } from "@/components/ui";
 import { getRoleHomepage } from "@/utils/roleRedirect";
 import { validateRedirectUrl } from "@/utils/redirectValidation";
 import { useUserStore } from "@/stores/useUserStore";
@@ -150,10 +150,9 @@ export default function SignInPage() {
             <label htmlFor="email" className="im-auth-label">
               {t("common.email")}
             </label>
-            <input
+            <ImAuthInput
               id="email"
               type="email"
-              className="im-auth-input"
               placeholder={t("auth.enterEmail")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -167,10 +166,9 @@ export default function SignInPage() {
             <label htmlFor="password" className="im-auth-label">
               {t("common.password")}
             </label>
-            <Input
+            <ImAuthInput
               id="password"
               type="password"
-              className="im-auth-input"
               placeholder={t("auth.enterPassword")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}

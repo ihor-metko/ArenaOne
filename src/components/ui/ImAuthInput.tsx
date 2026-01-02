@@ -1,0 +1,39 @@
+"use client";
+
+import { forwardRef } from "react";
+import { Input } from "./Input";
+
+interface ImAuthInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  showPasswordToggle?: boolean;
+}
+
+/**
+ * ImAuthInput Component
+ * 
+ * A specialized input component for authentication pages that applies
+ * consistent auth-specific styling (im-auth-input class) while maintaining
+ * all functionality from the base Input component.
+ * 
+ * Features:
+ * - Automatic application of im-auth-input styling
+ * - Password toggle support for password fields
+ * - Full compatibility with all standard input props
+ * - Consistent with dark theme and authentication page design
+ */
+export const ImAuthInput = forwardRef<HTMLInputElement, ImAuthInputProps>(
+  function ImAuthInput({ className = "", showPasswordToggle = false, ...props }, ref) {
+    // Ensure im-auth-input class is always applied
+    const authClassName = className.includes("im-auth-input") 
+      ? className 
+      : `im-auth-input ${className}`.trim();
+
+    return (
+      <Input
+        ref={ref}
+        className={authClassName}
+        showPasswordToggle={showPasswordToggle}
+        {...props}
+      />
+    );
+  }
+);
