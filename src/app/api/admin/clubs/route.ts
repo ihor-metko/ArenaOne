@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import type { Prisma, SportType } from "@prisma/client";
+import { parseAddress } from "@/types/address";
 
 export async function GET(request: Request) {
   const authResult = await requireAnyAdmin(request);
@@ -117,6 +118,7 @@ export async function GET(request: Request) {
         shortDescription: true,
         location: true,
         city: true,
+        address: true,
         contactInfo: true,
         openingHours: true,
         logoData: true,
@@ -156,13 +158,19 @@ export async function GET(request: Request) {
         { indoorCount: 0, outdoorCount: 0 }
       );
 
+      // Parse address from JSON if available
+      const parsedAddress = parseAddress(club.address);
+
       return {
         id: club.id,
         name: club.name,
         organizationId: club.organizationId,
         shortDescription: club.shortDescription,
-        location: club.location,
-        city: club.city,
+        // New address object (primary)
+        address: parsedAddress || null,
+        // Legacy fields for backward compatibility
+        location: parsedAddress?.formattedAddress || club.location || null,
+        city: parsedAddress?.city || club.city || null,
         contactInfo: club.contactInfo,
         openingHours: club.openingHours,
         logoData: club.logoData ? JSON.parse(club.logoData) : null,
