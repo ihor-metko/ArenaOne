@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
@@ -25,18 +25,18 @@ enum ClubMembershipRole {
 
 // Invite status for managing invite lifecycle
 enum InviteStatus {
-  PENDING   // Invite is active and awaiting acceptance
-  ACCEPTED  // Invite has been accepted
-  REVOKED   // Invite was revoked by admin
-  EXPIRED   // Invite has expired
+  PENDING // Invite is active and awaiting acceptance
+  ACCEPTED // Invite has been accepted
+  REVOKED // Invite was revoked by admin
+  EXPIRED // Invite has expired
 }
 
 // Invite roles - maps to organization and club roles
 enum InviteRole {
-  ORGANIZATION_OWNER  // Maps to ORGANIZATION_ADMIN with isPrimaryOwner=true
-  ORGANIZATION_ADMIN  // Maps to ORGANIZATION_ADMIN with isPrimaryOwner=false
-  CLUB_OWNER          // Maps to CLUB_OWNER
-  CLUB_ADMIN          // Maps to CLUB_ADMIN
+  ORGANIZATION_OWNER // Maps to ORGANIZATION_ADMIN with isPrimaryOwner=true
+  ORGANIZATION_ADMIN // Maps to ORGANIZATION_ADMIN with isPrimaryOwner=false
+  CLUB_OWNER // Maps to CLUB_OWNER
+  CLUB_ADMIN // Maps to CLUB_ADMIN
 }
 
 // Sport types supported by the platform
@@ -56,75 +56,75 @@ enum PaymentProvider {
 
 // Payment account scope - determines ownership level
 enum PaymentAccountScope {
-  ORGANIZATION  // Payment account belongs to entire organization
-  CLUB          // Payment account belongs to specific club
+  ORGANIZATION // Payment account belongs to entire organization
+  CLUB // Payment account belongs to specific club
 }
 
 // Payment account status - represents technical verification state
 enum PaymentAccountStatus {
-  PENDING      // Credentials saved but not yet verified
+  PENDING // Credentials saved but not yet verified
   TECHNICAL_OK // Credentials technically verified (sandbox/API test)
-  VERIFIED     // Real payment verification completed successfully
-  INVALID      // Credentials failed verification
-  DISABLED     // Manually disabled by owner
+  VERIFIED // Real payment verification completed successfully
+  INVALID // Credentials failed verification
+  DISABLED // Manually disabled by owner
 }
 
 // Payment account verification level - tracks real payment verification
 enum PaymentAccountVerificationLevel {
   NOT_VERIFIED // No real payment verification completed
-  VERIFIED     // Real payment verification completed and validated
+  VERIFIED // Real payment verification completed and validated
 }
 
 model User {
-  id              String           @id @default(uuid())
-  name            String?
-  email           String           @unique
-  emailVerified   DateTime?
-  image           String?
-  password        String?
-  isRoot          Boolean          @default(false)
-  blocked         Boolean          @default(false)
-  lastLoginAt     DateTime?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @default(now()) @updatedAt
-  accounts        Account[]
-  sessions        Session[]
-  coaches         Coach[]
-  bookings        Booking[]
-  memberships     Membership[]
-  clubMemberships ClubMembership[]
-  createdOrganizations Organization[] @relation("OrganizationCreator")
-  createdClubs    Club[]           @relation("ClubCreator")
-  sentInvites     Invite[]         @relation("InviteSender")
+  id                   String           @id @default(uuid())
+  name                 String?
+  email                String           @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+  isRoot               Boolean          @default(false)
+  blocked              Boolean          @default(false)
+  lastLoginAt          DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @default(now()) @updatedAt
+  accounts             Account[]
+  sessions             Session[]
+  coaches              Coach[]
+  bookings             Booking[]
+  memberships          Membership[]
+  clubMemberships      ClubMembership[]
+  createdOrganizations Organization[]   @relation("OrganizationCreator")
+  createdClubs         Club[]           @relation("ClubCreator")
+  sentInvites          Invite[]         @relation("InviteSender")
 }
 
 // Invite model - unified invite system for organization and club roles
 model Invite {
-  id             String       @id @default(uuid())
-  email          String       // Email of the invitee (normalized to lowercase)
-  role           InviteRole   // Role to assign on acceptance
-  
+  id    String     @id @default(uuid())
+  email String // Email of the invitee (normalized to lowercase)
+  role  InviteRole // Role to assign on acceptance
+
   // Scope - exactly one must be set (mutually exclusive)
-  organizationId String?      // Set for organization-level invites
-  clubId         String?      // Set for club-level invites
-  
-  status         InviteStatus @default(PENDING)
-  tokenHash      String       @unique  // SHA-256 hash of the invite token (never store raw token)
-  expiresAt      DateTime     // Invite expiration timestamp (typically 7 days from creation)
-  
-  invitedByUserId String      // User who created this invite
-  invitedBy      User         @relation("InviteSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
-  
-  acceptedAt     DateTime?    // Timestamp when invite was accepted
-  acceptedByUserId String?    // User who accepted the invite (may differ from email if user already exists)
-  
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  
+  organizationId String? // Set for organization-level invites
+  clubId         String? // Set for club-level invites
+
+  status    InviteStatus @default(PENDING)
+  tokenHash String       @unique // SHA-256 hash of the invite token (never store raw token)
+  expiresAt DateTime // Invite expiration timestamp (typically 7 days from creation)
+
+  invitedByUserId String // User who created this invite
+  invitedBy       User   @relation("InviteSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+
+  acceptedAt       DateTime? // Timestamp when invite was accepted
+  acceptedByUserId String? // User who accepted the invite (may differ from email if user already exists)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  club           Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  club         Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
   // Constraints
   @@unique([email, organizationId, clubId, status], name: "unique_active_invite")
   @@index([email])
@@ -136,29 +136,28 @@ model Invite {
 }
 
 model Organization {
-  id          String       @id @default(uuid())
-  name        String
-  slug        String       @unique
-  description String?      // Short description of the organization
-  contactEmail String?
-  contactPhone String?
-  website     String?
-  address     String?      @db.Text // JSON string for address data: { country, city, street, postalCode, region, lat, lng, formattedAddress }
-  logoData    String?      @db.Text // JSON: { url: string; altText?: string; thumbnailUrl?: string }
-  bannerData  String?      @db.Text // JSON: { url: string; altText?: string; description?: string; position?: string }
-  metadata    String?      @db.Text // JSON string for additional metadata (non-media related)
-  isPublic    Boolean      @default(true) // Whether organization is publicly visible
-  supportedSports SportType[] @default([PADEL]) // Sports supported by this organization
-  maxClubs    Int          @default(3) // Maximum number of clubs allowed for this organization
-  createdById String
-  createdBy   User         @relation("OrganizationCreator", fields: [createdById], references: [id])
-  archivedAt  DateTime?    // Soft-delete timestamp
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
-  memberships Membership[]
-  clubs       Club[]
+  id              String           @id @default(uuid())
+  name            String
+  slug            String           @unique
+  description     String? // Short description of the organization
+  contactEmail    String?
+  contactPhone    String?
+  website         String?
+  address         String?          @db.Text // JSON string for address data: { country, city, street, postalCode, region, lat, lng, formattedAddress }
+  logoData        String?          @db.Text // JSON: { url: string; altText?: string; thumbnailUrl?: string }
+  bannerData      String?          @db.Text // JSON: { url: string; altText?: string; description?: string; position?: string }
+  isPublic        Boolean          @default(true) // Whether organization is publicly visible
+  supportedSports SportType[]      @default([PADEL]) // Sports supported by this organization
+  maxClubs        Int              @default(3) // Maximum number of clubs allowed for this organization
+  createdById     String
+  createdBy       User             @relation("OrganizationCreator", fields: [createdById], references: [id])
+  archivedAt      DateTime? // Soft-delete timestamp
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @default(now()) @updatedAt
+  memberships     Membership[]
+  clubs           Club[]
   paymentAccounts PaymentAccount[] // Organization-level payment accounts
-  invites     Invite[]     // Invites for organization roles
+  invites         Invite[] // Invites for organization roles
 }
 
 model Membership {
@@ -229,47 +228,46 @@ model VerificationToken {
 }
 
 model Club {
-  id               String           @id @default(uuid())
-  name             String
-  slug             String?          @unique
-  organizationId   String?
-  organization     Organization?    @relation(fields: [organizationId], references: [id])
-  createdById      String?
-  createdBy        User?            @relation("ClubCreator", fields: [createdById], references: [id])
-  shortDescription String?
-  longDescription  String?          @db.Text
-  address          String?          @db.Text // JSON string for address data: { country, city, street, postalCode, region, lat, lng, formattedAddress }
-  phone            String?
-  email            String?
-  website          String?
-  socialLinks      String?          @db.Text  // JSON string for social links
-  contactInfo      String?
-  openingHours     String?
-  logoData         String?          @db.Text // JSON: { url: string; altText?: string; thumbnailUrl?: string }
-  bannerData       String?          @db.Text // JSON: { url: string; altText?: string; description?: string; position?: string }
-  metadata         String?          @db.Text // JSON string for additional metadata (non-media related)
-  defaultCurrency  String?          @default("USD")
-  timezone         String?          @default("UTC")
-  isPublic         Boolean          @default(true)
-  status           String           @default("active") // "active", "draft", "suspended"
-  tags             String?          // JSON array of tags
-  supportedSports  SportType[]      @default([PADEL]) // Sports supported by this club
-  wayforpayKey     String?          // Encrypted WayForPay payment key (Club Owner only)
-  liqpayKey        String?          // Encrypted LiqPay payment key (Club Owner only)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @default(now()) @updatedAt
-  courts           Court[]
-  coaches          Coach[]
-  pricingRules     PricingRule[]
-  gallery          ClubGallery[]
-  businessHours    ClubBusinessHours[]
-  specialHours     ClubSpecialHours[]
-  clubMemberships  ClubMembership[]
-  paymentAccounts  PaymentAccount[] // Club-level payment accounts
-  invites          Invite[]         // Invites for club roles
-  dailyStatistics  ClubDailyStatistics[] // Daily occupancy statistics
+  id                String                  @id @default(uuid())
+  name              String
+  slug              String?                 @unique
+  organizationId    String?
+  organization      Organization?           @relation(fields: [organizationId], references: [id])
+  createdById       String?
+  createdBy         User?                   @relation("ClubCreator", fields: [createdById], references: [id])
+  shortDescription  String?
+  longDescription   String?                 @db.Text
+  address           String?                 @db.Text // JSON string for address data: { country, city, street, postalCode, region, lat, lng, formattedAddress }
+  phone             String?
+  email             String?
+  website           String?
+  socialLinks       String?                 @db.Text // JSON string for social links
+  contactInfo       String?
+  openingHours      String?
+  logoData          String?                 @db.Text // JSON: { url: string; altText?: string; thumbnailUrl?: string }
+  bannerData        String?                 @db.Text // JSON: { url: string; altText?: string; description?: string; position?: string }
+  defaultCurrency   String?                 @default("USD")
+  timezone          String?                 @default("UTC")
+  isPublic          Boolean                 @default(true)
+  status            String                  @default("active") // "active", "draft", "suspended"
+  tags              String? // JSON array of tags
+  supportedSports   SportType[]             @default([PADEL]) // Sports supported by this club
+  wayforpayKey      String? // Encrypted WayForPay payment key (Club Owner only)
+  liqpayKey         String? // Encrypted LiqPay payment key (Club Owner only)
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @default(now()) @updatedAt
+  courts            Court[]
+  coaches           Coach[]
+  pricingRules      PricingRule[]
+  gallery           ClubGallery[]
+  businessHours     ClubBusinessHours[]
+  specialHours      ClubSpecialHours[]
+  clubMemberships   ClubMembership[]
+  paymentAccounts   PaymentAccount[] // Club-level payment accounts
+  invites           Invite[] // Invites for club roles
+  dailyStatistics   ClubDailyStatistics[] // Daily occupancy statistics
   monthlyStatistics ClubMonthlyStatistics[] // Monthly occupancy statistics
-  holidays         HolidayDate[]    // Club-specific holidays
+  holidays          HolidayDate[] // Club-specific holidays
 
   @@index([organizationId])
 }
@@ -290,9 +288,9 @@ model ClubGallery {
 model ClubBusinessHours {
   id        String   @id @default(uuid())
   clubId    String
-  dayOfWeek Int      // 0=Sunday, 1=Monday, ..., 6=Saturday
-  openTime  String?  // "HH:mm" format, null if closed
-  closeTime String?  // "HH:mm" format, null if closed
+  dayOfWeek Int // 0=Sunday, 1=Monday, ..., 6=Saturday
+  openTime  String? // "HH:mm" format, null if closed
+  closeTime String? // "HH:mm" format, null if closed
   isClosed  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -306,10 +304,10 @@ model ClubSpecialHours {
   id        String   @id @default(uuid())
   clubId    String
   date      DateTime @db.Date
-  openTime  String?  // "HH:mm" format, null if closed
-  closeTime String?  // "HH:mm" format, null if closed
+  openTime  String? // "HH:mm" format, null if closed
+  closeTime String? // "HH:mm" format, null if closed
   isClosed  Boolean  @default(false)
-  reason    String?  // e.g., "Holiday", "Maintenance"
+  reason    String? // e.g., "Holiday", "Maintenance"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
@@ -319,20 +317,20 @@ model ClubSpecialHours {
 }
 
 model Court {
-  id                String        @id @default(uuid())
+  id                String    @id @default(uuid())
   clubId            String
   name              String
-  slug              String?       @unique
+  slug              String?   @unique
   type              String?
   surface           String?
-  indoor            Boolean       @default(false)
-  sportType         SportType     @default(PADEL) // Type of sport for this court
-  isActive          Boolean       @default(true)
-  defaultPriceCents Int           @default(0)
-  bannerData        String?       @db.Text // JSON: { url: string; altText?: string; description?: string; position?: string }
-  metadata          String?       @db.Text // JSON string for additional metadata (e.g., bannerAlignment)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  indoor            Boolean   @default(false)
+  sportType         SportType @default(PADEL) // Type of sport for this court
+  isActive          Boolean   @default(true)
+  defaultPriceCents Int       @default(0)
+  bannerData        String?   @db.Text // JSON: { url: string; altText?: string; description?: string; position?: string }
+  metadata          String?   @db.Text // JSON string for additional metadata (e.g., bannerAlignment)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   club            Club             @relation(fields: [clubId], references: [id])
   bookings        Booking[]
@@ -342,23 +340,23 @@ model Court {
 
 // Price rule type enum
 enum PriceRuleType {
-  SPECIFIC_DAY      // Specific day of week (dayOfWeek field used)
-  SPECIFIC_DATE     // Specific date (date field used)
-  WEEKDAYS          // Monday-Friday
-  WEEKENDS          // Saturday-Sunday
-  ALL_DAYS          // Every day
-  HOLIDAY           // Holiday dates (uses holidayId)
+  SPECIFIC_DAY // Specific day of week (dayOfWeek field used)
+  SPECIFIC_DATE // Specific date (date field used)
+  WEEKDAYS // Monday-Friday
+  WEEKENDS // Saturday-Sunday
+  ALL_DAYS // Every day
+  HOLIDAY // Holiday dates (uses holidayId)
 }
 
 model CourtPriceRule {
   id         String        @id @default(uuid())
   courtId    String
   ruleType   PriceRuleType @default(SPECIFIC_DAY) // Type of rule
-  dayOfWeek  Int?          // 0=Sunday .. 6=Saturday (used when ruleType=SPECIFIC_DAY)
+  dayOfWeek  Int? // 0=Sunday .. 6=Saturday (used when ruleType=SPECIFIC_DAY)
   date       DateTime?     @db.Date // Specific date (used when ruleType=SPECIFIC_DATE)
-  holidayId  String?       // Reference to holiday (used when ruleType=HOLIDAY)
-  startTime  String        // "09:00" format
-  endTime    String        // "12:00" format
+  holidayId  String? // Reference to holiday (used when ruleType=HOLIDAY)
+  startTime  String // "09:00" format
+  endTime    String // "12:00" format
   priceCents Int
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
@@ -374,7 +372,7 @@ model CourtPriceRule {
 model HolidayDate {
   id          String   @id @default(uuid())
   clubId      String
-  name        String   // e.g., "Christmas Day", "New Year"
+  name        String // e.g., "Christmas Day", "New Year"
   date        DateTime @db.Date
   recurring   Boolean  @default(false) // If true, applies every year
   description String?
@@ -417,10 +415,10 @@ model CoachWeeklyAvailability {
   id        String   @id @default(uuid())
   coach     Coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
   coachId   String
-  dayOfWeek Int      // 0=Sunday, 1=Monday, ..., 6=Saturday
-  startTime String   // "HH:mm" format
-  endTime   String   // "HH:mm" format
-  note      String?  // Optional label or note
+  dayOfWeek Int // 0=Sunday, 1=Monday, ..., 6=Saturday
+  startTime String // "HH:mm" format
+  endTime   String // "HH:mm" format
+  note      String? // Optional label or note
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -429,15 +427,15 @@ model CoachWeeklyAvailability {
 }
 
 model CoachTimeOff {
-  id        String    @id @default(uuid())
-  coach     Coach     @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  coach     Coach    @relation(fields: [coachId], references: [id], onDelete: Cascade)
   coachId   String
-  date      DateTime  @db.Date
-  startTime String?   // "HH:mm" format, optional for full-day off
-  endTime   String?   // "HH:mm" format, optional for full-day off
-  reason    String?   // Optional comment
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  date      DateTime @db.Date
+  startTime String? // "HH:mm" format, optional for full-day off
+  endTime   String? // "HH:mm" format, optional for full-day off
+  reason    String? // Optional comment
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([coachId])
   @@index([coachId, date])
@@ -491,10 +489,10 @@ model TrainingRequest {
   trainerId String
   playerId  String
   clubId    String
-  courtId   String?  // Reserved court for the training session
-  bookingId String?  // Associated booking ID
+  courtId   String? // Reserved court for the training session
+  bookingId String? // Associated booking ID
   date      DateTime @db.Date
-  time      String   // "HH:MM" format
+  time      String // "HH:MM" format
   comment   String?
   status    String   @default("pending") // "pending", "confirmed", "rejected", "cancelled"
   createdAt DateTime @default(now())
@@ -508,17 +506,17 @@ model TrainingRequest {
 }
 
 model AdminNotification {
-  id                String   @id @default(uuid())
-  type              String   // "REQUESTED", "ACCEPTED", "DECLINED", "CANCELED"
+  id                String    @id @default(uuid())
+  type              String // "REQUESTED", "ACCEPTED", "DECLINED", "CANCELED"
   playerId          String
   coachId           String
   trainingRequestId String?
   bookingId         String?
-  sessionDate       DateTime? @db.Date  // Optional metadata: date of session
-  sessionTime       String?             // Optional metadata: time of session
-  courtInfo         String?             // Optional metadata: court info
-  read              Boolean  @default(false)
-  createdAt         DateTime @default(now())
+  sessionDate       DateTime? @db.Date // Optional metadata: date of session
+  sessionTime       String? // Optional metadata: time of session
+  courtInfo         String? // Optional metadata: court info
+  read              Boolean   @default(false)
+  createdAt         DateTime  @default(now())
 
   @@index([read])
   @@index([createdAt])
@@ -526,13 +524,13 @@ model AdminNotification {
 
 // Audit Log for tracking admin actions
 model AuditLog {
-  id          String   @id @default(uuid())
-  actorId     String
-  action      String   // e.g., "org.update", "org.archive", "org.delete", "org.reassign_owner"
-  targetType  String   // e.g., "organization", "club", "user"
-  targetId    String   // ID of the affected entity
-  detail      String?  @db.Text // JSON string with additional context
-  createdAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  actorId    String
+  action     String // e.g., "org.update", "org.archive", "org.delete", "org.reassign_owner"
+  targetType String // e.g., "organization", "club", "user"
+  targetId   String // ID of the affected entity
+  detail     String?  @db.Text // JSON string with additional context
+  createdAt  DateTime @default(now())
 
   @@index([actorId])
   @@index([targetType, targetId])
@@ -542,45 +540,45 @@ model AuditLog {
 // Payment Account - represents a merchant account in a payment provider
 // This is the core entity for payment processing in the multi-tenant platform
 model PaymentAccount {
-  id             String                @id @default(uuid())
-  provider       PaymentProvider       // Payment provider (WayForPay, LiqPay)
-  scope          PaymentAccountScope   // ORGANIZATION or CLUB level
-  
+  id       String              @id @default(uuid())
+  provider PaymentProvider // Payment provider (WayForPay, LiqPay)
+  scope    PaymentAccountScope // ORGANIZATION or CLUB level
+
   // Scope identifiers (mutually exclusive based on scope)
-  organizationId String?               // Set when scope = ORGANIZATION
-  clubId         String?               // Set when scope = CLUB
-  
+  organizationId String? // Set when scope = ORGANIZATION
+  clubId         String? // Set when scope = CLUB
+
   // Payment provider credentials (ENCRYPTED)
-  merchantId     String                // Encrypted merchant ID / account ID
-  secretKey      String                // Encrypted secret key
-  
+  merchantId String // Encrypted merchant ID / account ID
+  secretKey  String // Encrypted secret key
+
   // Additional provider-specific configuration (JSON, encrypted if contains secrets)
-  providerConfig String?               @db.Text
-  
+  providerConfig String? @db.Text
+
   // Status and metadata
-  status              PaymentAccountStatus             @default(PENDING) // Technical verification status
-  verificationLevel   PaymentAccountVerificationLevel  @default(NOT_VERIFIED) // Real payment verification level
-  isActive            Boolean                          @default(true)    // Manual enable/disable (deprecated in favor of status)
-  displayName         String?                          // Optional friendly name for UI
-  
+  status            PaymentAccountStatus            @default(PENDING) // Technical verification status
+  verificationLevel PaymentAccountVerificationLevel @default(NOT_VERIFIED) // Real payment verification level
+  isActive          Boolean                         @default(true) // Manual enable/disable (deprecated in favor of status)
+  displayName       String? // Optional friendly name for UI
+
   // Verification tracking
-  lastVerifiedAt      DateTime?             // Last successful technical verification timestamp
-  lastRealVerifiedAt  DateTime?             // Last successful real payment verification timestamp
-  verificationError   String?               // Last verification error message (if any)
-  
+  lastVerifiedAt     DateTime? // Last successful technical verification timestamp
+  lastRealVerifiedAt DateTime? // Last successful real payment verification timestamp
+  verificationError  String? // Last verification error message (if any)
+
   // Audit fields
-  createdById    String                // User who created this payment account
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
-  lastUpdatedBy  String?               // User who last updated credentials
-  
+  createdById   String // User who created this payment account
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastUpdatedBy String? // User who last updated credentials
+
   // Relations
-  organization   Organization?         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  club           Club?                 @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  club         Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
   // Relations
   verificationPayments VerificationPayment[] // Verification payment intents
-  
+
   @@unique([provider, scope, organizationId, clubId])
   @@index([organizationId])
   @@index([clubId])
@@ -592,39 +590,39 @@ model PaymentAccount {
 
 // Verification payment intent - tracks real payment verification attempts
 model VerificationPayment {
-  id                String         @id @default(uuid())
-  paymentAccountId  String         // Payment account being verified
-  paymentAccount    PaymentAccount @relation(fields: [paymentAccountId], references: [id], onDelete: Cascade)
-  
+  id               String         @id @default(uuid())
+  paymentAccountId String // Payment account being verified
+  paymentAccount   PaymentAccount @relation(fields: [paymentAccountId], references: [id], onDelete: Cascade)
+
   // Payment details
-  orderReference    String         @unique // Unique order reference for WayForPay
-  amount            Int            // Amount in minor units (e.g., 100 = 1 UAH)
-  currency          String         @default("UAH")
-  
+  orderReference String @unique // Unique order reference for WayForPay
+  amount         Int // Amount in minor units (e.g., 100 = 1 UAH)
+  currency       String @default("UAH")
+
   // Status tracking
-  status            String         @default("pending") // "pending", "completed", "failed", "expired"
-  
+  status String @default("pending") // "pending", "completed", "failed", "expired"
+
   // WayForPay response data (when available)
-  transactionId     String?        // WayForPay transaction ID
-  authCode          String?        // Authorization code
-  cardPan           String?        // Masked card number
-  cardType          String?        // Card type (Visa, MasterCard, etc.)
-  
+  transactionId String? // WayForPay transaction ID
+  authCode      String? // Authorization code
+  cardPan       String? // Masked card number
+  cardType      String? // Card type (Visa, MasterCard, etc.)
+
   // Signature validation
-  signatureValid    Boolean?       // Whether the callback signature was valid
-  
+  signatureValid Boolean? // Whether the callback signature was valid
+
   // Callback data (JSON)
-  callbackData      String?        @db.Text // Full callback payload for audit
-  
+  callbackData String? @db.Text // Full callback payload for audit
+
   // Error tracking
-  errorMessage      String?        @db.Text // Error message if verification failed
-  
+  errorMessage String? @db.Text // Error message if verification failed
+
   // Audit fields
-  initiatedBy       String         // User who initiated the verification
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  completedAt       DateTime?      // When the payment was completed/failed
-  
+  initiatedBy String // User who initiated the verification
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime? // When the payment was completed/failed
+
   @@index([paymentAccountId])
   @@index([orderReference])
   @@index([status])
@@ -637,9 +635,9 @@ model ClubDailyStatistics {
   clubId              String
   club                Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
   date                DateTime @db.Date // Specific day for the statistics
-  bookedSlots         Int      // Number of slots booked on this day
-  totalSlots          Int      // Total available slots for this day
-  occupancyPercentage Float    // Calculated as bookedSlots / totalSlots * 100
+  bookedSlots         Int // Number of slots booked on this day
+  totalSlots          Int // Total available slots for this day
+  occupancyPercentage Float // Calculated as bookedSlots / totalSlots * 100
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -651,16 +649,16 @@ model ClubDailyStatistics {
 
 // Club Monthly Statistics - stores monthly aggregated occupancy data
 model ClubMonthlyStatistics {
-  id                      String   @id @default(uuid())
-  clubId                  String
-  club                    Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  month                   Int      // Month (1-12)
-  year                    Int      // Year
-  averageOccupancy        Float    // Average daily occupancy for the month
-  previousMonthOccupancy  Float?   // Previous month's average occupancy for comparison
-  occupancyChangePercent  Float?   // Percentage difference from previous month
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  id                     String   @id @default(uuid())
+  clubId                 String
+  club                   Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  month                  Int // Month (1-12)
+  year                   Int // Year
+  averageOccupancy       Float // Average daily occupancy for the month
+  previousMonthOccupancy Float? // Previous month's average occupancy for comparison
+  occupancyChangePercent Float? // Percentage difference from previous month
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   @@unique([clubId, month, year])
   @@index([clubId])
