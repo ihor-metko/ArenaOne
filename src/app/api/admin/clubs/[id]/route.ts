@@ -32,6 +32,7 @@ export async function GET(
     const club = await prisma.club.findUnique({
       where: { id: clubId },
       include: {
+        metadata: false,
         organization: {
           select: {
             id: true,
@@ -57,7 +58,7 @@ export async function GET(
 
     // Parse JSON fields
     const parsedAddress = parseAddress(club.address);
-    
+
     const formattedClub = {
       ...club,
       address: parsedAddress || null,
