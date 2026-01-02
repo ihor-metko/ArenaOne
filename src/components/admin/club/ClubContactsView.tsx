@@ -165,7 +165,7 @@ export function ClubContactsView({ club, disabled = false, disabledTooltip }: Cl
             name="phone"
             value={formData.phone}
             onChange={handleInputChange}
-            placeholder="+1 (555) 123-4567"
+            placeholder={t("phonePlaceholder")}
             disabled={isSaving}
           />
           <Input
@@ -174,7 +174,7 @@ export function ClubContactsView({ club, disabled = false, disabledTooltip }: Cl
             type="email"
             value={formData.email}
             onChange={handleInputChange}
-            placeholder="contact@club.com"
+            placeholder={t("emailPlaceholder")}
             disabled={isSaving}
           />
         </div>
@@ -183,7 +183,7 @@ export function ClubContactsView({ club, disabled = false, disabledTooltip }: Cl
           name="website"
           value={formData.website}
           onChange={handleInputChange}
-          placeholder="https://www.club.com"
+          placeholder={t("websitePlaceholder")}
           disabled={isSaving}
         />
       </SectionEditModal>
