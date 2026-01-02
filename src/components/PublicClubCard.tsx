@@ -11,7 +11,7 @@ export interface PublicClubCardProps {
     id: string;
     name: string;
     shortDescription?: string | null;
-    location: string;
+    location?: string;
     city?: string | null;
     contactInfo?: string | null;
     openingHours?: string | null;
@@ -30,7 +30,7 @@ export interface PublicClubCardProps {
  * Formats the address for display as "City, Street Address"
  * Returns the full location if city is not available
  */
-function formatAddress(city: string | null | undefined, location: string): string {
+function formatAddress(city: string | null | undefined, location: string | null | undefined): string {
   if (city && location) {
     // If location already starts with city, just return location
     if (location.toLowerCase().startsWith(city.toLowerCase())) {
@@ -38,7 +38,7 @@ function formatAddress(city: string | null | undefined, location: string): strin
     }
     return `${city}, ${location}`;
   }
-  return location;
+  return location || "";
 }
 
 /**

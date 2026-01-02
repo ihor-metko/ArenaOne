@@ -11,6 +11,7 @@ import { useClubStatisticsStore } from "@/stores/useClubStatisticsStore";
 import AdminManagementSection from "@/components/admin/AdminManagementSection";
 import { OrganizationEditor } from "@/components/admin/OrganizationEditor.client";
 import { parseOrganizationMetadata } from "@/types/organization";
+import { formatAddress } from "@/types/address";
 
 import "./page.css";
 import "@/components/ClubDetailPage.css";
@@ -272,7 +273,7 @@ export default function OrganizationDetailPage() {
         <EntityBanner
           title={org.name}
           subtitle={org.description || null}
-          location={org.address}
+          location={typeof org.address === 'string' ? org.address : formatAddress(org.address)}
           imageUrl={org.bannerData?.url}
           bannerAlignment={orgMetadata?.bannerAlignment || 'center'}
           logoUrl={org.logoData?.url}

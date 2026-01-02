@@ -27,14 +27,14 @@ export interface AdminClubCardProps {
  * Formats the address for display as "City, Street Address"
  * Returns the full location if city is not available
  */
-function formatAddress(city: string | null | undefined, location: string): string {
+function formatAddress(city: string | null | undefined, location: string | null | undefined): string {
   if (city && location) {
     if (location.toLowerCase().startsWith(city.toLowerCase())) {
       return location;
     }
     return `${city}, ${location}`;
   }
-  return location;
+  return location || "";
 }
 
 /**

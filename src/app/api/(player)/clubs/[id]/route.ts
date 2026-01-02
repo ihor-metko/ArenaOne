@@ -21,7 +21,6 @@ export async function GET(
             isPublic: true,
           },
         },
-        metadata: false,
         businessHours: {
           orderBy: { dayOfWeek: "asc" },
         },

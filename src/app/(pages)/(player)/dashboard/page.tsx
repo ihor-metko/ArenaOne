@@ -120,7 +120,8 @@ export default function PlayerDashboardPage() {
   const clubs: Club[] = useMemo(() => clubsFromStore.map((club) => ({
     id: club.id,
     name: club.name,
-    location: club.location,
+    location: club.address?.formattedAddress || club.location || "",
+    address: club.address || null,
     logoData: club.logoData,
   })), [clubsFromStore]);
 

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Modal, Tabs, TabList, Tab, TabPanel, ConfirmationModal } from "@/components/ui";
 import { BaseInfoTab, AddressTab, LogoTab, BannerTab } from "@/components/admin/EntityTabs";
 import type { BaseInfoData, AddressData, LogoData, BannerData } from "@/components/admin/EntityTabs";
+import type { Address } from "@/types/address";
 import "@/components/admin/EntityTabs/EntityTabs.css";
 
 interface OrganizationData {
@@ -12,7 +13,8 @@ interface OrganizationData {
   name: string;
   slug: string;
   description?: string | null;
-  address?: string | null;
+  // Support both legacy string and new Address object
+  address?: string | Address | null;
   logoData?: { url: string; altText?: string; thumbnailUrl?: string } | null;
   bannerData?: { url: string; altText?: string; description?: string; position?: 'top' | 'center' | 'bottom' } | null;
   metadata?: Record<string, unknown> | null;
@@ -51,11 +53,33 @@ export function OrganizationEditor({
     bannerAlignment?: 'top' | 'center' | 'bottom';
   } | null;
 
-  const addressParts = organization.address?.split(", ") || [];
-  const street = metadata?.street || addressParts[0] || "";
-  const city = addressParts.length > 1 ? addressParts[1] : "";
-  const postalCode = addressParts.length > 2 ? addressParts[2] : "";
-  const country = metadata?.country || (addressParts.length > 3 ? addressParts[3] : "");
+  // Handle both legacy string address and new Address object
+  let street = "";
+  let city = "";
+  let postalCode = "";
+  let country = "";
+  let latitude: number | null = null;
+  let longitude: number | null = null;
+  
+  if (typeof organization.address === 'string') {
+    // Legacy string format
+    const addressParts = organization.address?.split(", ") || [];
+    street = metadata?.street || addressParts[0] || "";
+    city = addressParts.length > 1 ? addressParts[1] : "";
+    postalCode = addressParts.length > 2 ? addressParts[2] : "";
+    country = metadata?.country || (addressParts.length > 3 ? addressParts[3] : "");
+    latitude = metadata?.latitude || null;
+    longitude = metadata?.longitude || null;
+  } else if (organization.address) {
+    // New Address object format
+    const addr = organization.address as Address;
+    street = addr.street || "";
+    city = addr.city || "";
+    postalCode = addr.postalCode || "";
+    country = addr.country || "";
+    latitude = addr.lat || null;
+    longitude = addr.lng || null;
+  }
 
   const baseInfoData: BaseInfoData = {
     name: organization.name,
@@ -67,8 +91,8 @@ export function OrganizationEditor({
     city,
     postalCode,
     street,
-    latitude: metadata?.latitude || null,
-    longitude: metadata?.longitude || null,
+    latitude,
+    longitude,
   };
 
   const logoData: LogoData = {

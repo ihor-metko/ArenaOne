@@ -18,7 +18,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useActiveClub } from "@/contexts/ClubContext";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { parseClubMetadata } from "@/types/club";
-import { getLocationDisplay } from "@/types/address";
+import { getLocationDisplay, type Address } from "@/types/address";
 import type { Court, AvailabilitySlot, AvailabilityResponse, CourtAvailabilityStatus } from "@/types/court";
 import "@/components/ClubDetailPage.css";
 import "@/components/EntityPageLayout.css";
@@ -51,11 +51,14 @@ interface ClubWithDetails {
   slug?: string | null;
   shortDescription?: string | null;
   longDescription?: string | null;
-  location: string;
+  // Legacy location fields - kept for backward compatibility
+  location?: string;
   city?: string | null;
   country?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  // New dedicated address object
+  address?: Address | null;
   phone?: string | null;
   email?: string | null;
   website?: string | null;
