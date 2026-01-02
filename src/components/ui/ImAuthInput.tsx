@@ -23,7 +23,10 @@ interface ImAuthInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const ImAuthInput = forwardRef<HTMLInputElement, ImAuthInputProps>(
   function ImAuthInput({ className = "", showPasswordToggle = false, ...props }, ref) {
     // Ensure im-auth-input class is always applied
-    const authClassName = className.includes("im-auth-input") 
+    // Split by whitespace and check for exact match to avoid false positives
+    const classNames = className.split(/\s+/).filter(Boolean);
+    const hasAuthClass = classNames.includes("im-auth-input");
+    const authClassName = hasAuthClass 
       ? className 
       : `im-auth-input ${className}`.trim();
 
