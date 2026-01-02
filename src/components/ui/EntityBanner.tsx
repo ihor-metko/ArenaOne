@@ -19,6 +19,7 @@ import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { EntityLogo } from "./EntityLogo";
 import type { EntityLogoMetadata } from "./EntityLogo";
 import { Tooltip } from "./Tooltip";
+import "./EntityBanner.styles.css";
 
 /**
  * Location pin icon - reusable SVG component
