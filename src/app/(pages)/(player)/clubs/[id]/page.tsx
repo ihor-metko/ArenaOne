@@ -414,7 +414,7 @@ export default function ClubDetailPage({
       <EntityBanner
         title={club.name}
         subtitle={club.shortDescription}
-        location={club.location || undefined}
+        location={club.location}
         imageUrl={club.bannerData?.url}
         bannerAlignment={clubMetadata?.bannerAlignment || 'center'}
         logoUrl={club.logoData?.url}
