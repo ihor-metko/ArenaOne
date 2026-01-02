@@ -9,7 +9,6 @@ import {
   CourtBasicBlock,
   CourtPricingBlock,
   CourtScheduleBlock,
-  CourtMetaBlock,
   CourtPreview,
 } from "@/components/admin/court";
 import { CourtEditor } from "@/components/admin/CourtEditor.client";
@@ -313,7 +312,6 @@ export default function CourtDetailPage({
             <CourtBasicBlock court={court as unknown as Parameters<typeof CourtBasicBlock>[0]['court']} onUpdate={handleBlockUpdate} />
             <CourtPricingBlock court={court as unknown as Parameters<typeof CourtPricingBlock>[0]['court']} />
             <CourtScheduleBlock court={court as unknown as Parameters<typeof CourtScheduleBlock>[0]['court']} />
-            <CourtMetaBlock court={court as unknown as Parameters<typeof CourtMetaBlock>[0]['court']} />
           </div>
 
           {/* Preview Column */}
