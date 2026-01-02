@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Input, Button } from "@/components/ui";
@@ -8,6 +8,7 @@ import { Input, Button } from "@/components/ui";
 const DEFAULT_Q = "";
 const DEFAULT_CITY = "";
 const DEFAULT_INDOOR = false;
+const MIN_SEARCH_LENGTH = 2;
 
 export interface SearchParams {
   q: string;
@@ -62,8 +63,9 @@ export function PublicSearchBar({
   }, []);
 
   // Validation: require at least 2 characters in any field for search
-  const MIN_SEARCH_LENGTH = 2;
-  const isSearchValid = (q.trim().length >= MIN_SEARCH_LENGTH || city.trim().length >= MIN_SEARCH_LENGTH);
+  const isSearchValid = useMemo(() => {
+    return q.trim().length >= MIN_SEARCH_LENGTH || city.trim().length >= MIN_SEARCH_LENGTH;
+  }, [q, city]);
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
