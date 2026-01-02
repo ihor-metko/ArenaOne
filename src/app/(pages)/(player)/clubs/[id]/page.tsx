@@ -395,9 +395,6 @@ export default function ClubDetailPage({
   // Prepare derived data
   const hasValidCoordinates = club.latitude !== null && club.longitude !== null && club.latitude !== undefined && club.longitude !== undefined;
 
-  // Format location display
-  const locationDisplay = [club.city, club.country].filter(Boolean).join(", ") || club.location;
-
   // Parse club metadata for logo and banner settings
   const clubMetadata = parseClubMetadata(club.metadata);
 
@@ -417,7 +414,7 @@ export default function ClubDetailPage({
       <EntityBanner
         title={club.name}
         subtitle={club.shortDescription}
-        location={locationDisplay}
+        location={club.location || undefined}
         imageUrl={club.bannerData?.url}
         bannerAlignment={clubMetadata?.bannerAlignment || 'center'}
         logoUrl={club.logoData?.url}
