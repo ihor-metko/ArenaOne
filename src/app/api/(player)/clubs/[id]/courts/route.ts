@@ -117,7 +117,7 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { name, slug, type, surface, indoor, sportType, defaultPriceCents } = body;
+    const { name, slug, type, surface, indoor, sportType, description, isPublished, defaultPriceCents } = body;
 
     if (!name || typeof name !== "string" || name.trim() === "") {
       return NextResponse.json(
@@ -156,6 +156,8 @@ export async function POST(
         surface: surface?.trim() || null,
         indoor: indoor ?? false,
         sportType: sportType || "PADEL",
+        description: description?.trim() || null,
+        isPublished: isPublished ?? false,
         defaultPriceCents: defaultPriceCents ?? 0,
       },
     });

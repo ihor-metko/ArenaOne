@@ -21,7 +21,6 @@ import {
   PageHeader,
 } from "@/components/ui";
 import type { SelectOption } from "@/components/ui/Select";
-import type { RadioOption } from "@/components/ui/RadioGroup";
 import { FormSkeleton, PageHeaderSkeleton } from "@/components/ui/skeletons";
 import { formatPrice, dollarsToCents } from "@/utils/price";
 import { useUserStore } from "@/stores/useUserStore";
