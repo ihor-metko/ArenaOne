@@ -16,7 +16,7 @@ import { prisma } from "@/lib/prisma";
  *
  * @param id - Club ID
  * @body file - The image file to upload
- * @body type - Image type: "logo" or "heroImage"
+ * @body type - Image type: "logo" (updates logoData), "heroImage" (updates bannerData), "secondLogo" (updates metadata), or "gallery" (file only)
  *
  * @returns JSON with the uploaded image URL
  */
@@ -65,9 +65,9 @@ export async function POST(
     }
 
     // Validate image type parameter
-    if (!imageType || !["logo", "heroImage", "secondLogo"].includes(imageType)) {
+    if (!imageType || !["logo", "heroImage", "secondLogo", "gallery"].includes(imageType)) {
       return NextResponse.json(
-        { error: "Invalid image type. Must be 'logo', 'heroImage', or 'secondLogo'" },
+        { error: "Invalid image type. Must be 'logo', 'heroImage', 'secondLogo', or 'gallery'" },
         { status: 400 }
       );
     }
@@ -101,7 +101,12 @@ export async function POST(
     const url = getUploadedImageUrl("clubs", clubId, filename);
 
     // Update club record with new image URL
-    if (imageType === "secondLogo") {
+    if (imageType === "gallery") {
+      // For gallery images, we don't update the club record here
+      // Gallery management is handled via the /api/admin/clubs/[id]/media endpoint
+      // This just returns the uploaded image URL for the frontend to use
+      console.log(`[Club Upload] Gallery image uploaded for club ${clubId}: ${url}`);
+    } else if (imageType === "secondLogo") {
       // For secondLogo, update the metadata JSON field
       const club = await prisma.club.findUnique({
         where: { id: clubId },
@@ -126,6 +131,8 @@ export async function POST(
           metadata: JSON.stringify(metadata),
         },
       });
+
+      console.log(`[Club Upload] Database updated successfully for club ${clubId}, ${imageType}: ${url}`);
     } else {
       // For logo and heroImage, update the logoData and bannerData fields with full JSON objects
       const fieldName = imageType === "logo" ? "logoData" : "bannerData";
@@ -159,9 +166,9 @@ export async function POST(
           [fieldName]: JSON.stringify(imageData),
         },
       });
-    }
 
-    console.log(`[Club Upload] Database updated successfully for club ${clubId}, ${imageType}: ${url}`);
+      console.log(`[Club Upload] Database updated successfully for club ${clubId}, ${imageType}: ${url}`);
+    }
 
     return NextResponse.json({
       success: true,

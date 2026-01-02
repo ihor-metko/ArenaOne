@@ -76,17 +76,41 @@ All images are stored in the database as **absolute URLs**, not relative paths.
 
 ## Upload API
 
-### Endpoints
+### Unified Club Image Upload
+
+**For clubs, use the unified upload endpoint for all image types:**
+
+- `POST /api/images/clubs/{id}/upload` - Upload logo, heroImage, secondLogo, or gallery images
+
+See [UNIFIED_CLUB_IMAGE_UPLOAD.md](./UNIFIED_CLUB_IMAGE_UPLOAD.md) for detailed documentation on the unified club image upload mechanism.
+
+### Other Entity Endpoints
 - `POST /api/images/organizations/{id}/upload`
-- `POST /api/images/clubs/{id}/upload`
 - `POST /api/images/users/{id}/upload`
 - `POST /api/images/bookings/{id}/upload`
 
 ### Request
+
+For clubs:
 ```typescript
 const formData = new FormData();
 formData.append('file', imageFile);
-formData.append('type', 'logo'); // or 'heroImage' for organizations/clubs
+formData.append('type', 'logo'); // or 'heroImage', 'secondLogo', 'gallery'
+
+const response = await fetch(`/api/images/clubs/${clubId}/upload`, {
+  method: 'POST',
+  body: formData,
+});
+
+const data = await response.json();
+// data.url => "https://dev.arenaone.app/uploads/clubs/{clubId}/{filename}.webp"
+```
+
+For other entities (organizations, users):
+```typescript
+const formData = new FormData();
+formData.append('file', imageFile);
+formData.append('type', 'logo'); // or 'heroImage' for organizations
 
 const response = await fetch(`/api/images/organizations/${orgId}/upload`, {
   method: 'POST',
