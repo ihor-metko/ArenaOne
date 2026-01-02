@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { shallow } from "zustand/shallow";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { PlayerQuickBooking } from "@/components/PlayerQuickBooking";
 import { CourtCard } from "@/components/CourtCard";

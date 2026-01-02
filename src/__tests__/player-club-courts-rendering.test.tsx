@@ -5,7 +5,6 @@
 
 import { useCallback } from "react";
 import { renderHook, act } from "@testing-library/react";
-import { shallow } from "zustand/shallow";
 import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 
 // Mock fetch
