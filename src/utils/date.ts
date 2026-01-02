@@ -7,27 +7,45 @@
 
 /**
  * Get the current locale from browser or use default
+ * Handles common locale variations and maps them to supported locales
  * @returns Locale code (e.g., "en", "uk")
  */
 function getCurrentLocale(): string {
   // Try to get locale from browser navigator
   if (typeof navigator !== "undefined" && navigator.language) {
     const lang = navigator.language.toLowerCase();
-    // Map common locale codes to supported locales
+    
+    // Ukrainian variants
     if (lang.startsWith("uk")) return "uk";
+    
+    // English variants (en, en-US, en-GB, etc.)
     if (lang.startsWith("en")) return "en";
+    
+    // Default to English for unsupported locales
+    // This ensures the app works even with unsupported languages
   }
-  // Default to English
+  
+  // Default fallback
   return "en";
 }
 
 /**
- * Convert a date parameter to a Date object
+ * Convert a date parameter to a Date object with validation
  * @param date Date string or Date object
  * @returns Date object
+ * @throws Error if the date string is invalid
  */
 function toDate(date: string | Date): Date {
-  return typeof date === "string" ? new Date(date) : date;
+  if (date instanceof Date) {
+    return date;
+  }
+  
+  const result = new Date(date);
+  if (isNaN(result.getTime())) {
+    throw new Error(`Invalid date string: ${date}`);
+  }
+  
+  return result;
 }
 
 /**
