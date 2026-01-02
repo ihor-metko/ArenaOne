@@ -61,9 +61,19 @@ export function PublicSearchBar({
     return `/clubs${queryString ? `?${queryString}` : ""}`;
   }, []);
 
+  // Validation: require at least 2 characters in any field for search
+  const MIN_SEARCH_LENGTH = 2;
+  const isSearchValid = (q.trim().length >= MIN_SEARCH_LENGTH || city.trim().length >= MIN_SEARCH_LENGTH);
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent submission if search is invalid (navigateOnSearch mode only)
+    if (navigateOnSearch && !isSearchValid) {
+      return;
+    }
+    
     const params = { q, city };
 
     if (navigateOnSearch) {
@@ -133,7 +143,11 @@ export function PublicSearchBar({
         <div className="flex items-center gap-4">
           {/* Search button for hero (navigateOnSearch mode) */}
           {navigateOnSearch && (
-            <Button type="submit" className="tm-search-button">
+            <Button 
+              type="submit" 
+              className="tm-search-button"
+              disabled={!isSearchValid}
+            >
               {t("common.search")}
             </Button>
           )}
