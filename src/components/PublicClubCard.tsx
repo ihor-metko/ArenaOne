@@ -56,8 +56,16 @@ export function PublicClubCard({ club, isRoot = false }: PublicClubCardProps) {
   const heroImageUrl = getImageUrl(bannerUrl);
   const logoDisplayUrl = getImageUrl(logoUrl);
   
-  // Parse logo metadata if available
-  const logoMetadata = parseClubMetadata(club.metadata);
+  // Parse logo metadata from logoData if available
+  let logoMetadata = null;
+  if (club.logoData) {
+    const parsedLogoData = typeof club.logoData === 'string' ? JSON.parse(club.logoData) : club.logoData;
+    logoMetadata = {
+      logoTheme: parsedLogoData.logoTheme,
+      secondLogo: parsedLogoData.secondLogo,
+      secondLogoTheme: parsedLogoData.secondLogoTheme,
+    };
+  }
   
   // Determine the main image: heroImage first, then logo as fallback
   const mainImage = isValidImageUrl(heroImageUrl) ? heroImageUrl : null;

@@ -19,7 +19,6 @@ import { useClubPageData } from "@/hooks/useClubPageData";
 import { useCanEditClub } from "@/hooks/useCanEditClub";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 // import { parseTags, getPriceRange } from "@/utils/club";
-import { parseClubMetadata } from "@/types/club";
 import { useUserStore } from "@/stores/useUserStore";
 import "./page.css";
 import "@/components/ClubDetailPage.css";
@@ -275,8 +274,23 @@ export default function AdminClubDetailPage({
     setGalleryIndex(index);
   };
 
-  // Parse club metadata for logo and banner settings
-  const clubMetadata = parseClubMetadata(club.metadata);
+  // Parse club logoData and bannerData for theme settings
+  let clubLogoMetadata = null;
+  let clubBannerAlignment = 'center' as 'top' | 'center' | 'bottom';
+  
+  if (club.logoData) {
+    const parsedLogoData = typeof club.logoData === 'string' ? JSON.parse(club.logoData) : club.logoData;
+    clubLogoMetadata = {
+      logoTheme: parsedLogoData.logoTheme,
+      secondLogo: parsedLogoData.secondLogo,
+      secondLogoTheme: parsedLogoData.secondLogoTheme,
+    };
+  }
+
+  if (club.bannerData) {
+    const parsedBannerData = typeof club.bannerData === 'string' ? JSON.parse(club.bannerData) : club.bannerData;
+    clubBannerAlignment = parsedBannerData.bannerAlignment || 'center';
+  }
 
   return (
     <main className="im-admin-club-detail-page">
@@ -296,9 +310,9 @@ export default function AdminClubDetailPage({
         subtitle={club.shortDescription}
         location={locationDisplay}
         imageUrl={club.bannerData?.url}
-        bannerAlignment={clubMetadata?.bannerAlignment || 'center'}
+        bannerAlignment={clubBannerAlignment}
         logoUrl={club.logoData?.url}
-        logoMetadata={clubMetadata}
+        logoMetadata={clubLogoMetadata}
         imageAlt={`${club.name} hero image`}
         logoAlt={`${club.name} logo`}
         isPublished={club.isPublic}

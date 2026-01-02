@@ -6,8 +6,7 @@ import { Modal, Tabs, TabList, Tab, TabPanel, ConfirmationModal } from "@/compon
 import { BaseInfoTab, AddressTab, LogoTab, BannerTab } from "@/components/admin/EntityTabs";
 import { useAdminClubStore } from "@/stores/useAdminClubStore";
 import type { BaseInfoData, AddressData, LogoData, BannerData } from "@/components/admin/EntityTabs";
-import { parseClubMetadata } from "@/types/club";
-import type { ClubDetail } from "@/types/club";
+import type { ClubDetail, LogoData as ClubLogoData, BannerData as ClubBannerData } from "@/types/club";
 import "@/components/admin/EntityTabs/EntityTabs.css";
 
 interface ClubEditorProps {
@@ -29,8 +28,33 @@ export function ClubEditor({
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [pendingTabId, setPendingTabId] = useState<string | null>(null);
 
-  // Parse metadata from JSON string
-  const metadata = parseClubMetadata(club.metadata);
+  // Parse logoData and bannerData from JSON strings if needed
+  let parsedLogoData: ClubLogoData | null = null;
+  let parsedBannerData: ClubBannerData | null = null;
+
+  if (club.logoData) {
+    if (typeof club.logoData === 'string') {
+      try {
+        parsedLogoData = JSON.parse(club.logoData);
+      } catch {
+        parsedLogoData = null;
+      }
+    } else {
+      parsedLogoData = club.logoData;
+    }
+  }
+
+  if (club.bannerData) {
+    if (typeof club.bannerData === 'string') {
+      try {
+        parsedBannerData = JSON.parse(club.bannerData);
+      } catch {
+        parsedBannerData = null;
+      }
+    } else {
+      parsedBannerData = club.bannerData;
+    }
+  }
 
   const baseInfoData: BaseInfoData = {
     name: club.name,
@@ -47,16 +71,16 @@ export function ClubEditor({
   };
 
   const logoData: LogoData = {
-    logoCount: metadata?.secondLogo ? 'two' : 'one',
-    logo: club.logoData?.url ? { url: club.logoData.url, key: "", preview: club.logoData.url } : null,
-    logoTheme: metadata?.logoTheme || 'light',
-    secondLogo: metadata?.secondLogo ? { url: metadata.secondLogo, key: "", preview: metadata.secondLogo } : null,
-    secondLogoTheme: metadata?.secondLogoTheme || 'dark',
+    logoCount: parsedLogoData?.secondLogo ? 'two' : 'one',
+    logo: parsedLogoData?.url ? { url: parsedLogoData.url, key: "", preview: parsedLogoData.url } : null,
+    logoTheme: parsedLogoData?.logoTheme || 'light',
+    secondLogo: parsedLogoData?.secondLogo ? { url: parsedLogoData.secondLogo, key: "", preview: parsedLogoData.secondLogo } : null,
+    secondLogoTheme: parsedLogoData?.secondLogoTheme || 'dark',
   };
 
   const bannerData: BannerData = {
-    heroImage: club.bannerData?.url ? { url: club.bannerData.url, key: "", preview: club.bannerData.url } : null,
-    bannerAlignment: metadata?.bannerAlignment || 'center',
+    heroImage: parsedBannerData?.url ? { url: parsedBannerData.url, key: "", preview: parsedBannerData.url } : null,
+    bannerAlignment: parsedBannerData?.bannerAlignment || 'center',
   };
 
   const handleTabChange = useCallback(async (newTabId: string) => {
@@ -147,26 +171,25 @@ export function ClubEditor({
   }, [club.id, t, updateClubInStore]);
 
   const handleLogoSave = useCallback(async (payload: { logo?: File | null; secondLogo?: File | null; metadata: Record<string, unknown> }) => {
-    // Parse existing metadata
-    let existingMetadata: Record<string, unknown> = {};
-    if (club.metadata) {
-      try {
-        existingMetadata = JSON.parse(club.metadata);
-      } catch {
-        // Invalid JSON, start fresh
-        existingMetadata = {};
-      }
+    // Get existing logoData
+    let existingLogoData: Record<string, unknown> = {};
+    if (parsedLogoData) {
+      existingLogoData = { ...parsedLogoData };
     }
 
-    // Update metadata with logo settings
-    const response = await fetch(`/api/admin/clubs/${club.id}/metadata`, {
+    // Update logoData with logo theme settings
+    const updatedLogoData = {
+      ...existingLogoData,
+      logoTheme: payload.metadata.logoTheme,
+      secondLogoTheme: payload.metadata.secondLogoTheme,
+    };
+
+    // Update club logoData in database
+    const response = await fetch(`/api/admin/clubs/${club.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        metadata: {
-          ...existingMetadata,
-          ...payload.metadata,
-        },
+        logoData: updatedLogoData,
       }),
     });
 
@@ -216,29 +239,27 @@ export function ClubEditor({
     }
 
     setHasUnsavedChanges(false);
-  }, [club.id, club.metadata, onRefresh, t]);
+  }, [club.id, parsedLogoData, onRefresh, t]);
 
   const handleBannerSave = useCallback(async (file: File | null, alignment: 'top' | 'center' | 'bottom') => {
-    // Parse existing metadata
-    let existingMetadata: Record<string, unknown> = {};
-    if (club.metadata) {
-      try {
-        existingMetadata = JSON.parse(club.metadata);
-      } catch {
-        // Invalid JSON, start fresh
-        existingMetadata = {};
-      }
+    // Get existing bannerData
+    let existingBannerData: Record<string, unknown> = {};
+    if (parsedBannerData) {
+      existingBannerData = { ...parsedBannerData };
     }
 
-    // Update metadata with alignment
-    const response = await fetch(`/api/admin/clubs/${club.id}/metadata`, {
+    // Update bannerData with alignment
+    const updatedBannerData = {
+      ...existingBannerData,
+      bannerAlignment: alignment,
+    };
+
+    // Update club bannerData in database
+    const response = await fetch(`/api/admin/clubs/${club.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        metadata: {
-          ...existingMetadata,
-          bannerAlignment: alignment,
-        },
+        bannerData: updatedBannerData,
       }),
     });
 
@@ -271,7 +292,7 @@ export function ClubEditor({
     }
 
     setHasUnsavedChanges(false);
-  }, [club.id, club.metadata, onRefresh, t]);
+  }, [club.id, parsedBannerData, onRefresh, t]);
 
   return (
     <>

@@ -9,6 +9,10 @@ export interface LogoData {
   url: string;
   altText?: string;
   thumbnailUrl?: string;
+  // Theme-aware logo fields (migrated from metadata)
+  logoTheme?: 'light' | 'dark';
+  secondLogo?: string | null;
+  secondLogoTheme?: 'light' | 'dark';
 }
 
 /**
@@ -19,6 +23,8 @@ export interface BannerData {
   altText?: string;
   description?: string;
   position?: 'top' | 'center' | 'bottom';
+  // Banner alignment field (migrated from metadata)
+  bannerAlignment?: 'top' | 'center' | 'bottom';
 }
 
 export interface Club {
@@ -53,7 +59,6 @@ export interface ClubWithCounts extends Club {
   organizationId: string;
   shortDescription?: string | null;
   bannerData?: BannerData | null;
-  metadata?: string | null;
   tags?: string | null;
   isPublic?: boolean;
   status: string;
@@ -155,21 +160,11 @@ export interface ClubDetail {
   openingHours: string | null;
   logoData?: LogoData | null;
   bannerData?: BannerData | null;
-  metadata: string | null;
   defaultCurrency: string | null;
   timezone: string | null;
   isPublic: boolean;
   status: string;
   tags: string | null;
-  /**
-   * Flexible metadata field for storing additional club configuration.
-   * Common uses include:
-   * - bannerAlignment: 'top' | 'center' | 'bottom' (controls hero image positioning)
-   * - logoTheme: 'light' | 'dark' (for theme-aware logo display)
-   * - secondLogo: string | null (alternate logo URL)
-   * - secondLogoTheme: 'light' | 'dark'
-   * - Any other custom club-specific settings
-   */
   supportedSports?: SportType[];
   createdAt: string;
   updatedAt: string;

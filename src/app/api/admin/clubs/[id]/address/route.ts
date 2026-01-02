@@ -36,9 +36,6 @@ export async function PATCH(
 
     const existingClub = await prisma.club.findUnique({
       where: { id: clubId },
-      include: {
-        metadata: false
-      },
     });
 
     if (!existingClub) {

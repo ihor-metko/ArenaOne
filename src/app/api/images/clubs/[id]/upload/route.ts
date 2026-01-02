@@ -102,28 +102,28 @@ export async function POST(
 
     // Update club record with new image URL
     if (imageType === "secondLogo") {
-      // For secondLogo, update the metadata JSON field
+      // For secondLogo, update the logoData JSON field
       const club = await prisma.club.findUnique({
         where: { id: clubId },
-        select: { metadata: true },
+        select: { logoData: true },
       });
 
-      let metadata: Record<string, unknown> = {};
-      if (club?.metadata) {
+      let logoData: Record<string, unknown> = {};
+      if (club?.logoData) {
         try {
-          metadata = JSON.parse(club.metadata);
+          logoData = JSON.parse(club.logoData);
         } catch {
           // Invalid JSON, start fresh
-          metadata = {};
+          logoData = {};
         }
       }
 
-      metadata.secondLogo = url;
+      logoData.secondLogo = url;
 
       await prisma.club.update({
         where: { id: clubId },
         data: {
-          metadata: JSON.stringify(metadata),
+          logoData: JSON.stringify(logoData),
         },
       });
     } else {

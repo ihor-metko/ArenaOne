@@ -17,7 +17,6 @@ import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useActiveClub } from "@/contexts/ClubContext";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
-import { parseClubMetadata } from "@/types/club";
 import { getLocationDisplay, type Address } from "@/types/address";
 import type { Court, AvailabilitySlot, AvailabilityResponse, CourtAvailabilityStatus } from "@/types/court";
 import "@/components/ClubDetailPage.css";
@@ -410,8 +409,23 @@ export default function ClubDetailPage({
   // Get formatted address for contact info
   const formattedAddress = club.address?.formattedAddress || "";
 
-  // Parse club metadata for logo and banner settings
-  const clubMetadata = parseClubMetadata(club.metadata);
+  // Parse club logoData and bannerData for theme settings
+  let clubLogoMetadata = null;
+  let clubBannerAlignment = 'center' as 'top' | 'center' | 'bottom';
+  
+  if (club.logoData) {
+    const parsedLogoData = typeof club.logoData === 'string' ? JSON.parse(club.logoData) : club.logoData;
+    clubLogoMetadata = {
+      logoTheme: parsedLogoData.logoTheme,
+      secondLogo: parsedLogoData.secondLogo,
+      secondLogoTheme: parsedLogoData.secondLogoTheme,
+    };
+  }
+
+  if (club.bannerData) {
+    const parsedBannerData = typeof club.bannerData === 'string' ? JSON.parse(club.bannerData) : club.bannerData;
+    clubBannerAlignment = parsedBannerData.bannerAlignment || 'center';
+  }
 
   // Prepare gallery images for modal
   const galleryImages = (gallery || [])
@@ -431,9 +445,9 @@ export default function ClubDetailPage({
         subtitle={club.shortDescription}
         location={locationDisplay}
         imageUrl={club.bannerData?.url}
-        bannerAlignment={clubMetadata?.bannerAlignment || 'center'}
+        bannerAlignment={clubBannerAlignment}
         logoUrl={club.logoData?.url}
-        logoMetadata={clubMetadata}
+        logoMetadata={clubLogoMetadata}
         imageAlt={`${club.name} hero image`}
         logoAlt={`${club.name} logo`}
         hideAdminFeatures={true}
