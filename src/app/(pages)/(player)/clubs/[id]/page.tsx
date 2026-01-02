@@ -111,8 +111,6 @@ export default function ClubDetailPage({
   const ensureClubById = usePlayerClubStore((state) => state.ensureClubById);
   const ensureCourtsByClubId = usePlayerClubStore((state) => state.ensureCourtsByClubId);
   const ensureGalleryByClubId = usePlayerClubStore((state) => state.ensureGalleryByClubId);
-  const getCourtsForClub = usePlayerClubStore((state) => state.getCourtsForClub);
-  const getGalleryForClub = usePlayerClubStore((state) => state.getGalleryForClub);
   const loadingClubs = usePlayerClubStore((state) => state.loadingClubs);
   const loadingCourts = usePlayerClubStore((state) => state.loadingCourts);
   const clubsError = usePlayerClubStore((state) => state.clubsError);
@@ -120,16 +118,22 @@ export default function ClubDetailPage({
   // Map currentClub to ClubWithDetails (they should be compatible)
   const club = currentClub as ClubWithDetails | null;
 
-  // Get courts and gallery from store (wrapped in useMemo to prevent dependency issues)
+  // Get courts and gallery directly from store by subscribing to the courtsByClubId and galleryByClubId state
+  // This ensures the component re-renders when courts or gallery data changes
+  const rawCourts = usePlayerClubStore((state) => 
+    club ? state.getCourtsForClub(club.id) : []
+  );
+  const gallery = usePlayerClubStore((state) => 
+    club ? state.getGalleryForClub(club.id) : []
+  );
+
   // Transform courts to include imageUrl from bannerData for CourtCard compatibility
   const courts = useMemo(() => {
-    const rawCourts = club ? getCourtsForClub(club.id) : [];
     return rawCourts.map(court => ({
       ...court,
       imageUrl: court.bannerData?.url || null,
     }));
-  }, [club, getCourtsForClub]);
-  const gallery = useMemo(() => club ? getGalleryForClub(club.id) : [], [club, getGalleryForClub]);
+  }, [rawCourts]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCourtId, setSelectedCourtId] = useState<string | null>(null);
   const [courtAvailability, setCourtAvailability] = useState<Record<string, AvailabilitySlot[]>>({});
