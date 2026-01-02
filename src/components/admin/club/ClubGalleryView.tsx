@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Button, Tooltip } from "@/components/ui";
 import { SectionEditModal } from "./SectionEditModal";
 import { useAdminClubStore } from "@/stores/useAdminClubStore";
@@ -25,6 +26,8 @@ interface ClubGalleryViewProps {
 }
 
 export function ClubGalleryView({ club, disabled = false, disabledTooltip }: ClubGalleryViewProps) {
+  const t = useTranslations("clubDetail");
+  const tCommon = useTranslations("common");
   const updateClubInStore = useAdminClubStore((state) => state.updateClubInStore);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -84,11 +87,11 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
 
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.error || "Upload failed");
+      throw new Error(data.error || t("failedToUploadImages"));
     }
 
     return response.json();
-  }, [club.id]);
+  }, [club.id, t]);
 
   const handleHeroUpload = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,7 +104,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
         const { url } = await uploadFile(file);
         setBannerUrl(url);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to upload hero image");
+        setError(err instanceof Error ? err.message : t("failedToUploadHeroImage"));
       } finally {
         setIsUploading(false);
         if (heroInputRef.current) {
@@ -109,7 +112,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
         }
       }
     },
-    [uploadFile]
+    [uploadFile, t]
   );
 
   const handleLogoUpload = useCallback(
@@ -123,7 +126,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
         const { url } = await uploadFile(file);
         setLogoUrl(url);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to upload logo");
+        setError(err instanceof Error ? err.message : t("failedToUploadLogo"));
       } finally {
         setIsUploading(false);
         if (logoInputRef.current) {
@@ -131,7 +134,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
         }
       }
     },
-    [uploadFile]
+    [uploadFile, t]
   );
 
   const handleGalleryUpload = useCallback(
@@ -154,7 +157,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
         }
         setGallery((prev) => [...prev, ...newImages]);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to upload images");
+        setError(err instanceof Error ? err.message : t("failedToUploadImages"));
       } finally {
         setIsUploading(false);
         if (galleryInputRef.current) {
@@ -162,7 +165,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
         }
       }
     },
-    [gallery.length, uploadFile]
+    [gallery.length, uploadFile, t]
   );
 
   const handleRemoveGalleryImage = useCallback(async (index: number) => {
@@ -176,10 +179,10 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
           { method: "DELETE" }
         );
         if (!response.ok) {
-          throw new Error("Failed to delete image");
+          throw new Error(t("failedToDeleteImage"));
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to delete image");
+        setError(err instanceof Error ? err.message : t("failedToDeleteImage"));
         return;
       }
     }
@@ -190,7 +193,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
     }
 
     setGallery((prev) => prev.filter((_, i) => i !== index));
-  }, [club.id, gallery]);
+  }, [club.id, gallery, t]);
 
   const handleSetHeroFromGallery = useCallback((imageUrl: string) => {
     setBannerUrl(imageUrl);
@@ -218,7 +221,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to update media");
+        throw new Error(data.error || t("failedToUpdateMedia"));
       }
 
       // Get updated club data from response
@@ -229,16 +232,16 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
 
       setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save changes");
+      setError(err instanceof Error ? err.message : t("failedToSaveChanges"));
     } finally {
       setIsSaving(false);
     }
-  }, [bannerUrl, logoUrl, gallery, club.id, updateClubInStore]);
+  }, [bannerUrl, logoUrl, gallery, club.id, updateClubInStore, t]);
 
   return (
     <>
       <div className="im-section-view-header">
-        <h2 className="im-club-view-section-title">Gallery</h2>
+        <h2 className="im-club-view-section-title">{t("gallery")}</h2>
         <Tooltip
           content={disabled ? disabledTooltip : undefined}
           position="bottom"
@@ -248,7 +251,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
             onClick={handleEdit}
             disabled={disabled}
           >
-            Edit
+            {tCommon("edit")}
           </Button>
         </Tooltip>
       </div>
@@ -259,11 +262,11 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={getImageUrl(club.bannerData?.url) ?? ""}
-              alt="Club hero"
+              alt={t("clubHeroAlt")}
               className="im-gallery-view-hero-img"
             />
           ) : (
-            <div className="im-gallery-view-placeholder">No hero image</div>
+            <div className="im-gallery-view-placeholder">{t("noHeroImage")}</div>
           )}
         </div>
 
@@ -274,7 +277,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
               <img
                 key={img.id}
                 src={getImageUrl(img.imageUrl) ?? ""}
-                alt={img.altText || "Gallery image"}
+                alt={img.altText || t("galleryImageAlt")}
                 className="im-gallery-view-thumb"
               />
             ))}
@@ -285,19 +288,19 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
       <SectionEditModal
         isOpen={isEditing}
         onClose={handleClose}
-        title="Edit Gallery"
+        title={t("editGallery")}
         onSave={handleSave}
         isSaving={isSaving}
       >
         {error && <div className="im-section-edit-modal-error">{error}</div>}
 
         <div className="im-gallery-edit-section">
-          <h3 className="im-gallery-edit-section-title">Hero Image</h3>
+          <h3 className="im-gallery-edit-section-title">{t("heroImage")}</h3>
           <div className="im-gallery-edit-hero">
             {isValidImageUrl(bannerUrl) ? (
               <div className="im-gallery-edit-hero-preview">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={getImageUrl(bannerUrl) ?? ""} alt="Hero preview" />
+                <img src={getImageUrl(bannerUrl) ?? ""} alt={t("heroPreviewAlt")} />
                 <Button
                   type="button"
                   variant="outline"
@@ -315,7 +318,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
                 onClick={() => heroInputRef.current?.click()}
                 disabled={isSaving || isUploading}
               >
-                {isUploading ? "Uploading..." : "Upload Hero Image"}
+                {isUploading ? t("uploading") : t("uploadHeroImage")}
               </button>
             )}
             <input
@@ -330,12 +333,12 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
         </div>
 
         <div className="im-gallery-edit-section">
-          <h3 className="im-gallery-edit-section-title">Logo</h3>
+          <h3 className="im-gallery-edit-section-title">{t("logo")}</h3>
           <div className="im-gallery-edit-logo">
             {isValidImageUrl(logoUrl) ? (
               <div className="im-gallery-edit-logo-preview">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={getImageUrl(logoUrl) ?? ""} alt="Logo preview" />
+                <img src={getImageUrl(logoUrl) ?? ""} alt={t("logoPreviewAlt")} />
                 <Button
                   type="button"
                   variant="outline"
@@ -353,7 +356,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
                 onClick={() => logoInputRef.current?.click()}
                 disabled={isSaving || isUploading}
               >
-                {isUploading ? "Uploading..." : "Upload Logo"}
+                {isUploading ? t("uploading") : t("uploadLogo")}
               </button>
             )}
             <input
@@ -369,14 +372,14 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
 
         <div className="im-gallery-edit-section">
           <div className="im-gallery-edit-section-header">
-            <h3 className="im-gallery-edit-section-title">Gallery Images</h3>
+            <h3 className="im-gallery-edit-section-title">{t("galleryImages")}</h3>
             <Button
               type="button"
               variant="outline"
               onClick={() => galleryInputRef.current?.click()}
               disabled={isSaving || isUploading}
             >
-              {isUploading ? "Uploading..." : "+ Add Images"}
+              {isUploading ? t("uploading") : t("addImages")}
             </Button>
           </div>
           <input
@@ -395,7 +398,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={img.preview || (getImageUrl(img.imageUrl) ?? "")}
-                    alt={img.altText || `Gallery image ${index + 1}`}
+                    alt={img.altText || t("galleryImageIndexAlt", { index: index + 1 })}
                   />
                   <div className="im-gallery-edit-item-actions">
                     <Button
@@ -405,7 +408,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
                       className="im-gallery-edit-set-hero"
                       disabled={isSaving || isUploading}
                     >
-                      Set as Hero
+                      {t("setAsHero")}
                     </Button>
                     <Button
                       type="button"
@@ -421,7 +424,7 @@ export function ClubGalleryView({ club, disabled = false, disabledTooltip }: Clu
               ))}
             </div>
           ) : (
-            <p className="im-section-view-value--empty">No gallery images</p>
+            <p className="im-section-view-value--empty">{t("noGalleryImages")}</p>
           )}
         </div>
       </SectionEditModal>

@@ -96,7 +96,7 @@ export function ClubAdminsSection({
       // Use cached data if available; only fetch if not cached or stale
       await fetchAdminsIfNeeded("club", clubId);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load club admins";
+      const errorMessage = err instanceof Error ? err.message : t("clubDetail.failedToLoadClubAdmins");
       if (errorMessage.includes("403")) {
         setError(t("common.forbidden"));
       } else {
@@ -151,7 +151,7 @@ export function ClubAdminsSection({
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Failed to remove club admin");
+        throw new Error(data.error || t("clubDetail.failedToRemoveClubAdmin"));
       }
 
       // Update store optimistically - remove admin from local cache
@@ -165,7 +165,7 @@ export function ClubAdminsSection({
       // The store has been updated optimistically and will reflect the changes
     } catch (err) {
       setRemoveError(
-        err instanceof Error ? err.message : "Failed to remove club admin"
+        err instanceof Error ? err.message : t("clubDetail.failedToRemoveClubAdmin")
       );
     } finally {
       setRemoving(false);

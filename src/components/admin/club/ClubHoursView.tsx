@@ -83,7 +83,7 @@ export function ClubHoursView({ club, disabled = false, disabledTooltip }: ClubH
 
       if (!businessHoursResponse.ok) {
         const data = await businessHoursResponse.json();
-        throw new Error(data.error || "Failed to update business hours");
+        throw new Error(data.error || t("clubDetail.failedToUpdateBusinessHours"));
       }
 
       // Get updated club data from response
@@ -94,11 +94,11 @@ export function ClubHoursView({ club, disabled = false, disabledTooltip }: ClubH
 
       setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save changes");
+      setError(err instanceof Error ? err.message : t("clubDetail.failedToSaveChanges"));
     } finally {
       setIsSaving(false);
     }
-  }, [businessHours, club.id, updateClubInStore]);
+  }, [businessHours, club.id, updateClubInStore, t]);
 
   return (
     <>
