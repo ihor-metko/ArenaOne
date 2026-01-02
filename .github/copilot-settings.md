@@ -155,3 +155,15 @@ This project uses Zustand as the global state manager for all app-level entities
 When data is being fetched or confirmed on any page, **do not block or hide the UI with a full-page loader**.
 Instead, use **skeleton loaders** that mimic the layout of the actual content (cards, tables, charts, etc.).
 Ensure skeletons are consistent with the **dark theme**, use `im-*` classes, and are applied **universally across all pages** where loading occurs.
+
+# 7. Club endpoints – metadata restriction
+
+Copilot must NEVER include, request, or expose the `metadata` field in any Club-related API endpoints.
+
+This rule applies to:
+- API route definitions
+- Prisma / ORM queries
+- DTOs, schemas, and response mappers
+- Frontend data fetching and typings
+
+For Club entities, `metadata` is considered **internal-only** and must not be returned or consumed by the frontend under any circumstances.
