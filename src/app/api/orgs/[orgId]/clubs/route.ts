@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOrganizationAdmin } from "@/lib/requireRole";
+import { parseAddress } from "@/types/address";
 
 /**
  * GET /api/orgs/[orgId]/clubs
@@ -84,26 +85,27 @@ export async function GET(
     });
 
     // Format response
-    const formattedClubs = items.map((club) => ({
-      id: club.id,
-      name: club.name,
-      slug: club.slug,
-      shortDescription: club.shortDescription,
-      location: club.location,
-      city: club.city,
-      country: club.country,
-      phone: club.phone,
-      email: club.email,
-      website: club.website,
-      isPublic: club.isPublic,
-      logoData: club.logoData ? JSON.parse(club.logoData) : null,
-      bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
-      courtCount: club._count.courts,
-      adminCount: club._count.clubMemberships,
-      createdBy: club.createdBy,
-      createdAt: club.createdAt,
-      updatedAt: club.updatedAt,
-    }));
+    const formattedClubs = items.map((club) => {
+      const parsedAddress = parseAddress(club.address);
+      return {
+        id: club.id,
+        name: club.name,
+        slug: club.slug,
+        shortDescription: club.shortDescription,
+        address: parsedAddress || null,
+        phone: club.phone,
+        email: club.email,
+        website: club.website,
+        isPublic: club.isPublic,
+        logoData: club.logoData ? JSON.parse(club.logoData) : null,
+        bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
+        courtCount: club._count.courts,
+        adminCount: club._count.clubMemberships,
+        createdBy: club.createdBy,
+        createdAt: club.createdAt,
+        updatedAt: club.updatedAt,
+      };
+    });
 
     return NextResponse.json({
       items: formattedClubs,

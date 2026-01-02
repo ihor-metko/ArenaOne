@@ -398,20 +398,17 @@ export default function ClubDetailPage({
 
   // Prepare derived data
   const hasValidCoordinates = 
-    (club.address?.lat !== null && club.address?.lng !== null && club.address?.lat !== undefined && club.address?.lng !== undefined) ||
-    (club.latitude !== null && club.longitude !== null && club.latitude !== undefined && club.longitude !== undefined);
+    (club.address?.lat !== null && club.address?.lng !== null && club.address?.lat !== undefined && club.address?.lng !== undefined);
 
-  // Get map coordinates - prefer address object, fallback to legacy fields
-  const mapLatitude = club.address?.lat ?? club.latitude;
-  const mapLongitude = club.address?.lng ?? club.longitude;
+  // Get map coordinates from address object
+  const mapLatitude = club.address?.lat;
+  const mapLongitude = club.address?.lng;
 
-  // Format location display - prefer address object, fallback to legacy fields
-  const locationDisplay = club.address 
-    ? getLocationDisplay(club.address) 
-    : ([club.city, club.country].filter(Boolean).join(", ") || club.location || "");
+  // Format location display from address object
+  const locationDisplay = club.address ? getLocationDisplay(club.address) : "";
 
-  // Get formatted address for contact info - prefer address.formattedAddress, fallback to location
-  const formattedAddress = club.address?.formattedAddress || club.location || "";
+  // Get formatted address for contact info
+  const formattedAddress = club.address?.formattedAddress || "";
 
   // Parse club metadata for logo and banner settings
   const clubMetadata = parseClubMetadata(club.metadata);
@@ -592,7 +589,7 @@ export default function ClubDetailPage({
                       </div>
                     </div>
                   )}
-                  {club.location && (
+                  {formattedAddress && (
                     <div className="im-club-contact-item">
                       <svg className="im-club-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />

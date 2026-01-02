@@ -5,6 +5,7 @@ import type {
   CreateOrganizationPayload,
   UpdateOrganizationPayload,
 } from "@/types/organization";
+import type { Address } from "@/types/address";
 
 /**
  * Organization club with statistics from the clubs endpoint
@@ -13,9 +14,7 @@ export interface OrganizationClub {
   id: string;
   name: string;
   slug: string | null;
-  location: string;
-  city: string | null;
-  country: string | null;
+  address: Address | null;
   isPublic: boolean;
   createdAt: string;
   statistics: {

@@ -444,8 +444,8 @@ export default function OrganizationDetailPage() {
                       ? getTrendInfo(clubStats.occupancyChangePercent)
                       : null;
 
-                    // Format address display - prioritize location (full address), fall back to city
-                    const addressDisplay = club.location || club.city || club.slug || "";
+                    // Format address display from address object
+                    const addressDisplay = club.address?.formattedAddress || club.address?.city || club.slug || "";
 
                     return (
                       <div

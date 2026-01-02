@@ -15,7 +15,6 @@ export async function GET(request: Request) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
-    const city = searchParams.get("city") || "";
     const status = searchParams.get("status") || "";
     const organizationId = searchParams.get("organizationId") || "";
     const sportType = searchParams.get("sportType") || "";
@@ -47,22 +46,16 @@ export async function GET(request: Request) {
     // Root admin sees all clubs (no where clause by default)
 
     // Apply search filter
+    // Note: Search in address JSON field is not directly supported by Prisma for PostgreSQL
+    // We'll search only by name for now. For more complex address search, consider using full-text search.
     if (search) {
       whereClause = {
         ...whereClause,
-        OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { location: { contains: search, mode: "insensitive" } },
-          { city: { contains: search, mode: "insensitive" } },
-        ],
+        name: { contains: search, mode: "insensitive" },
       };
     }
 
-    // Apply city filter
-    if (city) {
-      whereClause = { ...whereClause, city };
-    }
-
+    // City filter is removed as it's no longer a separate field
     // Apply status filter
     if (status) {
       whereClause = { ...whereClause, status };
@@ -87,9 +80,8 @@ export async function GET(request: Request) {
     const orderBy: Prisma.ClubOrderByWithRelationInput = {};
     if (sortBy === "name") {
       orderBy.name = sortOrder as "asc" | "desc";
-    } else if (sortBy === "city") {
-      orderBy.city = sortOrder as "asc" | "desc";
     } else {
+      // Default to createdAt sorting (city sorting removed as it's no longer a separate field)
       orderBy.createdAt = sortOrder as "asc" | "desc";
     }
 
@@ -116,8 +108,6 @@ export async function GET(request: Request) {
         id: true,
         name: true,
         shortDescription: true,
-        location: true,
-        city: true,
         address: true,
         contactInfo: true,
         openingHours: true,
@@ -166,11 +156,7 @@ export async function GET(request: Request) {
         name: club.name,
         organizationId: club.organizationId,
         shortDescription: club.shortDescription,
-        // New address object (primary)
         address: parsedAddress || null,
-        // Legacy fields for backward compatibility
-        location: parsedAddress?.formattedAddress || club.location || null,
-        city: parsedAddress?.city || club.city || null,
         contactInfo: club.contactInfo,
         openingHours: club.openingHours,
         logoData: club.logoData ? JSON.parse(club.logoData) : null,

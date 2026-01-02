@@ -238,11 +238,6 @@ model Club {
   createdBy        User?            @relation("ClubCreator", fields: [createdById], references: [id])
   shortDescription String?
   longDescription  String?          @db.Text
-  location         String?          // Legacy field - use address.formattedAddress instead
-  city             String?          // Legacy field - use address.city instead
-  country          String?          // Legacy field - use address.country instead
-  latitude         Float?           // Legacy field - use address.lat instead
-  longitude        Float?           // Legacy field - use address.lng instead
   address          String?          @db.Text // JSON string for address data: { country, city, street, postalCode, region, lat, lng, formattedAddress }
   phone            String?
   email            String?

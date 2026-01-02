@@ -244,10 +244,12 @@ export default function AdminClubDetailPage({
   // Prepare derived data
   // const clubTags = parseTags(club.tags);
   // const priceRange = getPriceRange(club.courts);
-  const hasValidCoordinates = club.latitude != null && club.longitude != null;
+  const hasValidCoordinates = club.address?.lat != null && club.address?.lng != null;
 
-  // Format location display
-  const locationDisplay = [club.city, club.country].filter(Boolean).join(", ") || club.location;
+  // Format location display from address object
+  const locationDisplay = club.address
+    ? [club.address.city, club.address.country].filter(Boolean).join(", ") || club.address.formattedAddress
+    : "";
 
   // Prepare gallery images for carousel and modal
   const galleryImages = (club.gallery || [])
@@ -340,8 +342,8 @@ export default function AdminClubDetailPage({
                 {process.env.NODE_ENV === "production" ? (
                   <Suspense fallback={<MapLoadingPlaceholder message={t("common.loadingMap")} />}>
                     <ClubMap
-                      latitude={club.latitude!}
-                      longitude={club.longitude!}
+                      latitude={club.address!.lat!}
+                      longitude={club.address!.lng!}
                       clubName={club.name}
                     />
                   </Suspense>

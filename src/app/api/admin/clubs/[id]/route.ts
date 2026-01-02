@@ -32,6 +32,7 @@ export async function GET(
     const club = await prisma.club.findUnique({
       where: { id: clubId },
       include: {
+        metadata: false,
         organization: {
           select: {
             id: true,
@@ -57,17 +58,10 @@ export async function GET(
 
     // Parse JSON fields
     const parsedAddress = parseAddress(club.address);
-    
+
     const formattedClub = {
       ...club,
-      // Parse address from JSON if available
       address: parsedAddress || null,
-      // Ensure backward compatibility for legacy fields
-      location: parsedAddress?.formattedAddress || club.location || null,
-      city: parsedAddress?.city || club.city || null,
-      country: parsedAddress?.country || club.country || null,
-      latitude: parsedAddress?.lat || club.latitude || null,
-      longitude: parsedAddress?.lng || club.longitude || null,
       logoData: club.logoData ? JSON.parse(club.logoData) : null,
       bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
     };
@@ -221,11 +215,11 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, location, contactInfo, openingHours, logoData, bannerData } = body;
+    const { name, contactInfo, openingHours, logoData, bannerData } = body;
 
-    if (!name || !location) {
+    if (!name) {
       return NextResponse.json(
-        { error: "Name and location are required" },
+        { error: "Name is required" },
         { status: 400 }
       );
     }
@@ -234,7 +228,6 @@ export async function PUT(
       where: { id: clubId },
       data: {
         name,
-        location,
         contactInfo: contactInfo || null,
         openingHours: openingHours || null,
         logoData: logoData ? JSON.stringify(logoData) : null,

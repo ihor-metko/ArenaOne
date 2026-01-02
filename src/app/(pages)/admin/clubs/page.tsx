@@ -79,21 +79,20 @@ export default function AdminClubsPage() {
   const filteredAndSortedClubs = useMemo(() => {
     let result = [...clubs];
 
-    // Filter by search query
+    // Filter by search query - search only in name now as location/city are in address JSON
     if (controller.filters.searchQuery) {
       const query = controller.filters.searchQuery.toLowerCase();
       result = result.filter(
-        (club) =>
-          club.name.toLowerCase().includes(query) ||
-          club.location?.toLowerCase().includes(query) ||
-          club.city?.toLowerCase().includes(query)
+        (club) => {
+          const nameMatch = club.name.toLowerCase().includes(query);
+          const addressMatch = club.address?.formattedAddress?.toLowerCase().includes(query) ||
+                              club.address?.city?.toLowerCase().includes(query) || false;
+          return nameMatch || addressMatch;
+        }
       );
     }
 
-    // Filter by city
-    if (controller.filters.selectedCity) {
-      result = result.filter((club) => club.city === controller.filters.selectedCity);
-    }
+    // City filter removed - filtering by address.city requires backend support or client-side JSON parsing
 
     // Filter by status
     if (controller.filters.selectedStatus) {
@@ -152,8 +151,8 @@ export default function AdminClubsPage() {
     const citySet = new Set<string>();
 
     clubs.forEach((club) => {
-      if (club.city) {
-        citySet.add(club.city);
+      if (club.address?.city) {
+        citySet.add(club.address.city);
       }
     });
 

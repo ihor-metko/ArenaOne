@@ -10,7 +10,6 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     // Support both 'q' (new) and 'search' (legacy) params
     const q = url.searchParams.get("q")?.trim() || url.searchParams.get("search")?.trim() || "";
-    const city = url.searchParams.get("city")?.trim() || "";
     const indoor = url.searchParams.get("indoor");
     const popular = url.searchParams.get("popular");
     const limit = url.searchParams.get("limit");
@@ -19,22 +18,14 @@ export async function GET(request: Request) {
     const whereClause: Prisma.ClubWhereInput = {};
     const conditions: Prisma.ClubWhereInput[] = [];
 
-    // q -> search name and address (case-insensitive)
+    // q -> search name only (address search removed as it's now in JSON field)
     if (q) {
       conditions.push({
-        OR: [
-          { name: { contains: q, mode: "insensitive" } },
-          { location: { contains: q, mode: "insensitive" } },
-        ],
+        name: { contains: q, mode: "insensitive" },
       });
     }
 
-    // city -> match city or part of address
-    if (city) {
-      conditions.push({
-        location: { contains: city, mode: "insensitive" },
-      });
-    }
+    // city filter removed as it's no longer a separate field
 
     if (conditions.length > 0) {
       whereClause.AND = conditions;
@@ -55,8 +46,6 @@ export async function GET(request: Request) {
         id: true,
         name: true,
         shortDescription: true,
-        location: true,
-        city: true,
         address: true,
         contactInfo: true,
         openingHours: true,
@@ -96,11 +85,7 @@ export async function GET(request: Request) {
         id: club.id,
         name: club.name,
         shortDescription: club.shortDescription,
-        // New address object (primary)
         address: parsedAddress || null,
-        // Legacy fields for backward compatibility
-        location: parsedAddress?.formattedAddress || club.location || null,
-        city: parsedAddress?.city || club.city || null,
         contactInfo: club.contactInfo,
         openingHours: club.openingHours,
         logoData: club.logoData ? JSON.parse(club.logoData) : null,

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireOrganizationAdmin } from "@/lib/requireRole";
 import { MembershipRole } from "@/constants/roles";
 import { auditLog, AuditAction, TargetType } from "@/lib/auditLog";
+import { parseAddress } from "@/types/address";
 
 /**
  * GET /api/orgs/[orgId]
@@ -148,16 +149,19 @@ export async function GET(
     }));
 
     // Format clubs preview
-    const formattedClubsPreview = clubsPreview.map((club) => ({
-      id: club.id,
-      name: club.name,
-      slug: club.slug,
-      city: club.city,
-      isPublic: club.isPublic,
-      courtCount: club._count.courts,
-      adminCount: club._count.clubMemberships,
-      createdAt: club.createdAt,
-    }));
+    const formattedClubsPreview = clubsPreview.map((club) => {
+      const parsedAddress = parseAddress(club.address);
+      return {
+        id: club.id,
+        name: club.name,
+        slug: club.slug,
+        address: parsedAddress || null,
+        isPublic: club.isPublic,
+        courtCount: club._count.courts,
+        adminCount: club._count.clubMemberships,
+        createdAt: club.createdAt,
+      };
+    });
 
     // Format club admins
     const formattedClubAdmins = clubAdmins.map((ca) => ({

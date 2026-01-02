@@ -45,14 +45,7 @@ export async function GET(
       slug: club.slug,
       shortDescription: club.shortDescription,
       longDescription: club.longDescription,
-      // New address object (primary)
       address: parsedAddress || null,
-      // Legacy fields for backward compatibility
-      location: parsedAddress?.formattedAddress || club.location || null,
-      city: parsedAddress?.city || club.city || null,
-      country: parsedAddress?.country || club.country || null,
-      latitude: parsedAddress?.lat || club.latitude || null,
-      longitude: parsedAddress?.lng || club.longitude || null,
       phone: club.phone,
       email: club.email,
       website: club.website,
