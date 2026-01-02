@@ -101,31 +101,28 @@ export async function POST(
 
     // Update organization record with new image URL
     if (imageType === "secondLogo") {
-      // For second logo, store URL in metadata
+      // For secondLogo, update the logoData JSON field
       const org = await prisma.organization.findUnique({
         where: { id: organizationId },
-        select: { metadata: true },
+        select: { logoData: true },
       });
-      
-      let currentMetadata: Record<string, unknown> = {};
-      try {
-        currentMetadata = org?.metadata ? JSON.parse(org.metadata) : {};
-      } catch (error) {
-        console.error(`[Organization Upload] Failed to parse metadata for org ${organizationId}:`, error);
-        // Continue with empty metadata if parse fails
-        currentMetadata = {};
+
+      let logoData: Record<string, unknown> = {};
+      if (org?.logoData) {
+        try {
+          logoData = JSON.parse(org.logoData);
+        } catch {
+          // Invalid JSON, start fresh
+          logoData = {};
+        }
       }
-      
-      const logoMetadata = currentMetadata.logoMetadata as Record<string, unknown> || {};
-      logoMetadata.secondLogo = url;
-      
+
+      logoData.secondLogo = url;
+
       await prisma.organization.update({
         where: { id: organizationId },
         data: {
-          metadata: JSON.stringify({
-            ...currentMetadata,
-            logoMetadata,
-          }),
+          logoData: JSON.stringify(logoData),
         },
       });
     } else {

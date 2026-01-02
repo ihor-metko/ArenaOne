@@ -78,7 +78,6 @@ export async function GET(request: Request) {
         superAdmin: superAdmins.find((a) => a.isPrimaryOwner) || superAdmins[0] || null,
         logoData: org.logoData ? JSON.parse(org.logoData) : null,
         bannerData: org.bannerData ? JSON.parse(org.bannerData) : null,
-        metadata: org.metadata ? JSON.parse(org.metadata) : null,
         supportedSports: org.supportedSports,
         isPublic: org.isPublic,
       };
@@ -119,7 +118,6 @@ export async function POST(request: Request) {
       address,
       logoData,
       bannerData,
-      metadata,
       supportedSports 
     } = body;
 
@@ -154,10 +152,9 @@ export async function POST(request: Request) {
         contactEmail: contactEmail?.trim() || null,
         contactPhone: contactPhone?.trim() || null,
         website: website?.trim() || null,
-        address: address?.trim() || null,
+        address: typeof address === 'string' ? address?.trim() || null : JSON.stringify(address),
         logoData: logoData ? JSON.stringify(logoData) : null,
         bannerData: bannerData ? JSON.stringify(bannerData) : null,
-        metadata: metadata ? JSON.stringify(metadata) : null,
         createdById: authResult.userId,
         supportedSports: supportedSports || ["PADEL"],
       },
@@ -186,7 +183,6 @@ export async function POST(request: Request) {
         supportedSports: organization.supportedSports,
         logoData: organization.logoData ? JSON.parse(organization.logoData) : null,
         bannerData: organization.bannerData ? JSON.parse(organization.bannerData) : null,
-        metadata: organization.metadata ? JSON.parse(organization.metadata) : null,
         isPublic: organization.isPublic,
       },
       { status: 201 }

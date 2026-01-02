@@ -68,8 +68,16 @@ export function AdminOrganizationCard({
   const heroImageUrl = getImageUrl(bannerUrl);
   const logoDisplayUrl = getImageUrl(logoUrl);
 
-  // Parse logo metadata if available
-  const logoMetadata = parseOrganizationMetadata(organization.metadata);
+  // Parse logo metadata from logoData if available
+  let logoMetadata = null;
+  if (organization.logoData) {
+    const parsedLogoData = typeof organization.logoData === 'string' ? JSON.parse(organization.logoData) : organization.logoData;
+    logoMetadata = {
+      logoTheme: parsedLogoData.logoTheme,
+      secondLogo: parsedLogoData.secondLogo,
+      secondLogoTheme: parsedLogoData.secondLogoTheme,
+    };
+  }
 
   // Validate both images (isValidImageUrl checks for null/undefined/empty and valid URL format)
   const hasHeroImage = isValidImageUrl(heroImageUrl);
