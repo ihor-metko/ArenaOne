@@ -1,0 +1,152 @@
+@reference "tailwindcss";
+
+/**
+ * EntityBanner Styles
+ *
+ * Centralized styles for the EntityBanner component.
+ * This component is used across the application in:
+ * - Organization Detail pages (admin)
+ * - Club Detail pages (admin and player)
+ * - Court Detail pages (admin)
+ *
+ * All banner-related styles are extracted here to ensure consistency
+ * and prevent style loss when the component is reused across pages.
+ */
+
+/* ===== Hero Section ===== */
+.rsp-club-hero {
+  @apply relative w-full overflow-hidden;
+  height: 320px;
+}
+
+@media (min-width: 768px) {
+  .rsp-club-hero {
+    height: 500px;
+  }
+}
+
+.rsp-club-hero-image {
+  @apply absolute inset-0 w-full h-full object-cover;
+  object-position: top;
+}
+
+.rsp-club-hero-overlay {
+  @apply absolute inset-0;
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.1) 0%,
+      rgba(0, 0, 0, 0.7) 100%);
+}
+
+.rsp-club-hero-placeholder {
+  @apply absolute inset-0 flex items-center justify-center;
+  background: linear-gradient(135deg, var(--rsp-primary) 0%, var(--rsp-primary-hover) 100%);
+}
+
+.rsp-club-hero-placeholder-text {
+  @apply text-7xl font-bold text-white opacity-50;
+}
+
+.rsp-club-hero-content {
+  @apply absolute bottom-0 left-0 right-0 p-6 md:p-8 flex justify-between items-end gap-4 flex-wrap;
+  color: white;
+}
+
+/* ===== Top-right actions area in banner ===== */
+.rsp-entity-banner-actions {
+  @apply absolute top-4 right-4 md:top-6 md:right-6 flex items-center gap-3 z-10;
+}
+
+/* ===== Entity status badge on hero ===== */
+.rsp-entity-status-badge {
+  @apply inline-block px-3 py-1 rounded-full text-xs font-medium;
+  text-shadow: none;
+}
+
+.rsp-entity-status-badge--published,
+.rsp-entity-status-badge--active {
+  @apply bg-green-500/90 text-white;
+}
+
+.rsp-entity-status-badge--draft {
+  @apply bg-yellow-500/90 text-white;
+}
+
+.rsp-entity-status-badge--inactive,
+.rsp-entity-status-badge--archived {
+  @apply bg-gray-500/90 text-white;
+}
+
+/* ===== Banner main content layout ===== */
+.rsp-club-hero-main {
+  @apply flex items-start gap-4 mb-0;
+}
+
+.rsp-club-hero-info {
+  @apply flex-1;
+}
+
+/* ===== Banner text elements ===== */
+.rsp-club-hero-name {
+  @apply text-2xl md:text-4xl font-bold mb-2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.rsp-club-hero-location {
+  @apply flex items-center gap-2 text-sm md:text-base opacity-90 mb-2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.rsp-club-hero-short-desc {
+  @apply text-sm md:text-base max-w-2xl leading-relaxed;
+  opacity: 0.95;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Edit button on banner ===== */
+.rsp-entity-banner-edit-btn {
+  @apply flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium;
+  @apply bg-white/20 hover:bg-white/30 backdrop-blur-sm;
+  @apply border border-white/30 text-white;
+  @apply transition-all duration-200;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  margin-top: 1rem;
+}
+
+.rsp-entity-banner-edit-btn:hover {
+  @apply shadow-lg transform scale-105;
+}
+
+.rsp-entity-banner-edit-btn--disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.rsp-entity-banner-edit-btn--disabled:hover {
+  @apply transform-none;
+}
+
+.rsp-entity-banner-edit-btn svg {
+  @apply w-4 h-4;
+}
+
+/* ===== Toggle button in banner actions ===== */
+.rsp-entity-banner-toggle-btn {
+  @apply px-3 py-1.5 rounded-lg text-xs font-medium;
+  @apply backdrop-blur-sm border transition-all duration-200;
+  text-shadow: none;
+}
+
+.rsp-entity-banner-toggle-btn--publish {
+  @apply bg-green-500/90 hover:bg-green-600/90 border-green-400/50 text-white;
+}
+
+.rsp-entity-banner-toggle-btn--unpublish {
+  @apply bg-yellow-500/90 hover:bg-yellow-600/90 border-yellow-400/50 text-white;
+}
+
+.rsp-entity-banner-toggle-btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.rsp-entity-banner-toggle-btn:not(:disabled):hover {
+  @apply shadow-lg transform scale-105;
+}
