@@ -12,6 +12,7 @@ import { useCurrentLocale } from "@/hooks/useCurrentLocale";
 import { useAuthGuardOnce } from "@/hooks";
 import { formatPrice } from "@/utils/price";
 import { formatDateWithWeekday, formatTime } from "@/utils/date";
+import { getTodayStr, getDatesFromStart, getTodayInTimezone } from "@/utils/dateTime";
 import "./player-dashboard.css";
 
 interface Club {
@@ -119,7 +120,7 @@ export default function PlayerDashboardPage() {
   const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
 
   // Calendar state for quick book
-  const [selectedDate, setSelectedDate] = useState<string>(getTodayDateString());
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayStr());
 
   // Get user info
   const userName = user?.name || t("playerDashboard.player");
@@ -264,8 +265,7 @@ export default function PlayerDashboardPage() {
   };
 
   // Generate calendar days for next 7 days
-  const calendarDays = Array.from({ length: 7 }, (_, i) => {
-    const dateStr = getDateString(i);
+  const calendarDays = getDatesFromStart(getTodayInTimezone(), 7).map((dateStr) => {
     return {
       date: dateStr,
       label: formatDateWithWeekday(dateStr, currentLocale),
