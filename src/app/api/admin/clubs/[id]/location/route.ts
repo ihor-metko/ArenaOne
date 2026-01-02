@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import { canAccessClub } from "@/lib/permissions/clubAccess";
+import type { Address } from "@/types/address";
 
 /**
  * PATCH /api/admin/clubs/[id]/location
- * Update club location details
+ * Update club location details via address object
  */
 export async function PATCH(
   request: Request,
@@ -42,23 +43,28 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { location, city, country, latitude, longitude } = body;
+    const { address } = body;
 
-    // Validate required field
-    if (location !== undefined && !location?.trim()) {
+    // Validate that address is provided
+    if (!address) {
       return NextResponse.json(
         { error: "Address is required" },
         { status: 400 }
       );
     }
 
-    // Build update data object with only provided fields
-    const updateData: Record<string, unknown> = {};
-    if (location !== undefined) updateData.location = location.trim();
-    if (city !== undefined) updateData.city = city?.trim() || null;
-    if (country !== undefined) updateData.country = country?.trim() || null;
-    if (latitude !== undefined) updateData.latitude = latitude || null;
-    if (longitude !== undefined) updateData.longitude = longitude || null;
+    // Validate that at least formattedAddress is provided
+    if (!address.formattedAddress?.trim()) {
+      return NextResponse.json(
+        { error: "Formatted address is required" },
+        { status: 400 }
+      );
+    }
+
+    // Build update data object
+    const updateData: Record<string, unknown> = {
+      address: JSON.stringify(address),
+    };
 
     await prisma.club.update({
       where: { id: clubId },

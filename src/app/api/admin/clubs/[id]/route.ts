@@ -60,14 +60,7 @@ export async function GET(
     
     const formattedClub = {
       ...club,
-      // Parse address from JSON if available
       address: parsedAddress || null,
-      // Ensure backward compatibility for legacy fields
-      location: parsedAddress?.formattedAddress || club.location || null,
-      city: parsedAddress?.city || club.city || null,
-      country: parsedAddress?.country || club.country || null,
-      latitude: parsedAddress?.lat || club.latitude || null,
-      longitude: parsedAddress?.lng || club.longitude || null,
       logoData: club.logoData ? JSON.parse(club.logoData) : null,
       bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
     };
