@@ -503,10 +503,12 @@
   @apply flex gap-6 mb-6 p-4 rounded-lg flex-wrap;
   background-color: var(--im-background);
   border: 1px solid var(--im-border);
+  justify-content: space-between;
 }
 
 .im-bookings-summary-item {
   @apply flex flex-col;
+  align-items: center;
 }
 
 .im-bookings-summary-value {
