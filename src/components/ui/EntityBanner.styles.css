@@ -168,7 +168,7 @@
 
 .im-banner-image {
   @apply absolute inset-0 w-full h-full object-cover;
-  object-position: center;
+  object-position: top;
 }
 
 .im-banner-overlay {
