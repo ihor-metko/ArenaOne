@@ -214,11 +214,11 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, location, contactInfo, openingHours, logoData, bannerData } = body;
+    const { name, contactInfo, openingHours, logoData, bannerData } = body;
 
-    if (!name || !location) {
+    if (!name) {
       return NextResponse.json(
-        { error: "Name and location are required" },
+        { error: "Name is required" },
         { status: 400 }
       );
     }
@@ -227,7 +227,6 @@ export async function PUT(
       where: { id: clubId },
       data: {
         name,
-        location,
         contactInfo: contactInfo || null,
         openingHours: openingHours || null,
         logoData: logoData ? JSON.stringify(logoData) : null,

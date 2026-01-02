@@ -13,7 +13,7 @@ export async function getPopularClubs(limit: number = 4): Promise<ClubWithCounts
       select: {
         id: true,
         name: true,
-        location: true,
+        address: true,
         contactInfo: true,
         openingHours: true,
         shortDescription: true,

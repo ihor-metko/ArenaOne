@@ -10,7 +10,6 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     // Support both 'q' (new) and 'search' (legacy) params
     const q = url.searchParams.get("q")?.trim() || url.searchParams.get("search")?.trim() || "";
-    const city = url.searchParams.get("city")?.trim() || "";
     const indoor = url.searchParams.get("indoor");
     const popular = url.searchParams.get("popular");
     const limit = url.searchParams.get("limit");

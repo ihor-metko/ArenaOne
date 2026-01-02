@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import { canAccessClub } from "@/lib/permissions/clubAccess";
-import type { Address } from "@/types/address";
 
 /**
  * PATCH /api/admin/clubs/[id]/contacts

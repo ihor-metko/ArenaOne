@@ -48,7 +48,15 @@ async function main() {
     data: {
       name: "Padel Club Central",
       slug: "padel-club-central",
-      location: "123 Main St, City Center",
+      address: JSON.stringify({
+        street: "123 Main St",
+        city: "City Center",
+        country: "Ukraine",
+        postalCode: "01001",
+        lat: 50.4501,
+        lng: 30.5234,
+        formattedAddress: "123 Main St, City Center, Ukraine"
+      }),
       organizationId: organization.id,
       createdById: adminUser.id,
     },

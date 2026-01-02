@@ -15,7 +15,6 @@ export async function GET(request: Request) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
-    const city = searchParams.get("city") || "";
     const status = searchParams.get("status") || "";
     const organizationId = searchParams.get("organizationId") || "";
     const sportType = searchParams.get("sportType") || "";
