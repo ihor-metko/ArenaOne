@@ -210,8 +210,8 @@ export function PlayerQuickBooking({
       id: club.id,
       name: club.name,
       slug: null, // PlayerClub doesn't have slug field
-      location: club.address?.formattedAddress || club.location || "",
-      city: club.address?.city || club.city || undefined,
+      location: club.address?.formattedAddress || "",
+      city: club.address?.city || undefined,
       bannerData: club.bannerData || undefined,
     })),
     [clubsFromStore]

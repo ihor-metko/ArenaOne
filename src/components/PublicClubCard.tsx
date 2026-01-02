@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 import { Button, IMLink, EntityLogo } from "@/components/ui";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { parseClubMetadata } from "@/types/club";
+import type { Address } from "@/types/address";
+import { formatAddress as formatAddressHelper } from "@/types/address";
 import "./ClubsList.css";
 
 export interface PublicClubCardProps {
@@ -11,8 +13,7 @@ export interface PublicClubCardProps {
     id: string;
     name: string;
     shortDescription?: string | null;
-    location?: string;
-    city?: string | null;
+    address?: Address | null;
     contactInfo?: string | null;
     openingHours?: string | null;
     logoData?: { url: string; altText?: string; thumbnailUrl?: string } | null;
@@ -24,21 +25,6 @@ export interface PublicClubCardProps {
   };
   /** Whether the user is a root admin */
   isRoot?: boolean;
-}
-
-/**
- * Formats the address for display as "City, Street Address"
- * Returns the full location if city is not available
- */
-function formatAddress(city: string | null | undefined, location: string | null | undefined): string {
-  if (city && location) {
-    // If location already starts with city, just return location
-    if (location.toLowerCase().startsWith(city.toLowerCase())) {
-      return location;
-    }
-    return `${city}, ${location}`;
-  }
-  return location || "";
 }
 
 /**
@@ -76,7 +62,7 @@ export function PublicClubCard({ club, isRoot = false }: PublicClubCardProps) {
   // Determine the main image: heroImage first, then logo as fallback
   const mainImage = isValidImageUrl(heroImageUrl) ? heroImageUrl : null;
   const hasLogo = isValidImageUrl(logoDisplayUrl);
-  const formattedAddress = formatAddress(club.city, club.location);
+  const formattedAddress = formatAddressHelper(club.address);
   const clubTags = parseTags(club.tags);
 
   // Determine the club link based on isRoot status

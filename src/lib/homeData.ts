@@ -27,17 +27,20 @@ export async function getPopularClubs(limit: number = 4): Promise<ClubWithCounts
       },
     });
 
-    return clubs.map((club) => ({
-      id: club.id,
-      name: club.name,
-      location: club.location || "",
-      contactInfo: club.contactInfo,
-      openingHours: club.openingHours,
-      shortDescription: club.shortDescription,
-      logoData: club.logoData ? JSON.parse(club.logoData) : null,
-      indoorCount: club.courts.filter((c) => c.indoor).length,
-      outdoorCount: club.courts.filter((c) => !c.indoor).length,
-    }));
+    return clubs.map((club) => {
+      const parsedAddress = club.address ? JSON.parse(club.address) : null;
+      return {
+        id: club.id,
+        name: club.name,
+        location: parsedAddress?.formattedAddress || "",
+        contactInfo: club.contactInfo,
+        openingHours: club.openingHours,
+        shortDescription: club.shortDescription,
+        logoData: club.logoData ? JSON.parse(club.logoData) : null,
+        indoorCount: club.courts.filter((c) => c.indoor).length,
+        outdoorCount: club.courts.filter((c) => !c.indoor).length,
+      };
+    });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error fetching popular clubs:", error);
