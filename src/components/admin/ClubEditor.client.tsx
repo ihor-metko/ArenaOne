@@ -119,15 +119,16 @@ export function ClubEditor({
   }, [club.id, t, updateClubInStore]);
 
   const handleAddressSave = useCallback(async (data: AddressData) => {
-    const response = await fetch(`/api/admin/clubs/${club.id}/location`, {
+    const response = await fetch(`/api/admin/clubs/${club.id}/address`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        location: data.street,
-        city: data.city,
         country: data.country,
-        latitude: data.latitude,
-        longitude: data.longitude,
+        city: data.city,
+        postalCode: data.postalCode,
+        street: data.street,
+        lat: data.latitude,
+        lng: data.longitude,
       }),
     });
 
@@ -213,7 +214,7 @@ export function ClubEditor({
     if (onRefresh) {
       await onRefresh();
     }
-    
+
     setHasUnsavedChanges(false);
   }, [club.id, club.metadata, onRefresh, t]);
 
@@ -268,7 +269,7 @@ export function ClubEditor({
     if (onRefresh) {
       await onRefresh();
     }
-    
+
     setHasUnsavedChanges(false);
   }, [club.id, club.metadata, onRefresh, t]);
 

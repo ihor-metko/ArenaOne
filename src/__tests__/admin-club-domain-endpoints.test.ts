@@ -46,7 +46,7 @@ import { PATCH as PatchBusinessHours } from "@/app/api/admin/clubs/[id]/business
 import { PATCH as PatchSpecialHours } from "@/app/api/admin/clubs/[id]/special-hours/route";
 import { PATCH as PatchMedia } from "@/app/api/admin/clubs/[id]/media/route";
 import { PATCH as PatchContacts } from "@/app/api/admin/clubs/[id]/contacts/route";
-import { PATCH as PatchLocation } from "@/app/api/admin/clubs/[id]/location/route";
+import { PATCH as PatchLocation } from "@/app/api/admin/clubs/[id]/address/route";
 import { PATCH as PatchMetadata } from "@/app/api/admin/clubs/[id]/metadata/route";
 import { PATCH as PatchCoaches } from "@/app/api/admin/clubs/[id]/coaches/route";
 import { prisma } from "@/lib/prisma";

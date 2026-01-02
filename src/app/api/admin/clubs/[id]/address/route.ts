@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import { canAccessClub } from "@/lib/permissions/clubAccess";
+import { formatAddress } from "@/types/address";
 
 /**
- * PATCH /api/admin/clubs/[id]/location
+ * PATCH /api/admin/clubs/[id]/address
  * Update club location details via address object
  */
 export async function PATCH(
@@ -35,14 +36,16 @@ export async function PATCH(
 
     const existingClub = await prisma.club.findUnique({
       where: { id: clubId },
+      include: {
+        metadata: false
+      },
     });
 
     if (!existingClub) {
       return NextResponse.json({ error: "Club not found" }, { status: 404 });
     }
 
-    const body = await request.json();
-    const { address } = body;
+    const address = await request.json();
 
     // Validate that address is provided
     if (!address) {
@@ -52,19 +55,12 @@ export async function PATCH(
       );
     }
 
-    // Validate that at least formattedAddress is provided
-    if (!address.formattedAddress?.trim()) {
-      return NextResponse.json(
-        { error: "Formatted address is required" },
-        { status: 400 }
-      );
-    }
-
     // Build update data object
     const updateData: Record<string, unknown> = {
-      address: JSON.stringify(address),
+      address: JSON.stringify({ ...address, formattedAddress: formatAddress(address) }),
     };
 
+    console.log("Updating club address with data:", updateData.address);
     await prisma.club.update({
       where: { id: clubId },
       data: updateData,
