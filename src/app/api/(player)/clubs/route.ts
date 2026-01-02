@@ -60,7 +60,7 @@ export async function GET(request: Request) {
         openingHours: true,
         logoData: true,
         bannerData: true,
-        metadata: false,
+        metadata: true,
         tags: true,
         createdAt: true,
         isPublic: true,
