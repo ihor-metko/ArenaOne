@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Input, IMLink } from "@/components/ui";
+import { ImAuthInput, IMLink } from "@/components/ui";
 import { validateRedirectUrl } from "@/utils/redirectValidation";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -128,10 +128,9 @@ export default function RegisterPage() {
           <label htmlFor="name" className="im-auth-label">
             {t("common.name")}
           </label>
-          <input
+          <ImAuthInput
             id="name"
             type="text"
-            className="im-auth-input"
             placeholder={t("auth.enterName")}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -144,10 +143,9 @@ export default function RegisterPage() {
           <label htmlFor="email" className="im-auth-label">
             {t("common.email")}
           </label>
-          <input
+          <ImAuthInput
             id="email"
             type="email"
-            className="im-auth-input"
             placeholder={t("auth.enterEmail")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -172,10 +170,9 @@ export default function RegisterPage() {
           <label htmlFor="password" className="im-auth-label">
             {t("common.password")}
           </label>
-          <Input
+          <ImAuthInput
             id="password"
             type="password"
-            className="im-auth-input"
             placeholder={t("auth.createPassword")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
