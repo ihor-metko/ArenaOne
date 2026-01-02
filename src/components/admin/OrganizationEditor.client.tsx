@@ -6,6 +6,7 @@ import { Modal, Tabs, TabList, Tab, TabPanel, ConfirmationModal } from "@/compon
 import { BaseInfoTab, AddressTab, LogoTab, BannerTab } from "@/components/admin/EntityTabs";
 import type { BaseInfoData, AddressData, LogoData, BannerData } from "@/components/admin/EntityTabs";
 import type { Address } from "@/types/address";
+import type { LogoData as OrgLogoData, BannerData as OrgBannerData } from "@/types/organization";
 import "@/components/admin/EntityTabs/EntityTabs.css";
 
 interface OrganizationData {
@@ -15,9 +16,8 @@ interface OrganizationData {
   description?: string | null;
   // Support both legacy string and new Address object
   address?: string | Address | null;
-  logoData?: { url: string; altText?: string; thumbnailUrl?: string } | null;
-  bannerData?: { url: string; altText?: string; description?: string; position?: 'top' | 'center' | 'bottom' } | null;
-  metadata?: Record<string, unknown> | null;
+  logoData?: OrgLogoData | null;
+  bannerData?: OrgBannerData | null;
 }
 
 interface OrganizationEditorProps {
@@ -40,18 +40,33 @@ export function OrganizationEditor({
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [pendingTabId, setPendingTabId] = useState<string | null>(null);
 
-  // Parse existing data
-  const metadata = organization.metadata as {
-    country?: string;
-    street?: string;
-    latitude?: number;
-    longitude?: number;
-    logoTheme?: 'light' | 'dark';
-    secondLogoTheme?: 'light' | 'dark';
-    logoCount?: 'one' | 'two';
-    secondLogo?: string | null;
-    bannerAlignment?: 'top' | 'center' | 'bottom';
-  } | null;
+  // Parse logoData and bannerData from JSON strings if needed
+  let parsedLogoData: OrgLogoData | null = null;
+  let parsedBannerData: OrgBannerData | null = null;
+
+  if (organization.logoData) {
+    if (typeof organization.logoData === 'string') {
+      try {
+        parsedLogoData = JSON.parse(organization.logoData);
+      } catch {
+        parsedLogoData = null;
+      }
+    } else {
+      parsedLogoData = organization.logoData;
+    }
+  }
+
+  if (organization.bannerData) {
+    if (typeof organization.bannerData === 'string') {
+      try {
+        parsedBannerData = JSON.parse(organization.bannerData);
+      } catch {
+        parsedBannerData = null;
+      }
+    } else {
+      parsedBannerData = organization.bannerData;
+    }
+  }
 
   // Handle both legacy string address and new Address object
   let street = "";
@@ -62,14 +77,12 @@ export function OrganizationEditor({
   let longitude: number | null = null;
   
   if (typeof organization.address === 'string') {
-    // Legacy string format
+    // Legacy string format - parse what we can
     const addressParts = organization.address?.split(", ") || [];
-    street = metadata?.street || addressParts[0] || "";
+    street = addressParts[0] || "";
     city = addressParts.length > 1 ? addressParts[1] : "";
     postalCode = addressParts.length > 2 ? addressParts[2] : "";
-    country = metadata?.country || (addressParts.length > 3 ? addressParts[3] : "");
-    latitude = metadata?.latitude || null;
-    longitude = metadata?.longitude || null;
+    country = addressParts.length > 3 ? addressParts[3] : "";
   } else if (organization.address) {
     // New Address object format
     const addr = organization.address as Address;
@@ -96,16 +109,16 @@ export function OrganizationEditor({
   };
 
   const logoData: LogoData = {
-    logoCount: metadata?.logoCount || 'one',
-    logo: organization.logoData?.url ? { url: organization.logoData.url, key: "", preview: organization.logoData.url } : null,
-    logoTheme: metadata?.logoTheme || 'light',
-    secondLogo: metadata?.secondLogo ? { url: metadata.secondLogo, key: "", preview: metadata.secondLogo } : null,
-    secondLogoTheme: metadata?.secondLogoTheme || 'dark',
+    logoCount: parsedLogoData?.secondLogo ? 'two' : 'one',
+    logo: parsedLogoData?.url ? { url: parsedLogoData.url, key: "", preview: parsedLogoData.url } : null,
+    logoTheme: parsedLogoData?.logoTheme || 'light',
+    secondLogo: parsedLogoData?.secondLogo ? { url: parsedLogoData.secondLogo, key: "", preview: parsedLogoData.secondLogo } : null,
+    secondLogoTheme: parsedLogoData?.secondLogoTheme || 'dark',
   };
 
   const bannerData: BannerData = {
-    heroImage: organization.bannerData?.url ? { url: organization.bannerData.url, key: "", preview: organization.bannerData.url } : null,
-    bannerAlignment: metadata?.bannerAlignment || 'center',
+    heroImage: parsedBannerData?.url ? { url: parsedBannerData.url, key: "", preview: parsedBannerData.url } : null,
+    bannerAlignment: parsedBannerData?.bannerAlignment || 'center',
   };
 
   const handleTabChange = useCallback(async (newTabId: string) => {
@@ -153,35 +166,46 @@ export function OrganizationEditor({
   }, [organization.id, onUpdate, onRefresh]);
 
   const handleAddressSave = useCallback(async (data: AddressData) => {
-    const addressParts = [
-      data.street.trim(),
-      data.city.trim(),
-      data.postalCode.trim(),
-      data.country.trim()
-    ].filter(Boolean);
-    const fullAddress = addressParts.join(", ");
+    // Use new Address object format
+    const addressData: Address = {
+      street: data.street.trim(),
+      city: data.city.trim(),
+      postalCode: data.postalCode.trim(),
+      country: data.country.trim(),
+      lat: data.latitude,
+      lng: data.longitude,
+      formattedAddress: [
+        data.street.trim(),
+        data.city.trim(),
+        data.postalCode.trim(),
+        data.country.trim()
+      ].filter(Boolean).join(", "),
+    };
 
     await onUpdate(organization.id, {
-      address: fullAddress,
-      metadata: {
-        ...(organization.metadata as object || {}),
-        country: data.country,
-        street: data.street,
-        latitude: data.latitude,
-        longitude: data.longitude,
-      },
+      address: addressData,
     });
     await onRefresh();
     setHasUnsavedChanges(false);
-  }, [organization.id, organization.metadata, onUpdate, onRefresh]);
+  }, [organization.id, onUpdate, onRefresh]);
 
   const handleLogoSave = useCallback(async (payload: { logo?: File | null; secondLogo?: File | null; metadata: Record<string, unknown> }) => {
-    // Update metadata first
+    // Get existing logoData
+    let existingLogoData: Record<string, unknown> = {};
+    if (parsedLogoData) {
+      existingLogoData = { ...parsedLogoData };
+    }
+
+    // Update logoData with logo theme settings
+    const updatedLogoData = {
+      ...existingLogoData,
+      logoTheme: payload.metadata.logoTheme,
+      secondLogoTheme: payload.metadata.secondLogoTheme,
+    };
+
+    // Update organization logoData
     await onUpdate(organization.id, {
-      metadata: {
-        ...(organization.metadata as object || {}),
-        ...payload.metadata,
-      },
+      logoData: updatedLogoData,
     });
 
     // Upload logo if provided
@@ -220,15 +244,24 @@ export function OrganizationEditor({
 
     await onRefresh();
     setHasUnsavedChanges(false);
-  }, [organization.id, organization.metadata, onUpdate, onRefresh, t]);
+  }, [organization.id, parsedLogoData, onUpdate, onRefresh, t]);
 
   const handleBannerSave = useCallback(async (file: File | null, alignment: 'top' | 'center' | 'bottom') => {
-    // Update metadata with alignment first
+    // Get existing bannerData
+    let existingBannerData: Record<string, unknown> = {};
+    if (parsedBannerData) {
+      existingBannerData = { ...parsedBannerData };
+    }
+
+    // Update bannerData with alignment
+    const updatedBannerData = {
+      ...existingBannerData,
+      bannerAlignment: alignment,
+    };
+
+    // Update organization bannerData
     await onUpdate(organization.id, {
-      metadata: {
-        ...(organization.metadata as object || {}),
-        bannerAlignment: alignment,
-      },
+      bannerData: updatedBannerData,
     });
 
     // Upload file if provided
@@ -250,7 +283,7 @@ export function OrganizationEditor({
 
     await onRefresh();
     setHasUnsavedChanges(false);
-  }, [organization.id, organization.metadata, onUpdate, onRefresh, t]);
+  }, [organization.id, parsedBannerData, onUpdate, onRefresh, t]);
 
   return (
     <>

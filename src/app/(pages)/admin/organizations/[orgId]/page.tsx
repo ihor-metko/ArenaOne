@@ -10,7 +10,6 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useClubStatisticsStore } from "@/stores/useClubStatisticsStore";
 import AdminManagementSection from "@/components/admin/AdminManagementSection";
 import { OrganizationEditor } from "@/components/admin/OrganizationEditor.client";
-import { parseOrganizationMetadata } from "@/types/organization";
 import { formatAddress } from "@/types/address";
 
 import "./page.css";
@@ -252,8 +251,33 @@ export default function OrganizationDetailPage() {
   // Show loading spinner while checking authentication or loading org
   const isLoadingState = !isHydrated || isLoading || loading;
 
-  // Parse organization metadata for logo handling
-  const orgMetadata = org ? parseOrganizationMetadata(org.metadata) : undefined;
+  // Parse organization logoData and bannerData for theme settings
+  let orgLogoMetadata = null;
+  let orgBannerAlignment = 'center' as 'top' | 'center' | 'bottom';
+  
+  if (org?.logoData) {
+    try {
+      const parsedLogoData = typeof org.logoData === 'string' ? JSON.parse(org.logoData) : org.logoData;
+      orgLogoMetadata = {
+        logoTheme: parsedLogoData.logoTheme,
+        secondLogo: parsedLogoData.secondLogo,
+        secondLogoTheme: parsedLogoData.secondLogoTheme,
+      };
+    } catch {
+      // Invalid JSON, ignore
+      orgLogoMetadata = null;
+    }
+  }
+
+  if (org?.bannerData) {
+    try {
+      const parsedBannerData = typeof org.bannerData === 'string' ? JSON.parse(org.bannerData) : org.bannerData;
+      orgBannerAlignment = parsedBannerData.bannerAlignment || 'center';
+    } catch {
+      // Invalid JSON, use default
+      orgBannerAlignment = 'center';
+    }
+  }
 
   return (
     <main className="im-org-detail-page">
@@ -275,9 +299,9 @@ export default function OrganizationDetailPage() {
           subtitle={org.description || null}
           location={typeof org.address === 'string' ? org.address : formatAddress(org.address)}
           imageUrl={org.bannerData?.url}
-          bannerAlignment={orgMetadata?.bannerAlignment || 'center'}
+          bannerAlignment={orgBannerAlignment}
           logoUrl={org.logoData?.url}
-          logoMetadata={orgMetadata}
+          logoMetadata={orgLogoMetadata}
           imageAlt={`${org.name} banner`}
           logoAlt={`${org.name} logo`}
           isPublished={org.isPublic ?? true}

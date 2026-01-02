@@ -193,7 +193,6 @@ export async function GET(
       address: organization.address,
       logoData: organization.logoData ? JSON.parse(organization.logoData) : null,
       bannerData: organization.bannerData ? JSON.parse(organization.bannerData) : null,
-      metadata: organization.metadata ? JSON.parse(organization.metadata) : null,
       isPublic: organization.isPublic,
       archivedAt: organization.archivedAt,
       createdAt: organization.createdAt,
@@ -223,7 +222,7 @@ export async function GET(
 
 /**
  * PUT /api/orgs/[orgId]
- * Update org metadata (name, contact info, slug, metadata).
+ * Update org information (name, contact info, slug, logoData, bannerData, etc.).
  * Allowed: isRoot OR ORGANIZATION_ADMIN of this org
  */
 export async function PUT(
@@ -239,7 +238,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, slug, description, contactEmail, contactPhone, website, address, logoData, bannerData, metadata, isPublic } = body;
+    const { name, slug, description, contactEmail, contactPhone, website, address, logoData, bannerData, isPublic } = body;
 
 
     // Verify organization exists
@@ -306,7 +305,6 @@ export async function PUT(
       address?: string | null;
       logoData?: string | null;
       bannerData?: string | null;
-      metadata?: string | null;
       isPublic?: boolean;
     } = {};
 
@@ -316,15 +314,12 @@ export async function PUT(
     if (contactEmail !== undefined) updateData.contactEmail = contactEmail?.trim() || null;
     if (contactPhone !== undefined) updateData.contactPhone = contactPhone?.trim() || null;
     if (website !== undefined) updateData.website = website?.trim() || null;
-    if (address !== undefined) updateData.address = address?.trim() || null;
+    if (address !== undefined) updateData.address = typeof address === 'string' ? address?.trim() || null : JSON.stringify(address);
     if (logoData !== undefined) {
       updateData.logoData = logoData ? JSON.stringify(logoData) : null;
     }
     if (bannerData !== undefined) {
       updateData.bannerData = bannerData ? JSON.stringify(bannerData) : null;
-    }
-    if (metadata !== undefined) {
-      updateData.metadata = metadata ? JSON.stringify(metadata) : null;
     }
     if (isPublic !== undefined) updateData.isPublic = isPublic;
 
@@ -373,9 +368,6 @@ export async function PUT(
         : null,
       bannerData: updatedOrganization.bannerData
         ? JSON.parse(updatedOrganization.bannerData)
-        : null,
-      metadata: updatedOrganization.metadata
-        ? JSON.parse(updatedOrganization.metadata)
         : null,
       isPublic: updatedOrganization.isPublic,
       archivedAt: updatedOrganization.archivedAt,

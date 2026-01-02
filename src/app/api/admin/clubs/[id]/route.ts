@@ -32,7 +32,6 @@ export async function GET(
     const club = await prisma.club.findUnique({
       where: { id: clubId },
       include: {
-        metadata: false,
         organization: {
           select: {
             id: true,
@@ -118,7 +117,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, slug, shortDescription, isPublic, supportedSports } = body;
+    const { name, slug, shortDescription, isPublic, supportedSports, logoData, bannerData } = body;
 
     // Validate required fields
     if (name !== undefined && !name.trim()) {
@@ -151,6 +150,8 @@ export async function PATCH(
     if (shortDescription !== undefined) updateData.shortDescription = shortDescription?.trim() || null;
     if (isPublic !== undefined) updateData.isPublic = isPublic;
     if (supportedSports !== undefined) updateData.supportedSports = supportedSports;
+    if (logoData !== undefined) updateData.logoData = logoData ? JSON.stringify(logoData) : null;
+    if (bannerData !== undefined) updateData.bannerData = bannerData ? JSON.stringify(bannerData) : null;
 
     await prisma.club.update({
       where: { id: clubId },

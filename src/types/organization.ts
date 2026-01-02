@@ -13,6 +13,10 @@ export interface LogoData {
   url: string;
   altText?: string;
   thumbnailUrl?: string;
+  // Theme-aware logo fields (migrated from metadata)
+  logoTheme?: 'light' | 'dark';
+  secondLogo?: string | null;
+  secondLogoTheme?: 'light' | 'dark';
 }
 
 /**
@@ -23,6 +27,8 @@ export interface BannerData {
   altText?: string;
   description?: string;
   position?: 'top' | 'center' | 'bottom';
+  // Banner alignment field (migrated from metadata)
+  bannerAlignment?: 'top' | 'center' | 'bottom';
 }
 
 /**
@@ -51,7 +57,6 @@ export interface Organization {
   website?: string | null;
   // Legacy address field - deprecated, use address object instead
   address?: string | Address | null;
-  metadata?: Record<string, unknown> | null;
   isPublic: boolean;
   supportedSports?: SportType[];
   maxClubs?: number;
@@ -91,7 +96,6 @@ export interface CreateOrganizationPayload {
   address?: string | Address;
   logoData?: LogoData;
   bannerData?: BannerData;
-  metadata?: Record<string, unknown>;
   supportedSports?: SportType[];
 }
 
@@ -109,7 +113,6 @@ export interface UpdateOrganizationPayload {
   address?: string | Address | null;
   logoData?: LogoData | null;
   bannerData?: BannerData | null;
-  metadata?: Record<string, unknown> | null;
   supportedSports?: SportType[];
   isPublic?: boolean;
 }

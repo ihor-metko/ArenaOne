@@ -104,7 +104,6 @@ export async function GET(
       address: organization.address,
       logoData: organization.logoData ? JSON.parse(organization.logoData) : null,
       bannerData: organization.bannerData ? JSON.parse(organization.bannerData) : null,
-      metadata: organization.metadata ? JSON.parse(organization.metadata) : null,
       isPublic: organization.isPublic,
       archivedAt: organization.archivedAt,
       createdAt: organization.createdAt,
@@ -129,7 +128,7 @@ export async function GET(
 
 /**
  * PATCH /api/admin/organizations/[id]
- * Updates an organization's metadata (name, contact info, slug, metadata, etc.)
+ * Updates an organization's information (name, contact info, slug, logoData, bannerData, etc.)
  * Allowed: isRoot OR ORGANIZATION_ADMIN of this org
  * Note: Only root admins can update isPublic field
  */
@@ -146,7 +145,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, slug, description, contactEmail, contactPhone, website, address, logoData, bannerData, metadata, isPublic, supportedSports } = body;
+    const { name, slug, description, contactEmail, contactPhone, website, address, logoData, bannerData, isPublic, supportedSports } = body;
 
     // Only root admins can change isPublic status
     if (isPublic !== undefined && !authResult.isRoot) {
@@ -220,7 +219,6 @@ export async function PATCH(
       address?: string | null;
       logoData?: string | null;
       bannerData?: string | null;
-      metadata?: string | null;
       isPublic?: boolean;
       supportedSports?: SportType[];
     } = {};
@@ -231,15 +229,12 @@ export async function PATCH(
     if (contactEmail !== undefined) updateData.contactEmail = contactEmail?.trim() || null;
     if (contactPhone !== undefined) updateData.contactPhone = contactPhone?.trim() || null;
     if (website !== undefined) updateData.website = website?.trim() || null;
-    if (address !== undefined) updateData.address = address?.trim() || null;
+    if (address !== undefined) updateData.address = typeof address === 'string' ? address?.trim() || null : JSON.stringify(address);
     if (logoData !== undefined) {
       updateData.logoData = logoData ? JSON.stringify(logoData) : null;
     }
     if (bannerData !== undefined) {
       updateData.bannerData = bannerData ? JSON.stringify(bannerData) : null;
-    }
-    if (metadata !== undefined) {
-      updateData.metadata = metadata ? JSON.stringify(metadata) : null;
     }
     if (isPublic !== undefined) updateData.isPublic = isPublic;
     if (supportedSports !== undefined) updateData.supportedSports = supportedSports;
@@ -289,9 +284,6 @@ export async function PATCH(
         : null,
       bannerData: updatedOrganization.bannerData
         ? JSON.parse(updatedOrganization.bannerData)
-        : null,
-      metadata: updatedOrganization.metadata
-        ? JSON.parse(updatedOrganization.metadata)
         : null,
       isPublic: updatedOrganization.isPublic,
       archivedAt: updatedOrganization.archivedAt,

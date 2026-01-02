@@ -65,7 +65,6 @@ export interface ChangeOwnerPayload {
  */
 export interface OrganizationDetail extends Organization {
   description?: string | null;
-  metadata?: Record<string, unknown> | null;
   createdBy?: {
     id: string;
     name: string | null;
