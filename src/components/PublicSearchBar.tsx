@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Input, Button } from "@/components/ui";
@@ -8,6 +8,7 @@ import { Input, Button } from "@/components/ui";
 const DEFAULT_Q = "";
 const DEFAULT_CITY = "";
 const DEFAULT_INDOOR = false;
+const MIN_SEARCH_LENGTH = 2;
 
 export interface SearchParams {
   q: string;
@@ -61,9 +62,20 @@ export function PublicSearchBar({
     return `/clubs${queryString ? `?${queryString}` : ""}`;
   }, []);
 
+  // Validation: require at least 2 characters in any field for search
+  const isSearchValid = useMemo(() => {
+    return q.trim().length >= MIN_SEARCH_LENGTH || city.trim().length >= MIN_SEARCH_LENGTH;
+  }, [q, city]);
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent submission if search is invalid (navigateOnSearch mode only)
+    if (navigateOnSearch && !isSearchValid) {
+      return;
+    }
+    
     const params = { q, city };
 
     if (navigateOnSearch) {
@@ -133,7 +145,11 @@ export function PublicSearchBar({
         <div className="flex items-center gap-4">
           {/* Search button for hero (navigateOnSearch mode) */}
           {navigateOnSearch && (
-            <Button type="submit" className="tm-search-button">
+            <Button 
+              type="submit" 
+              className="tm-search-button"
+              disabled={!isSearchValid}
+            >
               {t("common.search")}
             </Button>
           )}
