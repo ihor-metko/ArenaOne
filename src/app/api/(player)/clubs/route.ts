@@ -3,6 +3,22 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { parseAddress } from "@/types/address";
 
+/**
+ * Helper function to safely parse JSON data
+ * Returns null if parsing fails instead of throwing
+ */
+function safeJsonParse<T = unknown>(jsonString: string | null | undefined): T | null {
+  if (!jsonString) {
+    return null;
+  }
+  
+  try {
+    return JSON.parse(jsonString) as T;
+  } catch {
+    return null;
+  }
+}
+
 // Public endpoint - no authentication required
 export async function GET(request: Request) {
   try {
@@ -10,6 +26,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     // Support both 'q' (new) and 'search' (legacy) params
     const q = url.searchParams.get("q")?.trim() || url.searchParams.get("search")?.trim() || "";
+    const city = url.searchParams.get("city")?.trim() || "";
     const indoor = url.searchParams.get("indoor");
     const popular = url.searchParams.get("popular");
     const limit = url.searchParams.get("limit");
@@ -25,7 +42,8 @@ export async function GET(request: Request) {
       });
     }
 
-    // city filter removed as it's no longer a separate field
+    // Note: city filtering is done post-fetch for case-insensitive matching
+    // because Prisma's JSON field string_contains is case-sensitive
 
     if (conditions.length > 0) {
       whereClause.AND = conditions;
@@ -68,7 +86,7 @@ export async function GET(request: Request) {
       },
     });
 
-    // Process clubs to add indoor/outdoor counts
+    // Process clubs to add indoor/outdoor counts and apply city filter
     const clubsWithCounts = clubs.map((club) => {
       const indoorCount = club.courts.filter((c) => c.indoor).length;
       const outdoorCount = club.courts.filter((c) => !c.indoor).length;
@@ -81,6 +99,18 @@ export async function GET(request: Request) {
       // Parse address from JSON if available
       const parsedAddress = parseAddress(club.address);
 
+      // Apply case-insensitive city filter (post-fetch)
+      if (city && parsedAddress?.city) {
+        const cityLower = city.toLowerCase();
+        const clubCityLower = parsedAddress.city.toLowerCase();
+        if (!clubCityLower.includes(cityLower)) {
+          return null;
+        }
+      } else if (city && !parsedAddress?.city) {
+        // If city filter is provided but club has no city, exclude it
+        return null;
+      }
+
       return {
         id: club.id,
         name: club.name,
@@ -88,8 +118,8 @@ export async function GET(request: Request) {
         address: parsedAddress || null,
         contactInfo: club.contactInfo,
         openingHours: club.openingHours,
-        logoData: club.logoData ? JSON.parse(club.logoData) : null,
-        bannerData: club.bannerData ? JSON.parse(club.bannerData) : null,
+        logoData: safeJsonParse(club.logoData),
+        bannerData: safeJsonParse(club.bannerData),
         tags: club.tags,
         createdAt: club.createdAt,
         indoorCount,
