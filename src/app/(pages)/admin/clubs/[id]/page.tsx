@@ -348,7 +348,6 @@ export default function AdminClubDetailPage({
                 ) : (
                   <div>{t("common.mapHiddenInDev")}</div>
                 )}
-                <p className="im-admin-club-map-address">{club.location}</p>
               </Card>
             )}
 
