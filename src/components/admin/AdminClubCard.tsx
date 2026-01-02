@@ -6,6 +6,7 @@ import { isValidImageUrl, getImageUrl } from "@/utils/image";
 import { getSportName } from "@/constants/sports";
 import type { ClubWithCounts } from "@/types/club";
 import { parseClubMetadata } from "@/types/club";
+import { formatAddress as formatAddressHelper } from "@/types/address";
 import "./AdminClubCard.css";
 
 export interface AdminClubCardProps {
@@ -21,20 +22,6 @@ export interface AdminClubCardProps {
     /** Optional href for navigation (if no onClick provided) */
     href?: string;
   };
-}
-
-/**
- * Formats the address for display as "City, Street Address"
- * Returns the full location if city is not available
- */
-function formatAddress(city: string | null | undefined, location: string | null | undefined): string {
-  if (city && location) {
-    if (location.toLowerCase().startsWith(city.toLowerCase())) {
-      return location;
-    }
-    return `${city}, ${location}`;
-  }
-  return location || "";
 }
 
 /**
@@ -122,7 +109,7 @@ export function AdminClubCard({ club, showOrganization, actionButton }: AdminClu
   // Determine the main image: heroImage first, then logo as fallback
   const mainImage = isValidImageUrl(heroImageUrl) ? heroImageUrl : null;
   const hasLogo = isValidImageUrl(logoDisplayUrl);
-  const formattedAddress = formatAddress(club.city, club.location);
+  const formattedAddress = formatAddressHelper(club.address);
   const clubTags = parseTags(club.tags);
 
   return (

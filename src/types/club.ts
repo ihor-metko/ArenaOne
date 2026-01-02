@@ -25,9 +25,6 @@ export interface Club {
   id: string;
   name: string;
   slug?: string | null;
-  // Legacy location field - kept for backward compatibility
-  location?: string;
-  // New dedicated address object
   address?: Address | null;
   contactInfo: string | null;
   openingHours: string | null;
@@ -55,8 +52,6 @@ export interface ClubAdminInfo {
 export interface ClubWithCounts extends Club {
   organizationId: string;
   shortDescription?: string | null;
-  // Legacy city field - kept for backward compatibility
-  city?: string | null;
   bannerData?: BannerData | null;
   metadata?: string | null;
   tags?: string | null;
@@ -73,7 +68,6 @@ export interface ClubWithCounts extends Club {
 
 export interface ClubFormData {
   name: string;
-  location: string;
   contactInfo: string;
   openingHours: string;
   logo: string;
@@ -152,14 +146,6 @@ export interface ClubDetail {
   slug: string | null;
   shortDescription: string | null;
   longDescription: string | null;
-  // Legacy location field - deprecated, use address.formattedAddress instead
-  location?: string;
-  // Legacy address fields - deprecated, use address object instead
-  city?: string | null;
-  country?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  // New dedicated address object
   address?: Address | null;
   phone: string | null;
   email: string | null;
@@ -203,13 +189,6 @@ export interface CreateClubPayload {
   slug?: string;
   shortDescription: string;
   longDescription?: string;
-  // Legacy location field - deprecated, use address object instead
-  location?: string;
-  city?: string | null;
-  country?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  // New dedicated address object
   address?: Address | null;
   phone?: string | null;
   email?: string | null;
@@ -247,7 +226,6 @@ export interface CreateClubPayload {
  */
 export interface UpdateClubPayload {
   name?: string;
-  location?: string;
   contactInfo?: string | null;
   openingHours?: string | null;
   logoData?: LogoData | null;

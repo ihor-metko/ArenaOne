@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyAdmin } from "@/lib/requireRole";
 import { SportType } from "@/constants/sports";
+import type { Address } from "@/types/address";
 
 interface BusinessHourInput {
   dayOfWeek: number;
@@ -38,11 +39,7 @@ interface CreateClubRequest {
   slug?: string;
   shortDescription: string;
   longDescription?: string;
-  location: string;
-  city?: string | null;
-  country?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
+  address?: Address;
   phone?: string | null;
   email?: string | null;
   website?: string | null;
@@ -110,7 +107,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!body.location?.trim()) {
+    if (!body.address?.formattedAddress?.trim()) {
       return NextResponse.json(
         { error: "Address is required" },
         { status: 400 }
@@ -183,11 +180,7 @@ export async function POST(request: Request) {
           createdById: authResult.userId,
           shortDescription: body.shortDescription.trim(),
           longDescription: body.longDescription?.trim() || null,
-          location: body.location.trim(),
-          city: body.city || null,
-          country: body.country || null,
-          latitude: body.latitude || null,
-          longitude: body.longitude || null,
+          address: body.address ? JSON.stringify(body.address) : null,
           phone: body.phone || null,
           email: body.email || null,
           website: body.website || null,

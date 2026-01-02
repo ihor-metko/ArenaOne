@@ -38,12 +38,12 @@ export function ClubEditor({
   };
 
   const addressData: AddressData = {
-    country: club.country || "",
-    city: club.city || "",
-    postalCode: "", // Clubs don't have postal code in the current schema
-    street: club.location || "",
-    latitude: club.latitude || null,
-    longitude: club.longitude || null,
+    country: club.address?.country || "",
+    city: club.address?.city || "",
+    postalCode: club.address?.postalCode || "",
+    street: club.address?.street || "",
+    latitude: club.address?.lat || null,
+    longitude: club.address?.lng || null,
   };
 
   const logoData: LogoData = {

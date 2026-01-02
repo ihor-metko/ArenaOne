@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOrganizationAdmin } from "@/lib/requireRole";
+import { parseAddress } from "@/types/address";
 
 /**
  * GET /api/admin/organizations/[id]/clubs
@@ -134,21 +135,22 @@ export async function GET(
     });
 
     // Map clubs with statistics
-    const clubsWithStats = clubs.map((club) => ({
-      id: club.id,
-      name: club.name,
-      slug: club.slug,
-      location: club.location,
-      city: club.city,
-      country: club.country,
-      isPublic: club.isPublic,
-      createdAt: club.createdAt,
-      statistics: {
-        courtCount: club._count.courts,
-        activeUpcomingBookings: activeBookingsByClub.get(club.id) || 0,
-        pastBookings: pastBookingsByClub.get(club.id) || 0,
-      },
-    }));
+    const clubsWithStats = clubs.map((club) => {
+      const parsedAddress = parseAddress(club.address);
+      return {
+        id: club.id,
+        name: club.name,
+        slug: club.slug,
+        address: parsedAddress || null,
+        isPublic: club.isPublic,
+        createdAt: club.createdAt,
+        statistics: {
+          courtCount: club._count.courts,
+          activeUpcomingBookings: activeBookingsByClub.get(club.id) || 0,
+          pastBookings: pastBookingsByClub.get(club.id) || 0,
+        },
+      };
+    });
 
     return NextResponse.json({
       clubs: clubsWithStats,
