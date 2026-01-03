@@ -164,8 +164,7 @@ describe("Public Flow API Endpoints", () => {
 
       expect(response.status).toBe(200);
       expect(data.name).toBe("Test Club");
-      expect(data.courts).toHaveLength(1);
-      expect(data.coaches).toHaveLength(1);
+      // Courts and coaches are fetched via separate endpoints
     });
 
     it("should return 404 for non-existent club", async () => {

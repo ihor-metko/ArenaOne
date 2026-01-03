@@ -78,8 +78,8 @@ describe("Courts API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.courts).toHaveLength(2);
-      expect(data.courts[0].name).toBe("Court 1");
+      expect(data).toHaveLength(2);
+      expect(data[0].name).toBe("Court 1");
     });
 
     it("should return 404 when club not found", async () => {

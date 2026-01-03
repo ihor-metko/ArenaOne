@@ -66,14 +66,8 @@ describe("GET /api/clubs/[id]", () => {
     expect(response.status).toBe(200);
     expect(data.id).toBe("club-123");
     expect(data.name).toBe("Test Club");
-    expect(data.location).toBe("Test Location");
-    expect(data.courts).toHaveLength(2);
-    expect(data.courts[0].name).toBe("Court 1");
-    expect(data.courts[0].indoor).toBe(true);
-    expect(data.courts[0].defaultPriceCents).toBe(5000);
-    expect(data.coaches).toHaveLength(2);
-    expect(data.coaches[0].name).toBe("Coach Alice");
-    expect(data.coaches[1].name).toBe("Coach Bob");
+    // Note: Courts and coaches are fetched via separate endpoints
+    // See /api/(player)/clubs/[id]/courts and coaches endpoints
   });
 
   it("should return 404 when club not found", async () => {
@@ -107,8 +101,7 @@ describe("GET /api/clubs/[id]", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.courts).toHaveLength(0);
-    expect(data.coaches).toHaveLength(0);
+    // Courts and coaches are fetched separately
   });
 
   it("should handle coach with null user name", async () => {

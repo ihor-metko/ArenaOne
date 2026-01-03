@@ -61,8 +61,8 @@ describe("Courts Access Separation", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.courts).toHaveLength(1);
-      expect(data.courts[0].name).toBe("Court 1");
+      expect(data).toHaveLength(1);
+      expect(data[0].name).toBe("Court 1");
       
       // Verify no admin auth was required
       expect(mockRequireClubManagement).not.toHaveBeenCalled();
@@ -211,8 +211,8 @@ describe("Courts Access Separation", () => {
 
       expect(response.status).toBe(200);
       // Player endpoint should not expose isActive or booking counts
-      expect(data.courts[0].isActive).toBeUndefined();
-      expect(data.courts[0].bookingCount).toBeUndefined();
+      expect(data[0].isActive).toBeUndefined();
+      expect(data[0].bookingCount).toBeUndefined();
     });
   });
 });
