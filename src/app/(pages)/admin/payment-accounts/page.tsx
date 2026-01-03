@@ -60,7 +60,6 @@ export default function UnifiedPaymentAccountsPage() {
   
   // Verification modal state
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
-  const [verificationCheckoutUrl, setVerificationCheckoutUrl] = useState<string | null>(null);
   const [verifyingAccountId, setVerifyingAccountId] = useState<string | null>(null);
   const [verificationPaymentId, setVerificationPaymentId] = useState<string | null>(null);
   
@@ -436,7 +435,6 @@ export default function UnifiedPaymentAccountsPage() {
         window.open(data.verificationPayment.checkoutUrl, '_blank', 'noopener,noreferrer');
         
         // Show modal with instructions and start polling
-        setVerificationCheckoutUrl(data.verificationPayment.checkoutUrl);
         setVerificationPaymentId(data.verificationPayment.id);
         setIsVerificationModalOpen(true);
         // Clear loading state after successfully opening modal
@@ -462,7 +460,6 @@ export default function UnifiedPaymentAccountsPage() {
 
   const handleCloseVerificationModal = () => {
     setIsVerificationModalOpen(false);
-    setVerificationCheckoutUrl(null);
     setVerificationPaymentId(null);
   };
 
