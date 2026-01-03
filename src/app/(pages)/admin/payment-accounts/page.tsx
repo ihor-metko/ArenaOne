@@ -430,8 +430,12 @@ export default function UnifiedPaymentAccountsPage() {
 
       const data = await response.json();
       
-      // Open modal with checkout URL instead of redirecting
+      // Open checkout in a new window and show modal with instructions
       if (data.verificationPayment?.checkoutUrl) {
+        // Open WayForPay checkout in a new window
+        window.open(data.verificationPayment.checkoutUrl, '_blank', 'noopener,noreferrer');
+        
+        // Show modal with instructions and start polling
         setVerificationCheckoutUrl(data.verificationPayment.checkoutUrl);
         setVerificationPaymentId(data.verificationPayment.id);
         setIsVerificationModalOpen(true);
@@ -680,23 +684,41 @@ export default function UnifiedPaymentAccountsPage() {
         title={t("paymentAccount.verificationModal.title")}
       >
         <div className="verification-modal-content">
-          <p className="im-text-muted verification-modal-description">
-            {t("paymentAccount.verificationModal.description")}
-          </p>
-          {verificationCheckoutUrl && (
-            <iframe
-              src={verificationCheckoutUrl}
-              // Sandbox permissions required for WayForPay payment processing:
-              // - allow-scripts: Required for payment form functionality
-              // - allow-same-origin: Required for payment provider callbacks
-              // - allow-forms: Required for payment form submission
-              // - allow-popups: May be needed for 3D Secure authentication
-              // - allow-popups-to-escape-sandbox: For bank authentication windows
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-              className="verification-modal-iframe"
-              title={t("paymentAccount.verificationModal.iframeTitle")}
-            />
-          )}
+          <div className="verification-modal-instructions">
+            <div className="verification-modal-icon">💳</div>
+            <h3 className="verification-modal-heading">
+              {t("paymentAccount.verificationModal.windowOpened")}
+            </h3>
+            <p className="verification-modal-description">
+              {t("paymentAccount.verificationModal.description")}
+            </p>
+            <div className="verification-modal-steps">
+              <div className="verification-step">
+                <span className="verification-step-number">1</span>
+                <span className="verification-step-text">
+                  {t("paymentAccount.verificationModal.step1")}
+                </span>
+              </div>
+              <div className="verification-step">
+                <span className="verification-step-number">2</span>
+                <span className="verification-step-text">
+                  {t("paymentAccount.verificationModal.step2")}
+                </span>
+              </div>
+              <div className="verification-step">
+                <span className="verification-step-number">3</span>
+                <span className="verification-step-text">
+                  {t("paymentAccount.verificationModal.step3")}
+                </span>
+              </div>
+            </div>
+            <div className="verification-modal-status">
+              <div className="verification-modal-spinner"></div>
+              <p className="verification-modal-status-text">
+                {t("paymentAccount.verificationModal.waitingForPayment")}
+              </p>
+            </div>
+          </div>
           <p className="im-helper-text verification-modal-hint">
             {t("paymentAccount.verificationModal.hint")}
           </p>

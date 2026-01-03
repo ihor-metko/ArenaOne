@@ -2635,9 +2635,13 @@
     },
     "verificationModal": {
       "title": "Verify Payment Account",
-      "description": "Complete the payment below to verify your payment account. A minimal verification payment (1 UAH) will be charged and sent directly to your merchant account.",
-      "iframeTitle": "Payment verification checkout",
-      "hint": "After completing the payment, this window will automatically close and your account status will be updated."
+      "windowOpened": "Payment window opened",
+      "description": "Complete the payment in the opened window to verify your payment account. A minimal verification payment (1 UAH) will be charged and sent directly to your merchant account.",
+      "step1": "Complete the payment in the opened window",
+      "step2": "The payment is processed securely through WayForPay",
+      "step3": "Your account will be automatically verified after successful payment",
+      "waitingForPayment": "Waiting for payment confirmation...",
+      "hint": "This window will automatically close once the payment is confirmed. Do not close this window manually."
     }
   },
   "dangerZone": {
