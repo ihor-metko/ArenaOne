@@ -29,6 +29,14 @@
   background-color: var(--rsp-card-bg);
 }
 
+.rsp-button--outline:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.rsp-button--outline:disabled:hover {
+  background-color: transparent;
+}
+
 .rsp-button--danger {
   background-color: var(--rsp-danger);
   color: white;
