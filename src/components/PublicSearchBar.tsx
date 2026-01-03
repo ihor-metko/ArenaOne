@@ -220,7 +220,18 @@ export function PublicSearchBar({
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">{
+          /* Search button for hero (navigateOnSearch mode) */}
+          {navigateOnSearch && (
+            <Button
+              type="submit"
+              className="tm-search-button"
+              disabled={!isSearchValid}
+            >
+              {t("common.search")}
+            </Button>
+          )}
+
           {/* Reset button - always visible, disabled when no filters */}
           {!navigateOnSearch && (
             <Button
