@@ -46,17 +46,17 @@ export function PublicSearchBar({
   const router = useRouter();
   const [q, setQ] = useState(initialQ);
   const [city, setCity] = useState(initialCity);
-  
+
   // Refs to preserve input focus
   const qInputRef = useRef<HTMLInputElement>(null);
   const cityInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Track pending debounce timeout
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Track if we just performed a manual search action (submit or clear)
   const manualActionRef = useRef(false);
-  
+
   // Helper to reset manual action flag after current render cycle
   const resetManualActionFlag = useCallback(() => {
     // Use setTimeout(0) to reset the flag after React's state updates complete
@@ -65,7 +65,7 @@ export function PublicSearchBar({
       manualActionRef.current = false;
     }, 0);
   }, []);
-  
+
   // Track if we're syncing from URL to prevent triggering debounced search
   const isSyncingFromUrl = useRef(false);
   // Track initial mount to distinguish from prop changes (for URL sync)
@@ -78,7 +78,7 @@ export function PublicSearchBar({
       isInitialMount.current = false;
       return;
     }
-    
+
     isSyncingFromUrl.current = true;
     setQ(initialQ);
     setCity(initialCity);
@@ -105,21 +105,21 @@ export function PublicSearchBar({
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Clear any pending debounced search
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
       debounceTimeoutRef.current = null;
     }
-    
+
     // Mark that we're performing a manual action
     manualActionRef.current = true;
-    
+
     // Prevent submission if search is invalid (navigateOnSearch mode only)
     if (navigateOnSearch && !isSearchValid) {
       return;
     }
-    
+
     // Normalize inputs: trim whitespace
     const normalizedQ = q.trim();
     const normalizedCity = city.trim();
@@ -130,7 +130,7 @@ export function PublicSearchBar({
     } else if (onSearch) {
       onSearch(params);
     }
-    
+
     resetManualActionFlag();
   };
 
@@ -141,10 +141,10 @@ export function PublicSearchBar({
       clearTimeout(debounceTimeoutRef.current);
       debounceTimeoutRef.current = null;
     }
-    
+
     // Mark that we're performing a manual action
     manualActionRef.current = true;
-    
+
     setQ(DEFAULT_Q);
     setCity(DEFAULT_CITY);
     const defaultParams = { q: DEFAULT_Q, city: DEFAULT_CITY };
@@ -154,7 +154,7 @@ export function PublicSearchBar({
     } else if (onSearch) {
       onSearch(defaultParams);
     }
-    
+
     resetManualActionFlag();
   };
 
@@ -162,7 +162,7 @@ export function PublicSearchBar({
   useEffect(() => {
     // Don't trigger search if we're just syncing from URL
     if (!onSearch || navigateOnSearch || isSyncingFromUrl.current) return;
-    
+
     // Don't trigger search if we just performed a manual action
     if (manualActionRef.current) return;
 
@@ -172,7 +172,7 @@ export function PublicSearchBar({
       const normalizedCity = city.trim();
       onSearch({ q: normalizedQ, city: normalizedCity });
     }, 500); // Increased from 300ms to 500ms for better debouncing
-    
+
     // Store the timeout ref so we can cancel it if needed
     debounceTimeoutRef.current = handler;
 
@@ -183,7 +183,7 @@ export function PublicSearchBar({
       }
     };
   }, [q, city, onSearch, navigateOnSearch]);
-  
+
   const hasFilters = q || city;
 
   return (
@@ -221,27 +221,6 @@ export function PublicSearchBar({
 
         {/* Action buttons */}
         <div className="flex items-center gap-3">
-          {/* Search button - always visible when onSearch is provided (clubs page) */}
-          {!navigateOnSearch && onSearch && (
-            <Button 
-              type="submit" 
-              className="tm-search-button"
-            >
-              {t("common.search")}
-            </Button>
-          )}
-          
-          {/* Search button for hero (navigateOnSearch mode) */}
-          {navigateOnSearch && (
-            <Button 
-              type="submit" 
-              className="tm-search-button"
-              disabled={!isSearchValid}
-            >
-              {t("common.search")}
-            </Button>
-          )}
-
           {/* Reset button - always visible, disabled when no filters */}
           {!navigateOnSearch && (
             <Button
