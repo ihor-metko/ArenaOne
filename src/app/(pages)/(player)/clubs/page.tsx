@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useDeferredValue } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { IMLink, PageHeader } from "@/components/ui";
@@ -17,6 +17,11 @@ import "@/components/ClubsList.css";
  * server-side filtering with query parameters (search, city, indoor filter) that are
  * not supported by the basic store implementation. Public-facing pages with complex
  * filtering should continue using direct API calls for optimal performance.
+ * 
+ * The page uses useDeferredValue to prevent UI flickering during typing. When a user
+ * types in the search bar, the currentParams state updates immediately (to keep the
+ * input responsive), but the deferredParams lags behind. API calls are triggered only
+ * by deferredParams changes, ensuring smooth UX without rapid re-renders during typing.
  */
 
 interface ClubWithCounts {
@@ -65,6 +70,11 @@ export default function ClubsPage() {
     city: urlCity,
     indoor: urlIndoor,
   });
+
+  // Use deferred value to prevent UI flickering during typing
+  // The deferred value will lag behind the actual input, preventing
+  // rapid re-renders and API calls while the user is typing
+  const deferredParams = useDeferredValue(currentParams);
 
   // Use deferred loading to prevent flicker on fast responses
   const deferredLoading = useDeferredLoading(loading);
@@ -123,8 +133,13 @@ export default function ClubsPage() {
   useEffect(() => {
     const params = { q: urlQ, city: urlCity, indoor: urlIndoor };
     setCurrentParams(params);
-    fetchClubs(params);
-  }, [urlQ, urlCity, urlIndoor, fetchClubs]);
+  }, [urlQ, urlCity, urlIndoor]);
+
+  // Fetch clubs when deferred params change
+  // This ensures API calls only happen after input stabilizes
+  useEffect(() => {
+    fetchClubs(deferredParams);
+  }, [deferredParams, fetchClubs]);
 
   // Handle search from PublicSearchBar
   // Only updates URL - the useEffect below will handle the actual fetch
@@ -176,9 +191,9 @@ export default function ClubsPage() {
       ) : clubs.length === 0 ? (
         <div className="tm-clubs-empty">
           <p className="tm-clubs-empty-text">
-            {getEmptyStateMessage(currentParams.q, currentParams.city, currentParams.indoor ?? false, t)}
+            {getEmptyStateMessage(deferredParams.q, deferredParams.city, deferredParams.indoor ?? false, t)}
           </p>
-          {(currentParams.q || currentParams.city || currentParams.indoor) && (
+          {(deferredParams.q || deferredParams.city || deferredParams.indoor) && (
             <p className="tm-clubs-empty-suggestion text-gray-400 text-sm mt-2">
               {t("clubs.trySuggestion")}
             </p>
