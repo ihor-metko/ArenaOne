@@ -98,7 +98,7 @@ describe("GET /api/clubs/[id]", () => {
     const response = await GET(request, {
       params: Promise.resolve({ id: "club-empty" }),
     });
-    const data = await response.json();
+    await response.json();
 
     expect(response.status).toBe(200);
     // Courts and coaches are fetched separately
