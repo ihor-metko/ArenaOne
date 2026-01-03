@@ -46,13 +46,30 @@ export function PublicSearchBar({
   const router = useRouter();
   const [q, setQ] = useState(initialQ);
   const [city, setCity] = useState(initialCity);
-  
+
+  // Refs to preserve input focus
+  const qInputRef = useRef<HTMLInputElement>(null);
+  const cityInputRef = useRef<HTMLInputElement>(null);
+
+  // Track pending debounce timeout
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Track if we just performed a manual search action (submit or clear)
+  const manualActionRef = useRef(false);
+
+  // Helper to reset manual action flag after current render cycle
+  const resetManualActionFlag = useCallback(() => {
+    // Use setTimeout(0) to reset the flag after React's state updates complete
+    // This ensures the debounce effect doesn't trigger for state changes from manual actions
+    setTimeout(() => {
+      manualActionRef.current = false;
+    }, 0);
+  }, []);
+
   // Track if we're syncing from URL to prevent triggering debounced search
   const isSyncingFromUrl = useRef(false);
   // Track initial mount to distinguish from prop changes (for URL sync)
   const isInitialMount = useRef(true);
-  // Skip next debounce when we manually call onSearch (e.g., clear filters)
-  const skipNextDebounce = useRef(false);
 
   // Sync with URL changes (for back/forward navigation)
   useEffect(() => {
@@ -61,7 +78,7 @@ export function PublicSearchBar({
       isInitialMount.current = false;
       return;
     }
-    
+
     isSyncingFromUrl.current = true;
     setQ(initialQ);
     setCity(initialCity);
@@ -88,12 +105,21 @@ export function PublicSearchBar({
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Clear any pending debounced search
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+      debounceTimeoutRef.current = null;
+    }
+
+    // Mark that we're performing a manual action
+    manualActionRef.current = true;
+
     // Prevent submission if search is invalid (navigateOnSearch mode only)
     if (navigateOnSearch && !isSearchValid) {
       return;
     }
-    
+
     // Normalize inputs: trim whitespace
     const normalizedQ = q.trim();
     const normalizedCity = city.trim();
@@ -104,10 +130,21 @@ export function PublicSearchBar({
     } else if (onSearch) {
       onSearch(params);
     }
+
+    resetManualActionFlag();
   };
 
   // Handle clear - reset filters and trigger search/navigation
   const handleClear = () => {
+    // Clear any pending debounced search
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+      debounceTimeoutRef.current = null;
+    }
+
+    // Mark that we're performing a manual action
+    manualActionRef.current = true;
+
     setQ(DEFAULT_Q);
     setCity(DEFAULT_CITY);
     const defaultParams = { q: DEFAULT_Q, city: DEFAULT_CITY };
@@ -115,22 +152,19 @@ export function PublicSearchBar({
     if (navigateOnSearch) {
       router.push(buildSearchUrl(defaultParams));
     } else if (onSearch) {
-      // Skip next debounce since we're calling onSearch directly
-      skipNextDebounce.current = true;
       onSearch(defaultParams);
     }
+
+    resetManualActionFlag();
   };
 
   // Debounced live search for /clubs page (only when onSearch is provided and not navigating)
   useEffect(() => {
     // Don't trigger search if we're just syncing from URL
     if (!onSearch || navigateOnSearch || isSyncingFromUrl.current) return;
-    
-    // Skip if we just manually called onSearch (e.g., from handleClear)
-    if (skipNextDebounce.current) {
-      skipNextDebounce.current = false;
-      return;
-    }
+
+    // Don't trigger search if we just performed a manual action
+    if (manualActionRef.current) return;
 
     const handler = setTimeout(() => {
       // Normalize inputs: trim whitespace
@@ -139,8 +173,17 @@ export function PublicSearchBar({
       onSearch({ q: normalizedQ, city: normalizedCity });
     }, 500); // Increased from 300ms to 500ms for better debouncing
 
-    return () => clearTimeout(handler);
+    // Store the timeout ref so we can cancel it if needed
+    debounceTimeoutRef.current = handler;
+
+    return () => {
+      clearTimeout(handler);
+      if (debounceTimeoutRef.current === handler) {
+        debounceTimeoutRef.current = null;
+      }
+    };
   }, [q, city, onSearch, navigateOnSearch]);
+
   const hasFilters = q || city;
 
   return (
@@ -153,6 +196,7 @@ export function PublicSearchBar({
         {/* Name/address search */}
         <div className="flex-1">
           <Input
+            ref={qInputRef}
             type="text"
             placeholder={t("clubs.searchPlaceholder")}
             value={q}
@@ -165,6 +209,7 @@ export function PublicSearchBar({
         {/* City search */}
         <div className={compact ? "flex-1 sm:max-w-[180px]" : "flex-1 sm:max-w-[200px]"}>
           <Input
+            ref={cityInputRef}
             type="text"
             placeholder={t("clubs.cityPlaceholder")}
             value={city}
@@ -174,25 +219,15 @@ export function PublicSearchBar({
           />
         </div>
 
-        {/* Indoor filter and actions */}
-        <div className="flex items-center gap-4">
-          {/* Search button for hero (navigateOnSearch mode) */}
-          {navigateOnSearch && (
-            <Button 
-              type="submit" 
-              className="tm-search-button"
-              disabled={!isSearchValid}
-            >
-              {t("common.search")}
-            </Button>
-          )}
-
-          {/* Clear button when filters are active */}
-          {hasFilters && !navigateOnSearch && (
+        {/* Action buttons */}
+        <div className="flex items-center gap-3">
+          {/* Reset button - always visible, disabled when no filters */}
+          {!navigateOnSearch && (
             <Button
               type="button"
               variant="outline"
               onClick={handleClear}
+              disabled={!hasFilters}
               className="tm-clear-filters text-sm"
             >
               {t("clubs.clearFilters")}
