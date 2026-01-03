@@ -37,11 +37,9 @@ export default function CourtDetailPage({
   const [courtId, setCourtId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isToggleActiveModalOpen, setIsToggleActiveModalOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [isTogglingActive, setIsTogglingActive] = useState(false);
   const [isTogglingPublish, setIsTogglingPublish] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -168,44 +166,6 @@ export default function CourtDetailPage({
       setIsDeleteModalOpen(false);
     }
   };
-
-  const handleToggleActive = async () => {
-    if (!court) return;
-
-    setIsTogglingActive(true);
-    try {
-      const response = await fetch(`/api/admin/courts/${courtId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          isActive: !court.isActive,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to update court");
-      }
-
-      await fetchCourt();
-      setIsToggleActiveModalOpen(false);
-      showToast(
-        "success",
-        court.isActive
-          ? t("courts.courtDeactivatedSuccess")
-          : t("courts.courtActivatedSuccess")
-      );
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to save changes";
-      showToast("error", message);
-    } finally {
-      setIsTogglingActive(false);
-    }
-  };
-
-  const handleOpenToggleActiveModal = useCallback(() => {
-    setIsToggleActiveModalOpen(true);
-  }, []);
 
   const handleTogglePublish = async () => {
     if (!court) return;
@@ -366,32 +326,6 @@ export default function CourtDetailPage({
           <DangerZone actions={dangerActions} />
         </section>
       </div>
-
-      {/* Toggle Active/Inactive Confirmation Modal */}
-      <Modal
-        isOpen={isToggleActiveModalOpen}
-        onClose={() => setIsToggleActiveModalOpen(false)}
-        title={court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt")}
-      >
-        <p className="mb-4">
-          {court.isActive
-            ? t("dangerZone.deactivateCourtConfirm", { name: court.name })
-            : t("dangerZone.activateCourtConfirm", { name: court.name })
-          }
-        </p>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setIsToggleActiveModalOpen(false)}>
-            {t("common.cancel")}
-          </Button>
-          <Button
-            onClick={handleToggleActive}
-            disabled={isTogglingActive}
-            className={court.isActive ? "bg-red-500 hover:bg-red-600" : ""}
-          >
-            {isTogglingActive ? t("common.processing") : (court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt"))}
-          </Button>
-        </div>
-      </Modal>
 
       {/* Publish/Unpublish Confirmation Modal */}
       <Modal
