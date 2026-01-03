@@ -81,7 +81,7 @@ export async function GET(
       };
     });
 
-    return NextResponse.json({ courts: formattedCourts });
+    return NextResponse.json(formattedCourts);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error fetching courts:", error);

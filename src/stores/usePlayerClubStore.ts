@@ -389,8 +389,7 @@ export const usePlayerClubStore = create<PlayerClubState>((set, get) => ({
           throw new Error(data.error || `HTTP ${response.status}`);
         }
 
-        const data = await response.json();
-        const courts: PlayerClubCourt[] = data.courts || [];
+        const courts: PlayerClubCourt[] = await response.json();
 
         // Update courtsByClubId cache
         set((state) => {
