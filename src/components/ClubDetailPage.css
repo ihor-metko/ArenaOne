@@ -547,7 +547,6 @@
 
 .im-club-info-card-title {
   @apply text-lg font-bold mb-4 flex items-center gap-2;
-  color: var(--im-primary);
 }
 
 .im-club-info-card-title svg {
@@ -590,7 +589,7 @@
 }
 
 .im-club-contact-icon {
-  @apply w-5 h-5 flex-shrink-0 mt-0.5;
+  @apply w-4 h-4 flex-shrink-0 mt-0.5;
   color: var(--im-muted);
   transition: color 0.2s ease;
 }
