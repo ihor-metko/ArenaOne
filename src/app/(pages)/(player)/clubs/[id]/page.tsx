@@ -118,10 +118,10 @@ export default function ClubDetailPage({
   const ensureClubById = usePlayerClubStore((state) => state.ensureClubById);
   const ensureCourtsByClubId = usePlayerClubStore((state) => state.ensureCourtsByClubId);
   const ensureGalleryByClubId = usePlayerClubStore((state) => state.ensureGalleryByClubId);
-  
+
   // Get the club ID once - this is stable across renders once set
   const clubId = currentClub?.id;
-  
+
   // Subscribe to courts and gallery separately using the stable clubId
   // Use a memoized selector that only changes when clubId changes
   const rawCourts = usePlayerClubStore(
@@ -487,17 +487,6 @@ export default function ClubDetailPage({
         {user?.isRoot && (
           <div className="mb-4 text-right">
             <IMLink href={`/admin/courts?clubId=${club.id}`}>{t("clubs.adminCourts")}</IMLink>
-          </div>
-        )}
-
-        {/* Auth CTA for unauthenticated users */}
-        {!isAuthenticated && (
-          <div className="rsp-club-auth-cta">
-            <p className="rsp-club-auth-cta-text">
-              <IMLink href={`/auth/sign-in?redirectTo=${encodeURIComponent(pathname)}`} className="rsp-club-auth-cta-link">
-                {t("auth.signInToBook")}
-              </IMLink>
-            </p>
           </div>
         )}
 
