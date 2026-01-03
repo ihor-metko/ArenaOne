@@ -41,6 +41,20 @@ export async function initiateRealPaymentVerification(
     throw new Error("Payment account not found");
   }
 
+  // Get the user who initiated the verification for buyer context
+  const user = await prisma.user.findUnique({
+    where: { id: initiatedBy },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   // Decrypt credentials
   const merchantId = decrypt(account.merchantId);
   const secretKey = decrypt(account.secretKey);
@@ -68,7 +82,8 @@ export async function initiateRealPaymentVerification(
       merchantId,
       secretKey,
       orderReference,
-      verificationPayment.id
+      verificationPayment.id,
+      user
     );
   } else {
     throw new Error(`Unsupported payment provider: ${account.provider}`);
@@ -90,7 +105,11 @@ async function generateWayForPayCheckoutUrl(
   merchantAccount: string,
   secretKey: string,
   orderReference: string,
-  verificationPaymentId: string
+  verificationPaymentId: string,
+  user: {
+    name: string | null;
+    email: string;
+  }
 ): Promise<string> {
   const orderDate = Math.floor(Date.now() / 1000);
   const amount = (VERIFICATION_AMOUNT / 100).toString(); // Convert to major units (UAH)
@@ -101,6 +120,11 @@ async function generateWayForPayCheckoutUrl(
 
   // Get base URL for return/callback URLs
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+  // Parse user name into first and last name
+  const nameParts = user.name?.split(" ") || ["Verification", "User"];
+  const clientFirstName = nameParts[0] || "Verification";
+  const clientLastName = nameParts.slice(1).join(" ") || "User";
 
   // Generate signature for PURCHASE request
   // Signature string: merchantAccount;merchantDomainName;orderReference;orderDate;amount;currency;productName;productCount;productPrice
@@ -136,12 +160,11 @@ async function generateWayForPayCheckoutUrl(
     productPrice: [productPrice],
     merchantSignature: signature,
     apiVersion: 1,
-    // Buyer context fields for fraud prevention
-    // These are optional but recommended for better transaction tracking
-    clientFirstName: "Verification",
-    clientLastName: "User",
-    clientEmail: "verification@arenaone.com",
-    clientPhone: "380000000000",
+    // Buyer context fields using actual user data for better fraud prevention
+    clientFirstName,
+    clientLastName,
+    clientEmail: user.email,
+    clientPhone: "380000000000", // Default phone as User model doesn't have phone field
     // Return URLs
     returnUrl: `${baseUrl}/admin/payment-accounts/verification-return?id=${verificationPaymentId}`,
     serviceUrl: `${baseUrl}/api/webhooks/wayforpay/verification`,
