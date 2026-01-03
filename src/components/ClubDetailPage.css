@@ -220,30 +220,6 @@
   @apply flex-1 min-w-32;
 }
 
-/* ===== Auth CTA Banner ===== */
-.rsp-club-auth-cta {
-  @apply mb-6 p-4 rounded-lg border;
-  background-color: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-.dark .rsp-club-auth-cta {
-  background-color: rgba(59, 130, 246, 0.15);
-}
-
-.rsp-club-auth-cta-text {
-  @apply text-sm;
-  color: #2563eb;
-}
-
-.dark .rsp-club-auth-cta-text {
-  color: #93c5fd;
-}
-
-.rsp-club-auth-cta-link {
-  @apply font-semibold underline hover:no-underline;
-}
-
 /* ===== Courts Section ===== */
 .rsp-club-courts-section {
   @apply mt-8;
