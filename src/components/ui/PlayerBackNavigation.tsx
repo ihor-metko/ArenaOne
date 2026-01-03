@@ -43,10 +43,13 @@ export function PlayerBackNavigation({
   
   const handleClick = () => {
     // Check if there's browser history
+    // Note: window.history.length is not 100% reliable across all browsers,
+    // but it's the best client-side heuristic without complex state management.
+    // Most modern browsers support this well enough for a good UX.
     if (window.history.length > 1) {
       router.back();
     } else {
-      // No history, use fallback
+      // No history available, use fallback URL
       router.push(fallbackUrl);
     }
   };
