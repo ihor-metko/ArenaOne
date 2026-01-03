@@ -3,6 +3,9 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { PublicSearchBar } from "@/components/PublicSearchBar";
 
+// Timeout for waiting on deferred value updates
+const DEFERRED_UPDATE_TIMEOUT = 200;
+
 // Mock next-intl
 jest.mock("next-intl", () => ({
   useTranslations: () => (key: string) => {
@@ -66,7 +69,7 @@ describe("PublicSearchBar - Deferred Value Behavior", () => {
             city: "",
           })
         );
-      }, { timeout: 200 });
+      }, { timeout: DEFERRED_UPDATE_TIMEOUT });
     });
 
     it("should call onSearch with deferred city value", async () => {
@@ -86,7 +89,7 @@ describe("PublicSearchBar - Deferred Value Behavior", () => {
             city: "New York",
           })
         );
-      }, { timeout: 200 });
+      }, { timeout: DEFERRED_UPDATE_TIMEOUT });
     });
 
     it("should show typed value immediately in input (not deferred)", () => {
@@ -112,7 +115,7 @@ describe("PublicSearchBar - Deferred Value Behavior", () => {
           q: "",
           city: "",
         });
-      }, { timeout: 200 });
+      }, { timeout: DEFERRED_UPDATE_TIMEOUT });
     });
 
     it("should call onSearch when both q and city change", async () => {
@@ -134,7 +137,7 @@ describe("PublicSearchBar - Deferred Value Behavior", () => {
             city: "LA",
           })
         );
-      }, { timeout: 300 });
+      }, { timeout: DEFERRED_UPDATE_TIMEOUT + 100 });
     });
 
     it("should not call onSearch when navigateOnSearch is true", async () => {
@@ -147,7 +150,7 @@ describe("PublicSearchBar - Deferred Value Behavior", () => {
       fireEvent.change(nameInput, { target: { value: "Test" } });
 
       // Wait a bit to ensure no call happens
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, DEFERRED_UPDATE_TIMEOUT));
 
       // onSearch should not be called when navigateOnSearch is true
       expect(mockOnSearch).not.toHaveBeenCalled();
@@ -173,7 +176,7 @@ describe("PublicSearchBar - Deferred Value Behavior", () => {
           q: "",
           city: "",
         });
-      }, { timeout: 200 });
+      }, { timeout: DEFERRED_UPDATE_TIMEOUT });
     });
   });
 });

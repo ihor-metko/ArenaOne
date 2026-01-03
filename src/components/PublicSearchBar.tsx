@@ -67,7 +67,7 @@ export function PublicSearchBar({
   }, []);
 
   // Validation: require at least 2 characters in any field for search
-  // Use raw values for validation to enable button immediately when user types
+  // Use raw values (not deferred) to enable button state updates immediately as user types
   const isSearchValid = useMemo(() => {
     return q.trim().length >= MIN_SEARCH_LENGTH || city.trim().length >= MIN_SEARCH_LENGTH;
   }, [q, city]);
@@ -103,12 +103,11 @@ export function PublicSearchBar({
     }
   };
 
-  // Deferred live search for /clubs page (only when onSearch is provided and not navigating)
-  // Use deferred values to prevent UI flickering while typing
+  // Live search for /clubs page - use deferred values to prevent UI flickering
+  // Only triggers when onSearch is provided (not in navigate mode)
   useEffect(() => {
     if (!onSearch || navigateOnSearch) return;
 
-    // Trigger search based on deferred values
     onSearch({ q: deferredQ, city: deferredCity });
   }, [deferredQ, deferredCity, onSearch, navigateOnSearch]);
   const hasFilters = q || city;
