@@ -73,7 +73,9 @@ export default function ClubsPage() {
 
   // Use deferred value to prevent UI flickering during typing
   // The deferred value will lag behind the actual input, preventing
-  // rapid re-renders and API calls while the user is typing
+  // rapid API calls while the user is typing. The input itself remains
+  // responsive (using currentParams), but expensive operations like
+  // fetching use the deferred value for optimal performance.
   const deferredParams = useDeferredValue(currentParams);
 
   // Use deferred loading to prevent flicker on fast responses
@@ -177,6 +179,8 @@ export default function ClubsPage() {
       )}
 
       {/* Search bar with URL-driven values */}
+      {/* Note: Uses currentParams (not deferredParams) to keep input immediately responsive.
+          The deferred value is only used for API calls and result display. */}
       {!isInitialLoading && (
         <PublicSearchBar
           initialQ={currentParams.q}
