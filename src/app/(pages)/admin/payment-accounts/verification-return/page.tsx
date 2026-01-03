@@ -120,6 +120,7 @@ export default function VerificationReturnPage() {
       }
     };
   // Only depend on verificationPaymentId to prevent unnecessary re-creation of the polling interval
+  // t and other functions are excluded as they're stable across renders and shouldn't trigger polling restart
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verificationPaymentId]);
 
