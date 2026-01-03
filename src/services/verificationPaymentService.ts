@@ -131,12 +131,12 @@ async function generateWayForPayCheckoutUrl(
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   // Parse user name into first and last name components
-  // If user name is not available, use default verification client info
+  // If user name is not available or empty, use default verification client info
   let clientFirstName = DEFAULT_CLIENT_FIRST_NAME;
   let clientLastName = DEFAULT_CLIENT_LAST_NAME;
   
-  if (user.name) {
-    const nameParts = user.name.split(" ");
+  if (user.name && user.name.trim()) {
+    const nameParts = user.name.trim().split(/\s+/);
     clientFirstName = nameParts[0];
     clientLastName = nameParts.slice(1).join(" ") || DEFAULT_CLIENT_LAST_NAME;
   }
