@@ -151,9 +151,10 @@ export default function UnifiedPaymentAccountsPage() {
         }
         const clubData = await clubResponse.json();
 
+        const clubName = assignedClubName || t("admin.club");
         setClubAccounts([{
           clubId: clubId,
-          clubName: assignedClubName || t("admin.club"),
+          clubName: clubName,
           accounts: clubData.paymentAccounts || [],
           isExpanded: true,
         }]);
@@ -172,7 +173,8 @@ export default function UnifiedPaymentAccountsPage() {
     } finally {
       setLoading(false);
     }
-  }, [isOrgOwner, isClubAdmin, orgId, clubId, clubs, assignedClubName, t]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOrgOwner, isClubAdmin, orgId, clubId]);
 
   useEffect(() => {
     if ((orgId || clubId) && isLoggedIn && !isLoadingStore) {
@@ -517,7 +519,9 @@ export default function UnifiedPaymentAccountsPage() {
       clearTimeout(initialTimeout);
       clearInterval(pollInterval);
     };
-  }, [verificationPaymentId, isVerificationModalOpen, t, fetchAccounts]);
+  // fetchAccounts is intentionally not in dependencies to prevent polling restart on its recreation
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verificationPaymentId, isVerificationModalOpen, t]);
 
   if (isLoadingStore || (!orgId && !clubId)) {
     return <div className="im-loading">{t("common.loading")}</div>;
