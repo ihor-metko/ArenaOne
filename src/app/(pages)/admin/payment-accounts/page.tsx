@@ -64,8 +64,9 @@ export default function UnifiedPaymentAccountsPage() {
   const [verifyingAccountId, setVerifyingAccountId] = useState<string | null>(null);
   const [verificationPaymentId, setVerificationPaymentId] = useState<string | null>(null);
   
-  // Ref to prevent overlapping polling requests
+  // Refs to prevent overlapping polling requests and stop when completed
   const isPollingRef = useRef(false);
+  const shouldStopPollingRef = useRef(false);
 
   // Determine user role
   const isOrgAdmin = adminStatus?.adminType === "organization_admin";
@@ -460,6 +461,7 @@ export default function UnifiedPaymentAccountsPage() {
     setIsVerificationModalOpen(false);
     setVerificationCheckoutUrl(null);
     setVerificationPaymentId(null);
+    shouldStopPollingRef.current = false; // Reset for next verification
   };
 
   // Poll for verification payment status when modal is open
@@ -468,8 +470,12 @@ export default function UnifiedPaymentAccountsPage() {
       return;
     }
 
+    // Reset stop flag when starting new polling session
+    shouldStopPollingRef.current = false;
+
     const pollVerificationStatus = async () => {
-      if (isPollingRef.current) return; // Skip if already polling
+      // Skip if already polling or should stop
+      if (isPollingRef.current || shouldStopPollingRef.current) return;
       
       isPollingRef.current = true;
       try {
@@ -488,6 +494,9 @@ export default function UnifiedPaymentAccountsPage() {
 
         // Check if verification completed
         if (verificationPayment.status === "completed") {
+          // Stop polling
+          shouldStopPollingRef.current = true;
+          
           // Close modal and refresh accounts
           handleCloseVerificationModal();
           
@@ -500,6 +509,9 @@ export default function UnifiedPaymentAccountsPage() {
           // Refresh the accounts list
           await fetchAccounts();
         } else if (verificationPayment.status === "failed" || verificationPayment.status === "expired") {
+          // Stop polling
+          shouldStopPollingRef.current = true;
+          
           // Close modal and show error
           handleCloseVerificationModal();
           showToast(verificationPayment.errorMessage || t("paymentAccount.messages.verificationFailed"), "error");
@@ -524,9 +536,10 @@ export default function UnifiedPaymentAccountsPage() {
       clearTimeout(initialTimeout);
       clearInterval(pollInterval);
     };
-  // fetchAccounts is intentionally not in dependencies to prevent polling restart on its recreation
+  // Only depend on verificationPaymentId and isVerificationModalOpen
+  // fetchAccounts and t are intentionally excluded to prevent unnecessary effect re-runs
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [verificationPaymentId, isVerificationModalOpen, t]);
+  }, [verificationPaymentId, isVerificationModalOpen]);
 
   if (isLoadingStore || (!orgId && !clubId)) {
     return <div className="im-loading">{t("common.loading")}</div>;

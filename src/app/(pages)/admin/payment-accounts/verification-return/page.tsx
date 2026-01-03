@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Card, Button } from "@/components/ui";
@@ -25,7 +25,9 @@ export default function VerificationReturnPage() {
   
   const [status, setStatus] = useState<"loading" | "success" | "pending" | "failed">("loading");
   const [message, setMessage] = useState("");
-  const [pollingCount, setPollingCount] = useState(0);
+  const pollingCountRef = useRef(0);
+  const isPollingRef = useRef(false);
+  const shouldStopPollingRef = useRef(false);
   
   useEffect(() => {
     if (!verificationPaymentId) {
@@ -36,6 +38,11 @@ export default function VerificationReturnPage() {
 
     // Poll for verification payment status
     const pollStatus = async () => {
+      // Prevent overlapping requests
+      if (isPollingRef.current || shouldStopPollingRef.current) return;
+      
+      isPollingRef.current = true;
+      
       try {
         const response = await fetch(`/api/admin/verification-payments/${verificationPaymentId}`);
         
@@ -60,24 +67,30 @@ export default function VerificationReturnPage() {
             setStatus("failed");
             setMessage(verificationPayment.errorMessage || t("messages.verificationFailed"));
           }
+          shouldStopPollingRef.current = true;
         } else if (verificationPayment.status === "failed" || verificationPayment.status === "expired") {
           setStatus("failed");
           setMessage(verificationPayment.errorMessage || t("messages.verificationFailed"));
+          shouldStopPollingRef.current = true;
         } else if (verificationPayment.status === "pending") {
           // Still pending, continue polling
           setStatus("pending");
-          setPollingCount(prev => prev + 1);
+          pollingCountRef.current += 1;
           
           // Stop polling after maximum attempts
-          if (pollingCount >= MAX_POLLING_ATTEMPTS) {
+          if (pollingCountRef.current >= MAX_POLLING_ATTEMPTS) {
             setStatus("pending");
             setMessage("Verification is taking longer than expected. Please check back later.");
+            shouldStopPollingRef.current = true;
           }
         }
       } catch (error) {
         console.error("Error polling verification status:", error);
         setStatus("failed");
         setMessage(error instanceof Error ? error.message : "Failed to check verification status");
+        shouldStopPollingRef.current = true;
+      } finally {
+        isPollingRef.current = false;
       }
     };
 
@@ -86,16 +99,17 @@ export default function VerificationReturnPage() {
 
     // Set up polling interval
     const pollInterval = setInterval(() => {
-      if (status === "loading" || status === "pending") {
-        pollStatus();
-      }
+      pollStatus();
     }, POLLING_INTERVAL_MS);
 
     // Cleanup
     return () => {
       clearInterval(pollInterval);
     };
-  }, [verificationPaymentId, pollingCount, status, t]);
+  // Only depend on verificationPaymentId to prevent unnecessary re-creation of the polling interval
+  // t is intentionally excluded to prevent effect re-runs on translation changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verificationPaymentId]);
 
   const handleReturn = () => {
     router.push("/admin/payment-accounts");
@@ -124,7 +138,7 @@ export default function VerificationReturnPage() {
               </div>
               <h2 style={{ marginBottom: "1rem" }}>Waiting for Payment Confirmation...</h2>
               <p className="im-text-muted">
-                {pollingCount < MAX_POLLING_ATTEMPTS
+                {pollingCountRef.current < MAX_POLLING_ATTEMPTS
                   ? "Your payment is being processed. This may take a few moments."
                   : "Verification is taking longer than expected. The payment may have been completed but the confirmation is delayed. Please check your payment accounts page in a few minutes."}
               </p>
