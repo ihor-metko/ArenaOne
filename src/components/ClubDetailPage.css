@@ -546,8 +546,7 @@
 }
 
 .im-club-info-card-title {
-  @apply text-lg font-semibold mb-4 flex items-center gap-2;
-  color: var(--im-foreground);
+  @apply text-lg font-bold mb-4 flex items-center gap-2;
 }
 
 .im-club-info-card-title svg {
@@ -558,36 +557,75 @@
 
 /* Contact list using im-* variables */
 .im-club-contact-list {
-  @apply space-y-3;
+  @apply space-y-2;
 }
 
 .im-club-contact-item {
   @apply flex items-start gap-3;
+  transition: all 0.2s ease;
+  padding: 8px;
+  border-radius: 8px;
 }
 
-.im-club-contact-icon {
-  @apply w-5 h-5 flex-shrink-0 mt-0.5;
+/* Only add hover effect for items with clickable links */
+.im-club-contact-item:has(a) {
+  cursor: pointer;
+}
+
+.im-club-contact-item:has(a):hover {
+  background-color: var(--im-bg-tertiary);
+}
+
+.im-club-contact-item:has(a):hover .im-club-contact-icon {
   color: var(--im-primary);
 }
 
+.im-club-contact-item:has(a):hover .im-club-contact-label {
+  color: var(--im-primary);
+}
+
+.im-club-contact-item:has(a):hover .im-club-contact-value {
+  color: var(--im-primary);
+}
+
+.im-club-contact-icon {
+  @apply w-4 h-4 flex-shrink-0 mt-0.5;
+  color: var(--im-muted);
+  transition: color 0.2s ease;
+}
+
 .im-club-contact-label {
-  @apply text-xs uppercase tracking-wide font-medium block;
-  color: var(--im-foreground);
-  opacity: 0.6;
+  @apply text-xs uppercase tracking-wide font-medium block mb-1;
+  color: var(--im-muted);
+  transition: color 0.2s ease;
 }
 
 .im-club-contact-value {
   @apply text-sm;
   color: var(--im-foreground);
+  transition: color 0.2s ease;
 }
 
 .im-club-contact-link {
-  color: var(--im-primary);
-  @apply hover:underline transition-colors;
+  color: var(--im-foreground);
+  @apply transition-colors;
+  text-decoration: none;
 }
 
 .im-club-contact-link:hover {
-  color: var(--im-primary-hover);
+  color: var(--im-primary);
+  text-decoration: underline;
+}
+
+/* Mobile responsiveness for contact icons */
+@media (max-width: 768px) {
+  .im-club-contact-icon {
+    @apply w-4 h-4;
+  }
+
+  .im-club-contact-value {
+    @apply text-xs;
+  }
 }
 
 /* Business hours using im-* variables */
