@@ -213,7 +213,7 @@
 
 /* ===== Quick Actions Bar ===== */
 .rsp-club-actions-bar {
-  @apply flex flex-wrap gap-3 mb-6;
+  @apply flex flex-wrap gap-3;
 }
 
 .rsp-club-action-button {
