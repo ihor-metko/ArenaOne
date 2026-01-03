@@ -565,7 +565,7 @@ export default function UnifiedPaymentAccountsPage() {
       }
     };
   // Only depend on verificationPaymentId and isVerificationModalOpen
-  // fetchAccounts and t are intentionally excluded to prevent unnecessary effect re-runs
+  // fetchAccounts is intentionally excluded to prevent unnecessary effect re-runs
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verificationPaymentId, isVerificationModalOpen]);
 

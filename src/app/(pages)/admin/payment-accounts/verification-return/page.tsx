@@ -131,7 +131,6 @@ export default function VerificationReturnPage() {
       }
     };
   // Only depend on verificationPaymentId to prevent unnecessary re-creation of the polling interval
-  // t is intentionally excluded to prevent effect re-runs on translation changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [verificationPaymentId]);
 
