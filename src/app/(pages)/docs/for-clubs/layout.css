@@ -5,13 +5,13 @@
   @apply min-h-screen flex flex-col;
   background-color: var(--im-bg-primary);
   color: var(--im-text-primary);
+  overflow: auto;
 }
 
 /* Container for sidebar and content */
 .im-docs-container {
   @apply flex flex-1;
   width: 100%;
-  overflow: hidden;
 }
 
 /* Content Area */
