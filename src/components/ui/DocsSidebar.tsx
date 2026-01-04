@@ -14,11 +14,18 @@ export interface DocsSidebarGroup {
   items: DocsSidebarItem[];
 }
 
-export interface DocsSidebarProps {
-  items?: DocsSidebarItem[];
-  groups?: DocsSidebarGroup[];
-  currentPath: string;
-}
+// Make props mutually exclusive using union types
+type DocsSidebarProps = 
+  | {
+      items: DocsSidebarItem[];
+      groups?: never;
+      currentPath: string;
+    }
+  | {
+      items?: never;
+      groups: DocsSidebarGroup[];
+      currentPath: string;
+    };
 
 export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
   const t = useTranslations("docs.sidebar");
@@ -26,8 +33,8 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
   return (
     <aside className="im-docs-sidebar">
       <nav className="im-docs-sidebar-nav" aria-label="Documentation navigation">
-        {/* Flat list (backward compatible) */}
-        {items && !groups && (
+        {/* Flat list */}
+        {items && (
           <div className="im-docs-sidebar-section">
             <h3 className="im-docs-sidebar-title">{t("title")}</h3>
             <ul className="im-docs-sidebar-list">
