@@ -177,30 +177,29 @@ export function PaymentAccountStepper({
     setError(null);
 
     try {
-      // Submit the form
+      // Submit the form - the API will automatically trigger verification
       await onSubmit(formData);
       
       // Move to verification step
       setCurrentStep(4);
       setVerificationState({ status: "verifying", message: t("verification.checking") });
       
-      // Simulate verification polling (in real scenario, this would poll the API)
-      // For now, we'll set it to success after a short delay
+      // The backend automatically triggers verification after creation
+      // For now, we'll show success after a delay to simulate the verification process
+      // In production, this could poll the API to check verification status
       setTimeout(() => {
         setVerificationState({ 
           status: "success", 
           message: t("verification.success") 
         });
-        
-        if (onVerificationComplete && createdAccountId) {
-          onVerificationComplete(createdAccountId);
-        }
-      }, 2000);
+      }, 3000);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t("verification.error");
       setError(errorMessage);
       setVerificationState({ status: "error", message: errorMessage });
+      // Stay on step 4 to show the error
+      setCurrentStep(4);
     } finally {
       setIsSubmitting(false);
     }
