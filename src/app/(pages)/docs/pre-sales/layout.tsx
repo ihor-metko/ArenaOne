@@ -24,14 +24,14 @@ export default function PreSalesDocsLayout({
   const breadcrumbs = [];
   breadcrumbs.push({ label: t("breadcrumbs.docs"), href: "/docs/for-clubs" });
   breadcrumbs.push({ label: t("breadcrumbs.preSales"), href: "/docs/pre-sales" });
-  
+
   if (currentRole) {
     const roleKey = currentRole.replace(/-/g, '');
     breadcrumbs.push({
       label: t(`breadcrumbs.${roleKey}`),
       href: `/docs/pre-sales/${currentRole}`,
     });
-    
+
     // Add page-specific breadcrumb if we're on a specific page
     const pageMatch = pathname.match(/\/docs\/pre-sales\/[^/]+\/([^/]+)/);
     if (pageMatch) {
@@ -39,7 +39,6 @@ export default function PreSalesDocsLayout({
     }
   }
 
-  // Define all role groups for sidebar
   const sidebarGroups = [
     {
       title: t("breadcrumbs.player"),
@@ -51,28 +50,11 @@ export default function PreSalesDocsLayout({
       ],
     },
     {
-      title: t("breadcrumbs.clubadmin"),
+      title: t("breadcrumbs.rootadmin"),
       items: [
-        { title: t("clubadmin.edit-club"), href: "/docs/pre-sales/club-admin/edit-club" },
-        { title: t("clubadmin.crud-courts"), href: "/docs/pre-sales/club-admin/crud-courts" },
-        { title: t("clubadmin.working-hours"), href: "/docs/pre-sales/club-admin/working-hours" },
-        { title: t("clubadmin.bookings-overview"), href: "/docs/pre-sales/club-admin/bookings-overview" },
-      ],
-    },
-    {
-      title: t("breadcrumbs.clubowner"),
-      items: [
-        { title: t("clubowner.crud-courts"), href: "/docs/pre-sales/club-owner/crud-courts" },
-        { title: t("clubowner.working-hours"), href: "/docs/pre-sales/club-owner/working-hours" },
-        { title: t("clubowner.bookings-overview"), href: "/docs/pre-sales/club-owner/bookings-overview" },
-      ],
-    },
-    {
-      title: t("breadcrumbs.orgadmin"),
-      items: [
-        { title: t("orgadmin.manage-organization"), href: "/docs/pre-sales/org-admin/manage-organization" },
-        { title: t("orgadmin.edit-settings"), href: "/docs/pre-sales/org-admin/edit-settings" },
-        { title: t("orgadmin.view-clubs"), href: "/docs/pre-sales/org-admin/view-clubs" },
+        { title: t("rootadmin.overview"), href: "/docs/pre-sales/root-admin/overview" },
+        { title: t("rootadmin.create-organization"), href: "/docs/pre-sales/root-admin/create-organization" },
+        { title: t("rootadmin.view-org-admins"), href: "/docs/pre-sales/root-admin/view-org-admins" },
       ],
     },
     {
@@ -84,11 +66,28 @@ export default function PreSalesDocsLayout({
       ],
     },
     {
-      title: t("breadcrumbs.rootadmin"),
+      title: t("breadcrumbs.orgadmin"),
       items: [
-        { title: t("rootadmin.overview"), href: "/docs/pre-sales/root-admin/overview" },
-        { title: t("rootadmin.create-organization"), href: "/docs/pre-sales/root-admin/create-organization" },
-        { title: t("rootadmin.view-org-admins"), href: "/docs/pre-sales/root-admin/view-org-admins" },
+        { title: t("orgadmin.manage-organization"), href: "/docs/pre-sales/org-admin/manage-organization" },
+        { title: t("orgadmin.edit-settings"), href: "/docs/pre-sales/org-admin/edit-settings" },
+        { title: t("orgadmin.view-clubs"), href: "/docs/pre-sales/org-admin/view-clubs" },
+      ],
+    },
+    {
+      title: t("breadcrumbs.clubowner"),
+      items: [
+        { title: t("clubowner.crud-courts"), href: "/docs/pre-sales/club-owner/crud-courts" },
+        { title: t("clubowner.working-hours"), href: "/docs/pre-sales/club-owner/working-hours" },
+        { title: t("clubowner.bookings-overview"), href: "/docs/pre-sales/club-owner/bookings-overview" },
+      ],
+    },
+    {
+      title: t("breadcrumbs.clubadmin"),
+      items: [
+        { title: t("clubadmin.edit-club"), href: "/docs/pre-sales/club-admin/edit-club" },
+        { title: t("clubadmin.crud-courts"), href: "/docs/pre-sales/club-admin/crud-courts" },
+        { title: t("clubadmin.working-hours"), href: "/docs/pre-sales/club-admin/working-hours" },
+        { title: t("clubadmin.bookings-overview"), href: "/docs/pre-sales/club-admin/bookings-overview" },
       ],
     },
   ];

@@ -16,31 +16,39 @@ export interface DocsSidebarGroup {
   defaultOpen?: boolean;
 }
 
-export interface DocsSidebarProps {
-  items?: DocsSidebarItem[];
-  groups?: DocsSidebarGroup[];
+// Make props mutually exclusive using union types
+type DocsSidebarProps = {
   currentPath: string;
-}
+} & (
+    | {
+      items: DocsSidebarItem[];
+      groups?: never;
+    }
+    | {
+      items?: never;
+      groups: DocsSidebarGroup[];
+    }
+  );
 
 export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
   const t = useTranslations("docs.sidebar");
-  
+
   // Helper to generate valid HTML IDs from group titles
   const sanitizeId = (title: string): string => {
     const sanitized = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     // Ensure we always return a non-empty string with a prefix
     return sanitized || 'group';
   };
-  
+
   // Helper to check if a path is within a group (exact match or sub-path)
   const isPathInGroup = (currentPath: string, itemPath: string): boolean => {
     return currentPath === itemPath || currentPath.startsWith(itemPath + '/');
   };
-  
+
   // Track which groups are expanded
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
     if (!groups) return new Set();
-    
+
     // Initially expand groups that contain the current path
     const initialExpanded = new Set<string>();
     groups.forEach((group) => {
@@ -78,9 +86,8 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
                   <li key={item.href} className="im-docs-sidebar-item">
                     <IMLink
                       href={item.href}
-                      className={`im-docs-sidebar-link ${
-                        isActive ? "im-docs-sidebar-link--active" : ""
-                      }`}
+                      className={`im-docs-sidebar-link ${isActive ? "im-docs-sidebar-link--active" : ""
+                        }`}
                       aria-current={isActive ? "page" : undefined}
                     >
                       {item.title}
@@ -110,22 +117,20 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
             const isExpanded = expandedGroups.has(group.title);
             const hasActivePath = group.items.some((item) => isPathInGroup(currentPath, item.href));
             const groupId = sanitizeId(group.title);
-            
+
             return (
               <div key={group.title} className="im-docs-sidebar-group">
                 <button
-                  className={`im-docs-sidebar-group-header ${
-                    hasActivePath ? "im-docs-sidebar-group-header--active" : ""
-                  }`}
+                  className={`im-docs-sidebar-group-header ${hasActivePath ? "im-docs-sidebar-group-header--active" : ""
+                    }`}
                   onClick={() => toggleGroup(group.title)}
                   aria-expanded={isExpanded}
                   aria-controls={`group-${groupId}`}
                 >
                   <span className="im-docs-sidebar-group-title">{group.title}</span>
                   <svg
-                    className={`im-docs-sidebar-group-icon ${
-                      isExpanded ? "im-docs-sidebar-group-icon--expanded" : ""
-                    }`}
+                    className={`im-docs-sidebar-group-icon ${isExpanded ? "im-docs-sidebar-group-icon--expanded" : ""
+                      }`}
                     width="16"
                     height="16"
                     viewBox="0 0 16 16"
@@ -153,9 +158,8 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
                         <li key={item.href} className="im-docs-sidebar-item">
                           <IMLink
                             href={item.href}
-                            className={`im-docs-sidebar-link ${
-                              isActive ? "im-docs-sidebar-link--active" : ""
-                            }`}
+                            className={`im-docs-sidebar-link ${isActive ? "im-docs-sidebar-link--active" : ""
+                              }`}
                             aria-current={isActive ? "page" : undefined}
                           >
                             {item.title}
