@@ -41,8 +41,3 @@
   @apply text-base leading-relaxed;
   color: var(--im-text-secondary);
 }
-
-/* Placeholder for future sidebar navigation */
-.im-docs-sidebar-placeholder {
-  /* Reserved for future sidebar implementation */
-}
