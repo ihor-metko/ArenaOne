@@ -3,7 +3,7 @@
 import { useState } from "react";
 import "./DocsScreenshot.css";
 
-export type UserRole = "root-admin" | "org-owner" | "org-admin" | "club-owner" | "club-admin";
+export type UserRole = "root-admin" | "org-owner" | "org-admin" | "club-owner" | "club-admin" | "player";
 
 export interface DocsImagePlaceholderProps {
   /** User role for the screenshot */
@@ -16,6 +16,8 @@ export interface DocsImagePlaceholderProps {
   caption?: string;
   /** Additional CSS classes */
   className?: string;
+  /** Image format extension (defaults to png) */
+  format?: "png" | "webp";
 }
 
 /**
@@ -38,11 +40,12 @@ export function DocsImagePlaceholder({
   alt,
   caption,
   className = "",
+  format = "png",
 }: DocsImagePlaceholderProps) {
   const [imageLoadError, setImageLoadError] = useState(false);
   
   // Generate the image path based on role and step
-  const imagePath = `/Storage/docs-screenshots/${role}/${step}.png`;
+  const imagePath = `/Storage/docs-screenshots/${role}/${step}.${format}`;
 
   return (
     <figure className={`im-docs-screenshot ${className}`.trim()}>

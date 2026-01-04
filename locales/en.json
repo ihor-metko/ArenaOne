@@ -4382,6 +4382,10 @@
             "confirmation": {
               "name": "Booking Confirmation",
               "description": "Review and confirm booking details before finalizing the reservation."
+            },
+            "flow": {
+              "name": "Complete Player Flow",
+              "description": "Step-by-step guide through the complete player booking journey."
             }
           }
         },
@@ -4509,6 +4513,111 @@
           "cta": {
             "text": "Back to Player Overview",
             "href": "/docs/pre-sales/player/overview"
+          }
+        },
+        "flow": {
+          "title": "Player Flow",
+          "metaTitle": "Player Flow - Player Documentation",
+          "metaDescription": "Complete guide to the player booking experience.",
+          "intro": {
+            "title": "Player Booking Journey",
+            "content": "Discover clubs, view availability, authenticate, and complete your booking in a seamless flow."
+          },
+          "step1": {
+            "title": "1️⃣ Discover Clubs",
+            "description": "Browse and search for padel clubs in your area.",
+            "screenshot": {
+              "alt": "Clubs discovery page",
+              "caption": "Browse available clubs"
+            }
+          },
+          "step2": {
+            "title": "2️⃣ Club Details",
+            "description": "View club information, courts, facilities, and amenities.",
+            "screenshot": {
+              "alt": "Club details page",
+              "caption": "Detailed club overview"
+            }
+          },
+          "step3": {
+            "title": "3️⃣ Availability & Calendar Booking",
+            "description": "Check court availability and select your preferred time slot.",
+            "screenshot": {
+              "alt": "Calendar booking view",
+              "caption": "Select date and time for your booking"
+            }
+          },
+          "step4": {
+            "title": "4️⃣ Authentication Required (Auth Gate)",
+            "description": "Sign in or register to continue with your booking.",
+            "screenshot": {
+              "alt": "Login required modal",
+              "caption": "Authentication gate modal"
+            }
+          },
+          "step5": {
+            "title": "5️⃣ Login / Register",
+            "description": "Create an account or sign in with email or Google.",
+            "screenshot": {
+              "alt": "Login page",
+              "caption": "Sign in or register"
+            },
+            "note": "Quick sign-in with email or Google authentication."
+          },
+          "step6": {
+            "title": "6️⃣ Booking Success",
+            "description": "Receive confirmation and booking details.",
+            "screenshot": {
+              "alt": "Booking confirmation",
+              "caption": "Successful booking confirmation"
+            }
+          },
+          "quickBooking": {
+            "title": "⚡ Quick Booking",
+            "callout": {
+              "title": "Fast Track Booking",
+              "content": "Quick booking allows you to reserve a court in just 4 simple steps."
+            },
+            "step1": {
+              "title": "Date & Time",
+              "description": "Select your preferred date and time for the booking.",
+              "screenshot": {
+                "alt": "Quick booking date and time selection",
+                "caption": "Choose date and time"
+              }
+            },
+            "step2": {
+              "title": "Court Selection",
+              "description": "Choose from available courts based on your preferences.",
+              "screenshot": {
+                "alt": "Quick booking court selection",
+                "caption": "Select your preferred court"
+              }
+            },
+            "step3": {
+              "title": "Payment",
+              "description": "Complete payment for your booking.",
+              "screenshot": {
+                "alt": "Quick booking payment",
+                "caption": "Secure payment processing"
+              }
+            },
+            "step4": {
+              "title": "Success",
+              "description": "Your booking is confirmed and ready!",
+              "screenshot": {
+                "alt": "Quick booking success",
+                "caption": "Booking confirmed successfully"
+              }
+            }
+          },
+          "account": {
+            "title": "👤 Player Account",
+            "description": "View and manage all your upcoming and past bookings in one place.",
+            "screenshot": {
+              "alt": "Player account bookings list",
+              "caption": "Manage your bookings"
+            }
           }
         }
       }
