@@ -19,6 +19,7 @@ import {
   DocsRoleCard,
   DocsRoleGrid,
   DocsFeatureList,
+  DocsSteps,
 } from "@/components/ui/docs";
 ```
 
@@ -115,6 +116,29 @@ Specialized list component for displaying product features with icons.
     "Multi-club management"
   ]}
   icon="✓"
+/>
+```
+
+### DocsSteps
+
+Visually enhanced component for displaying step-by-step instructions with numbered steps.
+
+```tsx
+<DocsSteps
+  steps={[
+    {
+      title: "Sign Up",
+      description: "Create your account with email and password"
+    },
+    {
+      title: "Configure Settings",
+      description: "Set up your club preferences and working hours"
+    },
+    {
+      title: "Go Live",
+      description: "Publish your club and start accepting bookings"
+    }
+  ]}
 />
 ```
 

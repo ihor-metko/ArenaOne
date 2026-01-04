@@ -44,3 +44,6 @@ export type { DocsRoleGridProps } from "../DocsRoleGrid";
 
 export { DocsFeatureList } from "../DocsFeatureList";
 export type { DocsFeatureListProps } from "../DocsFeatureList";
+
+export { DocsSteps } from "../DocsSteps";
+export type { DocsStepsProps, DocsStep } from "../DocsSteps";
