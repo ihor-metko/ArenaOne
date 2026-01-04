@@ -675,11 +675,6 @@ export default function UnifiedPaymentAccountsPage() {
         onSubmit={handleFormSubmit}
         account={selectedAccount}
         mode={formMode}
-        scope={selectedScope}
-        onVerificationComplete={(accountId) => {
-          console.log("Verification complete for account:", accountId);
-          fetchAccounts();
-        }}
       />
 
       <ConfirmationModal

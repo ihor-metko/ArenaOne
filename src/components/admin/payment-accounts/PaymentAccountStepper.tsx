@@ -13,8 +13,6 @@ interface PaymentAccountStepperProps {
   onSubmit: (data: PaymentAccountFormData) => Promise<void>;
   account?: MaskedPaymentAccount | null;
   mode: "add" | "edit";
-  scope: "ORGANIZATION" | "CLUB";
-  onVerificationComplete?: (accountId: string) => void;
 }
 
 export interface PaymentAccountFormData {
@@ -149,11 +147,11 @@ export function PaymentAccountStepper({
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      if (currentStep < 4) {
-        setCurrentStep(currentStep + 1);
-      } else if (currentStep === 3) {
+      if (currentStep === 3) {
         // Submit and move to verification
         handleSubmitAndVerify();
+      } else if (currentStep < 4) {
+        setCurrentStep(currentStep + 1);
       }
     }
   };
@@ -180,9 +178,10 @@ export function PaymentAccountStepper({
       setCurrentStep(4);
       setVerificationState({ status: "verifying", message: t("verification.checking") });
       
-      // The backend automatically triggers verification after creation
-      // For now, we'll show success after a delay to simulate the verification process
-      // In production, this could poll the API to check verification status
+      // The backend automatically triggers verification after creation/update
+      // Since the API returns immediately after submission, we show a verifying state
+      // The actual verification happens asynchronously on the backend
+      // The parent component will refresh the list which will show the updated status
       setTimeout(() => {
         setVerificationState({ 
           status: "success", 
