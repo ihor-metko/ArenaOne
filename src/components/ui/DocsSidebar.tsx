@@ -25,6 +25,11 @@ export interface DocsSidebarProps {
 export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
   const t = useTranslations("docs.sidebar");
   
+  // Helper to generate valid HTML IDs from group titles
+  const sanitizeId = (title: string): string => {
+    return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  };
+  
   // Track which groups are expanded
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
     if (!groups) return new Set();
@@ -83,6 +88,11 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
     );
   }
 
+  // If no items or groups provided, return null
+  if (!groups || groups.length === 0) {
+    return null;
+  }
+
   // Enhanced sidebar with grouped items
   return (
     <aside className="im-docs-sidebar">
@@ -92,6 +102,7 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
           {groups?.map((group) => {
             const isExpanded = expandedGroups.has(group.title);
             const hasActivePath = group.items.some((item) => currentPath.startsWith(item.href));
+            const groupId = sanitizeId(group.title);
             
             return (
               <div key={group.title} className="im-docs-sidebar-group">
@@ -101,7 +112,7 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
                   }`}
                   onClick={() => toggleGroup(group.title)}
                   aria-expanded={isExpanded}
-                  aria-controls={`group-${group.title}`}
+                  aria-controls={`group-${groupId}`}
                 >
                   <span className="im-docs-sidebar-group-title">{group.title}</span>
                   <svg
@@ -126,7 +137,7 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
                 </button>
                 {isExpanded && (
                   <ul
-                    id={`group-${group.title}`}
+                    id={`group-${groupId}`}
                     className="im-docs-sidebar-list im-docs-sidebar-group-list"
                   >
                     {group.items.map((item) => {
