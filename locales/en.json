@@ -3552,7 +3552,8 @@
           "overview": "Overview",
           "quick-booking": "Quick Booking",
           "calendar": "Calendar",
-          "confirmation": "Confirmation"
+          "confirmation": "Confirmation",
+          "flow": "Player Flow"
         }
       },
       "rootAdmin": {

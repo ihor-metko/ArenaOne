@@ -44,6 +44,7 @@ export default function PreSalesDocsLayout({
       title: t("breadcrumbs.player"),
       items: [
         { title: t("player.overview"), href: "/docs/pre-sales/player/overview" },
+        { title: t("player.flow"), href: "/docs/pre-sales/player/flow" },
         { title: t("player.quick-booking"), href: "/docs/pre-sales/player/quick-booking" },
         { title: t("player.calendar"), href: "/docs/pre-sales/player/calendar" },
         { title: t("player.confirmation"), href: "/docs/pre-sales/player/confirmation" },

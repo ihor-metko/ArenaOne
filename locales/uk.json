@@ -3486,7 +3486,8 @@
           "overview": "Огляд",
           "quick-booking": "Швидке бронювання",
           "calendar": "Календар",
-          "confirmation": "Підтвердження"
+          "confirmation": "Підтвердження",
+          "flow": "Потік гравця"
         }
       },
       "rootAdmin": {
