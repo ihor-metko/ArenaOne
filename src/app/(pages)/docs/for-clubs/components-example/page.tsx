@@ -1,9 +1,12 @@
 import { Metadata } from "next";
 import { DocsPage } from "@/components/ui/DocsPage";
 import { DocsSection } from "@/components/ui/DocsSection";
+import { DocsSubsection } from "@/components/ui/DocsSubsection";
 import { DocsList } from "@/components/ui/DocsList";
 import { DocsNote } from "@/components/ui/DocsNote";
 import { DocsCTA } from "@/components/ui/DocsCTA";
+import { DocsScreenshot } from "@/components/ui/DocsScreenshot";
+import { DocsCallout } from "@/components/ui/DocsCallout";
 
 export const metadata: Metadata = {
   title: "Components Example - ArenaOne Documentation",
@@ -78,6 +81,28 @@ export default function ComponentsExamplePage() {
           When using these components, make sure to import them from @/components/ui to ensure
           proper tree-shaking and code splitting. Do not copy components to other locations.
         </DocsNote>
+
+        <DocsNote type="success">
+          You&apos;ve successfully set up the documentation components! They&apos;re ready to use.
+        </DocsNote>
+      </DocsSection>
+
+      <DocsSection title="Visual Elements">
+        <DocsSubsection title="Screenshots">
+          <p>Use DocsScreenshot to add visual examples with captions:</p>
+          <DocsScreenshot 
+            alt="Dashboard overview showing key metrics"
+            caption="Example placeholder - actual screenshot to be added"
+          />
+        </DocsSubsection>
+
+        <DocsSubsection title="Callouts">
+          <p>Highlight key benefits or important information:</p>
+          <DocsCallout title="Why This Matters">
+            Using consistent documentation components ensures a professional appearance
+            and makes it easier for users to navigate and understand your content.
+          </DocsCallout>
+        </DocsSubsection>
       </DocsSection>
 
       <DocsSection title="Component List">
@@ -85,8 +110,11 @@ export default function ComponentsExamplePage() {
         <DocsList type="bulleted">
           <li><strong>DocsPage</strong> - Main wrapper with title and optional sidebar</li>
           <li><strong>DocsSection</strong> - Section container with title and content</li>
+          <li><strong>DocsSubsection</strong> - Subsection for better content hierarchy</li>
           <li><strong>DocsList</strong> - Bulleted or numbered lists</li>
-          <li><strong>DocsNote</strong> - Highlighted note boxes (info/warning)</li>
+          <li><strong>DocsNote</strong> - Highlighted note boxes (info/warning/success)</li>
+          <li><strong>DocsCallout</strong> - Emphasized callout boxes for key points</li>
+          <li><strong>DocsScreenshot</strong> - Screenshot display with placeholder support</li>
           <li><strong>DocsCTA</strong> - Call-to-action buttons with links</li>
         </DocsList>
       </DocsSection>
