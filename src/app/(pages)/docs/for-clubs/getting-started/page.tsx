@@ -97,7 +97,7 @@ export default async function GettingStartedPage() {
           <DocsCTA href="/auth/sign-up">
             {t("docs.createOrganization")}
           </DocsCTA>
-          <DocsCTA href="#">
+          <DocsCTA href="/contact">
             {t("docs.requestAccess")}
           </DocsCTA>
         </div>

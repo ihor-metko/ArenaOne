@@ -241,9 +241,7 @@
     "signingInWithGoogle": "Signing in with Google...",
     "orContinueWith": "Or continue with",
     "runningPadelClub": "Running a padel club?",
-    "learnHowPlatformWorks": "Learn how the platform works for club owners",
-    "runningPadelClubUA": "Керуєте падел-клубом?",
-    "learnHowPlatformWorksUA": "Дізнайтесь, як платформа працює для власників"
+    "learnHowPlatformWorks": "Learn how the platform works for club owners"
   },
   "invites": {
     "errorTitle": "Invitation Error",
