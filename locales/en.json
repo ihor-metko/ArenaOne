@@ -3466,6 +3466,235 @@
         "demoMode": "Demo Mode",
         "resetDemo": "Reset Demo"
       }
+    },
+    "preSales": {
+      "index": {
+        "title": "Pre-Sales Documentation",
+        "metaTitle": "Pre-Sales Documentation - ArenaOne",
+        "metaDescription": "Visual documentation for potential padel club owners exploring ArenaOne platform capabilities.",
+        "overview": {
+          "title": "Welcome to ArenaOne Pre-Sales Documentation",
+          "description": "This documentation provides a comprehensive overview of ArenaOne's capabilities for different user roles. Select a role below to explore the relevant features and workflows."
+        },
+        "selectRole": {
+          "title": "Select Your Role",
+          "description": "Choose a role to see the documentation relevant to your responsibilities:"
+        },
+        "roles": {
+          "rootAdmin": {
+            "name": "Root Admin",
+            "description": "Platform-level administrator with full system access and organization management capabilities."
+          },
+          "orgOwner": {
+            "name": "Organization Owner",
+            "description": "Owner of a padel organization who can create clubs and manage organization administrators."
+          },
+          "orgAdmin": {
+            "name": "Organization Admin",
+            "description": "Administrator managing organization settings, clubs, and operational oversight."
+          },
+          "clubOwner": {
+            "name": "Club Owner",
+            "description": "Owner of a padel club with full control over courts, schedules, and bookings."
+          },
+          "clubAdmin": {
+            "name": "Club Admin",
+            "description": "Administrator managing day-to-day club operations, courts, and schedules."
+          }
+        }
+      },
+      "sidebar": {
+        "overview": "Overview",
+        "breadcrumbs": {
+          "docs": "Documentation",
+          "preSales": "Pre-Sales",
+          "rootadmin": "Root Admin",
+          "orgowner": "Org Owner",
+          "orgadmin": "Org Admin",
+          "clubowner": "Club Owner",
+          "clubadmin": "Club Admin"
+        },
+        "rootadmin": {
+          "overview": "Overview",
+          "create-organization": "Create Organization",
+          "view-org-admins": "View Org Admins"
+        },
+        "orgowner": {
+          "create-club": "Create Club",
+          "add-org-admin": "Add Org Admin",
+          "access-control": "Access Control"
+        },
+        "orgadmin": {
+          "manage-organization": "Manage Organization",
+          "edit-settings": "Edit Settings",
+          "view-clubs": "View Clubs"
+        },
+        "clubowner": {
+          "crud-courts": "Manage Courts",
+          "working-hours": "Working Hours",
+          "bookings-overview": "Bookings Overview"
+        },
+        "clubadmin": {
+          "edit-club": "Edit Club",
+          "crud-courts": "Manage Courts",
+          "working-hours": "Working Hours",
+          "bookings-overview": "Bookings Overview"
+        }
+      },
+      "rootAdmin": {
+        "overview": {
+          "title": "Root Admin Overview",
+          "metaTitle": "Root Admin Overview - Pre-Sales Documentation",
+          "metaDescription": "Learn about Root Admin capabilities in ArenaOne platform.",
+          "section1": {
+            "title": "What is a Root Admin?",
+            "content": "Root Admins have the highest level of access in the ArenaOne platform. They can create and manage organizations, oversee all platform operations, and configure system-wide settings."
+          }
+        },
+        "createOrganization": {
+          "title": "Create Organization",
+          "metaTitle": "Create Organization - Root Admin Documentation",
+          "metaDescription": "Step-by-step guide for creating new organizations in ArenaOne.",
+          "section1": {
+            "title": "Creating a New Organization",
+            "content": "As a Root Admin, you can create new organizations that will house multiple clubs. Each organization operates independently with its own administrators and clubs."
+          }
+        },
+        "viewOrgAdmins": {
+          "title": "View Organization Admins",
+          "metaTitle": "View Organization Admins - Root Admin Documentation",
+          "metaDescription": "How to view and manage organization administrators.",
+          "section1": {
+            "title": "Organization Administrator Management",
+            "content": "Root Admins can view all organization administrators across the platform, monitor their activities, and manage their access levels."
+          }
+        }
+      },
+      "orgOwner": {
+        "createClub": {
+          "title": "Create Club",
+          "metaTitle": "Create Club - Organization Owner Documentation",
+          "metaDescription": "Learn how to create and configure new clubs in your organization.",
+          "section1": {
+            "title": "Creating a New Club",
+            "content": "Organization Owners can create new clubs within their organization. Each club will have its own courts, schedules, and administrators."
+          }
+        },
+        "addOrgAdmin": {
+          "title": "Add Organization Admin",
+          "metaTitle": "Add Organization Admin - Organization Owner Documentation",
+          "metaDescription": "How to add new administrators to your organization.",
+          "section1": {
+            "title": "Adding Organization Administrators",
+            "content": "Organization Owners can invite and assign new administrators to help manage the organization and its clubs."
+          }
+        },
+        "accessControl": {
+          "title": "Access Control",
+          "metaTitle": "Access Control - Organization Owner Documentation",
+          "metaDescription": "Managing permissions and access levels within your organization.",
+          "section1": {
+            "title": "Managing Access Control",
+            "content": "Organization Owners can configure access permissions, define roles, and control who can access different parts of the organization."
+          }
+        }
+      },
+      "orgAdmin": {
+        "manageOrganization": {
+          "title": "Manage Organization",
+          "metaTitle": "Manage Organization - Organization Admin Documentation",
+          "metaDescription": "How to manage organization settings and operations.",
+          "section1": {
+            "title": "Organization Management",
+            "content": "Organization Admins can manage organization settings, oversee clubs, and coordinate operations across all facilities."
+          }
+        },
+        "editSettings": {
+          "title": "Edit Settings",
+          "metaTitle": "Edit Settings - Organization Admin Documentation",
+          "metaDescription": "Configure organization-wide settings and preferences.",
+          "section1": {
+            "title": "Editing Organization Settings",
+            "content": "Organization Admins can update organization details, configure preferences, and manage operational settings."
+          }
+        },
+        "viewClubs": {
+          "title": "View Clubs",
+          "metaTitle": "View Clubs - Organization Admin Documentation",
+          "metaDescription": "View and monitor all clubs within your organization.",
+          "section1": {
+            "title": "Viewing All Clubs",
+            "content": "Organization Admins can view all clubs within the organization, monitor their status, and access detailed information about each facility."
+          }
+        }
+      },
+      "clubOwner": {
+        "crudCourts": {
+          "title": "Manage Courts",
+          "metaTitle": "Manage Courts - Club Owner Documentation",
+          "metaDescription": "Create, update, and manage courts in your club.",
+          "section1": {
+            "title": "Court Management",
+            "content": "Club Owners can create new courts, edit existing ones, configure court details, and manage court availability."
+          }
+        },
+        "workingHours": {
+          "title": "Working Hours",
+          "metaTitle": "Working Hours - Club Owner Documentation",
+          "metaDescription": "Set up and manage club working hours and availability.",
+          "section1": {
+            "title": "Configuring Working Hours",
+            "content": "Club Owners can define when their club is open for bookings, set different hours for different days, and configure special schedules."
+          }
+        },
+        "bookingsOverview": {
+          "title": "Bookings Overview",
+          "metaTitle": "Bookings Overview - Club Owner Documentation",
+          "metaDescription": "View and manage all bookings for your club.",
+          "section1": {
+            "title": "Viewing Bookings",
+            "content": "Club Owners can view all bookings across their courts, monitor utilization, and access detailed booking information."
+          }
+        }
+      },
+      "clubAdmin": {
+        "editClub": {
+          "title": "Edit Club",
+          "metaTitle": "Edit Club - Club Admin Documentation",
+          "metaDescription": "Update club information and settings.",
+          "section1": {
+            "title": "Editing Club Information",
+            "content": "Club Admins can update club details, configure settings, and manage club information displayed to players."
+          }
+        },
+        "crudCourts": {
+          "title": "Manage Courts",
+          "metaTitle": "Manage Courts - Club Admin Documentation",
+          "metaDescription": "Create, update, and manage courts in your club.",
+          "section1": {
+            "title": "Court Management",
+            "content": "Club Admins can create new courts, edit existing ones, configure court details, and manage court availability."
+          }
+        },
+        "workingHours": {
+          "title": "Working Hours",
+          "metaTitle": "Working Hours - Club Admin Documentation",
+          "metaDescription": "Set up and manage club working hours and availability.",
+          "section1": {
+            "title": "Configuring Working Hours",
+            "content": "Club Admins can define when the club is open for bookings, set different hours for different days, and configure special schedules."
+          }
+        },
+        "bookingsOverview": {
+          "title": "Bookings Overview",
+          "metaTitle": "Bookings Overview - Club Admin Documentation",
+          "metaDescription": "View and manage all bookings for your club.",
+          "section1": {
+            "title": "Viewing Bookings",
+            "content": "Club Admins can view all bookings across club courts, monitor utilization, and access detailed booking information."
+          }
+        }
+      }
     }
   }
 }
