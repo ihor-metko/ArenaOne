@@ -1,8 +1,8 @@
 import "./DocsNote.css";
 
 export interface DocsNoteProps {
-  /** Note type: info or warning */
-  type?: "info" | "warning";
+  /** Note type: info, warning, or success */
+  type?: "info" | "warning" | "success";
   /** Note content */
   children: React.ReactNode;
   /** Additional CSS classes */
@@ -24,14 +24,24 @@ export interface DocsNoteProps {
  * <DocsNote type="warning">
  *   Warning: This action cannot be undone.
  * </DocsNote>
+ *
+ * @example
+ * <DocsNote type="success">
+ *   Your setup is complete and ready to use!
+ * </DocsNote>
  */
 export function DocsNote({
   type = "info",
   children,
   className = "",
 }: DocsNoteProps) {
-  const typeClass = type === "warning" ? "im-docs-note--warning" : "im-docs-note--info";
-  const icon = type === "warning" ? "⚠" : "ℹ";
+  const typeClass = `im-docs-note--${type}`;
+  const iconMap = {
+    info: "ℹ",
+    warning: "⚠",
+    success: "✓"
+  };
+  const icon = iconMap[type];
 
   return (
     <div className={`im-docs-note ${typeClass} ${className}`.trim()}>
