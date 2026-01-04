@@ -28,62 +28,62 @@ export default async function CrudCourtsPage() {
       <DocsSection title={t("section1.title")}>
         <p>{t("section1.content")}</p>
 
-        <DocsCallout title="Court Management">
-          As a Club Admin, you have full control over your club&apos;s courts, including adding, editing, and managing court availability.
+        <DocsCallout title={t("callout.title")}>
+          {t("callout.content")}
         </DocsCallout>
 
-        <DocsSubsection title="Adding a New Court">
+        <DocsSubsection title={t("subsection1.title")}>
           <DocsSteps
             steps={[
               {
-                title: "Navigate to Courts Section",
-                description: "Access the court management area from your admin dashboard",
+                title: t("subsection1.steps.0.title"),
+                description: t("subsection1.steps.0.description"),
               },
               {
-                title: "Click Add Court",
-                description: "Start the court creation process",
+                title: t("subsection1.steps.1.title"),
+                description: t("subsection1.steps.1.description"),
               },
               {
-                title: "Enter Court Details",
-                description: "Provide court name, surface type (clay, hard, grass), and indoor/outdoor designation",
+                title: t("subsection1.steps.2.title"),
+                description: t("subsection1.steps.2.description"),
               },
               {
-                title: "Set Pricing",
-                description: "Configure hourly rates and any time-based pricing variations",
+                title: t("subsection1.steps.3.title"),
+                description: t("subsection1.steps.3.description"),
               },
               {
-                title: "Configure Availability",
-                description: "Set default availability hours for the court",
+                title: t("subsection1.steps.4.title"),
+                description: t("subsection1.steps.4.description"),
               },
               {
-                title: "Save and Activate",
-                description: "Save the court and make it available for bookings",
+                title: t("subsection1.steps.5.title"),
+                description: t("subsection1.steps.5.description"),
               },
             ]}
           />
 
           <DocsScreenshot
-            alt="Add Court Form"
-            caption="The court creation form with all configuration options"
+            alt={t("screenshot1.alt")}
+            caption={t("screenshot1.caption")}
           />
         </DocsSubsection>
 
-        <DocsSubsection title="Editing Existing Courts">
-          <p>You can modify court details at any time, including:</p>
+        <DocsSubsection title={t("subsection2.title")}>
+          <p>{t("subsection2.content")}</p>
           <DocsNote type="info">
-            Changes to court details are reflected immediately in the booking system.
+            {t("note1.content")}
           </DocsNote>
         </DocsSubsection>
 
-        <DocsSubsection title="Court Status Management">
-          <p>Courts can be temporarily disabled for maintenance or permanently removed if no longer in service.</p>
+        <DocsSubsection title={t("subsection3.title")}>
+          <p>{t("subsection3.content")}</p>
           <DocsNote type="warning">
-            Deactivating a court with existing bookings will require you to handle those reservations manually.
+            {t("note2.content")}
           </DocsNote>
         </DocsSubsection>
 
-        <DocsCTA href="/docs/pre-sales/club-admin/working-hours">
-          Next: Configure Working Hours
+        <DocsCTA href={t("cta.href")}>
+          {t("cta.text")}
         </DocsCTA>
       </DocsSection>
     </DocsPage>

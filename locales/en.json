@@ -3563,82 +3563,438 @@
           "section1": {
             "title": "What is a Root Admin?",
             "content": "Root Admins have the highest level of access in the ArenaOne platform. They can create and manage organizations, oversee all platform operations, and configure system-wide settings."
+          },
+          "callout": {
+            "title": "Key Responsibility",
+            "content": "As a Root Admin, you have full control over the ArenaOne platform, including the ability to create and manage organizations, assign administrators, and oversee system-wide settings."
+          },
+          "subsection": {
+            "title": "Core Capabilities",
+            "features": [
+              "Create and manage multiple organizations",
+              "Assign organization owners and administrators",
+              "Monitor system-wide statistics and usage",
+              "Configure global platform settings",
+              "Access all organization and club data"
+            ]
+          },
+          "note": {
+            "content": "Root Admin access is typically reserved for platform administrators and should be granted with care."
+          },
+          "screenshot": {
+            "alt": "Root Admin Dashboard",
+            "caption": "The Root Admin dashboard provides a comprehensive overview of all organizations and key metrics"
+          },
+          "cta": {
+            "text": "Learn How to Create Organizations",
+            "href": "/docs/pre-sales/root-admin/create-organization"
           }
         },
         "createOrganization": {
           "title": "Create Organization",
           "metaTitle": "Create Organization - Root Admin Documentation",
-          "metaDescription": "Step-by-step guide for creating new organizations in ArenaOne.",
+          "metaDescription": "Step-by-step guide for creating new organizations.",
           "section1": {
-            "title": "Creating a New Organization",
-            "content": "As a Root Admin, you can create new organizations that will house multiple clubs. Each organization operates independently with its own administrators and clubs."
+            "title": "Creating Organizations",
+            "content": "Root Admins can create new organizations to onboard clients onto the ArenaOne platform."
+          },
+          "callout": {
+            "title": "Platform Expansion",
+            "content": "Create organizations to onboard new clients and expand the ArenaOne platform."
+          },
+          "subsection1": {
+            "title": "Creation Process",
+            "steps": [
+              {
+                "title": "Access Organization Management",
+                "description": "Navigate to the organizations section from the Root Admin dashboard"
+              },
+              {
+                "title": "Click Create Organization",
+                "description": "Start the organization creation wizard"
+              },
+              {
+                "title": "Enter Basic Information",
+                "description": "Provide organization name, description, and contact details"
+              },
+              {
+                "title": "Assign Organization Owner",
+                "description": "Designate an Organization Owner who will manage the organization"
+              },
+              {
+                "title": "Configure Initial Settings",
+                "description": "Set up billing, preferences, and access controls"
+              },
+              {
+                "title": "Activate Organization",
+                "description": "Save and activate the new organization"
+              }
+            ]
+          },
+          "screenshot": {
+            "alt": "Create Organization Form",
+            "caption": "Step-by-step organization creation interface"
+          },
+          "note": {
+            "content": "Once created, the Organization Owner can begin adding clubs and managing their organization independently."
+          },
+          "cta": {
+            "text": "Next: View Organization Admins",
+            "href": "/docs/pre-sales/root-admin/view-org-admins"
           }
         },
         "viewOrgAdmins": {
-          "title": "View Organization Admins",
-          "metaTitle": "View Organization Admins - Root Admin Documentation",
-          "metaDescription": "How to view and manage organization administrators.",
+          "title": "View Org Admins",
+          "metaTitle": "View Org Admins - Root Admin Documentation",
+          "metaDescription": "Monitor and manage organization administrators across the platform.",
           "section1": {
-            "title": "Organization Administrator Management",
-            "content": "Root Admins can view all organization administrators across the platform, monitor their activities, and manage their access levels."
+            "title": "Monitoring Organization Administrators",
+            "content": "View and manage all organization administrators across the entire platform."
+          },
+          "callout": {
+            "title": "System-Wide Oversight",
+            "content": "Root Admins can view and manage all organization administrators across the entire platform, ensuring proper governance and security."
+          },
+          "subsection1": {
+            "title": "Admin Management Features",
+            "features": [
+              "View all organization owners and admins across the platform",
+              "Monitor admin activity and access patterns",
+              "Review permission assignments and role changes",
+              "Track admin login history and security events",
+              "Disable or remove admin access when necessary",
+              "Generate compliance and audit reports"
+            ]
+          },
+          "screenshot": {
+            "alt": "Organization Admins Dashboard",
+            "caption": "The admin overview showing all organization administrators with their roles and status"
+          },
+          "subsection2": {
+            "title": "Security Monitoring",
+            "features": [
+              "Real-time alerts for suspicious admin activity",
+              "Failed login attempt tracking",
+              "Permission escalation monitoring",
+              "Multi-factor authentication enforcement",
+              "Session management and timeout controls"
+            ]
+          },
+          "note1": {
+            "content": "Root Admin oversight ensures that organization administrators operate within proper boundaries and maintain platform security standards."
+          },
+          "note2": {
+            "content": "Use Root Admin privileges responsibly. All actions are logged and audited for security and compliance purposes."
+          },
+          "cta": {
+            "text": "Back to Root Admin Overview",
+            "href": "/docs/pre-sales/root-admin/overview"
           }
         }
       },
       "orgOwner": {
         "createClub": {
           "title": "Create Club",
-          "metaTitle": "Create Club - Organization Owner Documentation",
-          "metaDescription": "Learn how to create and configure new clubs in your organization.",
+          "metaTitle": "Create Club - Org Owner Documentation",
+          "metaDescription": "Create and configure new clubs in your organization.",
           "section1": {
             "title": "Creating a New Club",
-            "content": "Organization Owners can create new clubs within their organization. Each club will have its own courts, schedules, and administrators."
+            "content": "Organization Owners can create and configure new clubs to expand their organization's presence."
+          },
+          "callout": {
+            "title": "Organization Owner Privilege",
+            "content": "As an Organization Owner, you can create and manage multiple clubs under your organization."
+          },
+          "subsection1": {
+            "title": "Steps to Create a Club",
+            "items": [
+              "Navigate to your organization dashboard",
+              "Click on 'Create New Club'",
+              "Fill in basic club information (name, description)",
+              "Add club location and contact details",
+              "Configure initial settings and working hours",
+              "Save and publish your club"
+            ]
+          },
+          "subsection2": {
+            "title": "Required Information",
+            "content": "When creating a club, you'll need to provide:",
+            "items": [
+              "Club name and description",
+              "Physical address and location coordinates",
+              "Contact information (phone, email)",
+              "Business hours and operating schedule",
+              "Club administrator assignments"
+            ]
+          },
+          "note": {
+            "content": "Once created, your club will be immediately visible to potential customers on the platform."
+          },
+          "cta": {
+            "text": "Next: Add Organization Administrators",
+            "href": "/docs/pre-sales/org-owner/add-org-admin"
           }
         },
         "addOrgAdmin": {
-          "title": "Add Organization Admin",
-          "metaTitle": "Add Organization Admin - Organization Owner Documentation",
-          "metaDescription": "How to add new administrators to your organization.",
+          "title": "Add Org Admin",
+          "metaTitle": "Add Org Admin - Org Owner Documentation",
+          "metaDescription": "Add and manage organization administrators.",
           "section1": {
             "title": "Adding Organization Administrators",
-            "content": "Organization Owners can invite and assign new administrators to help manage the organization and its clubs."
+            "content": "Delegate administrative responsibilities by adding Organization Admins who can help manage your organization."
+          },
+          "callout": {
+            "title": "Delegate Management",
+            "content": "Organization Owners can add administrators to help manage the organization and its clubs efficiently."
+          },
+          "subsection1": {
+            "title": "Adding an Organization Admin",
+            "steps": [
+              {
+                "title": "Access Admin Management",
+                "description": "Navigate to the administrators section in your organization settings"
+              },
+              {
+                "title": "Invite New Admin",
+                "description": "Click 'Add Administrator' and enter their email address"
+              },
+              {
+                "title": "Set Permissions",
+                "description": "Define what access level and permissions the admin will have"
+              },
+              {
+                "title": "Assign Responsibilities",
+                "description": "Optionally specify which clubs or areas they will oversee"
+              },
+              {
+                "title": "Send Invitation",
+                "description": "The admin receives an email invitation to join the organization"
+              },
+              {
+                "title": "Confirm Activation",
+                "description": "Once they accept, the admin account is activated"
+              }
+            ]
+          },
+          "screenshot": {
+            "alt": "Add Administrator Interface",
+            "caption": "The admin invitation form with permission settings"
+          },
+          "subsection2": {
+            "title": "Admin Permission Levels",
+            "content": "You can grant different levels of access to organization admins based on their role and responsibilities."
+          },
+          "note1": {
+            "content": "Admin permissions can be modified at any time by the Organization Owner."
+          },
+          "note2": {
+            "content": "Organization Admins have significant access. Only invite trusted individuals with appropriate background."
+          },
+          "cta": {
+            "text": "Next: Understanding Access Control",
+            "href": "/docs/pre-sales/org-owner/access-control"
           }
         },
         "accessControl": {
           "title": "Access Control",
-          "metaTitle": "Access Control - Organization Owner Documentation",
-          "metaDescription": "Managing permissions and access levels within your organization.",
+          "metaTitle": "Access Control - Org Owner Documentation",
+          "metaDescription": "Manage user access and permissions across your organization.",
           "section1": {
             "title": "Managing Access Control",
-            "content": "Organization Owners can configure access permissions, define roles, and control who can access different parts of the organization."
+            "content": "Control who has access to your organization and what they can do with granular permission management."
+          },
+          "callout": {
+            "title": "Granular Permissions",
+            "content": "ArenaOne provides a comprehensive role-based access control system to ensure security and proper authorization across your organization."
+          },
+          "subsection1": {
+            "title": "Role Hierarchy",
+            "items": [
+              "Organization Owner - Full control over the entire organization",
+              "Organization Admin - Manage clubs and settings with owner-defined permissions",
+              "Club Owner - Full control over assigned clubs",
+              "Club Admin - Manage day-to-day operations of assigned clubs",
+              "Player - Book courts and manage personal reservations"
+            ]
+          },
+          "screenshot": {
+            "alt": "Access Control Dashboard",
+            "caption": "The access control panel showing role assignments and permissions"
+          },
+          "subsection2": {
+            "title": "Configurable Permissions",
+            "features": [
+              "Assign roles at organization or club level",
+              "Create custom permission sets for specific needs",
+              "Temporarily grant elevated access for special tasks",
+              "Revoke access instantly when needed",
+              "Track permission changes in audit logs"
+            ]
+          },
+          "subsection3": {
+            "title": "Best Practices",
+            "items": [
+              "Follow principle of least privilege - grant minimum necessary access",
+              "Regularly review and audit user permissions",
+              "Use specific roles rather than blanket admin access",
+              "Remove access immediately when personnel changes occur",
+              "Monitor audit logs for unusual activity"
+            ]
+          },
+          "note": {
+            "content": "Access control changes take effect immediately. Review carefully before applying changes."
+          },
+          "cta": {
+            "text": "Next: Create a New Club",
+            "href": "/docs/pre-sales/org-owner/create-club"
           }
         }
       },
       "orgAdmin": {
         "manageOrganization": {
           "title": "Manage Organization",
-          "metaTitle": "Manage Organization - Organization Admin Documentation",
-          "metaDescription": "How to manage organization settings and operations.",
+          "metaTitle": "Manage Organization - Org Admin Documentation",
+          "metaDescription": "Manage organization settings and operations.",
           "section1": {
             "title": "Organization Management",
-            "content": "Organization Admins can manage organization settings, oversee clubs, and coordinate operations across all facilities."
+            "content": "Organization Admins oversee organization-wide settings, reporting, and operational management across all clubs."
+          },
+          "callout": {
+            "title": "Organization-Wide Control",
+            "content": "Organization Admins can manage key organizational settings and ensure consistency across all clubs."
+          },
+          "subsection1": {
+            "title": "Administrative Capabilities",
+            "items": [
+              "View and update organization profile information",
+              "Monitor organization-wide statistics",
+              "Access financial reports and summaries",
+              "Review audit logs and system activities",
+              "Manage organization-level integrations",
+              "Configure notification settings"
+            ]
+          },
+          "screenshot": {
+            "alt": "Organization Management Dashboard",
+            "caption": "The organization management interface with settings and analytics"
+          },
+          "subsection2": {
+            "title": "Reporting & Analytics",
+            "items": [
+              "Generate organization-wide performance reports",
+              "Track key business metrics across all clubs",
+              "Export data for external analysis",
+              "Set up automated report delivery",
+              "Create custom dashboards"
+            ]
+          },
+          "note": {
+            "content": "Changes to organization settings may require approval from the Organization Owner depending on permission levels."
+          },
+          "cta": {
+            "text": "Next: Edit Organization Settings",
+            "href": "/docs/pre-sales/org-admin/edit-settings"
           }
         },
         "editSettings": {
           "title": "Edit Settings",
-          "metaTitle": "Edit Settings - Organization Admin Documentation",
-          "metaDescription": "Configure organization-wide settings and preferences.",
+          "metaTitle": "Edit Settings - Org Admin Documentation",
+          "metaDescription": "Configure organization settings and preferences.",
           "section1": {
-            "title": "Editing Organization Settings",
-            "content": "Organization Admins can update organization details, configure preferences, and manage operational settings."
+            "title": "Organization Settings",
+            "content": "Update organization-level configurations, preferences, and administrative settings."
+          },
+          "callout": {
+            "title": "Centralized Configuration",
+            "content": "Manage organization-wide settings to ensure consistency and compliance across all clubs in your organization."
+          },
+          "subsection1": {
+            "title": "Configurable Settings",
+            "steps": [
+              {
+                "title": "Branding & Identity",
+                "description": "Set organization logo, colors, and branding guidelines for all clubs"
+              },
+              {
+                "title": "Payment Configuration",
+                "description": "Configure payment gateways, commission rates, and billing preferences"
+              },
+              {
+                "title": "Communication Settings",
+                "description": "Set up email templates, notification preferences, and SMS settings"
+              },
+              {
+                "title": "Booking Policies",
+                "description": "Define cancellation policies, refund rules, and booking restrictions"
+              },
+              {
+                "title": "Integration Settings",
+                "description": "Configure third-party integrations and API access"
+              }
+            ]
+          },
+          "screenshot": {
+            "alt": "Settings Configuration Panel",
+            "caption": "The settings panel with various configuration options organized by category"
+          },
+          "subsection2": {
+            "title": "Policy Management",
+            "content": "Establish and enforce organization-wide policies:"
+          },
+          "note1": {
+            "content": "Policy changes will affect all clubs in the organization. Review impact before applying changes."
+          },
+          "note2": {
+            "content": "Some advanced settings may require Organization Owner approval to modify."
+          },
+          "cta": {
+            "text": "Back to Clubs Overview",
+            "href": "/docs/pre-sales/org-admin/view-clubs"
           }
         },
         "viewClubs": {
           "title": "View Clubs",
-          "metaTitle": "View Clubs - Organization Admin Documentation",
-          "metaDescription": "View and monitor all clubs within your organization.",
+          "metaTitle": "View Clubs - Org Admin Documentation",
+          "metaDescription": "View and monitor all clubs in your organization.",
           "section1": {
-            "title": "Viewing All Clubs",
-            "content": "Organization Admins can view all clubs within the organization, monitor their status, and access detailed information about each facility."
+            "title": "Club Overview",
+            "content": "Access a comprehensive view of all clubs within your organization, including performance metrics and status information."
+          },
+          "callout": {
+            "title": "Multi-Club Oversight",
+            "content": "Organization Admins can view and monitor all clubs within their organization from a single dashboard."
+          },
+          "subsection1": {
+            "title": "Club Management Features",
+            "features": [
+              "View all clubs in your organization",
+              "Monitor club performance metrics",
+              "Access club-level booking data",
+              "Review customer feedback and ratings",
+              "Track revenue across all clubs",
+              "Identify high-performing and underperforming locations"
+            ]
+          },
+          "screenshot": {
+            "alt": "Clubs Overview Dashboard",
+            "caption": "The clubs dashboard showing all locations with key performance indicators"
+          },
+          "subsection2": {
+            "title": "Club Analytics",
+            "features": [
+              "Compare performance across multiple clubs",
+              "Aggregate booking statistics",
+              "Revenue trends and forecasts",
+              "Court utilization rates by location",
+              "Customer acquisition and retention metrics"
+            ]
+          },
+          "note": {
+            "content": "Organization Admins have read access to all clubs but cannot modify individual club settings without proper permissions."
+          },
+          "cta": {
+            "text": "Next: Manage Organization Settings",
+            "href": "/docs/pre-sales/org-admin/manage-organization"
           }
         }
       },
@@ -3646,28 +4002,143 @@
         "crudCourts": {
           "title": "Manage Courts",
           "metaTitle": "Manage Courts - Club Owner Documentation",
-          "metaDescription": "Create, update, and manage courts in your club.",
+          "metaDescription": "Add, edit, and manage your club's courts as a club owner.",
           "section1": {
             "title": "Court Management",
-            "content": "Club Owners can create new courts, edit existing ones, configure court details, and manage court availability."
+            "content": "As a Club Owner, you have complete control over your club's court infrastructure, including adding, modifying, and removing courts as your business grows."
+          },
+          "subsection1": {
+            "title": "Adding a New Court",
+            "items": [
+              "Navigate to the Courts management section",
+              "Click the 'Add Court' button",
+              "Enter court details (name, surface type, indoor/outdoor)",
+              "Configure court availability settings",
+              "Save the new court configuration"
+            ]
+          },
+          "screenshot1": {
+            "alt": "Add Court Form",
+            "caption": "The court creation form allows you to specify all court details"
+          },
+          "subsection2": {
+            "title": "Editing Court Details",
+            "content": "You can modify court information at any time. Changes are immediately reflected in the booking system."
+          },
+          "note1": {
+            "content": "Modifying court availability may affect existing bookings. Review active reservations before making significant changes."
+          },
+          "subsection3": {
+            "title": "Removing Courts",
+            "content": "Courts can be deactivated or permanently removed from your club."
+          },
+          "note2": {
+            "content": "We recommend deactivating courts rather than deleting them to preserve historical booking data."
+          },
+          "cta": {
+            "text": "Next: Configure Working Hours",
+            "href": "/docs/pre-sales/club-owner/working-hours"
           }
         },
         "workingHours": {
           "title": "Working Hours",
           "metaTitle": "Working Hours - Club Owner Documentation",
-          "metaDescription": "Set up and manage club working hours and availability.",
+          "metaDescription": "Configure advanced scheduling features for your club.",
           "section1": {
-            "title": "Configuring Working Hours",
-            "content": "Club Owners can define when their club is open for bookings, set different hours for different days, and configure special schedules."
+            "title": "Advanced Scheduling",
+            "content": "Club Owners have access to advanced scheduling features including seasonal hours, dynamic pricing, and bulk schedule management."
+          },
+          "callout": {
+            "title": "Advanced Scheduling",
+            "content": "Club Owners have access to advanced scheduling features including seasonal hours, dynamic pricing, and bulk schedule management."
+          },
+          "subsection1": {
+            "title": "Seasonal Schedules",
+            "steps": [
+              {
+                "title": "Create Season Templates",
+                "description": "Define different schedules for summer, winter, or other periods"
+              },
+              {
+                "title": "Set Date Ranges",
+                "description": "Specify when each seasonal schedule is active"
+              },
+              {
+                "title": "Configure Hours",
+                "description": "Set appropriate operating hours for each season"
+              },
+              {
+                "title": "Apply to Courts",
+                "description": "Choose which courts use which seasonal schedules"
+              },
+              {
+                "title": "Review and Activate",
+                "description": "Confirm and activate seasonal schedules"
+              }
+            ]
+          },
+          "screenshot": {
+            "alt": "Seasonal Schedule Configuration",
+            "caption": "The seasonal schedule editor with calendar view and time slots"
+          },
+          "subsection2": {
+            "title": "Dynamic Pricing by Time",
+            "content": "Set different pricing rates for peak and off-peak hours to maximize revenue and manage demand."
+          },
+          "note1": {
+            "content": "Dynamic pricing automatically adjusts based on time of day and day of week."
+          },
+          "note2": {
+            "content": "Strategic use of seasonal schedules and dynamic pricing can increase revenue by up to 30%."
+          },
+          "cta": {
+            "text": "Back to Bookings Overview",
+            "href": "/docs/pre-sales/club-owner/bookings-overview"
           }
         },
         "bookingsOverview": {
           "title": "Bookings Overview",
           "metaTitle": "Bookings Overview - Club Owner Documentation",
-          "metaDescription": "View and manage all bookings for your club.",
+          "metaDescription": "Monitor and manage all club bookings with advanced analytics.",
           "section1": {
-            "title": "Viewing Bookings",
-            "content": "Club Owners can view all bookings across their courts, monitor utilization, and access detailed booking information."
+            "title": "Bookings Management",
+            "content": "Track all reservations and manage your club's booking operations from a centralized dashboard with enhanced analytics."
+          },
+          "callout": {
+            "title": "Business Intelligence",
+            "content": "As a Club Owner, you get enhanced analytics and reporting capabilities to optimize your business operations."
+          },
+          "subsection1": {
+            "title": "Advanced Features",
+            "features": [
+              "Revenue analytics and trend reports",
+              "Court utilization and occupancy metrics",
+              "Peak hours and demand analysis",
+              "Customer behavior and booking patterns",
+              "Comparative performance across time periods",
+              "Export detailed reports for accounting"
+            ]
+          },
+          "screenshot": {
+            "alt": "Club Owner Analytics Dashboard",
+            "caption": "The analytics dashboard with revenue graphs and utilization metrics"
+          },
+          "subsection2": {
+            "title": "Financial Overview",
+            "features": [
+              "Daily, weekly, and monthly revenue summaries",
+              "Payment method breakdowns",
+              "Refund and cancellation tracking",
+              "Projected revenue based on confirmed bookings",
+              "Commission and fee calculations"
+            ]
+          },
+          "note": {
+            "content": "Use these insights to optimize pricing, identify peak demand periods, and maximize revenue."
+          },
+          "cta": {
+            "text": "Next: Manage Courts",
+            "href": "/docs/pre-sales/club-owner/crud-courts"
           }
         }
       },
@@ -3675,37 +4146,216 @@
         "editClub": {
           "title": "Edit Club",
           "metaTitle": "Edit Club - Club Admin Documentation",
-          "metaDescription": "Update club information and settings.",
+          "metaDescription": "Manage and update your club information and settings.",
           "section1": {
             "title": "Editing Club Information",
-            "content": "Club Admins can update club details, configure settings, and manage club information displayed to players."
+            "content": "As a Club Admin, you have the ability to update your club's information, settings, and media to ensure customers have accurate and up-to-date details."
+          },
+          "callout": {
+            "title": "Keep Information Current",
+            "content": "Regularly update your club information to ensure customers have accurate details about your facility."
+          },
+          "subsection1": {
+            "title": "Editable Club Information",
+            "items": [
+              "Club name and description",
+              "Contact information (phone, email, website)",
+              "Physical address and location coordinates",
+              "Amenities and facilities available",
+              "Photos and promotional images",
+              "Social media links",
+              "Payment and cancellation policies"
+            ]
+          },
+          "screenshot": {
+            "alt": "Club Edit Form",
+            "caption": "The club editing interface with all fields and options"
+          },
+          "subsection2": {
+            "title": "Managing Club Media",
+            "content": "Upload and manage photos to showcase your facilities:",
+            "items": [
+              "Add high-quality photos of courts and amenities",
+              "Set a primary club image for listings",
+              "Organize images in a gallery",
+              "Remove outdated or low-quality images"
+            ]
+          },
+          "note1": {
+            "content": "Changes to club information are visible immediately to customers browsing the platform."
+          },
+          "note2": {
+            "content": "Complete and attractive club profiles receive more bookings from customers."
+          },
+          "cta": {
+            "text": "Back to Bookings Overview",
+            "href": "/docs/pre-sales/club-admin/bookings-overview"
           }
         },
         "crudCourts": {
           "title": "Manage Courts",
           "metaTitle": "Manage Courts - Club Admin Documentation",
-          "metaDescription": "Create, update, and manage courts in your club.",
+          "metaDescription": "Add, edit, and manage your club's courts.",
           "section1": {
             "title": "Court Management",
-            "content": "Club Admins can create new courts, edit existing ones, configure court details, and manage court availability."
+            "content": "As a Club Admin, you have full control over your club's courts, including adding, editing, and managing court availability."
+          },
+          "callout": {
+            "title": "Court Management",
+            "content": "As a Club Admin, you have full control over your club's courts, including adding, editing, and managing court availability."
+          },
+          "subsection1": {
+            "title": "Adding a New Court",
+            "steps": [
+              {
+                "title": "Navigate to Courts Section",
+                "description": "Access the court management area from your admin dashboard"
+              },
+              {
+                "title": "Click Add Court",
+                "description": "Start the court creation process"
+              },
+              {
+                "title": "Enter Court Details",
+                "description": "Provide court name, surface type (clay, hard, grass), and indoor/outdoor designation"
+              },
+              {
+                "title": "Set Pricing",
+                "description": "Configure hourly rates and any time-based pricing variations"
+              },
+              {
+                "title": "Configure Availability",
+                "description": "Set default availability hours for the court"
+              },
+              {
+                "title": "Save and Activate",
+                "description": "Save the court and make it available for bookings"
+              }
+            ]
+          },
+          "screenshot1": {
+            "alt": "Add Court Form",
+            "caption": "The court creation form with all configuration options"
+          },
+          "subsection2": {
+            "title": "Editing Existing Courts",
+            "content": "You can modify court details at any time, including:"
+          },
+          "note1": {
+            "content": "Changes to court details are reflected immediately in the booking system."
+          },
+          "subsection3": {
+            "title": "Court Status Management",
+            "content": "Courts can be temporarily disabled for maintenance or permanently removed if no longer in service."
+          },
+          "note2": {
+            "content": "Deactivating a court with existing bookings will require you to handle those reservations manually."
+          },
+          "cta": {
+            "text": "Next: Configure Working Hours",
+            "href": "/docs/pre-sales/club-admin/working-hours"
           }
         },
         "workingHours": {
           "title": "Working Hours",
           "metaTitle": "Working Hours - Club Admin Documentation",
-          "metaDescription": "Set up and manage club working hours and availability.",
+          "metaDescription": "Configure your club's operating hours and schedules.",
           "section1": {
-            "title": "Configuring Working Hours",
-            "content": "Club Admins can define when the club is open for bookings, set different hours for different days, and configure special schedules."
+            "title": "Setting Working Hours",
+            "content": "Configure your club's operating hours to manage when courts are available for booking. Set different schedules for each day and handle special dates."
+          },
+          "callout": {
+            "title": "Flexible Scheduling",
+            "content": "Configure your club's operating hours to match your business needs, with support for different schedules per day and special dates."
+          },
+          "subsection1": {
+            "title": "Setting Regular Working Hours",
+            "steps": [
+              {
+                "title": "Access Working Hours Settings",
+                "description": "Navigate to the working hours configuration from your club settings"
+              },
+              {
+                "title": "Set Daily Schedule",
+                "description": "Configure opening and closing times for each day of the week"
+              },
+              {
+                "title": "Define Time Slots",
+                "description": "Set booking slot duration (e.g., 60 minutes, 90 minutes)"
+              },
+              {
+                "title": "Configure Breaks",
+                "description": "Add lunch breaks or maintenance windows if needed"
+              },
+              {
+                "title": "Save Schedule",
+                "description": "Apply the schedule to make it active"
+              }
+            ]
+          },
+          "screenshot": {
+            "alt": "Working Hours Configuration",
+            "caption": "The working hours interface with weekly schedule editor"
+          },
+          "subsection2": {
+            "title": "Special Dates & Exceptions",
+            "content": "You can set special hours for holidays, events, or maintenance days."
+          },
+          "note1": {
+            "content": "Special date configurations override regular working hours for specific dates."
+          },
+          "note2": {
+            "content": "Changing working hours will affect court availability. Existing bookings outside new hours will need to be addressed."
+          },
+          "cta": {
+            "text": "Next: Edit Club Information",
+            "href": "/docs/pre-sales/club-admin/edit-club"
           }
         },
         "bookingsOverview": {
           "title": "Bookings Overview",
           "metaTitle": "Bookings Overview - Club Admin Documentation",
-          "metaDescription": "View and manage all bookings for your club.",
+          "metaDescription": "View and manage all club bookings.",
           "section1": {
-            "title": "Viewing Bookings",
-            "content": "Club Admins can view all bookings across club courts, monitor utilization, and access detailed booking information."
+            "title": "Managing Bookings",
+            "content": "The Bookings Overview dashboard provides a comprehensive view of all reservations, helping you efficiently manage your club's operations."
+          },
+          "callout": {
+            "title": "Real-Time Management",
+            "content": "The Bookings Overview dashboard gives you a complete view of all reservations, helping you manage your club efficiently."
+          },
+          "subsection1": {
+            "title": "Dashboard Capabilities",
+            "features": [
+              "View all bookings in a unified calendar view",
+              "Filter by court, date range, or booking status",
+              "See real-time availability across all courts",
+              "Track booking revenue and occupancy rates",
+              "Manage customer reservations and special requests",
+              "Handle cancellations and modifications"
+            ]
+          },
+          "screenshot": {
+            "alt": "Bookings Dashboard",
+            "caption": "The bookings dashboard displays all reservations with filtering and search options"
+          },
+          "subsection2": {
+            "title": "Booking Management Actions",
+            "content": "As a Club Admin, you can:",
+            "features": [
+              "Create manual bookings for walk-in customers",
+              "Modify existing reservations",
+              "Process refunds and cancellations",
+              "Block time slots for maintenance or events",
+              "Export booking data for reporting"
+            ]
+          },
+          "note": {
+            "content": "All booking changes are logged and customers receive automatic notifications about any modifications."
+          },
+          "cta": {
+            "text": "Next: Manage Courts",
+            "href": "/docs/pre-sales/club-admin/crud-courts"
           }
         }
       },
@@ -3742,6 +4392,43 @@
           "section1": {
             "title": "Quick Booking Flow",
             "content": "Players can quickly search for available clubs, browse court options, select their preferred time slot, and proceed to booking confirmation—all in a streamlined, user-friendly interface."
+          },
+          "callout": {
+            "title": "Fast & Simple",
+            "content": "Quick Booking allows you to reserve a court in just a few clicks. Perfect for spontaneous games or last-minute bookings."
+          },
+          "steps": {
+            "step1": {
+              "title": "Select a Club",
+              "description": "Browse available clubs in your area or search for a specific venue"
+            },
+            "step2": {
+              "title": "Choose Date & Time",
+              "description": "Pick your preferred date and see real-time court availability"
+            },
+            "step3": {
+              "title": "Select a Court",
+              "description": "View available courts with details like surface type and pricing"
+            },
+            "step4": {
+              "title": "Confirm Booking",
+              "description": "Review your selection and complete the reservation"
+            },
+            "step5": {
+              "title": "Receive Confirmation",
+              "description": "Get instant confirmation via email and in-app notification"
+            }
+          },
+          "screenshot": {
+            "alt": "Quick Booking Interface",
+            "caption": "The quick booking interface shows real-time availability and court details"
+          },
+          "note": {
+            "content": "Your booking is confirmed instantly and the court is reserved exclusively for you during the selected time slot."
+          },
+          "cta": {
+            "text": "Next: View Your Bookings in Calendar",
+            "href": "/docs/pre-sales/player/calendar"
           }
         },
         "calendar": {
@@ -3751,6 +4438,31 @@
           "section1": {
             "title": "Court Availability Calendar",
             "content": "The calendar view allows players to see court availability across different days and times, making it easy to find the perfect slot for their game."
+          },
+          "callout": {
+            "title": "Stay Organized",
+            "content": "Your personal booking calendar keeps all your reservations in one place, making it easy to manage your playing schedule."
+          },
+          "subsection": {
+            "title": "Calendar Features",
+            "features": [
+              "View all upcoming and past bookings",
+              "Filter by club or date range",
+              "Receive reminders before your booking time",
+              "Quick access to booking details and directions",
+              "Easy cancellation and modification options"
+            ]
+          },
+          "screenshot": {
+            "alt": "Player Calendar View",
+            "caption": "The calendar view displays all your bookings with color-coded status indicators"
+          },
+          "note": {
+            "content": "You can sync your ArenaOne calendar with your personal calendar app to get reminders on all your devices."
+          },
+          "cta": {
+            "text": "Next: Understanding Booking Confirmations",
+            "href": "/docs/pre-sales/player/confirmation"
           }
         },
         "confirmation": {
@@ -3760,6 +4472,43 @@
           "section1": {
             "title": "Confirming Your Booking",
             "content": "Players can review all booking details—court, time, price, and club information—before confirming their reservation. Once confirmed, they receive a booking confirmation with all necessary details."
+          },
+          "callout": {
+            "title": "Instant Confirmation",
+            "content": "Every booking is confirmed instantly. You'll receive immediate confirmation with all the details you need."
+          },
+          "subsection1": {
+            "title": "What's Included in Your Confirmation",
+            "items": [
+              "Booking reference number for easy tracking",
+              "Club name, address, and contact information",
+              "Court details and surface type",
+              "Date, time, and duration of your reservation",
+              "Total cost and payment confirmation",
+              "Directions and parking information"
+            ]
+          },
+          "screenshot": {
+            "alt": "Booking Confirmation",
+            "caption": "Your confirmation screen shows all booking details and options to modify or cancel"
+          },
+          "subsection2": {
+            "title": "Managing Your Booking",
+            "content": "From the confirmation page, you can:",
+            "items": [
+              "Add the booking to your calendar",
+              "Share booking details with friends",
+              "Get directions to the club",
+              "Modify your booking (subject to availability)",
+              "Cancel if your plans change"
+            ]
+          },
+          "note": {
+            "content": "You'll receive a reminder notification 24 hours and 1 hour before your booking time."
+          },
+          "cta": {
+            "text": "Back to Player Overview",
+            "href": "/docs/pre-sales/player/overview"
           }
         }
       }
