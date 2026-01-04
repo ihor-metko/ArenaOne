@@ -3,13 +3,16 @@ import { DocsPage } from "@/components/ui/DocsPage";
 import { DocsSection } from "@/components/ui/DocsSection";
 import { DocsList } from "@/components/ui/DocsList";
 import { DocsCTA } from "@/components/ui/DocsCTA";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "Getting Started - ArenaOne for Clubs Documentation",
   description: "Learn how to set up your padel club on ArenaOne and start accepting bookings.",
 };
 
-export default function GettingStartedPage() {
+export default async function GettingStartedPage() {
+  const t = await getTranslations();
+  
   return (
     <DocsPage title="Getting Started">
       <DocsSection title="How to Start Using the Platform">
@@ -87,15 +90,15 @@ export default function GettingStartedPage() {
 
       <DocsSection title="Ready to Get Started?">
         <p>
-          If you&apos;re ready to start using ArenaOne for your padel club, sign up to get
-          access to the platform and begin setting up your organization.
+          If you&apos;re ready to start using ArenaOne for your padel club, create your
+          organization to get access to the platform and begin setting up your club.
         </p>
         <div className="im-docs-cta-group">
           <DocsCTA href="/auth/sign-up">
-            Get Started
+            {t("docs.createOrganization")}
           </DocsCTA>
-          <DocsCTA href="/auth/sign-in">
-            Sign In
+          <DocsCTA href="#">
+            {t("docs.requestAccess")}
           </DocsCTA>
         </div>
       </DocsSection>
