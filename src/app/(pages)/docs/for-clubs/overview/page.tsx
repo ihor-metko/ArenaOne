@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Overview - ArenaOne for Clubs Documentation",
+  description: "Learn about ArenaOne's comprehensive platform for managing your padel club operations.",
+};
+
 export default function OverviewPage() {
   return (
     <div className="im-docs-page">
