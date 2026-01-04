@@ -27,7 +27,14 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
   
   // Helper to generate valid HTML IDs from group titles
   const sanitizeId = (title: string): string => {
-    return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const sanitized = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    // Ensure we always return a non-empty string with a prefix
+    return sanitized || 'group';
+  };
+  
+  // Helper to check if a path is within a group (exact match or sub-path)
+  const isPathInGroup = (currentPath: string, itemPath: string): boolean => {
+    return currentPath === itemPath || currentPath.startsWith(itemPath + '/');
   };
   
   // Track which groups are expanded
@@ -37,7 +44,7 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
     // Initially expand groups that contain the current path
     const initialExpanded = new Set<string>();
     groups.forEach((group) => {
-      const hasActivePath = group.items.some((item) => currentPath.startsWith(item.href));
+      const hasActivePath = group.items.some((item) => isPathInGroup(currentPath, item.href));
       if (hasActivePath || group.defaultOpen) {
         initialExpanded.add(group.title);
       }
@@ -101,7 +108,7 @@ export function DocsSidebar({ items, groups, currentPath }: DocsSidebarProps) {
           <h3 className="im-docs-sidebar-title">{t("title")}</h3>
           {groups?.map((group) => {
             const isExpanded = expandedGroups.has(group.title);
-            const hasActivePath = group.items.some((item) => currentPath.startsWith(item.href));
+            const hasActivePath = group.items.some((item) => isPathInGroup(currentPath, item.href));
             const groupId = sanitizeId(group.title);
             
             return (
