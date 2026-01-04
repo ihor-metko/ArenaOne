@@ -70,3 +70,33 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* Additional styles for player flow documentation */
+.im-docs-step-preview {
+  padding: var(--spacing-4);
+}
+
+.im-highlight-button {
+  position: relative;
+  box-shadow: 0 0 0 3px var(--color-primary-bg);
+  animation: highlight-pulse 2s ease-in-out infinite;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px var(--color-primary-bg);
+  }
+  50% {
+    box-shadow: 0 0 0 6px var(--color-primary-bg);
+  }
+}
+
+.im-highlight-button:hover {
+  animation: none;
+  box-shadow: 0 0 0 4px var(--color-primary-bg);
+}
+
+.im-highlight-button:focus {
+  outline: none;
+  animation: none;
+}

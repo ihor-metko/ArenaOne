@@ -3442,23 +3442,74 @@
         "subtitle": "Explore how the platform works from a player's perspective",
         "stepTitle": "Quick Booking Flow",
         "stepDescription": "See how easy it is for players to find and book a court",
+        "breadcrumb": {
+          "step1": "Search Club",
+          "step2": "Select Club",
+          "step3": "Quick Booking",
+          "step4": "Select Court",
+          "step5": "Confirmation"
+        },
         "step1": {
-          "title": "Browse Available Courts",
-          "description": "Players can view all available courts with real-time availability"
+          "title": "Search for a Club",
+          "description": "Players start by searching for clubs in their area using location-based search",
+          "searchPlaceholder": "Search clubs by name or city...",
+          "filterLabel": "Indoor courts only",
+          "searchButton": "Search Clubs",
+          "selectClubButton": "Select This Club"
         },
         "step2": {
-          "title": "Select Time Slot",
-          "description": "Choose a convenient time from the interactive calendar"
+          "title": "Browse Available Clubs",
+          "description": "View search results with club details, locations, and available courts",
+          "clubsFound": "{count} clubs found",
+          "viewClubButton": "View Club Details",
+          "indoorCourts": "{count} indoor",
+          "outdoorCourts": "{count} outdoor"
         },
         "step3": {
-          "title": "Confirm Booking",
-          "description": "Review details and complete the booking instantly"
+          "title": "Club Page & Quick Booking",
+          "description": "Explore club details and start the booking process with one click",
+          "quickBookButton": "Quick Book",
+          "clubDescription": "Modern padel club with professional facilities",
+          "viewGallery": "View Gallery",
+          "location": "Location",
+          "hours": "Business Hours",
+          "contact": "Contact"
+        },
+        "step4": {
+          "title": "Select Date, Time & Court",
+          "description": "Choose a convenient time slot and select from available courts",
+          "selectDate": "Select Date",
+          "selectTime": "Select Time",
+          "duration": "Duration",
+          "availableCourts": "Available Courts",
+          "selectCourtButton": "Select Court",
+          "courtSelected": "Court Selected"
+        },
+        "step5": {
+          "title": "Booking Confirmation",
+          "description": "Review your booking details and confirm your reservation",
+          "bookingSummary": "Booking Summary",
+          "club": "Club",
+          "court": "Court",
+          "dateTime": "Date & Time",
+          "totalPrice": "Total Price",
+          "confirmButton": "Confirm Booking",
+          "bookingSuccess": "Booking Confirmed!",
+          "bookingReference": "Reference: #{ref}"
         },
         "actionButton": "Start Booking Flow",
         "nextStep": "Next Step",
         "previousStep": "Previous Step",
         "viewDetails": "View Details",
-        "tryDemo": "Try Interactive Demo"
+        "tryDemo": "Try Interactive Demo",
+        "mockData": {
+          "clubName1": "Padel Arena Downtown",
+          "clubName2": "City Sports Club",
+          "clubName3": "Elite Padel Center",
+          "city": "Kyiv",
+          "courtName": "Court 1",
+          "price": "200 UAH/hour"
+        }
       },
       "common": {
         "simulationNote": "This is a demo environment. No real data will be created.",
