@@ -81,7 +81,7 @@ export default function PlayerPreviewPage() {
         setSelectedCourt(MOCK_COURTS[0]);
       }
       if (currentStep === 4 && !bookingRef) {
-        setBookingRef("DEMO-" + Math.random().toString(36).substr(2, 9).toUpperCase());
+        setBookingRef("DEMO-" + Math.random().toString(36).substring(2, 11).toUpperCase());
       }
     }
   };
