@@ -11,11 +11,12 @@
 .im-docs-container {
   @apply flex flex-1;
   width: 100%;
+  overflow: hidden;
 }
 
 /* Content Area */
 .im-docs-content {
-  @apply flex-1 mx-auto w-full;
+  @apply flex-1 mx-auto w-full overflow-y-auto;
   max-width: 900px;
   padding: 3rem 2rem;
 }
