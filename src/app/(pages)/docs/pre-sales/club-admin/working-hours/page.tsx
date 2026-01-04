@@ -28,55 +28,55 @@ export default async function WorkingHoursPage() {
       <DocsSection title={t("section1.title")}>
         <p>{t("section1.content")}</p>
 
-        <DocsCallout title="Flexible Scheduling">
-          Configure your club&apos;s operating hours to match your business needs, with support for different schedules per day and special dates.
+        <DocsCallout title={t("callout.title")}>
+          {t("callout.content")}
         </DocsCallout>
 
-        <DocsSubsection title="Setting Regular Working Hours">
+        <DocsSubsection title={t("subsection1.title")}>
           <DocsSteps
             steps={[
               {
-                title: "Access Working Hours Settings",
-                description: "Navigate to the working hours configuration from your club settings",
+                title: t("subsection1.steps.0.title"),
+                description: t("subsection1.steps.0.description"),
               },
               {
-                title: "Set Daily Schedule",
-                description: "Configure opening and closing times for each day of the week",
+                title: t("subsection1.steps.1.title"),
+                description: t("subsection1.steps.1.description"),
               },
               {
-                title: "Define Time Slots",
-                description: "Set booking slot duration (e.g., 60 minutes, 90 minutes)",
+                title: t("subsection1.steps.2.title"),
+                description: t("subsection1.steps.2.description"),
               },
               {
-                title: "Configure Breaks",
-                description: "Add lunch breaks or maintenance windows if needed",
+                title: t("subsection1.steps.3.title"),
+                description: t("subsection1.steps.3.description"),
               },
               {
-                title: "Save Schedule",
-                description: "Apply the schedule to make it active",
+                title: t("subsection1.steps.4.title"),
+                description: t("subsection1.steps.4.description"),
               },
             ]}
           />
 
           <DocsScreenshot
-            alt="Working Hours Configuration"
-            caption="The working hours interface with weekly schedule editor"
+            alt={t("screenshot.alt")}
+            caption={t("screenshot.caption")}
           />
         </DocsSubsection>
 
-        <DocsSubsection title="Special Dates & Exceptions">
-          <p>You can set special hours for holidays, events, or maintenance days.</p>
+        <DocsSubsection title={t("subsection2.title")}>
+          <p>{t("subsection2.content")}</p>
           <DocsNote type="info">
-            Special date configurations override regular working hours for specific dates.
+            {t("note1.content")}
           </DocsNote>
         </DocsSubsection>
 
         <DocsNote type="warning">
-          Changing working hours will affect court availability. Existing bookings outside new hours will need to be addressed.
+          {t("note2.content")}
         </DocsNote>
 
-        <DocsCTA href="/docs/pre-sales/club-admin/edit-club">
-          Next: Edit Club Information
+        <DocsCTA href={t("cta.href")}>
+          {t("cta.text")}
         </DocsCTA>
       </DocsSection>
     </DocsPage>

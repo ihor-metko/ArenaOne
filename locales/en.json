@@ -3672,37 +3672,216 @@
         "editClub": {
           "title": "Edit Club",
           "metaTitle": "Edit Club - Club Admin Documentation",
-          "metaDescription": "Update club information and settings.",
+          "metaDescription": "Manage and update your club information and settings.",
           "section1": {
             "title": "Editing Club Information",
-            "content": "Club Admins can update club details, configure settings, and manage club information displayed to players."
+            "content": "As a Club Admin, you have the ability to update your club's information, settings, and media to ensure customers have accurate and up-to-date details."
+          },
+          "callout": {
+            "title": "Keep Information Current",
+            "content": "Regularly update your club information to ensure customers have accurate details about your facility."
+          },
+          "subsection1": {
+            "title": "Editable Club Information",
+            "items": [
+              "Club name and description",
+              "Contact information (phone, email, website)",
+              "Physical address and location coordinates",
+              "Amenities and facilities available",
+              "Photos and promotional images",
+              "Social media links",
+              "Payment and cancellation policies"
+            ]
+          },
+          "screenshot": {
+            "alt": "Club Edit Form",
+            "caption": "The club editing interface with all fields and options"
+          },
+          "subsection2": {
+            "title": "Managing Club Media",
+            "content": "Upload and manage photos to showcase your facilities:",
+            "items": [
+              "Add high-quality photos of courts and amenities",
+              "Set a primary club image for listings",
+              "Organize images in a gallery",
+              "Remove outdated or low-quality images"
+            ]
+          },
+          "note1": {
+            "content": "Changes to club information are visible immediately to customers browsing the platform."
+          },
+          "note2": {
+            "content": "Complete and attractive club profiles receive more bookings from customers."
+          },
+          "cta": {
+            "text": "Back to Bookings Overview",
+            "href": "/docs/pre-sales/club-admin/bookings-overview"
           }
         },
         "crudCourts": {
           "title": "Manage Courts",
           "metaTitle": "Manage Courts - Club Admin Documentation",
-          "metaDescription": "Create, update, and manage courts in your club.",
+          "metaDescription": "Add, edit, and manage your club's courts.",
           "section1": {
             "title": "Court Management",
-            "content": "Club Admins can create new courts, edit existing ones, configure court details, and manage court availability."
+            "content": "As a Club Admin, you have full control over your club's courts, including adding, editing, and managing court availability."
+          },
+          "callout": {
+            "title": "Court Management",
+            "content": "As a Club Admin, you have full control over your club's courts, including adding, editing, and managing court availability."
+          },
+          "subsection1": {
+            "title": "Adding a New Court",
+            "steps": [
+              {
+                "title": "Navigate to Courts Section",
+                "description": "Access the court management area from your admin dashboard"
+              },
+              {
+                "title": "Click Add Court",
+                "description": "Start the court creation process"
+              },
+              {
+                "title": "Enter Court Details",
+                "description": "Provide court name, surface type (clay, hard, grass), and indoor/outdoor designation"
+              },
+              {
+                "title": "Set Pricing",
+                "description": "Configure hourly rates and any time-based pricing variations"
+              },
+              {
+                "title": "Configure Availability",
+                "description": "Set default availability hours for the court"
+              },
+              {
+                "title": "Save and Activate",
+                "description": "Save the court and make it available for bookings"
+              }
+            ]
+          },
+          "screenshot1": {
+            "alt": "Add Court Form",
+            "caption": "The court creation form with all configuration options"
+          },
+          "subsection2": {
+            "title": "Editing Existing Courts",
+            "content": "You can modify court details at any time, including:"
+          },
+          "note1": {
+            "content": "Changes to court details are reflected immediately in the booking system."
+          },
+          "subsection3": {
+            "title": "Court Status Management",
+            "content": "Courts can be temporarily disabled for maintenance or permanently removed if no longer in service."
+          },
+          "note2": {
+            "content": "Deactivating a court with existing bookings will require you to handle those reservations manually."
+          },
+          "cta": {
+            "text": "Next: Configure Working Hours",
+            "href": "/docs/pre-sales/club-admin/working-hours"
           }
         },
         "workingHours": {
           "title": "Working Hours",
           "metaTitle": "Working Hours - Club Admin Documentation",
-          "metaDescription": "Set up and manage club working hours and availability.",
+          "metaDescription": "Configure your club's operating hours and schedules.",
           "section1": {
-            "title": "Configuring Working Hours",
-            "content": "Club Admins can define when the club is open for bookings, set different hours for different days, and configure special schedules."
+            "title": "Setting Working Hours",
+            "content": "Configure your club's operating hours to manage when courts are available for booking. Set different schedules for each day and handle special dates."
+          },
+          "callout": {
+            "title": "Flexible Scheduling",
+            "content": "Configure your club's operating hours to match your business needs, with support for different schedules per day and special dates."
+          },
+          "subsection1": {
+            "title": "Setting Regular Working Hours",
+            "steps": [
+              {
+                "title": "Access Working Hours Settings",
+                "description": "Navigate to the working hours configuration from your club settings"
+              },
+              {
+                "title": "Set Daily Schedule",
+                "description": "Configure opening and closing times for each day of the week"
+              },
+              {
+                "title": "Define Time Slots",
+                "description": "Set booking slot duration (e.g., 60 minutes, 90 minutes)"
+              },
+              {
+                "title": "Configure Breaks",
+                "description": "Add lunch breaks or maintenance windows if needed"
+              },
+              {
+                "title": "Save Schedule",
+                "description": "Apply the schedule to make it active"
+              }
+            ]
+          },
+          "screenshot": {
+            "alt": "Working Hours Configuration",
+            "caption": "The working hours interface with weekly schedule editor"
+          },
+          "subsection2": {
+            "title": "Special Dates & Exceptions",
+            "content": "You can set special hours for holidays, events, or maintenance days."
+          },
+          "note1": {
+            "content": "Special date configurations override regular working hours for specific dates."
+          },
+          "note2": {
+            "content": "Changing working hours will affect court availability. Existing bookings outside new hours will need to be addressed."
+          },
+          "cta": {
+            "text": "Next: Edit Club Information",
+            "href": "/docs/pre-sales/club-admin/edit-club"
           }
         },
         "bookingsOverview": {
           "title": "Bookings Overview",
           "metaTitle": "Bookings Overview - Club Admin Documentation",
-          "metaDescription": "View and manage all bookings for your club.",
+          "metaDescription": "View and manage all club bookings.",
           "section1": {
-            "title": "Viewing Bookings",
-            "content": "Club Admins can view all bookings across club courts, monitor utilization, and access detailed booking information."
+            "title": "Managing Bookings",
+            "content": "The Bookings Overview dashboard provides a comprehensive view of all reservations, helping you efficiently manage your club's operations."
+          },
+          "callout": {
+            "title": "Real-Time Management",
+            "content": "The Bookings Overview dashboard gives you a complete view of all reservations, helping you manage your club efficiently."
+          },
+          "subsection1": {
+            "title": "Dashboard Capabilities",
+            "features": [
+              "View all bookings in a unified calendar view",
+              "Filter by court, date range, or booking status",
+              "See real-time availability across all courts",
+              "Track booking revenue and occupancy rates",
+              "Manage customer reservations and special requests",
+              "Handle cancellations and modifications"
+            ]
+          },
+          "screenshot": {
+            "alt": "Bookings Dashboard",
+            "caption": "The bookings dashboard displays all reservations with filtering and search options"
+          },
+          "subsection2": {
+            "title": "Booking Management Actions",
+            "content": "As a Club Admin, you can:",
+            "features": [
+              "Create manual bookings for walk-in customers",
+              "Modify existing reservations",
+              "Process refunds and cancellations",
+              "Block time slots for maintenance or events",
+              "Export booking data for reporting"
+            ]
+          },
+          "note": {
+            "content": "All booking changes are logged and customers receive automatic notifications about any modifications."
+          },
+          "cta": {
+            "text": "Next: Manage Courts",
+            "href": "/docs/pre-sales/club-admin/crud-courts"
           }
         }
       },

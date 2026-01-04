@@ -28,53 +28,53 @@ export default async function EditClubPage() {
       <DocsSection title={t("section1.title")}>
         <p>{t("section1.content")}</p>
 
-        <DocsCallout title="Keep Information Current">
-          Regularly update your club information to ensure customers have accurate details about your facility.
+        <DocsCallout title={t("callout.title")}>
+          {t("callout.content")}
         </DocsCallout>
 
-        <DocsSubsection title="Editable Club Information">
+        <DocsSubsection title={t("subsection1.title")}>
           <DocsList
             type="bulleted"
             items={[
-              "Club name and description",
-              "Contact information (phone, email, website)",
-              "Physical address and location coordinates",
-              "Amenities and facilities available",
-              "Photos and promotional images",
-              "Social media links",
-              "Payment and cancellation policies",
+              t("subsection1.items.0"),
+              t("subsection1.items.1"),
+              t("subsection1.items.2"),
+              t("subsection1.items.3"),
+              t("subsection1.items.4"),
+              t("subsection1.items.5"),
+              t("subsection1.items.6"),
             ]}
           />
         </DocsSubsection>
 
         <DocsScreenshot
-          alt="Club Edit Form"
-          caption="The club editing interface with all fields and options"
+          alt={t("screenshot.alt")}
+          caption={t("screenshot.caption")}
         />
 
-        <DocsSubsection title="Managing Club Media">
-          <p>Upload and manage photos to showcase your facilities:</p>
+        <DocsSubsection title={t("subsection2.title")}>
+          <p>{t("subsection2.content")}</p>
           <DocsList
             type="bulleted"
             items={[
-              "Add high-quality photos of courts and amenities",
-              "Set a primary club image for listings",
-              "Organize images in a gallery",
-              "Remove outdated or low-quality images",
+              t("subsection2.items.0"),
+              t("subsection2.items.1"),
+              t("subsection2.items.2"),
+              t("subsection2.items.3"),
             ]}
           />
         </DocsSubsection>
 
         <DocsNote type="info">
-          Changes to club information are visible immediately to customers browsing the platform.
+          {t("note1.content")}
         </DocsNote>
 
         <DocsNote type="success">
-          Complete and attractive club profiles receive more bookings from customers.
+          {t("note2.content")}
         </DocsNote>
 
-        <DocsCTA href="/docs/pre-sales/club-admin/bookings-overview">
-          Back to Bookings Overview
+        <DocsCTA href={t("cta.href")}>
+          {t("cta.text")}
         </DocsCTA>
       </DocsSection>
     </DocsPage>

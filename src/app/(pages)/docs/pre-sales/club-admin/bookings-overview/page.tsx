@@ -28,47 +28,47 @@ export default async function BookingsOverviewPage() {
       <DocsSection title={t("section1.title")}>
         <p>{t("section1.content")}</p>
 
-        <DocsCallout title="Real-Time Management">
-          The Bookings Overview dashboard gives you a complete view of all reservations, helping you manage your club efficiently.
+        <DocsCallout title={t("callout.title")}>
+          {t("callout.content")}
         </DocsCallout>
 
-        <DocsSubsection title="Dashboard Capabilities">
+        <DocsSubsection title={t("subsection1.title")}>
           <DocsFeatureList
             features={[
-              "View all bookings in a unified calendar view",
-              "Filter by court, date range, or booking status",
-              "See real-time availability across all courts",
-              "Track booking revenue and occupancy rates",
-              "Manage customer reservations and special requests",
-              "Handle cancellations and modifications",
+              t("subsection1.features.0"),
+              t("subsection1.features.1"),
+              t("subsection1.features.2"),
+              t("subsection1.features.3"),
+              t("subsection1.features.4"),
+              t("subsection1.features.5"),
             ]}
           />
         </DocsSubsection>
 
         <DocsScreenshot
-          alt="Bookings Dashboard"
-          caption="The bookings dashboard displays all reservations with filtering and search options"
+          alt={t("screenshot.alt")}
+          caption={t("screenshot.caption")}
         />
 
-        <DocsSubsection title="Booking Management Actions">
-          <p>As a Club Admin, you can:</p>
+        <DocsSubsection title={t("subsection2.title")}>
+          <p>{t("subsection2.content")}</p>
           <DocsFeatureList
             features={[
-              "Create manual bookings for walk-in customers",
-              "Modify existing reservations",
-              "Process refunds and cancellations",
-              "Block time slots for maintenance or events",
-              "Export booking data for reporting",
+              t("subsection2.features.0"),
+              t("subsection2.features.1"),
+              t("subsection2.features.2"),
+              t("subsection2.features.3"),
+              t("subsection2.features.4"),
             ]}
           />
         </DocsSubsection>
 
         <DocsNote type="info">
-          All booking changes are logged and customers receive automatic notifications about any modifications.
+          {t("note.content")}
         </DocsNote>
 
-        <DocsCTA href="/docs/pre-sales/club-admin/crud-courts">
-          Next: Manage Courts
+        <DocsCTA href={t("cta.href")}>
+          {t("cta.text")}
         </DocsCTA>
       </DocsSection>
     </DocsPage>
