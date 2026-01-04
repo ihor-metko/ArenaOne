@@ -27,7 +27,7 @@ export interface DocsImagePlaceholderProps {
  * If the screenshot doesn't exist, displays a placeholder.
  *
  * @example
- * <DocsImagePlaceholder 
+ * <DocsImagePlaceholder
  *   role="club-admin"
  *   step="quick-booking"
  *   alt="Quick booking process"
@@ -43,17 +43,17 @@ export function DocsImagePlaceholder({
   format = "png",
 }: DocsImagePlaceholderProps) {
   const [imageLoadError, setImageLoadError] = useState(false);
-  
+
   // Generate the image path based on role and step
-  const imagePath = `/Storage/docs-screenshots/${role}/${step}.${format}`;
+  const imagePath = `/storage/docs-screenshots/${role}/${step}.${format}`;
 
   return (
     <figure className={`im-docs-screenshot ${className}`.trim()}>
       <div className="im-docs-screenshot-container">
         {!imageLoadError ? (
-          <img 
-            src={imagePath} 
-            alt={alt} 
+          <img
+            src={imagePath}
+            alt={alt}
             className="im-docs-screenshot-image"
             loading="lazy"
             onError={() => setImageLoadError(true)}
