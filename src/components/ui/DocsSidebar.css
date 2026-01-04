@@ -40,17 +40,16 @@
 .im-docs-sidebar-link {
   @apply block px-3 py-2 rounded-lg text-sm font-medium transition-colors no-underline;
   color: var(--im-foreground);
+  outline: none;
 }
 
 .im-docs-sidebar-link:hover {
   background-color: var(--im-card-bg);
   color: var(--im-primary);
-  outline: none;
 }
 
 .im-docs-sidebar-link:focus,
 .im-docs-sidebar-link:focus-visible {
-  outline: none;
   box-shadow: 0 0 0 2px var(--im-primary);
 }
 
