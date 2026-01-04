@@ -28,46 +28,46 @@ export default async function BookingsOverviewPage() {
       <DocsSection title={t("section1.title")}>
         <p>{t("section1.content")}</p>
 
-        <DocsCallout title="Business Intelligence">
-          As a Club Owner, you get enhanced analytics and reporting capabilities to optimize your business operations.
+        <DocsCallout title={t("callout.title")}>
+          {t("callout.content")}
         </DocsCallout>
 
-        <DocsSubsection title="Advanced Features">
+        <DocsSubsection title={t("subsection1.title")}>
           <DocsFeatureList
             features={[
-              "Revenue analytics and trend reports",
-              "Court utilization and occupancy metrics",
-              "Peak hours and demand analysis",
-              "Customer behavior and booking patterns",
-              "Comparative performance across time periods",
-              "Export detailed reports for accounting",
+              t("subsection1.features.0"),
+              t("subsection1.features.1"),
+              t("subsection1.features.2"),
+              t("subsection1.features.3"),
+              t("subsection1.features.4"),
+              t("subsection1.features.5"),
             ]}
           />
         </DocsSubsection>
 
         <DocsScreenshot
-          alt="Club Owner Analytics Dashboard"
-          caption="The analytics dashboard with revenue graphs and utilization metrics"
+          alt={t("screenshot.alt")}
+          caption={t("screenshot.caption")}
         />
 
-        <DocsSubsection title="Financial Overview">
+        <DocsSubsection title={t("subsection2.title")}>
           <DocsFeatureList
             features={[
-              "Daily, weekly, and monthly revenue summaries",
-              "Payment method breakdowns",
-              "Refund and cancellation tracking",
-              "Projected revenue based on confirmed bookings",
-              "Commission and fee calculations",
+              t("subsection2.features.0"),
+              t("subsection2.features.1"),
+              t("subsection2.features.2"),
+              t("subsection2.features.3"),
+              t("subsection2.features.4"),
             ]}
           />
         </DocsSubsection>
 
         <DocsNote type="success">
-          Use these insights to optimize pricing, identify peak demand periods, and maximize revenue.
+          {t("note.content")}
         </DocsNote>
 
-        <DocsCTA href="/docs/pre-sales/club-owner/crud-courts">
-          Next: Manage Courts
+        <DocsCTA href={t("cta.href")}>
+          {t("cta.text")}
         </DocsCTA>
       </DocsSection>
     </DocsPage>

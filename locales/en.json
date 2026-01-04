@@ -4040,71 +4040,101 @@
         "workingHours": {
           "title": "Working Hours",
           "metaTitle": "Working Hours - Club Owner Documentation",
-          "metaDescription": "Configure your club's operating hours and availability.",
+          "metaDescription": "Configure advanced scheduling features for your club.",
           "section1": {
-            "title": "Setting Working Hours",
-            "content": "Define when your club is open for business and manage court availability schedules."
+            "title": "Advanced Scheduling",
+            "content": "Club Owners have access to advanced scheduling features including seasonal hours, dynamic pricing, and bulk schedule management."
           },
           "callout": {
-            "title": "Flexible Scheduling",
-            "content": "Set custom schedules for different days and manage special dates and holidays."
+            "title": "Advanced Scheduling",
+            "content": "Club Owners have access to advanced scheduling features including seasonal hours, dynamic pricing, and bulk schedule management."
           },
           "subsection1": {
-            "title": "Regular Schedule",
-            "items": [
-              "Configure opening and closing times",
-              "Set different schedules per day",
-              "Define booking slot duration",
-              "Add breaks and maintenance windows"
+            "title": "Seasonal Schedules",
+            "steps": [
+              {
+                "title": "Create Season Templates",
+                "description": "Define different schedules for summer, winter, or other periods"
+              },
+              {
+                "title": "Set Date Ranges",
+                "description": "Specify when each seasonal schedule is active"
+              },
+              {
+                "title": "Configure Hours",
+                "description": "Set appropriate operating hours for each season"
+              },
+              {
+                "title": "Apply to Courts",
+                "description": "Choose which courts use which seasonal schedules"
+              },
+              {
+                "title": "Review and Activate",
+                "description": "Confirm and activate seasonal schedules"
+              }
             ]
           },
           "screenshot": {
-            "alt": "Working Hours Configuration",
-            "caption": "Configure your club's operating schedule"
+            "alt": "Seasonal Schedule Configuration",
+            "caption": "The seasonal schedule editor with calendar view and time slots"
           },
           "subsection2": {
-            "title": "Special Dates",
-            "content": "Override regular hours for holidays and special events."
+            "title": "Dynamic Pricing by Time",
+            "content": "Set different pricing rates for peak and off-peak hours to maximize revenue and manage demand."
           },
-          "note": {
-            "content": "Special date settings override regular working hours for specific dates."
+          "note1": {
+            "content": "Dynamic pricing automatically adjusts based on time of day and day of week."
+          },
+          "note2": {
+            "content": "Strategic use of seasonal schedules and dynamic pricing can increase revenue by up to 30%."
           },
           "cta": {
-            "text": "Next: View Bookings Overview",
+            "text": "Back to Bookings Overview",
             "href": "/docs/pre-sales/club-owner/bookings-overview"
           }
         },
         "bookingsOverview": {
           "title": "Bookings Overview",
           "metaTitle": "Bookings Overview - Club Owner Documentation",
-          "metaDescription": "Monitor and manage all club bookings.",
+          "metaDescription": "Monitor and manage all club bookings with advanced analytics.",
           "section1": {
             "title": "Bookings Management",
-            "content": "Track all reservations and manage your club's booking operations from a centralized dashboard."
+            "content": "Track all reservations and manage your club's booking operations from a centralized dashboard with enhanced analytics."
           },
           "callout": {
-            "title": "Complete Oversight",
-            "content": "Monitor all bookings, revenue, and customer activity across your club."
+            "title": "Business Intelligence",
+            "content": "As a Club Owner, you get enhanced analytics and reporting capabilities to optimize your business operations."
           },
           "subsection1": {
-            "title": "Dashboard Features",
+            "title": "Advanced Features",
             "features": [
-              "View all bookings in calendar format",
-              "Filter by date, court, or status",
-              "Track revenue and occupancy",
-              "Manage customer reservations",
-              "Handle cancellations and refunds"
+              "Revenue analytics and trend reports",
+              "Court utilization and occupancy metrics",
+              "Peak hours and demand analysis",
+              "Customer behavior and booking patterns",
+              "Comparative performance across time periods",
+              "Export detailed reports for accounting"
             ]
           },
           "screenshot": {
-            "alt": "Bookings Dashboard",
-            "caption": "Comprehensive view of all club bookings"
+            "alt": "Club Owner Analytics Dashboard",
+            "caption": "The analytics dashboard with revenue graphs and utilization metrics"
+          },
+          "subsection2": {
+            "title": "Financial Overview",
+            "features": [
+              "Daily, weekly, and monthly revenue summaries",
+              "Payment method breakdowns",
+              "Refund and cancellation tracking",
+              "Projected revenue based on confirmed bookings",
+              "Commission and fee calculations"
+            ]
           },
           "note": {
-            "content": "All booking modifications are logged and customers are automatically notified."
+            "content": "Use these insights to optimize pricing, identify peak demand periods, and maximize revenue."
           },
           "cta": {
-            "text": "Back to Court Management",
+            "text": "Next: Manage Courts",
             "href": "/docs/pre-sales/club-owner/crud-courts"
           }
         }

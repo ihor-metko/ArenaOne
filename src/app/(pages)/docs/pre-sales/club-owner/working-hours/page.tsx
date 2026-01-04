@@ -28,55 +28,55 @@ export default async function WorkingHoursPage() {
       <DocsSection title={t("section1.title")}>
         <p>{t("section1.content")}</p>
 
-        <DocsCallout title="Advanced Scheduling">
-          Club Owners have access to advanced scheduling features including seasonal hours, dynamic pricing, and bulk schedule management.
+        <DocsCallout title={t("callout.title")}>
+          {t("callout.content")}
         </DocsCallout>
 
-        <DocsSubsection title="Seasonal Schedules">
+        <DocsSubsection title={t("subsection1.title")}>
           <DocsSteps
             steps={[
               {
-                title: "Create Season Templates",
-                description: "Define different schedules for summer, winter, or other periods",
+                title: t("subsection1.steps.0.title"),
+                description: t("subsection1.steps.0.description"),
               },
               {
-                title: "Set Date Ranges",
-                description: "Specify when each seasonal schedule is active",
+                title: t("subsection1.steps.1.title"),
+                description: t("subsection1.steps.1.description"),
               },
               {
-                title: "Configure Hours",
-                description: "Set appropriate operating hours for each season",
+                title: t("subsection1.steps.2.title"),
+                description: t("subsection1.steps.2.description"),
               },
               {
-                title: "Apply to Courts",
-                description: "Choose which courts use which seasonal schedules",
+                title: t("subsection1.steps.3.title"),
+                description: t("subsection1.steps.3.description"),
               },
               {
-                title: "Review and Activate",
-                description: "Confirm and activate seasonal schedules",
+                title: t("subsection1.steps.4.title"),
+                description: t("subsection1.steps.4.description"),
               },
             ]}
           />
         </DocsSubsection>
 
         <DocsScreenshot
-          alt="Seasonal Schedule Configuration"
-          caption="The seasonal schedule editor with calendar view and time slots"
+          alt={t("screenshot.alt")}
+          caption={t("screenshot.caption")}
         />
 
-        <DocsSubsection title="Dynamic Pricing by Time">
-          <p>Set different pricing rates for peak and off-peak hours to maximize revenue and manage demand.</p>
+        <DocsSubsection title={t("subsection2.title")}>
+          <p>{t("subsection2.content")}</p>
           <DocsNote type="info">
-            Dynamic pricing automatically adjusts based on time of day and day of week.
+            {t("note1.content")}
           </DocsNote>
         </DocsSubsection>
 
         <DocsNote type="success">
-          Strategic use of seasonal schedules and dynamic pricing can increase revenue by up to 30%.
+          {t("note2.content")}
         </DocsNote>
 
-        <DocsCTA href="/docs/pre-sales/club-owner/bookings-overview">
-          Back to Bookings Overview
+        <DocsCTA href={t("cta.href")}>
+          {t("cta.text")}
         </DocsCTA>
       </DocsSection>
     </DocsPage>
