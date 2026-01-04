@@ -29,7 +29,7 @@ export default async function CrudCourtsPage() {
         <p>{t("section1.content")}</p>
 
         <DocsCallout title="Court Management">
-          As a Club Admin, you have full control over your club's courts, including adding, editing, and managing court availability.
+          As a Club Admin, you have full control over your club&apos;s courts, including adding, editing, and managing court availability.
         </DocsCallout>
 
         <DocsSubsection title="Adding a New Court">

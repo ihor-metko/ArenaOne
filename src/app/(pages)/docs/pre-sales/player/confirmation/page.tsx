@@ -29,7 +29,7 @@ export default async function ConfirmationPage() {
         <p>{t("section1.content")}</p>
 
         <DocsCallout title="Instant Confirmation">
-          Every booking is confirmed instantly. You'll receive immediate confirmation with all the details you need.
+          Every booking is confirmed instantly. You&apos;ll receive immediate confirmation with all the details you need.
         </DocsCallout>
 
         <DocsSubsection title="What's Included in Your Confirmation">
@@ -66,7 +66,7 @@ export default async function ConfirmationPage() {
         </DocsSubsection>
 
         <DocsNote type="info">
-          You'll receive a reminder notification 24 hours and 1 hour before your booking time.
+          You&apos;ll receive a reminder notification 24 hours and 1 hour before your booking time.
         </DocsNote>
 
         <DocsCTA href="/docs/pre-sales/player/overview">

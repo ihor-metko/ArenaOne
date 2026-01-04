@@ -29,7 +29,7 @@ export default async function WorkingHoursPage() {
         <p>{t("section1.content")}</p>
 
         <DocsCallout title="Flexible Scheduling">
-          Configure your club's operating hours to match your business needs, with support for different schedules per day and special dates.
+          Configure your club&apos;s operating hours to match your business needs, with support for different schedules per day and special dates.
         </DocsCallout>
 
         <DocsSubsection title="Setting Regular Working Hours">
