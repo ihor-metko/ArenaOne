@@ -57,7 +57,7 @@ export default function GettingStartedPage() {
           availability and pricing rules.
         </p>
         <DocsList type="bulleted">
-          <li>Name each court (e.g., "Court 1", "Center Court")</li>
+          <li>Name each court (e.g., &quot;Court 1&quot;, &quot;Center Court&quot;)</li>
           <li>Specify court type and surface details</li>
           <li>Set up pricing for different times and days</li>
         </DocsList>
