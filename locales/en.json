@@ -1298,11 +1298,8 @@
       "club": "Club",
       "court": "Court",
       "date": "Date",
-      "time": "Time",
-      "startTime": "Start time",
       "duration": "Duration",
       "courtType": "Court Type",
-      "price": "Price",
       "total": "Total"
     },
     "courtType": {
