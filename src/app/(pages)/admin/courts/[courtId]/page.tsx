@@ -37,10 +37,10 @@ export default function CourtDetailPage({
   const [courtId, setCourtId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isToggleActiveModalOpen, setIsToggleActiveModalOpen] = useState(false);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [isTogglingActive, setIsTogglingActive] = useState(false);
+  const [isTogglingPublish, setIsTogglingPublish] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   // Use court store
@@ -167,16 +167,16 @@ export default function CourtDetailPage({
     }
   };
 
-  const handleToggleActive = async () => {
+  const handleTogglePublish = async () => {
     if (!court) return;
 
-    setIsTogglingActive(true);
+    setIsTogglingPublish(true);
     try {
       const response = await fetch(`/api/admin/courts/${courtId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          isActive: !court.isActive,
+          isPublished: !court.isPublished,
         }),
       });
 
@@ -186,23 +186,23 @@ export default function CourtDetailPage({
       }
 
       await fetchCourt();
-      setIsToggleActiveModalOpen(false);
+      setIsPublishModalOpen(false);
       showToast(
         "success",
-        court.isActive
-          ? t("courts.courtDeactivatedSuccess")
-          : t("courts.courtActivatedSuccess")
+        court.isPublished
+          ? t("courts.courtUnpublishedSuccess")
+          : t("courts.courtPublishedSuccess")
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to save changes";
       showToast("error", message);
     } finally {
-      setIsTogglingActive(false);
+      setIsTogglingPublish(false);
     }
   };
 
-  const handleOpenToggleActiveModal = useCallback(() => {
-    setIsToggleActiveModalOpen(true);
+  const handleOpenPublishModal = useCallback(() => {
+    setIsPublishModalOpen(true);
   }, []);
 
   // Prepare DangerZone actions (memoized to prevent unnecessary re-renders)
@@ -213,15 +213,15 @@ export default function CourtDetailPage({
 
     return [
       {
-        id: 'toggleActive',
-        title: court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt"),
-        description: court.isActive
-          ? t("dangerZone.deactivateCourtDescription")
-          : t("dangerZone.activateCourtDescription"),
-        buttonLabel: court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt"),
-        onAction: handleOpenToggleActiveModal,
-        isProcessing: isTogglingActive,
-        variant: court.isActive ? 'danger' : 'warning',
+        id: 'publish',
+        title: court.isPublished ? t("dangerZone.makeCourtPrivate") : t("dangerZone.makeCourtPublic"),
+        description: court.isPublished
+          ? t("dangerZone.unpublishCourtDescription")
+          : t("dangerZone.publishCourtDescription"),
+        buttonLabel: court.isPublished ? t("dangerZone.makeCourtPrivate") : t("dangerZone.makeCourtPublic"),
+        onAction: handleOpenPublishModal,
+        isProcessing: isTogglingPublish,
+        variant: court.isPublished ? 'danger' : 'warning',
         show: canManageCourt,
       },
       {
@@ -235,7 +235,7 @@ export default function CourtDetailPage({
         show: canManageCourt,
       },
     ];
-  }, [court, canManageCourt, isTogglingActive, submitting, t, handleOpenToggleActiveModal]);
+  }, [court, canManageCourt, isTogglingPublish, submitting, t, handleOpenPublishModal]);
 
   const handleOpenDetailsEdit = () => {
     setIsEditingDetails(true);
@@ -301,6 +301,7 @@ export default function CourtDetailPage({
         imageUrl={court.bannerData?.url}
         bannerAlignment={courtMetadata?.bannerAlignment || 'center'}
         imageAlt={`${court.name} banner`}
+        isPublished={court.isPublished}
         onEdit={handleOpenDetailsEdit}
       />
 
@@ -326,28 +327,28 @@ export default function CourtDetailPage({
         </section>
       </div>
 
-      {/* Toggle Active/Inactive Confirmation Modal */}
+      {/* Publish/Unpublish Confirmation Modal */}
       <Modal
-        isOpen={isToggleActiveModalOpen}
-        onClose={() => setIsToggleActiveModalOpen(false)}
-        title={court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt")}
+        isOpen={isPublishModalOpen}
+        onClose={() => setIsPublishModalOpen(false)}
+        title={court.isPublished ? t("dangerZone.makeCourtPrivate") : t("dangerZone.makeCourtPublic")}
       >
         <p className="mb-4">
-          {court.isActive
-            ? t("dangerZone.deactivateCourtConfirm", { name: court.name })
-            : t("dangerZone.activateCourtConfirm", { name: court.name })
+          {court.isPublished
+            ? t("dangerZone.unpublishCourtConfirm", { name: court.name })
+            : t("dangerZone.publishCourtConfirm", { name: court.name })
           }
         </p>
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setIsToggleActiveModalOpen(false)}>
+          <Button variant="outline" onClick={() => setIsPublishModalOpen(false)}>
             {t("common.cancel")}
           </Button>
           <Button
-            onClick={handleToggleActive}
-            disabled={isTogglingActive}
-            className={court.isActive ? "bg-red-500 hover:bg-red-600" : ""}
+            onClick={handleTogglePublish}
+            disabled={isTogglingPublish}
+            className={court.isPublished ? "bg-red-500 hover:bg-red-600" : ""}
           >
-            {isTogglingActive ? t("common.processing") : (court.isActive ? t("dangerZone.deactivateCourt") : t("dangerZone.activateCourt"))}
+            {isTogglingPublish ? t("common.processing") : (court.isPublished ? t("dangerZone.makeCourtPrivate") : t("dangerZone.makeCourtPublic"))}
           </Button>
         </div>
       </Modal>
