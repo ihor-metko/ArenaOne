@@ -14,6 +14,7 @@ interface AvailableCourt {
   surface: string | null;
   indoor: boolean;
   sportType: string;
+  courtFormat: string | null;
   defaultPriceCents: number;
   /**
    * Resolved price for the requested time slot in cents.
@@ -89,9 +90,9 @@ export async function GET(
     const courtTypeParam = url.searchParams.get("courtType"); // Optional court type filter
 
     // Validate court type if provided
-    if (courtTypeParam && courtTypeParam !== "Single" && courtTypeParam !== "Double") {
+    if (courtTypeParam && courtTypeParam !== "SINGLE" && courtTypeParam !== "DOUBLE") {
       return NextResponse.json(
-        { error: "Invalid court type. Must be 'Single' or 'Double'" },
+        { error: "Invalid court type. Must be 'SINGLE' or 'DOUBLE'" },
         { status: 400 }
       );
     }
@@ -164,7 +165,7 @@ export async function GET(
         courts: {
           where: {
             isPublished: true, // Only return published courts for players
-            ...(courtTypeParam && { type: courtTypeParam }), // Filter by court type if provided
+            ...(courtTypeParam && { courtFormat: courtTypeParam }), // Filter by court format if provided
           },
           select: {
             id: true,
@@ -174,6 +175,7 @@ export async function GET(
             surface: true,
             indoor: true,
             sportType: true,
+            courtFormat: true,
             defaultPriceCents: true,
           },
         },
@@ -247,6 +249,7 @@ export async function GET(
           surface: court.surface,
           indoor: court.indoor,
           sportType: court.sportType || "PADEL",
+          courtFormat: court.courtFormat,
           defaultPriceCents: court.defaultPriceCents,
           priceCents: resolvedPrice,
         });

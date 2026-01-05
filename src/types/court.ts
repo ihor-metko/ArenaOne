@@ -168,6 +168,7 @@ export interface WeeklyAvailabilityResponse {
     type: string | null;
     indoor: boolean;
     sportType?: string;
+    courtFormat?: string | null;
   }>;
   mode?: AvailabilityMode;
 }

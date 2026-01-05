@@ -20,14 +20,14 @@ interface Step1DateTimeProps {
   estimatedPrice: number | null;
   estimatedPriceRange?: { min: number; max: number } | null;
   isLoading?: boolean;
-  availableCourtTypes?: ("Single" | "Double")[];
+  availableCourtTypes?: ("SINGLE" | "DOUBLE")[];
   businessHours?: ClubBusinessHours[];
 }
 
 // Translation key mapping for court types
-const COURT_TYPE_TRANSLATION_KEYS: Record<"Single" | "Double", string> = {
-  Single: "courts.padelCourtFormatSingle",
-  Double: "courts.padelCourtFormatDouble",
+const COURT_TYPE_TRANSLATION_KEYS: Record<"SINGLE" | "DOUBLE", string> = {
+  SINGLE: "courts.padelCourtFormatSingle",
+  DOUBLE: "courts.padelCourtFormatDouble",
 };
 
 
@@ -37,7 +37,7 @@ export function Step1DateTime({
   estimatedPrice,
   estimatedPriceRange,
   isLoading = false,
-  availableCourtTypes = ["Single", "Double"], // Default to both types if not provided
+  availableCourtTypes = ["SINGLE", "DOUBLE"], // Default to both types if not provided
   businessHours,
 }: Step1DateTimeProps) {
   const t = useTranslations();
@@ -128,7 +128,7 @@ export function Step1DateTime({
               }))}
               value={data.courtType}
               onChange={(value) => {
-                if (value === "Single" || value === "Double") {
+                if (value === "SINGLE" || value === "DOUBLE") {
                   onChange({ courtType: value });
                 }
               }}
