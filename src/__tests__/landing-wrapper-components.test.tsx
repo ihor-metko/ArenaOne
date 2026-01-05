@@ -33,6 +33,7 @@ jest.mock("next-intl", () => ({
 jest.mock("@/stores/useUserStore", () => ({
   useUserStore: () => ({
     isLoggedIn: false,
+    isHydrated: true,
   }),
 }));
 
