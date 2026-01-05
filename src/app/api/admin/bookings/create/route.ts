@@ -87,8 +87,8 @@ export async function POST(request: Request) {
     }
 
     // Check admin permissions
-    if (authResult.adminType === "club_admin") {
-      // Club admin can only book for their managed clubs
+    if (authResult.adminType === "club_admin" || authResult.adminType === "club_owner") {
+      // Club admin/owner can only book for their managed clubs
       if (!authResult.managedIds.includes(court.club.id)) {
         return NextResponse.json(
           { error: "You don't have permission to create bookings for this club" },

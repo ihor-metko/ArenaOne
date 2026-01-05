@@ -227,12 +227,12 @@ export default function AdminBookingsPage() {
     if (adminStatus) {
       try {
         // Fetch clubs once at the beginning if needed
-        if (adminStatus.adminType === "club_admin" || adminStatus.adminType === "organization_admin") {
+        if (adminStatus.adminType === "club_admin" || adminStatus.adminType === "club_owner" || adminStatus.adminType === "organization_admin") {
           await fetchClubsIfNeeded();
         }
 
-        if (adminStatus.adminType === "club_admin" && adminStatus.managedIds.length > 0) {
-          // For Club Admin: Preselect the first managed club and fetch its organization
+        if ((adminStatus.adminType === "club_admin" || adminStatus.adminType === "club_owner") && adminStatus.managedIds.length > 0) {
+          // For Club Admin/Owner: Preselect the first managed club and fetch its organization
           const clubId = adminStatus.managedIds[0];
           
           // Find the club in the clubs array
