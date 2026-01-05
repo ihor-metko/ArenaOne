@@ -90,6 +90,7 @@ export interface PlayerQuickBookingProps {
     date: string;
     startTime: string;
     duration: number;
+    courtType?: "Single" | "Double";
   };
 }
 

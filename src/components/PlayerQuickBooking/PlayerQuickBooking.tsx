@@ -60,12 +60,14 @@ export function PlayerQuickBooking({
 
   // Initialize state with preselected data
   const [state, setState] = useState<PlayerQuickBookingState>(() => {
-    const initialDateTime = preselectedDateTime || {
-      date: getTodayDateString(),
-      startTime: "10:00",
-      duration: MINUTES_PER_HOUR,
-      courtType: "Double" as "Single" | "Double",
-    };
+    const initialDateTime: PlayerBookingStep1Data = preselectedDateTime 
+      ? { ...preselectedDateTime, courtType: preselectedDateTime.courtType || "Double" }
+      : {
+          date: getTodayDateString(),
+          startTime: "10:00",
+          duration: MINUTES_PER_HOUR,
+          courtType: "Double",
+        };
 
     return {
       currentStep: visibleSteps[0]?.id || 0,
@@ -102,12 +104,14 @@ export function PlayerQuickBooking({
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
-      const initialDateTime = preselectedDateTime || {
-        date: getTodayDateString(),
-        startTime: "10:00",
-        duration: MINUTES_PER_HOUR,
-        courtType: "Double" as "Single" | "Double",
-      };
+      const initialDateTime: PlayerBookingStep1Data = preselectedDateTime 
+        ? { ...preselectedDateTime, courtType: preselectedDateTime.courtType || "Double" }
+        : {
+            date: getTodayDateString(),
+            startTime: "10:00",
+            duration: MINUTES_PER_HOUR,
+            courtType: "Double",
+          };
 
       setState({
         currentStep: visibleSteps[0]?.id || 0,
