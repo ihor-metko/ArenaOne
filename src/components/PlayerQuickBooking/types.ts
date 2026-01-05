@@ -68,9 +68,11 @@ export interface PlayerQuickBookingState {
   step4: PlayerBookingStep4Data;
   availableClubs: BookingClub[];
   availableCourts: BookingCourt[];
+  availableCourtTypes: ("Single" | "Double")[];
   alternativeDurations: number[];
   isLoadingClubs: boolean;
   isLoadingCourts: boolean;
+  isLoadingCourtTypes: boolean;
   clubsError: string | null;
   courtsError: string | null;
   estimatedPrice: number | null;
