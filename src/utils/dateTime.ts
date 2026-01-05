@@ -227,7 +227,7 @@ export function getTodayInTimezone(): Date {
  * @returns Date string in YYYY-MM-DD format
  */
 export function getTodayStr(): string {
-  return getTodayInTimezone().toISOString().split("T")[0];
+  return getDateString(getTodayInTimezone());
 }
 
 /**
