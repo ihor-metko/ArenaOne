@@ -4,6 +4,7 @@ import { requireClubAdmin, requireOrganizationAdmin } from "@/lib/requireRole";
 import type { OperationsBooking } from "@/types/booking";
 import { migrateLegacyStatus } from "@/utils/bookingStatus";
 import { SportType } from "@/constants/sports";
+import { createDayRange } from "@/utils/dateTime";
 
 /**
  * GET /api/clubs/[clubId]/operations/bookings
@@ -67,12 +68,8 @@ export async function GET(
   }
 
   try {
-    // Parse date and create start/end of day timestamps
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Parse date and create start/end of day timestamps in platform timezone
+    const { startOfDay, endOfDay } = createDayRange(date);
 
     // Fetch all bookings for this club on this date
     const bookings = await prisma.booking.findMany({
