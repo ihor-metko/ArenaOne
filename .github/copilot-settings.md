@@ -181,7 +181,7 @@ When generating UI components, **do not add `outline` or browser default focus r
 
 Instead, use custom visual indicators (like box-shadow or border changes) if needed, but never rely on the default browser outline.
 
-**Example:**
+<!-- **Example:**
 
 ```css
 /* Avoid default outline */
@@ -190,4 +190,44 @@ Instead, use custom visual indicators (like box-shadow or border changes) if nee
 .my-button:active,
 .my-button:hover {
   outline: none;
-}
+} -->
+
+# 9. Mobile Player Flow – Mandatory Documentation Reference
+
+## Rule
+
+When working on any **mobile player-facing feature**, you must **always** reference and strictly follow the document: /docs/player-mobile-flow.md
+
+This document is the **single source of truth** for:
+- Player role behavior
+- Mobile-first UX decisions
+- Screen order and navigation
+- Availability and booking flow
+- Forbidden UI patterns
+
+---
+
+## Mandatory Requirements
+
+- Do **not** invent, modify, or reinterpret player UX or flow.
+- Do **not** reorder, skip, or merge screens defined in the document.
+- Do **not** introduce desktop-first patterns or grid-based availability views.
+- Do **not** show unpublished courts or clubs without published courts.
+- Do **not** mix admin and player UI components.
+- Do **not** require authentication to browse clubs or availability.
+- If any requirement is unclear, **stop and ask for clarification** instead of guessing.
+
+---
+
+## Enforcement
+
+If a requested change conflicts with `/docs/player-mobile-flow.md`,
+the implementation **must not proceed** until the document is updated and approved.
+
+---
+
+## Copilot Instruction
+
+> Before implementing any mobile player feature, re-read
+> `/docs/player-mobile-flow.md`
+> and ensure the implementation fully complies with it.
