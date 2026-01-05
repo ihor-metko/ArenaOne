@@ -1429,6 +1429,23 @@
     },
     "bookingsError": "Failed to load bookings. Please try again."
   },
+  "playerProfile": {
+    "title": "My Profile",
+    "basicInfo": "Basic Information",
+    "upcomingBookings": {
+      "title": "Upcoming Bookings",
+      "noBookings": "У вас поки що немає майбутніх бронювань",
+      "viewDetails": "View details"
+    },
+    "pastBookings": {
+      "title": "Past Bookings",
+      "noBookings": "Ще немає минулих бронювань"
+    },
+    "actions": {
+      "backToClubs": "Back to Clubs",
+      "bookNewCourt": "Book a new court"
+    }
+  },
   "footer": {
     "brandName": "ArenaOne",
     "tagline": "Find and book padel courts at the best clubs near you.",
