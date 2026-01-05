@@ -61,11 +61,11 @@ export function LandingMobileView() {
 
         {/* Secondary CTA */}
         <div className="im-mobile-landing-secondary-actions">
-          <IMLink href="/auth/signin" className="im-mobile-landing-link">
+          <IMLink href="/auth/sign-in" className="im-mobile-landing-link">
             {t("auth.signIn")}
           </IMLink>
           <span className="im-mobile-landing-separator">/</span>
-          <IMLink href="/auth/signup" className="im-mobile-landing-link">
+          <IMLink href="/auth/sign-up" className="im-mobile-landing-link">
             {t("auth.signUp")}
           </IMLink>
         </div>
