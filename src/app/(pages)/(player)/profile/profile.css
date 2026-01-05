@@ -168,9 +168,12 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -215,7 +218,7 @@
   }
 
   .im-player-profile-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .im-profile-avatar {
