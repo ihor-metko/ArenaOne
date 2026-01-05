@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getResolvedPriceForSlot } from "@/lib/priceRules";
 
 // Business hours configuration (same as availability endpoint)
 const BUSINESS_START_HOUR = 9;
@@ -14,6 +15,7 @@ interface AvailableCourt {
   indoor: boolean;
   sportType: string;
   defaultPriceCents: number;
+  priceCents: number; // Resolved price for the requested slot
 }
 
 interface AvailableCourtsResponse {
@@ -175,6 +177,14 @@ export async function GET(
       }
 
       if (isAvailable) {
+        // Calculate resolved price for this court based on date, time, and duration
+        const resolvedPrice = await getResolvedPriceForSlot(
+          court.id,
+          dateParam,
+          timeStart,
+          duration
+        );
+
         availableCourts.push({
           id: court.id,
           name: court.name,
@@ -184,6 +194,7 @@ export async function GET(
           indoor: court.indoor,
           sportType: court.sportType || "PADEL",
           defaultPriceCents: court.defaultPriceCents,
+          priceCents: resolvedPrice,
         });
       }
     }
