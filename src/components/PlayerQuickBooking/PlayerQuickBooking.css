@@ -478,6 +478,7 @@
 .rsp-wizard-court-type-group .im-radio-option {
   flex: 1;
   justify-content: center;
+  text-align: center;
 }
 
 .rsp-wizard-price-estimate {
