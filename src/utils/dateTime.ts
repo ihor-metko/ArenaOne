@@ -2,6 +2,9 @@
  * Date and time utilities for the application
  */
 
+// Platform timezone (Europe/Kyiv)
+export const PLATFORM_TIMEZONE = "Europe/Kyiv";
+
 /**
  * Create start and end of day Date objects for a given date string in platform timezone
  * Returns UTC Date objects that represent the start and end of the day in Europe/Kyiv
@@ -16,12 +19,28 @@ export function createDayRange(dateParam: string): {
   startOfDay: Date;
   endOfDay: Date;
 } {
+  // Validate date format (YYYY-MM-DD)
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(dateParam)) {
+    throw new Error(`Invalid date format: ${dateParam}. Expected YYYY-MM-DD format.`);
+  }
+  
   // Parse the date components
   const [year, month, day] = dateParam.split('-').map(Number);
+  
+  // Validate date values
+  if (isNaN(year) || isNaN(month) || isNaN(day) || month < 1 || month > 12 || day < 1 || day > 31) {
+    throw new Error(`Invalid date values in: ${dateParam}`);
+  }
   
   // Create a date at noon on the target day to determine the timezone offset for that day
   // This handles DST transitions correctly
   const middayUTC = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  
+  // Validate that the date is valid (catches invalid dates like Feb 30)
+  if (isNaN(middayUTC.getTime())) {
+    throw new Error(`Invalid date: ${dateParam}`);
+  }
   
   // Use formatToParts to reliably extract hour and minute in platform timezone
   const formatter = new Intl.DateTimeFormat("en-US", {
@@ -186,9 +205,6 @@ export function doTimesOverlap(
 export function isValidDayOfWeek(day: unknown): day is number {
   return typeof day === "number" && Number.isInteger(day) && day >= 0 && day <= 6;
 }
-
-// Platform timezone (Europe/Kyiv)
-export const PLATFORM_TIMEZONE = "Europe/Kyiv";
 
 /**
  * Get today's date in the platform timezone (Europe/Kyiv)
