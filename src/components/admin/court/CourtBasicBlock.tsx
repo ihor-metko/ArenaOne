@@ -39,7 +39,7 @@ export function CourtBasicBlock({ court, onUpdate }: CourtBasicBlockProps) {
     surface: court.surface || "",
     indoor: court.indoor,
     sportType: court.sportType || SportType.PADEL,
-    courtFormat: court.courtFormat || "",
+    courtFormat: court.courtFormat || null,
     description: court.description || "",
     isPublished: court.isPublished ?? false,
     defaultPriceCents: court.defaultPriceCents,
@@ -53,7 +53,7 @@ export function CourtBasicBlock({ court, onUpdate }: CourtBasicBlockProps) {
       surface: court.surface || "",
       indoor: court.indoor,
       sportType: court.sportType || SportType.PADEL,
-      courtFormat: court.courtFormat || "",
+      courtFormat: court.courtFormat || null,
       description: court.description || "",
       isPublished: court.isPublished ?? false,
       defaultPriceCents: court.defaultPriceCents,
@@ -380,15 +380,18 @@ export function CourtBasicBlock({ court, onUpdate }: CourtBasicBlockProps) {
                   label: t("courtDetail.blocks.basicInformation.courtFormatDouble"),
                 },
               ]}
-              value={formData.courtFormat}
+              value={formData.courtFormat || ""}
               onChange={(value) => {
-                setFormData((prev) => ({ ...prev, courtFormat: value }));
-                if (fieldErrors.courtFormat) {
-                  setFieldErrors((prev) => {
-                    const updated = { ...prev };
-                    delete updated.courtFormat;
-                    return updated;
-                  });
+                // Validate value before setting
+                if (value === 'SINGLE' || value === 'DOUBLE') {
+                  setFormData((prev) => ({ ...prev, courtFormat: value as CourtFormat }));
+                  if (fieldErrors.courtFormat) {
+                    setFieldErrors((prev) => {
+                      const updated = { ...prev };
+                      delete updated.courtFormat;
+                      return updated;
+                    });
+                  }
                 }
               }}
               disabled={isSaving}
