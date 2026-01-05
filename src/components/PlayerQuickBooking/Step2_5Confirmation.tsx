@@ -79,7 +79,7 @@ export function Step2_5Confirmation({
         </div>
 
         <p className="rsp-wizard-price-note">
-          {t("wizard.priceVariesByTime")}
+          {t("wizard.priceConfirmed")}
         </p>
       </div>
     </div>
