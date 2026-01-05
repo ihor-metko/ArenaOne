@@ -127,6 +127,7 @@ export interface BookingStepConfig {
 
 // Default court type - Double courts are most common in Padel
 export const DEFAULT_COURT_TYPE: "Single" | "Double" = "Double";
+export const DEFAULT_DURATION = 120; // 2 hours
 
 // Business hours configuration
 export const BUSINESS_START_HOUR = 8;
@@ -193,6 +194,21 @@ export function generateTimeOptionsForDate(
       currentMinute = 0;
       currentHour += 1;
     }
+  }
+
+  // Filter out past times if the date is today
+  // Import filterPastTimeSlots from utils/dateTime
+  // For now, we'll do inline filtering to avoid circular dependencies
+  const today = new Date().toISOString().split("T")[0];
+  if (date === today) {
+    const now = new Date();
+    const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    return options.filter((timeSlot) => {
+      const [slotHour, slotMinute] = timeSlot.split(":").map(Number);
+      const slotTotalMinutes = slotHour * 60 + slotMinute;
+      return slotTotalMinutes > currentTotalMinutes;
+    });
   }
 
   return options;

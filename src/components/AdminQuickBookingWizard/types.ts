@@ -193,7 +193,8 @@ export const ADMIN_WIZARD_STEPS: WizardStepConfig[] = [
 // Business hours configuration
 export const BUSINESS_START_HOUR = 9;
 export const BUSINESS_END_HOUR = 22;
-export const DURATION_OPTIONS = [30, 60, 90, 120];
+export const DURATION_OPTIONS = [30, 60, 90, 120, 150, 180];
+export const DEFAULT_DURATION = 120; // 2 hours
 
 // Generate time options for the dropdown
 export function generateTimeOptions(): string[] {

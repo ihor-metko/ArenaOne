@@ -8,8 +8,7 @@ import {
   DURATION_OPTIONS,
   getTodayDateString,
 } from "./types";
-
-const TIME_OPTIONS = generateTimeOptions();
+import { filterPastTimeSlots } from "@/utils/dateTime";
 
 interface Step3DateTimeProps {
   data: WizardStepDateTime;
@@ -23,6 +22,9 @@ export function Step3DateTime({
   isLoading = false,
 }: Step3DateTimeProps) {
   const t = useTranslations();
+
+  // Filter time options to exclude past times for today
+  const TIME_OPTIONS = filterPastTimeSlots(generateTimeOptions(), data.date);
 
   return (
     <div className="rsp-admin-wizard-step">

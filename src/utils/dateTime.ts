@@ -205,3 +205,48 @@ export function getWeekMonday(date: Date): Date {
   monday.setHours(0, 0, 0, 0);
   return monday;
 }
+
+/**
+ * Get current time in HH:MM format using platform timezone
+ * @returns Current time string in HH:MM format
+ */
+export function getCurrentTimeInTimezone(): string {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: PLATFORM_TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return formatter.format(new Date());
+}
+
+/**
+ * Check if a given date is today in the platform timezone
+ * @param dateStr Date string in YYYY-MM-DD format
+ * @returns true if the date is today
+ */
+export function isToday(dateStr: string): boolean {
+  return dateStr === getTodayStr();
+}
+
+/**
+ * Filter time slots to exclude past times if the date is today
+ * @param timeSlots Array of time strings in HH:MM format
+ * @param dateStr Date string in YYYY-MM-DD format
+ * @returns Filtered array of time strings
+ */
+export function filterPastTimeSlots(timeSlots: string[], dateStr: string): string[] {
+  if (!isToday(dateStr)) {
+    return timeSlots;
+  }
+
+  const currentTime = getCurrentTimeInTimezone();
+  const [currentHour, currentMinute] = currentTime.split(":").map(Number);
+  const currentTotalMinutes = currentHour * 60 + currentMinute;
+
+  return timeSlots.filter((timeSlot) => {
+    const [slotHour, slotMinute] = timeSlot.split(":").map(Number);
+    const slotTotalMinutes = slotHour * 60 + slotMinute;
+    return slotTotalMinutes > currentTotalMinutes;
+  });
+}

@@ -15,6 +15,7 @@ import {
   WIZARD_STEPS,
   getTodayDateString,
   calculateEndTime,
+  DEFAULT_DURATION,
 } from "./types";
 import "./QuickBookingWizard.css";
 
@@ -26,7 +27,7 @@ const initialState: WizardState = {
   step1: {
     date: getTodayDateString(),
     startTime: "10:00",
-    duration: MINUTES_PER_HOUR, // Default 1 hour
+    duration: DEFAULT_DURATION, // Default 2 hours
   },
   step2: {
     selectedCourtId: null,

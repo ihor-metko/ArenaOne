@@ -29,6 +29,7 @@ import {
   WizardStepDateTime,
   getTodayDateString,
   getFirstVisibleStepId,
+  DEFAULT_DURATION,
 } from "./types";
 import "./AdminQuickBookingWizard.css";
 
@@ -74,7 +75,7 @@ export function AdminQuickBookingWizard({
       stepDateTime: {
         date: predefinedData?.date || getTodayDateString(),
         startTime: predefinedData?.startTime || "10:00",
-        duration: predefinedData?.duration || MINUTES_PER_HOUR,
+        duration: predefinedData?.duration || DEFAULT_DURATION,
       },
       stepCourt: {
         selectedCourtId: predefinedData?.courtId || null,
@@ -177,7 +178,7 @@ export function AdminQuickBookingWizard({
         stepDateTime: {
           date: predefinedData?.date || getTodayDateString(),
           startTime: predefinedData?.startTime || "10:00",
-          duration: predefinedData?.duration || MINUTES_PER_HOUR,
+          duration: predefinedData?.duration || DEFAULT_DURATION,
         },
         stepCourt: {
           selectedCourtId: predefinedData?.courtId || null,
@@ -257,7 +258,7 @@ export function AdminQuickBookingWizard({
       const newDateTime = {
         date: predefinedData.date || getTodayDateString(),
         startTime: predefinedData.startTime || "10:00",
-        duration: predefinedData.duration || MINUTES_PER_HOUR,
+        duration: predefinedData.duration || DEFAULT_DURATION,
       };
       
       setState((prev) => ({
