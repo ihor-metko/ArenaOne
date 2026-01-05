@@ -201,6 +201,23 @@
   flex-shrink: 0;
 }
 
+.im-mobile-club-card-badge {
+  margin-top: 0.5rem;
+}
+
+.im-mobile-club-card-badge-text {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border-radius: 0.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
 .im-mobile-club-card-arrow {
   flex-shrink: 0;
   width: 24px;

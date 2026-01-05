@@ -277,6 +277,8 @@
     "loadingClubs": "Loading clubs...",
     "failedToLoad": "Failed to load clubs. Please try again later.",
     "noClubs": "No clubs available yet.",
+    "noAddress": "No address",
+    "availableCourts": "Available Courts",
     "updateSuccess": "Club updated successfully!",
     "errors": {
       "updateFailed": "Failed to update club",

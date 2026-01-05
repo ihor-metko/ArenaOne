@@ -81,15 +81,26 @@ export async function GET(request: Request) {
           select: {
             id: true,
             indoor: true,
+            isPublished: true,
           },
         },
       },
     });
 
     // Process clubs to add indoor/outdoor counts and apply city filter
+    // Only show clubs with published courts (isPublished = true)
     const clubsWithCounts = clubs.map((club) => {
-      const indoorCount = club.courts.filter((c) => c.indoor).length;
-      const outdoorCount = club.courts.filter((c) => !c.indoor).length;
+      // Count only published courts
+      const publishedCourts = club.courts.filter((c) => c.isPublished);
+      const publishedCourtsCount = publishedCourts.length;
+      
+      // Filter out clubs with no published courts
+      if (publishedCourtsCount === 0) {
+        return null;
+      }
+      
+      const indoorCount = publishedCourts.filter((c) => c.indoor).length;
+      const outdoorCount = publishedCourts.filter((c) => !c.indoor).length;
 
       // Filter by indoor param if provided
       if (indoor === "true" && indoorCount === 0) {
@@ -124,6 +135,7 @@ export async function GET(request: Request) {
         createdAt: club.createdAt,
         indoorCount,
         outdoorCount,
+        publishedCourtsCount,
       };
     }).filter((club): club is NonNullable<typeof club> => club !== null);
 
