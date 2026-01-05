@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Modal, Button, Card, Select } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
+import { filterPastTimeSlots } from "@/utils/dateTime";
 import "./QuickBookingModal.css";
 
 interface AvailableCourt {
@@ -44,8 +45,8 @@ function generateTimeOptions(): string[] {
   return options;
 }
 
-const TIME_OPTIONS = generateTimeOptions();
-const DURATION_OPTIONS = [30, 60, 90, 120];
+const DURATION_OPTIONS = [60, 90, 120, 150, 180];
+const DEFAULT_DURATION = 120; // 2 hours
 
 export function QuickBookingModal({
   clubId,
@@ -56,11 +57,14 @@ export function QuickBookingModal({
   const t = useTranslations();
   const [date, setDate] = useState<string>(getTodayDateString());
   const [startTime, setStartTime] = useState<string>("10:00");
-  const [duration, setDuration] = useState<number>(60);
+  const [duration, setDuration] = useState<number>(DEFAULT_DURATION);
   const [availableCourts, setAvailableCourts] = useState<AvailableCourt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Filter time options to exclude past times for today
+  const timeOptions = filterPastTimeSlots(generateTimeOptions(), date);
 
   const handleFindCourts = useCallback(async () => {
     setIsLoading(true);
@@ -193,7 +197,7 @@ export function QuickBookingModal({
           <Select
             id="quick-booking-time"
             label={t("booking.quickBooking.startTime")}
-            options={TIME_OPTIONS.map((time) => ({
+            options={timeOptions.map((time) => ({
               value: time,
               label: time,
             }))}

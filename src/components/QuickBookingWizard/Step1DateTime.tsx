@@ -9,7 +9,9 @@ import {
   DURATION_OPTIONS,
   isPeakHour,
   WizardStep1Data,
+  DEFAULT_DURATION,
 } from "./types";
+import { filterPastTimeSlots } from "@/utils/dateTime";
 
 interface Step1DateTimeProps {
   data: WizardStep1Data;
@@ -17,8 +19,6 @@ interface Step1DateTimeProps {
   estimatedPrice: number | null;
   isLoading?: boolean;
 }
-
-const TIME_OPTIONS = generateTimeOptions();
 
 export function Step1DateTime({
   data,
@@ -28,6 +28,9 @@ export function Step1DateTime({
 }: Step1DateTimeProps) {
   const t = useTranslations();
   const isPeak = isPeakHour(data.date, data.startTime);
+
+  // Filter time options to exclude past times for today
+  const TIME_OPTIONS = filterPastTimeSlots(generateTimeOptions(), data.date);
 
   return (
     <div className="rsp-wizard-step-content" role="group" aria-labelledby="step1-title">
