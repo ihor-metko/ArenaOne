@@ -5,10 +5,9 @@ import { requireAuth } from "@/lib/requireRole";
 /**
  * GET /api/bookings
  * 
- * Fetch bookings for a user with optional filters
+ * Fetch bookings for the authenticated user with optional filters
  * 
  * Query parameters:
- * - userId: string (required) - ID of the user
  * - upcoming: boolean (optional) - Filter for upcoming bookings only
  * 
  * Returns:
@@ -22,16 +21,11 @@ export async function GET(request: NextRequest) {
       return authResult.response;
     }
 
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
-    const upcomingParam = searchParams.get("upcoming");
+    // Get userId from authenticated session
+    const userId = authResult.userId;
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: "userId is required" },
-        { status: 400 }
-      );
-    }
+    const { searchParams } = new URL(request.url);
+    const upcomingParam = searchParams.get("upcoming");
 
     const now = new Date();
     const isUpcoming = upcomingParam === "true";
@@ -40,15 +34,15 @@ export async function GET(request: NextRequest) {
     const whereClause: {
       userId: string;
       end?: { gte: Date } | { lt: Date };
-      status?: { notIn: string[] };
+      status?: { in: string[] };
     } = {
       userId,
     };
 
     if (isUpcoming) {
-      // Upcoming bookings: end time is in the future and not cancelled
+      // Upcoming bookings: end time is in the future and has an active status
       whereClause.end = { gte: now };
-      whereClause.status = { notIn: ["cancelled"] };
+      whereClause.status = { in: ["reserved", "paid", "confirmed"] };
     } else {
       // Past bookings: end time is in the past
       whereClause.end = { lt: now };

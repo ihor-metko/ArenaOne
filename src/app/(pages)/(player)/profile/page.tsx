@@ -61,7 +61,7 @@ export default function PlayerProfilePage() {
     setUpcomingLoading(true);
 
     try {
-      const response = await fetch(`/api/bookings?userId=${user.id}&upcoming=true`);
+      const response = await fetch(`/api/bookings?upcoming=true`);
       if (response.ok) {
         const data = await response.json();
         setUpcomingBookings(Array.isArray(data) ? data : []);
@@ -82,7 +82,7 @@ export default function PlayerProfilePage() {
     setPastLoading(true);
 
     try {
-      const response = await fetch(`/api/bookings?userId=${user.id}&upcoming=false`);
+      const response = await fetch(`/api/bookings?upcoming=false`);
       if (response.ok) {
         const data = await response.json();
         setPastBookings(Array.isArray(data) ? data : []);

@@ -151,7 +151,7 @@ export default function PlayerDashboardPage() {
     setBookingsError(null);
 
     try {
-      const response = await fetch(`/api/bookings?userId=${userId}&upcoming=true`);
+      const response = await fetch(`/api/bookings?upcoming=true`);
       if (response.ok) {
         const data = await response.json();
         setUpcomingBookings(Array.isArray(data) ? data : data.bookings || []);
