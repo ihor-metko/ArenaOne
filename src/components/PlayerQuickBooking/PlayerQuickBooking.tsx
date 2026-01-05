@@ -171,8 +171,11 @@ export function PlayerQuickBooking({
               },
             }));
           }
-        } catch {
+        } catch (error) {
           // Silently fail - user can select club manually
+          if (process.env.NODE_ENV === "development") {
+            console.warn("Failed to fetch preselected club:", preselectedClubId, error);
+          }
         }
       }
     };
@@ -447,8 +450,11 @@ export function PlayerQuickBooking({
           },
         }));
       }
-    } catch {
+    } catch (error) {
       // Silently fail - business hours will use defaults
+      if (process.env.NODE_ENV === "development") {
+        console.warn("Failed to fetch business hours for club:", club.id, error);
+      }
     }
   }, []);
 
