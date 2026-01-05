@@ -120,8 +120,14 @@ export default function PlayerProfilePage() {
 
       const data = await response.json();
       
-      // TODO: Redirect to payment flow with the booking details
-      // For now, we'll just show a success message and refresh bookings
+      // NOTE: Payment flow integration is intentionally left as a TODO
+      // This PR implements the backend API and UI for resuming payment.
+      // The actual payment provider integration (WayForPay/LiqPay) will be
+      // implemented in a separate task as it requires additional payment
+      // gateway configuration and testing.
+      // For now, successfully calling resume-payment extends the reservation
+      // by 5 minutes, allowing users to complete payment when the payment
+      // flow is integrated.
       console.log("Payment resumed:", data);
       
       // Refresh bookings to show updated expiration time
