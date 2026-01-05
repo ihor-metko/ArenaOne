@@ -6,6 +6,7 @@ import { emitBookingCreated } from "@/lib/socketEmitters";
 import type { OperationsBooking } from "@/types/booking";
 import { migrateLegacyStatus } from "@/utils/bookingStatus";
 import { updateStatisticsForBooking } from "@/services/statisticsService";
+import { LEGACY_STATUS, BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking";
 
 interface BookingRequest {
   courtId: string;
@@ -129,7 +130,7 @@ export async function POST(request: Request) {
           userId: body.userId,
           start: startTime,
           end: endTime,
-          status: "reserved",
+          status: LEGACY_STATUS.RESERVED,
         },
       });
 
@@ -140,10 +141,10 @@ export async function POST(request: Request) {
           start: { lt: endTime },
           end: { gt: startTime },
           OR: [
-            { status: "paid" },
+            { status: LEGACY_STATUS.PAID },
             {
               AND: [
-                { status: "reserved" },
+                { status: LEGACY_STATUS.RESERVED },
                 { reservationExpiresAt: { gt: new Date() } },
                 // Exclude the current user's own reservation
                 existingReservation ? { id: { not: existingReservation.id } } : {},
@@ -165,9 +166,9 @@ export async function POST(request: Request) {
         newBooking = await tx.booking.update({
           where: { id: existingReservation.id },
           data: {
-            status: "paid",
-            bookingStatus: "Active",
-            paymentStatus: "Paid",
+            status: LEGACY_STATUS.PAID,
+            bookingStatus: BOOKING_STATUS.ACTIVE,
+            paymentStatus: PAYMENT_STATUS.PAID,
             reservationExpiresAt: null, // Clear expiry since it's now paid
           },
           include: {
@@ -202,9 +203,9 @@ export async function POST(request: Request) {
             end: endTime,
             price: resolvedPrice,
             sportType: court.sportType || "PADEL",
-            status: "paid",
-            bookingStatus: "Active",
-            paymentStatus: "Paid",
+            status: LEGACY_STATUS.PAID,
+            bookingStatus: BOOKING_STATUS.ACTIVE,
+            paymentStatus: PAYMENT_STATUS.PAID,
           },
           include: {
             user: {

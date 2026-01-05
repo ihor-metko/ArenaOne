@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/requireRole";
-import { BOOKING_STATUS, PAYMENT_STATUS, RESERVATION_EXPIRATION_MS } from "@/types/booking";
+import { BOOKING_STATUS, PAYMENT_STATUS, RESERVATION_EXPIRATION_MS, LEGACY_STATUS } from "@/types/booking";
 
 /**
  * POST /api/bookings/[id]/resume-payment
@@ -99,10 +99,10 @@ export async function POST(
         end: { gt: booking.start },
         id: { not: bookingId },
         OR: [
-          { paymentStatus: "Paid" },
+          { paymentStatus: PAYMENT_STATUS.PAID },
           {
             AND: [
-              { status: "reserved" },
+              { status: LEGACY_STATUS.RESERVED },
               { reservationExpiresAt: { gt: now } },
             ],
           },

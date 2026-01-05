@@ -53,6 +53,19 @@ export const RESERVATION_EXPIRATION_MS = 5 * 60 * 1000;
 export type LegacyBookingStatus = "pending" | "paid" | "cancelled" | "reserved" | "no-show" | "completed" | "ongoing";
 
 /**
+ * Legacy status constants (for backward compatibility)
+ */
+export const LEGACY_STATUS = {
+  PENDING: "pending" as const,
+  PAID: "paid" as const,
+  CANCELLED: "cancelled" as const,
+  RESERVED: "reserved" as const,
+  NO_SHOW: "no-show" as const,
+  COMPLETED: "completed" as const,
+  ONGOING: "ongoing" as const,
+} as const;
+
+/**
  * Dynamic booking status types (calculated on the fly)
  * - reserved: booking exists but now < startAt
  * - ongoing: startAt <= now < endAt

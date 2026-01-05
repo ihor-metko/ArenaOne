@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/requireRole";
 import { getResolvedPriceForSlot } from "@/lib/priceRules";
-import { RESERVATION_EXPIRATION_MS } from "@/types/booking";
+import { RESERVATION_EXPIRATION_MS, LEGACY_STATUS, BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking";
 
 interface ReservationRequest {
   courtId: string;
@@ -120,9 +120,9 @@ export async function POST(request: Request) {
           start: { lt: endTime },
           end: { gt: startTime },
           OR: [
-            { status: "paid" },
+            { status: LEGACY_STATUS.PAID },
             {
-              status: "reserved",
+              status: LEGACY_STATUS.RESERVED,
               reservationExpiresAt: { gt: new Date() },
             },
           ],
@@ -144,9 +144,9 @@ export async function POST(request: Request) {
           end: endTime,
           price: resolvedPrice,
           sportType: court.sportType || "PADEL",
-          status: "reserved",
-          bookingStatus: "Pending",
-          paymentStatus: "Unpaid",
+          status: LEGACY_STATUS.RESERVED,
+          bookingStatus: BOOKING_STATUS.PENDING,
+          paymentStatus: PAYMENT_STATUS.UNPAID,
           reservedAt: new Date(),
           reservationExpiresAt: reservationExpiresAt,
         },
