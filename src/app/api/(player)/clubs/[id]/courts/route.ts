@@ -30,7 +30,7 @@ export async function GET(
     }
 
     const courts = await prisma.court.findMany({
-      where: { 
+      where: {
         clubId,
         isPublished: true, // Only return published courts for players
       },
@@ -49,13 +49,13 @@ export async function GET(
         bannerData: true,
         createdAt: true,
         updatedAt: true,
+        courtFormat: true,
       },
     });
 
     // Parse JSON fields and format response
     const formattedCourts = courts.map(court => {
       let bannerData = null;
-      
       try {
         bannerData = court.bannerData ? JSON.parse(court.bannerData) : null;
       } catch (error) {
@@ -63,7 +63,7 @@ export async function GET(
           console.error(`Failed to parse bannerData for court ${court.id}:`, error);
         }
       }
-      
+
       return {
         ...court,
         bannerData,
