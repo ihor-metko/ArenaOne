@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { formatPrice } from "@/utils/price";
+import { formatDateTimeLong } from "@/utils/date";
 import {
   PaymentMethod,
   BookingCourt,
   BookingClub,
-  formatDateDisplay,
-  formatTimeDisplay,
   calculateEndTime,
 } from "./types";
 
@@ -76,6 +75,7 @@ export function Step3Payment({
   onReservationExpired,
 }: Step3PaymentProps) {
   const t = useTranslations();
+  const locale = useLocale();
   const endTime = calculateEndTime(startTime, duration);
   
   const [reservationId, setReservationId] = useState<string | null>(null);
@@ -164,6 +164,16 @@ export function Step3Payment({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }, []);
 
+  // Format date and time for display using locale-aware formatting
+  const formatBookingDateTime = useCallback((dateStr: string, timeStr: string): string => {
+    // Create a date object from the date string and time
+    const [hours, minutes] = timeStr.split(':');
+    const dateTime = new Date(dateStr);
+    dateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    
+    return formatDateTimeLong(dateTime, locale);
+  }, [locale]);
+
   if (isCreatingReservation) {
     return (
       <div className="rsp-wizard-step-content">
@@ -217,36 +227,42 @@ export function Step3Payment({
         <div className="rsp-wizard-summary-card">
           {club && (
             <div className="rsp-wizard-summary-row">
-              <span className="rsp-wizard-summary-label">{t("wizard.club")}</span>
+              <span className="rsp-wizard-summary-label">{t("booking.summary.club")}</span>
               <span className="rsp-wizard-summary-value">{club.name}</span>
             </div>
           )}
           <div className="rsp-wizard-summary-row">
-            <span className="rsp-wizard-summary-label">{t("common.date")}</span>
-            <span className="rsp-wizard-summary-value">{formatDateDisplay(date)}</span>
+            <span className="rsp-wizard-summary-label">{t("booking.summary.date")}</span>
+            <span className="rsp-wizard-summary-value">{formatBookingDateTime(date, startTime)}</span>
           </div>
           <div className="rsp-wizard-summary-row">
-            <span className="rsp-wizard-summary-label">{t("common.time")}</span>
-            <span className="rsp-wizard-summary-value">
-              {formatTimeDisplay(startTime, endTime)}
-            </span>
-          </div>
-          <div className="rsp-wizard-summary-row">
-            <span className="rsp-wizard-summary-label">{t("common.duration")}</span>
+            <span className="rsp-wizard-summary-label">{t("booking.summary.duration")}</span>
             <span className="rsp-wizard-summary-value">
               {duration} {t("common.minutes")}
             </span>
           </div>
           {court && (
-            <div className="rsp-wizard-summary-row">
-              <span className="rsp-wizard-summary-label">{t("wizard.court")}</span>
-              <span className="rsp-wizard-summary-value">{court.name}</span>
-            </div>
+            <>
+              <div className="rsp-wizard-summary-row">
+                <span className="rsp-wizard-summary-label">{t("booking.summary.court")}</span>
+                <span className="rsp-wizard-summary-value">{court.name}</span>
+              </div>
+              {court.courtFormat && (
+                <div className="rsp-wizard-summary-row">
+                  <span className="rsp-wizard-summary-label">{t("booking.summary.courtType")}</span>
+                  <span className="rsp-wizard-summary-value">
+                    {court.courtFormat === "SINGLE" 
+                      ? t("booking.courtType.single") 
+                      : t("booking.courtType.double")}
+                  </span>
+                </div>
+              )}
+            </>
           )}
         </div>
 
         <div className="rsp-wizard-total">
-          <span className="rsp-wizard-total-label">{t("wizard.total")}</span>
+          <span className="rsp-wizard-total-label">{t("booking.summary.total")}</span>
           <span className="rsp-wizard-total-value">{formatPrice(totalPrice)}</span>
         </div>
       </div>

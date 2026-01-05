@@ -1231,6 +1231,22 @@
     "playerQuickBooking": {
       "title": "Швидке бронювання"
     },
+    "summary": {
+      "title": "Підсумок бронювання",
+      "club": "Клуб",
+      "court": "Корт",
+      "date": "Дата",
+      "time": "Час",
+      "startTime": "Час початку",
+      "duration": "Тривалість",
+      "courtType": "Тип корту",
+      "price": "Ціна",
+      "total": "Всього"
+    },
+    "courtType": {
+      "single": "Одиночний",
+      "double": "Подвійний"
+    },
     "confirmTitle": "Підтвердження бронювання",
     "confirmSubtitle": "Перегляньте деталі вашого бронювання",
     "bookingDetails": "Деталі бронювання",
