@@ -108,6 +108,8 @@ export interface PlayerQuickBookingProps {
     duration: number;
     courtType?: "Single" | "Double";
   };
+  // Optional club data (with business hours) to avoid fetching it again
+  preselectedClubData?: BookingClub;
 }
 
 export interface BookingStepConfig {

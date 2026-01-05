@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Select, DateInput, RadioGroup } from "@/components/ui";
+import { Select, DateInput, RadioGroup, Tooltip } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import {
   generateTimeOptionsForDate,
@@ -105,7 +105,7 @@ export function Step1DateTime({
                 const isValid = validDurations.includes(mins);
                 return {
                   value: String(mins),
-                  label: isValid ? label : `${label} (${t("wizard.durationNotAvailable")})`,
+                  label: isValid ? label : `${label} (${t("wizard.unavailable")})`,
                   disabled: !isValid,
                 };
               })}
@@ -115,13 +115,6 @@ export function Step1DateTime({
             />
           </div>
         </div>
-
-        {/* Error message if booking ends after closing */}
-        {endsAfterClosing && (
-          <div className="rsp-wizard-alert rsp-wizard-alert--error" role="alert">
-            {t("wizard.clubClosedBeforeEnd")}
-          </div>
-        )}
 
         {/* Court Type Selection */}
         {availableCourtTypes.length > 0 && (
@@ -209,6 +202,27 @@ export function Step1DateTime({
             )}
           </div>
         </div>
+
+        {/* Warning message if booking ends after closing - moved to bottom */}
+        {endsAfterClosing && (
+          <div className="rsp-wizard-hint" role="alert" style={{ marginTop: "1rem", color: "var(--color-warning, #f59e0b)" }}>
+            <svg
+              className="rsp-wizard-hint-icon"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>{t("wizard.clubClosedBeforeEnd")}</span>
+          </div>
+        )}
       </div>
     </div>
   );
