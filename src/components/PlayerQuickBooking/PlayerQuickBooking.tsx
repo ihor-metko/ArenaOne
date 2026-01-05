@@ -64,6 +64,7 @@ export function PlayerQuickBooking({
       date: getTodayDateString(),
       startTime: "10:00",
       duration: MINUTES_PER_HOUR,
+      courtType: "Double" as "Single" | "Double",
     };
 
     return {
@@ -105,6 +106,7 @@ export function PlayerQuickBooking({
         date: getTodayDateString(),
         startTime: "10:00",
         duration: MINUTES_PER_HOUR,
+        courtType: "Double" as "Single" | "Double",
       };
 
       setState({
@@ -266,11 +268,12 @@ export function PlayerQuickBooking({
     }));
 
     try {
-      const { date, startTime, duration } = state.step1;
+      const { date, startTime, duration, courtType } = state.step1;
       const params = new URLSearchParams({
         date,
         start: startTime,
         duration: duration.toString(),
+        courtType,
       });
 
       const response = await fetch(
@@ -302,6 +305,7 @@ export function PlayerQuickBooking({
                 date,
                 start: startTime,
                 duration: altDuration.toString(),
+                courtType,
               });
               const altResponse = await fetch(
                 `/api/clubs/${clubId}/available-courts?${altParams}`
