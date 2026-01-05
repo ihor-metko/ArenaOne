@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Select, DateInput, RadioGroup, Tooltip } from "@/components/ui";
+import { Select, DateInput, RadioGroup } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import {
   generateTimeOptionsForDate,
