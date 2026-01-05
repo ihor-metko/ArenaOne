@@ -174,7 +174,7 @@ export function Step3Payment({
   const formatBookingDateTime = useCallback((dateStr: string, timeStr: string): string => {
     // Fallback function for when time parsing fails
     const fallbackToDateOnly = (errorMsg: string, context?: Record<string, unknown>) => {
-      console.error(errorMsg, context || timeStr);
+      console.error(errorMsg, context ?? timeStr);
       return formatDateLong(new Date(dateStr), locale);
     };
 
@@ -208,7 +208,7 @@ export function Step3Payment({
     } catch (error) {
       return fallbackToDateOnly('Error formatting booking date time', { error });
     }
-  }, [locale]);
+  }, [locale, formatDateLong, formatDateTimeLong]);
 
   if (isCreatingReservation) {
     return (
