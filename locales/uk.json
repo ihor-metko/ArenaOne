@@ -1221,6 +1221,8 @@
       "findAvailableCourts": "Знайти доступні корти",
       "searching": "Пошук...",
       "noCourtsAvailable": "Немає доступних кортів у вибраний час.",
+      "noSingleCourtsAvailable": "Немає одиночних кортів для вибраної дати та часу.",
+      "noDoubleCourtsAvailable": "Немає парних кортів для вибраної дати та часу.",
       "noCourtsForDuration": "Немає доступних кортів для вибраної тривалості.",
       "alternativeDurationsAvailable": "Ми можемо запропонувати найближчі доступні варіанти:",
       "alternativeTimeSlotsAvailable": "Спробуйте ці альтернативні часи:",

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Modal, Button, Card, Select } from "@/components/ui";
+import { Modal, Button, Card, Select, RadioGroup } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import "./QuickBookingModal.css";
 
@@ -47,6 +47,9 @@ function generateTimeOptions(): string[] {
 const TIME_OPTIONS = generateTimeOptions();
 const DURATION_OPTIONS = [30, 60, 90, 120];
 
+// Default court type - Double courts are most common in Padel
+const DEFAULT_COURT_TYPE: "Single" | "Double" = "Double";
+
 export function QuickBookingModal({
   clubId,
   isOpen,
@@ -57,6 +60,7 @@ export function QuickBookingModal({
   const [date, setDate] = useState<string>(getTodayDateString());
   const [startTime, setStartTime] = useState<string>("10:00");
   const [duration, setDuration] = useState<number>(60);
+  const [courtType, setCourtType] = useState<"Single" | "Double">(DEFAULT_COURT_TYPE);
   const [availableCourts, setAvailableCourts] = useState<AvailableCourt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -72,6 +76,7 @@ export function QuickBookingModal({
         date,
         start: startTime,
         duration: duration.toString(),
+        courtType,
       });
       const response = await fetch(
         `/api/clubs/${clubId}/available-courts?${params}`
@@ -125,7 +130,7 @@ export function QuickBookingModal({
     } finally {
       setIsLoading(false);
     }
-  }, [clubId, date, startTime, duration, t]);
+  }, [clubId, date, startTime, duration, courtType, t]);
 
   const handleSelectCourt = (court: AvailableCourt) => {
     // Calculate end time based on start time and duration
@@ -144,6 +149,7 @@ export function QuickBookingModal({
     setAvailableCourts([]);
     setHasSearched(false);
     setError(null);
+    setCourtType(DEFAULT_COURT_TYPE);
     onClose();
   };
 
@@ -164,6 +170,13 @@ export function QuickBookingModal({
 
   const handleDurationChange = (newDuration: number) => {
     setDuration(newDuration);
+    setAvailableCourts([]);
+    setHasSearched(false);
+    setError(null);
+  };
+
+  const handleCourtTypeChange = (newCourtType: "Single" | "Double") => {
+    setCourtType(newCourtType);
     setAvailableCourts([]);
     setHasSearched(false);
     setError(null);
@@ -217,6 +230,31 @@ export function QuickBookingModal({
             className="tm-booking-select"
           />
 
+          {/* Court Type Selection */}
+          <div className="tm-booking-select-wrapper">
+            <RadioGroup
+              label={t("courts.courtType")}
+              name="quick-booking-court-type"
+              options={[
+                {
+                  value: "Double",
+                  label: t("courts.padelCourtFormatDouble"),
+                },
+                {
+                  value: "Single",
+                  label: t("courts.padelCourtFormatSingle"),
+                },
+              ]}
+              value={courtType}
+              onChange={(value) => {
+                if (value === "Single" || value === "Double") {
+                  handleCourtTypeChange(value);
+                }
+              }}
+              disabled={isLoading}
+            />
+          </div>
+
           {/* Find courts button */}
           <div className="tm-quick-booking-search">
             <Button onClick={handleFindCourts} disabled={isLoading}>
@@ -238,7 +276,11 @@ export function QuickBookingModal({
             {availableCourts.length === 0 ? (
               <div className="tm-quick-booking-empty">
                 <p className="tm-quick-booking-empty-text">
-                  {t("booking.quickBooking.noCourtsAvailable")}
+                  {courtType === "Single" 
+                    ? t("booking.quickBooking.noSingleCourtsAvailable")
+                    : courtType === "Double"
+                    ? t("booking.quickBooking.noDoubleCourtsAvailable")
+                    : t("booking.quickBooking.noCourtsAvailable")}
                 </p>
                 <p className="tm-quick-booking-empty-hint">
                   {t("booking.quickBooking.tryAnotherTime")}
