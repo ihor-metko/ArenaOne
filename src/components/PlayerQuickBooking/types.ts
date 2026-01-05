@@ -1,4 +1,4 @@
-import { getTodayStr, getCurrentTimeInTimezone } from "@/utils/dateTime";
+import { getTodayStr, filterPastTimeSlots } from "@/utils/dateTime";
 
 /**
  * Types for PlayerQuickBooking
@@ -198,22 +198,8 @@ export function generateTimeOptionsForDate(
     }
   }
 
-  // Filter out past times if the date is today
-  // Use platform timezone for consistent behavior
-  const today = getTodayStr();
-  if (date === today) {
-    const currentTime = getCurrentTimeInTimezone();
-    const [currentHour, currentMinute] = currentTime.split(":").map(Number);
-    const currentTotalMinutes = currentHour * 60 + currentMinute;
-    
-    return options.filter((timeSlot) => {
-      const [slotHour, slotMinute] = timeSlot.split(":").map(Number);
-      const slotTotalMinutes = slotHour * 60 + slotMinute;
-      return slotTotalMinutes > currentTotalMinutes;
-    });
-  }
-
-  return options;
+  // Filter out past times if the date is today using centralized utility
+  return filterPastTimeSlots(options, date);
 }
 
 // Check if a booking would end after closing time

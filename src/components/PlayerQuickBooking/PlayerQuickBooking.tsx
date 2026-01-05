@@ -124,7 +124,7 @@ export function PlayerQuickBooking({
         : {
           date: getTodayDateString(),
           startTime: "10:00",
-          duration: MINUTES_PER_HOUR,
+          duration: DEFAULT_DURATION,
           courtType: DEFAULT_COURT_TYPE,
         };
 
