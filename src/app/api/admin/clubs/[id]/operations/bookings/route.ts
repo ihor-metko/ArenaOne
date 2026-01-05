@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireClubAdmin, requireOrganizationAdmin } from "@/lib/requireRole";
+import { requireClubManagement } from "@/lib/requireRole";
 import type { OperationsBooking } from "@/types/booking";
 import { migrateLegacyStatus } from "@/utils/bookingStatus";
 import { SportType } from "@/constants/sports";
@@ -11,7 +11,7 @@ import { SportType } from "@/constants/sports";
  * Returns all bookings for a specific club on a given date.
  * Used by the club operations calendar view.
  *
- * Access: Club Admins for this club, Organization Admins for the parent org, Root Admins
+ * Access: Club Owners, Club Admins for this club, Organization Admins for the parent org, Root Admins
  *
  * Query parameters:
  * - date: ISO date string (YYYY-MM-DD) - required
@@ -44,26 +44,12 @@ export async function GET(
     );
   }
 
-  // First, try club admin authorization
-  const clubAuthResult = await requireClubAdmin(clubId);
+  // Check club management authorization
+  // This allows: Root Admin, Organization Admin (for clubs in their org), Club Owner, Club Admin
+  const authResult = await requireClubManagement(clubId);
 
-  if (!clubAuthResult.authorized) {
-    // If not club admin, check if organization admin
-    // Need to get the club's organization first
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      select: { organizationId: true },
-    });
-
-    if (!club || !club.organizationId) {
-      return clubAuthResult.response as NextResponse<{ error: string }>;
-    }
-
-    const orgAuthResult = await requireOrganizationAdmin(club.organizationId);
-
-    if (!orgAuthResult.authorized) {
-      return orgAuthResult.response as NextResponse<{ error: string }>;
-    }
+  if (!authResult.authorized) {
+    return authResult.response as NextResponse<{ error: string }>;
   }
 
   try {
