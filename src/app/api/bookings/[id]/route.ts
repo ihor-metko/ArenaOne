@@ -2,12 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/requireRole";
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
 /**
  * PATCH /api/bookings/[id]
  * 
@@ -21,7 +15,7 @@ interface RouteParams {
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Require authentication
@@ -30,7 +24,7 @@ export async function PATCH(
       return authResult.response;
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     if (!body.status) {
