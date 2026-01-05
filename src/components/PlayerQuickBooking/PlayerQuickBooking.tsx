@@ -20,6 +20,7 @@ import {
   getTodayDateString,
   calculateEndTime,
   determineVisibleSteps,
+  DURATION_OPTIONS,
 } from "./types";
 import "./PlayerQuickBooking.css";
 
@@ -85,11 +86,13 @@ export function PlayerQuickBooking({
       },
       availableClubs: [],
       availableCourts: [],
+      alternativeDurations: [],
       isLoadingClubs: false,
       isLoadingCourts: false,
       clubsError: null,
       courtsError: null,
       estimatedPrice: null,
+      estimatedPriceRange: null,
       isSubmitting: false,
       submitError: null,
     };
@@ -124,11 +127,13 @@ export function PlayerQuickBooking({
         },
         availableClubs: [],
         availableCourts: [],
+        alternativeDurations: [],
         isLoadingClubs: false,
         isLoadingCourts: false,
         clubsError: null,
         courtsError: null,
         estimatedPrice: null,
+        estimatedPriceRange: null,
         isSubmitting: false,
         submitError: null,
       });
@@ -285,6 +290,42 @@ export function PlayerQuickBooking({
       const data = await response.json();
       const courts: BookingCourt[] = data.availableCourts || [];
 
+      // If no courts available, check for alternative durations
+      let alternatives: number[] = [];
+      if (courts.length === 0) {
+        // Check other durations to find alternatives
+        const durationsToCheck = DURATION_OPTIONS.filter(d => d !== duration);
+        const alternativeChecks = await Promise.all(
+          durationsToCheck.map(async (altDuration) => {
+            try {
+              const altParams = new URLSearchParams({
+                date,
+                start: startTime,
+                duration: altDuration.toString(),
+              });
+              const altResponse = await fetch(
+                `/api/clubs/${clubId}/available-courts?${altParams}`
+              );
+              if (altResponse.ok) {
+                const altData = await altResponse.json();
+                const altCourts: BookingCourt[] = altData.availableCourts || [];
+                return { duration: altDuration, hasAvailability: altCourts.length > 0 };
+              }
+            } catch {
+              // Ignore errors
+            }
+            return { duration: altDuration, hasAvailability: false };
+          })
+        );
+        
+        // Get durations with available courts
+        alternatives = alternativeChecks
+          .filter(check => check.hasAvailability)
+          .map(check => check.duration)
+          .sort((a, b) => Math.abs(a - duration) - Math.abs(b - duration))
+          .slice(0, 3); // Show up to 3 alternatives
+      }
+
       // Fetch price timeline for each court to get resolved prices
       const courtsWithPrices = await Promise.all(
         courts.map(async (court) => {
@@ -317,6 +358,7 @@ export function PlayerQuickBooking({
       setState((prev) => ({
         ...prev,
         availableCourts: courtsWithPrices,
+        alternativeDurations: alternatives,
         isLoadingCourts: false,
       }));
     } catch {
@@ -351,12 +393,22 @@ export function PlayerQuickBooking({
           const courts: BookingCourt[] = data.availableCourts || [];
 
           if (courts.length > 0) {
-            const avgPrice = Math.round(
-              courts.reduce((sum, c) => sum + (c.defaultPriceCents / MINUTES_PER_HOUR) * duration, 0) / courts.length
-            );
-            setState((prev) => ({ ...prev, estimatedPrice: avgPrice }));
+            const prices = courts.map(c => Math.round((c.defaultPriceCents / MINUTES_PER_HOUR) * duration));
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            const avgPrice = Math.round(prices.reduce((sum, p) => sum + p, 0) / prices.length);
+            
+            setState((prev) => ({ 
+              ...prev, 
+              estimatedPrice: avgPrice,
+              estimatedPriceRange: { min: minPrice, max: maxPrice }
+            }));
           } else {
-            setState((prev) => ({ ...prev, estimatedPrice: null }));
+            setState((prev) => ({ 
+              ...prev, 
+              estimatedPrice: null,
+              estimatedPriceRange: null
+            }));
           }
         }
       } catch {
@@ -404,6 +456,25 @@ export function PlayerQuickBooking({
       },
     }));
   }, []);
+
+  // Handle alternative duration selection
+  const handleSelectAlternativeDuration = useCallback(async (duration: number) => {
+    setState((prev) => ({
+      ...prev,
+      step1: { ...prev.step1, duration },
+      // Reset court selection
+      step2: { selectedCourtId: null, selectedCourt: null },
+      availableCourts: [],
+      alternativeDurations: [],
+      isLoadingCourts: true,
+    }));
+    
+    // Wait a tick for state to update, then fetch courts with new duration
+    // We need to refetch after state update to ensure the new duration is used
+    setTimeout(() => {
+      fetchAvailableCourts();
+    }, 0);
+  }, [fetchAvailableCourts]);
 
   // Handle payment method selection
   const handleSelectPaymentMethod = useCallback((method: PaymentMethod) => {
@@ -644,6 +715,7 @@ export function PlayerQuickBooking({
               data={state.step1}
               onChange={handleStep1Change}
               estimatedPrice={state.estimatedPrice}
+              estimatedPriceRange={state.estimatedPriceRange}
               isLoading={false}
             />
           )}
@@ -655,6 +727,9 @@ export function PlayerQuickBooking({
               onSelectCourt={handleSelectCourt}
               isLoading={state.isLoadingCourts}
               error={state.courtsError}
+              currentDuration={state.step1.duration}
+              alternativeDurations={state.alternativeDurations}
+              onSelectAlternativeDuration={handleSelectAlternativeDuration}
             />
           )}
 
