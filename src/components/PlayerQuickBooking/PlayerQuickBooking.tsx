@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
 import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
@@ -35,6 +35,7 @@ export function PlayerQuickBooking({
   preselectedClubId,
   preselectedCourtId,
   preselectedDateTime,
+  preselectedClubData,
 }: PlayerQuickBookingProps) {
   const t = useTranslations();
 
@@ -59,6 +60,10 @@ export function PlayerQuickBooking({
     [preselectedClubId, preselectedCourtId, preselectedDateTime]
   );
 
+  // Track previous step1 values to prevent unnecessary API calls
+  const prevStep1ParamsRef = useRef<string>("");
+  const prevCourtsParamsRef = useRef<string>("");
+
   // Initialize state with preselected data
   const [state, setState] = useState<PlayerQuickBookingState>(() => {
     const initialDateTime: PlayerBookingStep1Data = preselectedDateTime
@@ -74,7 +79,7 @@ export function PlayerQuickBooking({
       currentStep: visibleSteps[0]?.id || 0,
       step0: {
         selectedClubId: preselectedClubId || null,
-        selectedClub: null,
+        selectedClub: preselectedClubData || null,
       },
       step1: initialDateTime,
       step2: {
@@ -108,6 +113,10 @@ export function PlayerQuickBooking({
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
+      // Reset tracking refs
+      prevStep1ParamsRef.current = "";
+      prevCourtsParamsRef.current = "";
+      
       const initialDateTime: PlayerBookingStep1Data = preselectedDateTime
         ? { ...preselectedDateTime, courtType: preselectedDateTime.courtType || DEFAULT_COURT_TYPE }
         : {
@@ -121,7 +130,7 @@ export function PlayerQuickBooking({
         currentStep: visibleSteps[0]?.id || 0,
         step0: {
           selectedClubId: preselectedClubId || null,
-          selectedClub: null,
+          selectedClub: preselectedClubData || null,
         },
         step1: initialDateTime,
         step2: {
@@ -151,45 +160,7 @@ export function PlayerQuickBooking({
         submitError: null,
       });
     }
-  }, [isOpen, preselectedClubId, preselectedCourtId, preselectedDateTime, visibleSteps]);
-
-  // Fetch club data if preselected
-  useEffect(() => {
-    const fetchPreselectedClub = async () => {
-      if (preselectedClubId && !state.step0.selectedClub) {
-        try {
-          const response = await fetch(`/api/clubs/${preselectedClubId}`);
-          if (response.ok) {
-            const data = await response.json();
-            setState((prev) => ({
-              ...prev,
-              step0: {
-                selectedClubId: preselectedClubId,
-                selectedClub: {
-                  id: data.id,
-                  name: data.name,
-                  slug: data.slug,
-                  location: data.address?.formattedAddress || "",
-                  city: data.address?.city || undefined,
-                  bannerData: data.bannerData,
-                  businessHours: data.businessHours || [],
-                },
-              },
-            }));
-          }
-        } catch (error) {
-          // Silently fail - user can select club manually
-          if (process.env.NODE_ENV === "development") {
-            console.warn("Failed to fetch preselected club:", preselectedClubId, error);
-          }
-        }
-      }
-    };
-
-    if (isOpen && preselectedClubId) {
-      fetchPreselectedClub();
-    }
-  }, [isOpen, preselectedClubId, state.step0.selectedClub]);
+  }, [isOpen, preselectedClubId, preselectedCourtId, preselectedDateTime, preselectedClubData, visibleSteps]);
 
   // Fetch court data if preselected
   useEffect(() => {
@@ -337,6 +308,19 @@ export function PlayerQuickBooking({
     const clubId = state.step0.selectedClubId || preselectedClubId;
     if (!clubId) return;
 
+    const { date, startTime, duration, courtType } = state.step1;
+    
+    // Create a unique key for current parameters to prevent redundant requests
+    const currentParams = `${clubId}-${date}-${startTime}-${duration}-${courtType}`;
+    
+    // Skip if parameters haven't changed
+    if (prevCourtsParamsRef.current === currentParams) {
+      return;
+    }
+    
+    // Update the reference
+    prevCourtsParamsRef.current = currentParams;
+
     setState((prev) => ({
       ...prev,
       isLoadingCourts: true,
@@ -344,7 +328,6 @@ export function PlayerQuickBooking({
     }));
 
     try {
-      const { date, startTime, duration, courtType } = state.step1;
       const params = new URLSearchParams({
         date,
         start: startTime,
@@ -390,7 +373,9 @@ export function PlayerQuickBooking({
         courtsError: t("auth.errorOccurred"),
       }));
     }
-  }, [state.step0.selectedClubId, state.step1, preselectedClubId, t]);
+    // Destructure step1 properties to avoid object reference changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.step0.selectedClubId, state.step1.date, state.step1.startTime, state.step1.duration, state.step1.courtType, preselectedClubId, t]);
 
   // Fetch estimated price when date/time/duration changes
   useEffect(() => {
@@ -398,7 +383,18 @@ export function PlayerQuickBooking({
       const clubId = state.step0.selectedClubId || preselectedClubId;
       if (!clubId) return;
 
-      const { date, startTime, duration } = state.step1;
+      const { date, startTime, duration, courtType } = state.step1;
+      
+      // Create a unique key for current parameters to prevent redundant requests
+      const currentParams = `${clubId}-${date}-${startTime}-${duration}-${courtType}`;
+      
+      // Skip if parameters haven't changed
+      if (prevStep1ParamsRef.current === currentParams) {
+        return;
+      }
+      
+      // Update the reference
+      prevStep1ParamsRef.current = currentParams;
 
       try {
         const params = new URLSearchParams({
@@ -451,10 +447,12 @@ export function PlayerQuickBooking({
     if (isOpen && (state.currentStep === 1 || (visibleSteps[0]?.id === 1 && state.currentStep === visibleSteps[0]?.id))) {
       fetchEstimatedPrice();
     }
-  }, [isOpen, state.step0.selectedClubId, state.step1, state.currentStep, preselectedClubId, visibleSteps]);
+    // Destructure step1 properties to avoid object reference changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, state.step0.selectedClubId, state.step1.date, state.step1.startTime, state.step1.duration, state.step1.courtType, state.currentStep, preselectedClubId]);
 
   // Handle club selection
-  const handleSelectClub = useCallback(async (club: BookingClub) => {
+  const handleSelectClub = useCallback((club: BookingClub) => {
     setState((prev) => ({
       ...prev,
       step0: {
@@ -465,29 +463,6 @@ export function PlayerQuickBooking({
       availableCourts: [],
       step2: { selectedCourtId: null, selectedCourt: null },
     }));
-
-    // Fetch full club details to get business hours
-    try {
-      const response = await fetch(`/api/clubs/${club.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setState((prev) => ({
-          ...prev,
-          step0: {
-            selectedClubId: club.id,
-            selectedClub: {
-              ...club,
-              businessHours: data.businessHours || [],
-            },
-          },
-        }));
-      }
-    } catch (error) {
-      // Silently fail - business hours will use defaults
-      if (process.env.NODE_ENV === "development") {
-        console.warn("Failed to fetch business hours for club:", club.id, error);
-      }
-    }
   }, []);
 
   // Handle step 1 data changes

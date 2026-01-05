@@ -437,6 +437,15 @@ export default function ClubDetailPage({
         {isAuthenticated && (
           <PlayerQuickBooking
             preselectedClubId={club.id}
+            preselectedClubData={club ? {
+              id: club.id,
+              name: club.name,
+              slug: club.slug || null,
+              location: (club.address as { formattedAddress?: string })?.formattedAddress || "",
+              city: (club.address as { city?: string })?.city || null,
+              bannerData: club.bannerData || null,
+              businessHours: club.businessHours || [],
+            } : undefined}
             isOpen={isQuickBookingOpen}
             onClose={() => setIsQuickBookingOpen(false)}
             onBookingComplete={handleQuickBookingComplete}
@@ -795,6 +804,15 @@ export default function ClubDetailPage({
       {isAuthenticated && (
         <PlayerQuickBooking
           preselectedClubId={club.id}
+          preselectedClubData={club ? {
+            id: club.id,
+            name: club.name,
+            slug: club.slug || null,
+            location: formattedAddress,
+            city: (club.address as { city?: string })?.city || null,
+            bannerData: club.bannerData || null,
+            businessHours: club.businessHours || [],
+          } : undefined}
           isOpen={isQuickBookingOpen}
           onClose={handleQuickBookingClose}
           onBookingComplete={handleQuickBookingComplete}
