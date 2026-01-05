@@ -219,14 +219,6 @@ export function PlayerQuickBooking({
     }
   }, [isOpen, preselectedCourtId, state.step2.selectedCourt]);
 
-  // Fetch available court types when club is selected or preselected
-  useEffect(() => {
-    const clubId = state.step0.selectedClubId || preselectedClubId;
-    if (isOpen && clubId) {
-      fetchAvailableCourtTypes();
-    }
-  }, [isOpen, state.step0.selectedClubId, preselectedClubId, fetchAvailableCourtTypes]);
-
   // Memoize club mapping to avoid unnecessary re-renders
   const mappedClubs: BookingClub[] = useMemo(() => 
     clubsFromStore.map((club) => ({
@@ -323,6 +315,14 @@ export function PlayerQuickBooking({
       }));
     }
   }, [state.step0.selectedClubId, preselectedClubId]);
+
+  // Fetch available court types when club is selected or preselected
+  useEffect(() => {
+    const clubId = state.step0.selectedClubId || preselectedClubId;
+    if (isOpen && clubId) {
+      fetchAvailableCourtTypes();
+    }
+  }, [isOpen, state.step0.selectedClubId, preselectedClubId, fetchAvailableCourtTypes]);
 
   // Fetch available courts for step 2
   const fetchAvailableCourts = useCallback(async () => {
