@@ -254,11 +254,7 @@ export function QuickBookingModal({
                 },
               ]}
               value={courtType}
-              onChange={(value) => {
-                if (value === "Single" || value === "Double") {
-                  handleCourtTypeChange(value);
-                }
-              }}
+              onChange={(value) => handleCourtTypeChange(value as "Single" | "Double")}
               disabled={isLoading}
             />
           </div>
