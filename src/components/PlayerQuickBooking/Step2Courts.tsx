@@ -67,13 +67,13 @@ export function Step2Courts({
           <div className="rsp-wizard-alert rsp-wizard-alert--info" role="alert">
             {t("booking.quickBooking.noCourtsAvailable")}
           </div>
-          
+
           {/* Show alternative durations first (shorter durations for same start time) */}
           {alternativeDurations.length > 0 && onSelectAlternativeDuration && (
             <div className="rsp-wizard-alternatives" style={{ marginTop: "1.5rem" }}>
-              <p className="rsp-wizard-alternatives-title" style={{ 
-                fontSize: "0.875rem", 
-                fontWeight: 500, 
+              <p className="rsp-wizard-alternatives-title" style={{
+                fontSize: "0.875rem",
+                fontWeight: 500,
                 marginBottom: "0.75rem",
                 opacity: 0.9
               }}>
@@ -89,7 +89,7 @@ export function Step2Courts({
                   const label = hours >= 1 && alt.duration % 60 === 0
                     ? `${hours} ${hours === 1 ? t("common.hour") : t("common.hours")}`
                     : `${alt.duration} ${t("common.minutes")}`;
-                  
+
                   return (
                     <button
                       key={alt.duration}
@@ -130,13 +130,13 @@ export function Step2Courts({
               </div>
             </div>
           )}
-          
+
           {/* Show alternative time slots if no alternative durations */}
           {alternativeDurations.length === 0 && alternativeTimeSlots.length > 0 && onSelectAlternativeTime && (
             <div className="rsp-wizard-alternatives" style={{ marginTop: "1.5rem" }}>
-              <p className="rsp-wizard-alternatives-title" style={{ 
-                fontSize: "0.875rem", 
-                fontWeight: 500, 
+              <p className="rsp-wizard-alternatives-title" style={{
+                fontSize: "0.875rem",
+                fontWeight: 500,
                 marginBottom: "0.75rem",
                 opacity: 0.9
               }}>
@@ -186,7 +186,7 @@ export function Step2Courts({
               </div>
             </div>
           )}
-          
+
           {alternativeDurations.length === 0 && alternativeTimeSlots.length === 0 && (
             <p className="mt-2 text-xs opacity-70">
               {t("booking.quickBooking.tryAnotherTime")}
@@ -226,7 +226,7 @@ export function Step2Courts({
                 key={court.id}
                 court={court}
                 isSelected={false}
-                onSelect={() => {}}
+                onSelect={() => { }}
                 disabled
               />
             ))}
@@ -261,28 +261,13 @@ function CourtCard({ court, isSelected, onSelect, disabled = false }: CourtCardP
       aria-selected={isSelected}
       aria-disabled={disabled}
       tabIndex={disabled ? -1 : 0}
-      className={`rsp-wizard-court-card ${
-        isSelected ? "rsp-wizard-court-card--selected" : ""
-      } ${disabled ? "rsp-wizard-court-card--disabled" : ""}`}
+      className={`rsp-wizard-court-card ${isSelected ? "rsp-wizard-court-card--selected" : ""
+        } ${disabled ? "rsp-wizard-court-card--disabled" : ""}`}
       onClick={disabled ? undefined : onSelect}
       onKeyDown={handleKeyDown}
     >
       <div className="rsp-wizard-court-card-header">
         <span className="rsp-wizard-court-card-name">{court.name}</span>
-        <span className="rsp-wizard-court-card-check" aria-hidden="true">
-          {isSelected && (
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-            >
-              <polyline points="20,6 9,17 4,12" />
-            </svg>
-          )}
-        </span>
       </div>
 
       <div className="rsp-wizard-court-badges">

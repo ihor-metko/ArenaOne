@@ -578,18 +578,6 @@
   color: var(--color-text);
 }
 
-.rsp-wizard-court-card-check {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: var(--color-success);
-  color: var(--color-text-on-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 .rsp-wizard-court-badges {
   display: flex;
   flex-wrap: wrap;
