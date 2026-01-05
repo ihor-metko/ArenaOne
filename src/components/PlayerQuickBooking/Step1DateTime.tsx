@@ -4,11 +4,14 @@ import { useTranslations } from "next-intl";
 import { Select, DateInput, RadioGroup } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
 import {
-  generateTimeOptions,
+  generateTimeOptionsForDate,
   getTodayDateString,
   DURATION_OPTIONS,
   isPeakHour,
   PlayerBookingStep1Data,
+  ClubBusinessHours,
+  wouldEndAfterClosing,
+  getValidDurations,
 } from "./types";
 
 interface Step1DateTimeProps {
@@ -17,9 +20,8 @@ interface Step1DateTimeProps {
   estimatedPrice: number | null;
   estimatedPriceRange?: { min: number; max: number } | null;
   isLoading?: boolean;
+  businessHours?: ClubBusinessHours[];
 }
-
-const TIME_OPTIONS = generateTimeOptions();
 
 export function Step1DateTime({
   data,
@@ -27,9 +29,24 @@ export function Step1DateTime({
   estimatedPrice,
   estimatedPriceRange,
   isLoading = false,
+  businessHours,
 }: Step1DateTimeProps) {
   const t = useTranslations();
   const isPeak = isPeakHour(data.date, data.startTime);
+
+  // Generate time options based on business hours for the selected date
+  const TIME_OPTIONS = generateTimeOptionsForDate(data.date, businessHours);
+
+  // Check if booking would end after closing
+  const endsAfterClosing = wouldEndAfterClosing(
+    data.date,
+    data.startTime,
+    data.duration,
+    businessHours
+  );
+
+  // Get valid durations for the selected start time
+  const validDurations = getValidDurations(data.date, data.startTime, businessHours);
 
   return (
     <div className="rsp-wizard-step-content" role="group" aria-labelledby="step1-title">
@@ -76,9 +93,11 @@ export function Step1DateTime({
                 const label = hours >= 1 && mins % 60 === 0
                   ? `${hours} ${hours === 1 ? t("common.hour") : t("common.hours")}`
                   : `${mins} ${t("common.minutes")}`;
+                const isValid = validDurations.includes(mins);
                 return {
                   value: String(mins),
-                  label,
+                  label: isValid ? label : `${label} (${t("wizard.durationNotAvailable")})`,
+                  disabled: !isValid,
                 };
               })}
               value={String(data.duration)}
@@ -87,6 +106,13 @@ export function Step1DateTime({
             />
           </div>
         </div>
+
+        {/* Error message if booking ends after closing */}
+        {endsAfterClosing && (
+          <div className="rsp-wizard-alert rsp-wizard-alert--error" role="alert">
+            {t("wizard.clubClosedBeforeEnd")}
+          </div>
+        )}
 
         {/* Court Type Selection */}
         <div className="rsp-wizard-field">
@@ -112,23 +138,6 @@ export function Step1DateTime({
             disabled={isLoading}
             className="rsp-wizard-court-type-group"
           />
-          <div className="rsp-wizard-hint rsp-wizard-hint--subtle">
-            <svg
-              className="rsp-wizard-hint-icon"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
-            </svg>
-            <span>{t("wizard.courtTypeHint")}</span>
-          </div>
         </div>
 
         {/* Peak hours hint */}

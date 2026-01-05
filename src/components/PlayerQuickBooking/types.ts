@@ -10,6 +10,14 @@ export interface BookingClub {
   location: string;
   city?: string | null;
   bannerData?: { url: string; altText?: string; description?: string; position?: string } | null;
+  businessHours?: ClubBusinessHours[];
+}
+
+export interface ClubBusinessHours {
+  dayOfWeek: number; // 0=Sunday, 1=Monday, ..., 6=Saturday
+  openTime: string | null; // "HH:mm" format
+  closeTime: string | null; // "HH:mm" format
+  isClosed: boolean;
 }
 
 export interface BookingCourt {
@@ -104,6 +112,105 @@ export interface BookingStepConfig {
 export const BUSINESS_START_HOUR = 8;
 export const BUSINESS_END_HOUR = 22;
 export const DURATION_OPTIONS = [30, 60, 90, 120, 150, 180];
+
+// Get business hours for a specific date
+export function getBusinessHoursForDate(
+  date: string,
+  businessHours?: ClubBusinessHours[]
+): { openTime: string; closeTime: string } | null {
+  if (!businessHours || businessHours.length === 0) {
+    // Fallback to default hours if no business hours configured
+    return {
+      openTime: `${BUSINESS_START_HOUR.toString().padStart(2, "0")}:00`,
+      closeTime: `${BUSINESS_END_HOUR.toString().padStart(2, "0")}:00`,
+    };
+  }
+
+  const dateObj = new Date(date);
+  const dayOfWeek = dateObj.getDay(); // 0=Sunday, 1=Monday, etc.
+
+  const hoursForDay = businessHours.find((h) => h.dayOfWeek === dayOfWeek);
+
+  if (!hoursForDay || hoursForDay.isClosed || !hoursForDay.openTime || !hoursForDay.closeTime) {
+    return null; // Club is closed on this day
+  }
+
+  return {
+    openTime: hoursForDay.openTime,
+    closeTime: hoursForDay.closeTime,
+  };
+}
+
+// Generate time options based on business hours for a specific date
+export function generateTimeOptionsForDate(
+  date: string,
+  businessHours?: ClubBusinessHours[]
+): string[] {
+  const hours = getBusinessHoursForDate(date, businessHours);
+  
+  if (!hours) {
+    return []; // Club is closed
+  }
+
+  const [openHour, openMinute] = hours.openTime.split(":").map(Number);
+  const [closeHour, closeMinute] = hours.closeTime.split(":").map(Number);
+
+  const options: string[] = [];
+  let currentHour = openHour;
+  let currentMinute = openMinute;
+
+  while (
+    currentHour < closeHour ||
+    (currentHour === closeHour && currentMinute < closeMinute)
+  ) {
+    const hourStr = currentHour.toString().padStart(2, "0");
+    const minuteStr = currentMinute.toString().padStart(2, "0");
+    options.push(`${hourStr}:${minuteStr}`);
+
+    // Increment by 30 minutes
+    currentMinute += 30;
+    if (currentMinute >= 60) {
+      currentMinute = 0;
+      currentHour += 1;
+    }
+  }
+
+  return options;
+}
+
+// Check if a booking would end after closing time
+export function wouldEndAfterClosing(
+  date: string,
+  startTime: string,
+  durationMinutes: number,
+  businessHours?: ClubBusinessHours[]
+): boolean {
+  const hours = getBusinessHoursForDate(date, businessHours);
+  
+  if (!hours) {
+    return true; // Club is closed
+  }
+
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const [closeHour, closeMinute] = hours.closeTime.split(":").map(Number);
+
+  const startTotalMinutes = startHour * 60 + startMinute;
+  const endTotalMinutes = startTotalMinutes + durationMinutes;
+  const closeTotalMinutes = closeHour * 60 + closeMinute;
+
+  return endTotalMinutes > closeTotalMinutes;
+}
+
+// Get valid duration options for a given start time and date
+export function getValidDurations(
+  date: string,
+  startTime: string,
+  businessHours?: ClubBusinessHours[]
+): number[] {
+  return DURATION_OPTIONS.filter(
+    (duration) => !wouldEndAfterClosing(date, startTime, duration, businessHours)
+  );
+}
 
 // Peak hours (17:00 - 21:00 weekdays, 10:00 - 14:00 weekends)
 export function isPeakHour(date: string, time: string): boolean {

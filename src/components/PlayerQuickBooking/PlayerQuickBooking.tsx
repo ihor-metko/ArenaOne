@@ -21,6 +21,7 @@ import {
   calculateEndTime,
   determineVisibleSteps,
   DURATION_OPTIONS,
+  wouldEndAfterClosing,
 } from "./types";
 import "./PlayerQuickBooking.css";
 
@@ -162,9 +163,10 @@ export function PlayerQuickBooking({
                   id: data.id,
                   name: data.name,
                   slug: data.slug,
-                  location: data.location,
-                  city: data.city,
+                  location: data.address?.formattedAddress || "",
+                  city: data.address?.city || undefined,
                   bannerData: data.bannerData,
+                  businessHours: data.businessHours || [],
                 },
               },
             }));
@@ -417,7 +419,7 @@ export function PlayerQuickBooking({
   }, [isOpen, state.step0.selectedClubId, state.step1, state.currentStep, preselectedClubId, visibleSteps]);
 
   // Handle club selection
-  const handleSelectClub = useCallback((club: BookingClub) => {
+  const handleSelectClub = useCallback(async (club: BookingClub) => {
     setState((prev) => ({
       ...prev,
       step0: {
@@ -428,6 +430,26 @@ export function PlayerQuickBooking({
       availableCourts: [],
       step2: { selectedCourtId: null, selectedCourt: null },
     }));
+
+    // Fetch full club details to get business hours
+    try {
+      const response = await fetch(`/api/clubs/${club.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setState((prev) => ({
+          ...prev,
+          step0: {
+            selectedClubId: club.id,
+            selectedClub: {
+              ...club,
+              businessHours: data.businessHours || [],
+            },
+          },
+        }));
+      }
+    } catch {
+      // Silently fail - business hours will use defaults
+    }
   }, []);
 
   // Handle step 1 data changes
@@ -595,8 +617,20 @@ export function PlayerQuickBooking({
     switch (state.currentStep) {
       case 0:
         return !!state.step0.selectedClubId;
-      case 1:
-        return !!state.step1.date && !!state.step1.startTime && state.step1.duration > 0;
+      case 1: {
+        const hasBasicData = !!state.step1.date && !!state.step1.startTime && state.step1.duration > 0;
+        if (!hasBasicData) return false;
+        
+        // Check if booking would end after closing time
+        const endsAfterClosing = wouldEndAfterClosing(
+          state.step1.date,
+          state.step1.startTime,
+          state.step1.duration,
+          state.step0.selectedClub?.businessHours
+        );
+        
+        return !endsAfterClosing;
+      }
       case 2:
         return !!state.step2.selectedCourtId;
       case 3:
@@ -712,6 +746,7 @@ export function PlayerQuickBooking({
               estimatedPrice={state.estimatedPrice}
               estimatedPriceRange={state.estimatedPriceRange}
               isLoading={false}
+              businessHours={state.step0.selectedClub?.businessHours}
             />
           )}
 
