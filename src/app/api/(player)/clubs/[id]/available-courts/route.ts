@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getResolvedPriceForSlot } from "@/lib/priceRules";
+import type { CourtFormat } from "@/types/court";
 
 // Business hours configuration (aligned with frontend types.ts)
 const BUSINESS_START_HOUR = 8;
@@ -14,7 +15,7 @@ interface AvailableCourt {
   surface: string | null;
   indoor: boolean;
   sportType: string;
-  courtFormat: string | null;
+  courtFormat: CourtFormat | null;
   defaultPriceCents: number;
   /**
    * Resolved price for the requested time slot in cents.
