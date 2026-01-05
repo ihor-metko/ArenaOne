@@ -254,7 +254,7 @@ export async function GET(
     }
 
     // If no courts available, find alternative durations and time slots
-    let alternativeDurations: AlternativeDuration[] = [];
+    const alternativeDurations: AlternativeDuration[] = [];
     let alternativeTimeSlots: AlternativeTimeSlot[] = [];
     
     if (availableCourts.length === 0) {
