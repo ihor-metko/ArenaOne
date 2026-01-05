@@ -1489,6 +1489,8 @@
     "noCourtsAvailable": "No courts available for the selected date and time.",
     "peakHoursHint": "Peak hours - courts may fill up quickly",
     "courtTypeHint": "Double — for a pair, Single — for one player",
+    "clubClosedBeforeEnd": "The club closes before your selected end time. Please choose a different time or reduce the duration.",
+    "durationNotAvailable": "The selected duration is not available at this time. Please choose a different duration.",
     "loadingClubs": "Loading clubs...",
     "loadingCourts": "Finding available courts...",
     "selectClubDescription": "Choose a club where you'd like to play",
