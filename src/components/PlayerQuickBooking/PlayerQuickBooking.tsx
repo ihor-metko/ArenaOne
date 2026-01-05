@@ -371,7 +371,14 @@ export function PlayerQuickBooking({
 
           if (courts.length > 0) {
             // Use resolved prices from the API (priceCents includes court price rules)
-            const prices = courts.map(c => c.priceCents || c.defaultPriceCents);
+            // API should always provide priceCents for each court
+            const prices = courts.map(c => {
+              if (!c.priceCents) {
+                console.warn(`Court ${c.id} missing priceCents, using default price`);
+                return Math.round((c.defaultPriceCents / MINUTES_PER_HOUR) * duration);
+              }
+              return c.priceCents;
+            });
             const minPrice = Math.min(...prices);
             const maxPrice = Math.max(...prices);
             const avgPrice = Math.round(prices.reduce((sum, p) => sum + p, 0) / prices.length);
