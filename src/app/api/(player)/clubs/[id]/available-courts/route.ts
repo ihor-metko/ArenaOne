@@ -15,7 +15,14 @@ interface AvailableCourt {
   indoor: boolean;
   sportType: string;
   defaultPriceCents: number;
-  priceCents: number; // Resolved price for the requested slot
+  /**
+   * Resolved price for the requested time slot in cents.
+   * Calculated using court price rules for the specific date, time, and duration.
+   * This respects all CourtPriceRule configurations (SPECIFIC_DATE, SPECIFIC_DAY, 
+   * WEEKDAYS, WEEKENDS, ALL_DAYS, HOLIDAY) and falls back to defaultPriceCents
+   * if no rules are defined.
+   */
+  priceCents: number;
 }
 
 interface AvailableCourtsResponse {

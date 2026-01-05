@@ -373,7 +373,7 @@ export function PlayerQuickBooking({
             // Use resolved prices from the API (priceCents includes court price rules)
             // API should always provide priceCents for each court
             const prices = courts.map(c => {
-              if (!c.priceCents) {
+              if (c.priceCents === undefined || c.priceCents === null) {
                 console.warn(`Court ${c.id} missing priceCents, using default price`);
                 return Math.round((c.defaultPriceCents / MINUTES_PER_HOUR) * duration);
               }
