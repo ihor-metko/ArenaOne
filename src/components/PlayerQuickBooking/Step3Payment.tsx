@@ -174,18 +174,24 @@ export function Step3Payment({
         return formatDateLong(new Date(dateStr), locale);
       }
       
-      // Create a date object from the date string and time
-      const [hoursStr, minutesStr] = timeStr.split(':');
-      const hours = parseInt(hoursStr, 10);
-      const minutes = parseInt(minutesStr, 10);
+      // Split time and validate we have exactly 2 parts
+      const timeParts = timeStr.split(':');
+      if (timeParts.length !== 2) {
+        console.error('Invalid time format - expected HH:MM:', timeStr);
+        return formatDateLong(new Date(dateStr), locale);
+      }
       
-      // Validate parsed values
+      // Parse and validate hours and minutes
+      const hours = parseInt(timeParts[0], 10);
+      const minutes = parseInt(timeParts[1], 10);
+      
       if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
         console.error('Invalid time values:', { hours, minutes, timeStr });
         // Fallback: just show date without time if parsed values are invalid
         return formatDateLong(new Date(dateStr), locale);
       }
       
+      // Create date time with the parsed time
       const dateTime = new Date(dateStr);
       dateTime.setHours(hours, minutes, 0, 0);
       
