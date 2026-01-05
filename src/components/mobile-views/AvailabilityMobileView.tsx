@@ -136,7 +136,7 @@ export function AvailabilityMobileView({
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12,6 12,12 16,14" />
                   </svg>
-                  <span>{t("availability.timeSlotPlaceholder", { slot })}</span>
+                  <span>{`${t("availability.timeSlotPlaceholder")} ${slot}`}</span>
                 </div>
               ))}
             </div>
@@ -183,7 +183,7 @@ export function AvailabilityMobileView({
                   </svg>
                   <div>
                     <div className="im-mobile-availability-list-item-title">
-                      {t("availability.courtPlaceholder", { court })}
+                      {`${t("availability.courtPlaceholder")} ${court}`}
                     </div>
                     <div className="im-mobile-availability-list-item-subtitle">
                       {t("availability.courtDetailsPlaceholder")}

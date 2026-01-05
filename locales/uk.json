@@ -409,8 +409,8 @@
         "saving": "Збереження..."
       }
     },
-    "checkAvailability": "Check Availability",
-    "noClubsDescription": "We are working on adding new clubs to the platform."
+    "checkAvailability": "Перевірити доступність",
+    "noClubsDescription": "Ми працюємо над додаванням нових клубів до платформи."
   },
   "clubDetail": {
     "about": "Про клуб",
@@ -1204,20 +1204,20 @@
     "playerQuickBooking": {
       "title": "Швидке бронювання"
     },
-    "confirmTitle": "Confirm Booking",
-    "confirmSubtitle": "Review your booking details",
-    "bookingDetails": "Booking Details",
-    "clubPlaceholder": "Example Club",
-    "courtPlaceholder": "Court 1",
-    "datePlaceholder": "January 15, 2026",
+    "confirmTitle": "Підтвердження бронювання",
+    "confirmSubtitle": "Перегляньте деталі вашого бронювання",
+    "bookingDetails": "Деталі бронювання",
+    "clubPlaceholder": "Приклад клубу",
+    "courtPlaceholder": "Корт 1",
+    "datePlaceholder": "15 січня 2026",
     "timePlaceholder": "14:00 - 15:30",
     "pricePlaceholder": "€25.00",
-    "total": "Total",
-    "confirmBooking": "Confirm Booking",
-    "successTitle": "Booking Confirmed!",
-    "successMessage": "Your booking has been successfully confirmed",
-    "referenceNumber": "Reference Number",
-    "bookAnother": "Book Another Court"
+    "total": "Всього",
+    "confirmBooking": "Підтвердити бронювання",
+    "successTitle": "Бронювання підтверджено!",
+    "successMessage": "Ваше бронювання успішно підтверджено",
+    "referenceNumber": "Номер бронювання",
+    "bookAnother": "Забронювати інший корт"
   },
   "training": {
     "requestTraining": "Замовити тренування",
@@ -3930,17 +3930,17 @@
   },
   "landing": {
     "title": "ArenaOne",
-    "tagline": "Find and book padel courts near you",
-    "findCourt": "Find a court"
+    "tagline": "Знайдіть та забронюйте корти для паделу поруч з вами",
+    "findCourt": "Знайти корт"
   },
   "availability": {
-    "title": "Check Availability",
-    "selectDate": "Select Date",
-    "selectTime": "Select Time",
-    "selectCourt": "Select Court",
-    "datePickerPlaceholder": "Date picker",
-    "timeSlotPlaceholder": "Time slot {slot}",
-    "courtPlaceholder": "Court {court}",
-    "courtDetailsPlaceholder": "Indoor / Outdoor"
+    "title": "Перевірити доступність",
+    "selectDate": "Виберіть дату",
+    "selectTime": "Виберіть час",
+    "selectCourt": "Виберіть корт",
+    "datePickerPlaceholder": "Календар",
+    "timeSlotPlaceholder": "Часовий слот",
+    "courtPlaceholder": "Корт",
+    "courtDetailsPlaceholder": "Закритий / Відкритий"
   }
 }

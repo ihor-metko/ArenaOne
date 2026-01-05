@@ -4655,8 +4655,8 @@
     "selectTime": "Select Time",
     "selectCourt": "Select Court",
     "datePickerPlaceholder": "Date picker",
-    "timeSlotPlaceholder": "Time slot {slot}",
-    "courtPlaceholder": "Court {court}",
+    "timeSlotPlaceholder": "Time slot",
+    "courtPlaceholder": "Court",
     "courtDetailsPlaceholder": "Indoor / Outdoor"
   }
 }
