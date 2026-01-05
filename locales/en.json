@@ -1372,6 +1372,7 @@
     "noAvailabilityData": "No availability data",
     "showMoreSlots": "Show more time slots",
     "moreSlots": "more",
+    "courtType": "Court Format",
     "type": {
       "single": "Single",
       "double": "Double"

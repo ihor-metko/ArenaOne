@@ -1310,6 +1310,7 @@
     "noAvailabilityData": "Немає даних про доступність",
     "showMoreSlots": "Показати більше часових слотів",
     "moreSlots": "більше",
+    "courtType": "Формат корту",
     "type": {
       "single": "Одиночний",
       "double": "Парний"
