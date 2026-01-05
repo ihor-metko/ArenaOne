@@ -23,7 +23,7 @@ export function createDayRange(dateParam: string): {
   // This handles DST transitions correctly
   const middayUTC = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
   
-  // Get what time it is in the platform timezone when it's noon UTC on this date
+  // Use formatToParts to reliably extract hour and minute in platform timezone
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: PLATFORM_TIMEZONE,
     hour: "numeric",
@@ -31,8 +31,17 @@ export function createDayRange(dateParam: string): {
     hour12: false,
   });
   
-  const platformTime = formatter.format(middayUTC);
-  const [platformHour, platformMinute] = platformTime.split(':').map(Number);
+  const parts = formatter.formatToParts(middayUTC);
+  const hourPart = parts.find(p => p.type === 'hour');
+  const minutePart = parts.find(p => p.type === 'minute');
+  
+  // Validate that we got the expected parts
+  if (!hourPart || !minutePart) {
+    throw new Error(`Failed to parse timezone offset for date ${dateParam}`);
+  }
+  
+  const platformHour = parseInt(hourPart.value, 10);
+  const platformMinute = parseInt(minutePart.value, 10);
   
   // Calculate the offset: how many hours ahead is platform timezone from UTC
   const offsetHours = platformHour - 12;
