@@ -7,6 +7,7 @@ import {
   formatTimeDisplay,
   calculateEndTime,
 } from "./types";
+import { getCourtTypeLabel } from "./utils/courtTypeLabel";
 import type {
   WizardOrganization,
   WizardClub,
@@ -51,20 +52,6 @@ export function Step6Confirmation({
       return user.name ? `${user.name} (${user.email})` : user.email;
     }
     return "";
-  };
-
-  // Helper function to get localized court type
-  const getCourtTypeLabel = (type: string | null): string => {
-    if (!type) return "";
-    
-    const normalizedType = type.toLowerCase();
-    if (normalizedType === "single") {
-      return t("court.type.single");
-    } else if (normalizedType === "double") {
-      return t("court.type.double");
-    }
-    // Fallback to original type if no translation exists
-    return type;
   };
 
   if (isComplete) {
@@ -195,7 +182,7 @@ export function Step6Confirmation({
               </span>
               <span className="rsp-admin-wizard-summary-value">
                 {court.name}
-                {court.type && ` - ${getCourtTypeLabel(court.type)}`}
+                {court.type && ` - ${getCourtTypeLabel(court.type, t)}`}
               </span>
             </div>
           )}
