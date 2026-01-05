@@ -1,4 +1,4 @@
-import { getTodayStr, filterPastTimeSlots } from "@/utils/dateTime";
+import { filterPastTimeSlots } from "@/utils/dateTime";
 
 /**
  * Types for PlayerQuickBooking
