@@ -3,19 +3,48 @@
  */
 
 /**
- * Create start and end of day Date objects for a given date string
+ * Create start and end of day Date objects for a given date string in platform timezone
+ * Returns UTC Date objects that represent the start and end of the day in Europe/Kyiv
  * @param dateParam Date string in YYYY-MM-DD format
- * @returns Object with startOfDay and endOfDay Date objects
+ * @returns Object with startOfDay and endOfDay Date objects (in UTC)
+ * 
+ * Example: For date "2024-01-05" in Europe/Kyiv (UTC+2):
+ * - startOfDay: 2024-01-04T22:00:00.000Z (which is 2024-01-05 00:00:00 in Kyiv)
+ * - endOfDay: 2024-01-05T21:59:59.999Z (which is 2024-01-05 23:59:59.999 in Kyiv)
  */
 export function createDayRange(dateParam: string): {
   startOfDay: Date;
   endOfDay: Date;
 } {
-  const startOfDay = new Date(dateParam);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(dateParam);
-  endOfDay.setHours(23, 59, 59, 999);
-  return { startOfDay, endOfDay };
+  // Parse the date components
+  const [year, month, day] = dateParam.split('-').map(Number);
+  
+  // Create a date at noon on the target day to determine the timezone offset for that day
+  // This handles DST transitions correctly
+  const middayUTC = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  
+  // Get what time it is in the platform timezone when it's noon UTC on this date
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: PLATFORM_TIMEZONE,
+    hour: "numeric",
+    minute: "numeric",
+    hour12: false,
+  });
+  
+  const platformTime = formatter.format(middayUTC);
+  const [platformHour, platformMinute] = platformTime.split(':').map(Number);
+  
+  // Calculate the offset: how many hours ahead is platform timezone from UTC
+  const offsetHours = platformHour - 12;
+  const offsetMinutes = platformMinute;
+  const offsetMs = (offsetHours * 60 + offsetMinutes) * 60 * 1000;
+  
+  // Now calculate UTC times that correspond to midnight and end-of-day in platform timezone
+  // If platform is UTC+2, midnight in platform is 22:00 previous day UTC
+  const startOfDayUTC = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) - offsetMs);
+  const endOfDayUTC = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999) - offsetMs);
+  
+  return { startOfDay: startOfDayUTC, endOfDay: endOfDayUTC };
 }
 
 /**
