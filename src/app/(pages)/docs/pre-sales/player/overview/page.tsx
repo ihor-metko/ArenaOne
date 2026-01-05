@@ -18,6 +18,11 @@ export default async function PlayerOverviewPage() {
   
   const flows = [
     {
+      name: t("flows.flow.name"),
+      description: t("flows.flow.description"),
+      href: "/docs/pre-sales/player/flow",
+    },
+    {
       name: t("flows.quickBooking.name"),
       description: t("flows.quickBooking.description"),
       href: "/docs/pre-sales/player/quick-booking",
@@ -26,11 +31,6 @@ export default async function PlayerOverviewPage() {
       name: t("flows.calendar.name"),
       description: t("flows.calendar.description"),
       href: "/docs/pre-sales/player/calendar",
-    },
-    {
-      name: t("flows.confirmation.name"),
-      description: t("flows.confirmation.description"),
-      href: "/docs/pre-sales/player/confirmation",
     },
   ];
   

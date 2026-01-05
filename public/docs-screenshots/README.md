@@ -11,15 +11,17 @@ Storage/docs-screenshots/
   org-admin/        # Screenshots for Organization Admin role documentation
   club-owner/       # Screenshots for Club Owner role documentation
   club-admin/       # Screenshots for Club Admin role documentation
+  player/           # Screenshots for Player / Guest flow documentation
 ```
 
 ## File Naming Convention
 
-Screenshots should be named using the step name with a `.png` extension. For example:
+Screenshots should be named using the step name with a `.png` or `.webp` extension. For example:
 - `quick-booking.png`
 - `crud-court.png`
 - `create-organization.png`
 - `edit-settings.png`
+- `player__discovery__clubs-list.webp` (for player flow with descriptive naming)
 
 ## Using DocsImagePlaceholder Component
 
@@ -34,6 +36,15 @@ import { DocsImagePlaceholder } from '@/components/ui/docs';
   step="quick-booking"
   alt="Quick booking process"
   caption="The quick booking interface for club administrators"
+/>
+
+// Example with webp format
+<DocsImagePlaceholder 
+  role="player"
+  step="player__discovery__clubs-list"
+  format="webp"
+  alt="Clubs discovery page"
+  caption="Browse available clubs"
 />
 ```
 
@@ -51,6 +62,7 @@ If the screenshot doesn't exist yet, a placeholder will be shown instead.
 - `org-admin` - Organization Administrator
 - `club-owner` - Club Owner
 - `club-admin` - Club Administrator
+- `player` - Player / Guest
 
 ## Adding New Screenshots
 
