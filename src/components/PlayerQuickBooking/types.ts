@@ -110,6 +110,8 @@ export interface PlayerQuickBookingProps {
   };
   // Optional club data (with business hours) to avoid fetching it again
   preselectedClubData?: BookingClub;
+  // Available court types derived from courts (to avoid separate API call)
+  availableCourtTypes?: ("Single" | "Double")[];
 }
 
 export interface BookingStepConfig {

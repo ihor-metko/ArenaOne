@@ -36,6 +36,7 @@ export function PlayerQuickBooking({
   preselectedCourtId,
   preselectedDateTime,
   preselectedClubData,
+  availableCourtTypes,
 }: PlayerQuickBookingProps) {
   const t = useTranslations();
 
@@ -95,7 +96,7 @@ export function PlayerQuickBooking({
       },
       availableClubs: [],
       availableCourts: [],
-      availableCourtTypes: [],
+      availableCourtTypes: availableCourtTypes || [],
       alternativeDurations: [],
       alternativeTimeSlots: [],
       isLoadingClubs: false,
@@ -146,7 +147,7 @@ export function PlayerQuickBooking({
         },
         availableClubs: [],
         availableCourts: [],
-        availableCourtTypes: [],
+        availableCourtTypes: availableCourtTypes || [],
         alternativeDurations: [],
         alternativeTimeSlots: [],
         isLoadingClubs: false,
@@ -160,7 +161,7 @@ export function PlayerQuickBooking({
         submitError: null,
       });
     }
-  }, [isOpen, preselectedClubId, preselectedCourtId, preselectedDateTime, preselectedClubData, visibleSteps]);
+  }, [isOpen, preselectedClubId, preselectedCourtId, preselectedDateTime, preselectedClubData, availableCourtTypes, visibleSteps]);
 
   // Fetch court data if preselected
   useEffect(() => {
@@ -242,42 +243,18 @@ export function PlayerQuickBooking({
     }
   }, [mappedClubs]);
 
-  // Fetch available court types for the selected club
-  const fetchAvailableCourtTypes = useCallback(async () => {
-    const clubId = state.step0.selectedClubId || preselectedClubId;
-    if (!clubId) return;
-
-    setState((prev) => ({
-      ...prev,
-      isLoadingCourtTypes: true,
-    }));
-
-    try {
-      const response = await fetch(`/api/clubs/${clubId}/court-types`);
-
-      if (!response.ok) {
-        // If fetch fails, default to showing both types
-        setState((prev) => ({
-          ...prev,
-          availableCourtTypes: ["Single", "Double"],
-          isLoadingCourtTypes: false,
-        }));
-        return;
-      }
-
-      const data = await response.json();
-      const availableTypes = data.availableTypes || [];
-
+  // Update available court types when prop changes
+  useEffect(() => {
+    if (availableCourtTypes && availableCourtTypes.length > 0) {
       setState((prev) => {
         // If current selected court type is not available, switch to first available type
-        // Falls back to DEFAULT_COURT_TYPE if no types are available (shouldn't happen in practice)
-        const newCourtType = availableTypes.includes(prev.step1.courtType)
+        const newCourtType = availableCourtTypes.includes(prev.step1.courtType)
           ? prev.step1.courtType
-          : availableTypes[0] || DEFAULT_COURT_TYPE;
+          : availableCourtTypes[0];
 
         return {
           ...prev,
-          availableCourtTypes: availableTypes,
+          availableCourtTypes: availableCourtTypes,
           step1: {
             ...prev.step1,
             courtType: newCourtType,
@@ -285,23 +262,8 @@ export function PlayerQuickBooking({
           isLoadingCourtTypes: false,
         };
       });
-    } catch {
-      // On error, default to showing both types
-      setState((prev) => ({
-        ...prev,
-        availableCourtTypes: ["Single", "Double"],
-        isLoadingCourtTypes: false,
-      }));
     }
-  }, [state.step0.selectedClubId, preselectedClubId]);
-
-  // Fetch available court types when club is selected or preselected
-  useEffect(() => {
-    const clubId = state.step0.selectedClubId || preselectedClubId;
-    if (isOpen && clubId) {
-      fetchAvailableCourtTypes();
-    }
-  }, [isOpen, state.step0.selectedClubId, preselectedClubId, fetchAvailableCourtTypes]);
+  }, [availableCourtTypes]);
 
   // Fetch available courts for step 2
   const fetchAvailableCourts = useCallback(async () => {
