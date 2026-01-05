@@ -53,6 +53,20 @@ export function Step6Confirmation({
     return "";
   };
 
+  // Helper function to get localized court type
+  const getCourtTypeLabel = (type: string | null): string => {
+    if (!type) return "";
+    
+    const normalizedType = type.toLowerCase();
+    if (normalizedType === "single") {
+      return t("court.type.single");
+    } else if (normalizedType === "double") {
+      return t("court.type.double");
+    }
+    // Fallback to original type if no translation exists
+    return type;
+  };
+
   if (isComplete) {
     return (
       <div className="rsp-admin-wizard-step">
@@ -181,7 +195,7 @@ export function Step6Confirmation({
               </span>
               <span className="rsp-admin-wizard-summary-value">
                 {court.name}
-                {court.type && ` - ${court.type}`}
+                {court.type && ` - ${getCourtTypeLabel(court.type)}`}
               </span>
             </div>
           )}

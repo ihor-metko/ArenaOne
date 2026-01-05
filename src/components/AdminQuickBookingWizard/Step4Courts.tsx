@@ -22,6 +22,20 @@ export function Step4Courts({
 }: Step4CourtsProps) {
   const t = useTranslations();
 
+  // Helper function to get localized court type
+  const getCourtTypeLabel = (type: string | null): string => {
+    if (!type) return "";
+    
+    const normalizedType = type.toLowerCase();
+    if (normalizedType === "single") {
+      return t("court.type.single");
+    } else if (normalizedType === "double") {
+      return t("court.type.double");
+    }
+    // Fallback to original type if no translation exists
+    return type;
+  };
+
   return (
     <div className="rsp-admin-wizard-step">
       <div className="rsp-admin-wizard-step-header">
@@ -73,7 +87,7 @@ export function Step4Courts({
                         <div className="rsp-wizard-court-details">
                           {court.type && (
                             <span className="rsp-badge rsp-badge-type">
-                              {court.type}
+                              {getCourtTypeLabel(court.type)}
                             </span>
                           )}
                           {court.surface && (
