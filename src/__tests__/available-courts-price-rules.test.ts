@@ -212,4 +212,49 @@ describe("GET /api/clubs/[id]/available-courts - Price Rules", () => {
     // getResolvedPriceForSlot should not be called if no courts are available
     expect(getResolvedPriceForSlot).not.toHaveBeenCalled();
   });
+
+  it("should fall back to default price when getResolvedPriceForSlot fails", async () => {
+    const mockClub = {
+      id: "club-123",
+      courts: [
+        {
+          id: "court-1",
+          name: "Court 1",
+          slug: "court-1",
+          type: "Singles",
+          surface: "Clay",
+          indoor: true,
+          sportType: "PADEL",
+          defaultPriceCents: 3000, // $30/hour
+        },
+      ],
+    };
+
+    (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+    (prisma.booking.findMany as jest.Mock).mockResolvedValue([]);
+    
+    // Mock getResolvedPriceForSlot to throw an error
+    (getResolvedPriceForSlot as jest.Mock).mockRejectedValue(new Error("Database error"));
+
+    const request = createRequest("club-123", {
+      date: "2024-01-15",
+      start: "18:00",
+      duration: "60",
+    });
+
+    const response = await GET(request, {
+      params: Promise.resolve({ id: "club-123" }),
+    });
+
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    
+    // Court should still be available with fallback price
+    expect(data.availableCourts).toHaveLength(1);
+    expect(data.availableCourts[0]).toMatchObject({
+      id: "court-1",
+      name: "Court 1",
+      priceCents: 3000, // Fallback to default price (3000 cents / 60 min * 60 min = 3000)
+    });
+  });
 });

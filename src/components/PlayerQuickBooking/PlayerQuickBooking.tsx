@@ -375,6 +375,8 @@ export function PlayerQuickBooking({
             const prices = courts.map(c => {
               if (c.priceCents === undefined || c.priceCents === null) {
                 console.warn(`Court ${c.id} missing priceCents, using default price`);
+                // Fallback: calculate price for the duration using the same formula as getResolvedPriceForSlot
+                // priceCents from API already includes duration, so fallback must too
                 return Math.round((c.defaultPriceCents / MINUTES_PER_HOUR) * duration);
               }
               return c.priceCents;
