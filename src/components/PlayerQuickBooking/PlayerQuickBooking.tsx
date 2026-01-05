@@ -21,6 +21,7 @@ import {
   calculateEndTime,
   determineVisibleSteps,
   DURATION_OPTIONS,
+  DEFAULT_COURT_TYPE,
   wouldEndAfterClosing,
 } from "./types";
 import "./PlayerQuickBooking.css";
@@ -37,7 +38,7 @@ export function PlayerQuickBooking({
   preselectedDateTime,
 }: PlayerQuickBookingProps) {
   const t = useTranslations();
-  
+
   // Use centralized player club store with new idempotent method
   const clubsFromStore = usePlayerClubStore((state) => state.clubs);
   const fetchClubsIfNeeded = usePlayerClubStore((state) => state.fetchClubsIfNeeded);
@@ -61,14 +62,14 @@ export function PlayerQuickBooking({
 
   // Initialize state with preselected data
   const [state, setState] = useState<PlayerQuickBookingState>(() => {
-    const initialDateTime: PlayerBookingStep1Data = preselectedDateTime 
-      ? { ...preselectedDateTime, courtType: preselectedDateTime.courtType || "Double" }
+    const initialDateTime: PlayerBookingStep1Data = preselectedDateTime
+      ? { ...preselectedDateTime, courtType: preselectedDateTime.courtType || DEFAULT_COURT_TYPE }
       : {
-          date: getTodayDateString(),
-          startTime: "10:00",
-          duration: MINUTES_PER_HOUR,
-          courtType: "Double",
-        };
+        date: getTodayDateString(),
+        startTime: "10:00",
+        duration: MINUTES_PER_HOUR,
+        courtType: DEFAULT_COURT_TYPE,
+      };
 
     return {
       currentStep: visibleSteps[0]?.id || 0,
@@ -90,9 +91,11 @@ export function PlayerQuickBooking({
       },
       availableClubs: [],
       availableCourts: [],
+      availableCourtTypes: [],
       alternativeDurations: [],
       isLoadingClubs: false,
       isLoadingCourts: false,
+      isLoadingCourtTypes: false,
       clubsError: null,
       courtsError: null,
       estimatedPrice: null,
@@ -105,14 +108,14 @@ export function PlayerQuickBooking({
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
-      const initialDateTime: PlayerBookingStep1Data = preselectedDateTime 
-        ? { ...preselectedDateTime, courtType: preselectedDateTime.courtType || "Double" }
+      const initialDateTime: PlayerBookingStep1Data = preselectedDateTime
+        ? { ...preselectedDateTime, courtType: preselectedDateTime.courtType || DEFAULT_COURT_TYPE }
         : {
-            date: getTodayDateString(),
-            startTime: "10:00",
-            duration: MINUTES_PER_HOUR,
-            courtType: "Double",
-          };
+          date: getTodayDateString(),
+          startTime: "10:00",
+          duration: MINUTES_PER_HOUR,
+          courtType: DEFAULT_COURT_TYPE,
+        };
 
       setState({
         currentStep: visibleSteps[0]?.id || 0,
@@ -134,9 +137,11 @@ export function PlayerQuickBooking({
         },
         availableClubs: [],
         availableCourts: [],
+        availableCourtTypes: [],
         alternativeDurations: [],
         isLoadingClubs: false,
         isLoadingCourts: false,
+        isLoadingCourtTypes: false,
         clubsError: null,
         courtsError: null,
         estimatedPrice: null,
@@ -221,7 +226,7 @@ export function PlayerQuickBooking({
   }, [isOpen, preselectedCourtId, state.step2.selectedCourt]);
 
   // Memoize club mapping to avoid unnecessary re-renders
-  const mappedClubs: BookingClub[] = useMemo(() => 
+  const mappedClubs: BookingClub[] = useMemo(() =>
     clubsFromStore.map((club) => ({
       id: club.id,
       name: club.name,
@@ -232,7 +237,7 @@ export function PlayerQuickBooking({
     })),
     [clubsFromStore]
   );
-  
+
   // Fetch available clubs for step 0 using store
   const fetchAvailableClubs = useCallback(async () => {
     setState((prev) => ({
@@ -253,7 +258,7 @@ export function PlayerQuickBooking({
       }));
     }
   }, [t, fetchClubsIfNeeded]);
-  
+
   // Sync clubs from store to local state
   useEffect(() => {
     if (mappedClubs.length > 0) {
@@ -264,6 +269,67 @@ export function PlayerQuickBooking({
       }));
     }
   }, [mappedClubs]);
+
+  // Fetch available court types for the selected club
+  const fetchAvailableCourtTypes = useCallback(async () => {
+    const clubId = state.step0.selectedClubId || preselectedClubId;
+    if (!clubId) return;
+
+    setState((prev) => ({
+      ...prev,
+      isLoadingCourtTypes: true,
+    }));
+
+    try {
+      const response = await fetch(`/api/clubs/${clubId}/court-types`);
+
+      if (!response.ok) {
+        // If fetch fails, default to showing both types
+        setState((prev) => ({
+          ...prev,
+          availableCourtTypes: ["Single", "Double"],
+          isLoadingCourtTypes: false,
+        }));
+        return;
+      }
+
+      const data = await response.json();
+      const availableTypes = data.availableTypes || [];
+
+      setState((prev) => {
+        // If current selected court type is not available, switch to first available type
+        // Falls back to DEFAULT_COURT_TYPE if no types are available (shouldn't happen in practice)
+        const newCourtType = availableTypes.includes(prev.step1.courtType)
+          ? prev.step1.courtType
+          : availableTypes[0] || DEFAULT_COURT_TYPE;
+
+        return {
+          ...prev,
+          availableCourtTypes: availableTypes,
+          step1: {
+            ...prev.step1,
+            courtType: newCourtType,
+          },
+          isLoadingCourtTypes: false,
+        };
+      });
+    } catch {
+      // On error, default to showing both types
+      setState((prev) => ({
+        ...prev,
+        availableCourtTypes: ["Single", "Double"],
+        isLoadingCourtTypes: false,
+      }));
+    }
+  }, [state.step0.selectedClubId, preselectedClubId]);
+
+  // Fetch available court types when club is selected or preselected
+  useEffect(() => {
+    const clubId = state.step0.selectedClubId || preselectedClubId;
+    if (isOpen && clubId) {
+      fetchAvailableCourtTypes();
+    }
+  }, [isOpen, state.step0.selectedClubId, preselectedClubId, fetchAvailableCourtTypes]);
 
   // Fetch available courts for step 2
   const fetchAvailableCourts = useCallback(async () => {
@@ -330,7 +396,7 @@ export function PlayerQuickBooking({
             return { duration: altDuration, hasAvailability: false };
           })
         );
-        
+
         // Get durations with available courts
         alternatives = alternativeChecks
           .filter(check => check.hasAvailability)
@@ -397,15 +463,15 @@ export function PlayerQuickBooking({
             const minPrice = Math.min(...prices);
             const maxPrice = Math.max(...prices);
             const avgPrice = Math.round(prices.reduce((sum, p) => sum + p, 0) / prices.length);
-            
-            setState((prev) => ({ 
-              ...prev, 
+
+            setState((prev) => ({
+              ...prev,
               estimatedPrice: avgPrice,
               estimatedPriceRange: { min: minPrice, max: maxPrice }
             }));
           } else {
-            setState((prev) => ({ 
-              ...prev, 
+            setState((prev) => ({
+              ...prev,
               estimatedPrice: null,
               estimatedPriceRange: null
             }));
@@ -491,7 +557,7 @@ export function PlayerQuickBooking({
       alternativeDurations: [],
       isLoadingCourts: true,
     }));
-    
+
     // Wait a tick for state to update, then fetch courts with new duration
     // We need to refetch after state update to ensure the new duration is used
     setTimeout(() => {
@@ -626,7 +692,7 @@ export function PlayerQuickBooking({
       case 1: {
         const hasBasicData = !!state.step1.date && !!state.step1.startTime && state.step1.duration > 0;
         if (!hasBasicData) return false;
-        
+
         // Check if booking would end after closing time
         const endsAfterClosing = wouldEndAfterClosing(
           state.step1.date,
@@ -634,7 +700,7 @@ export function PlayerQuickBooking({
           state.step1.duration,
           state.step0.selectedClub?.businessHours
         );
-        
+
         return !endsAfterClosing;
       }
       case 2:
@@ -703,9 +769,8 @@ export function PlayerQuickBooking({
               return (
                 <div
                   key={step.id}
-                  className={`rsp-wizard-step ${
-                    isActive ? "rsp-wizard-step--active" : ""
-                  } ${isCompleted ? "rsp-wizard-step--completed" : ""}`}
+                  className={`rsp-wizard-step ${isActive ? "rsp-wizard-step--active" : ""
+                    } ${isCompleted ? "rsp-wizard-step--completed" : ""}`}
                   aria-current={isActive ? "step" : undefined}
                 >
                   <div className="rsp-wizard-step-circle" aria-hidden="true">
@@ -751,7 +816,8 @@ export function PlayerQuickBooking({
               onChange={handleStep1Change}
               estimatedPrice={state.estimatedPrice}
               estimatedPriceRange={state.estimatedPriceRange}
-              isLoading={false}
+              isLoading={state.isLoadingCourtTypes}
+              availableCourtTypes={state.availableCourtTypes}
               businessHours={state.step0.selectedClub?.businessHours}
             />
           )}

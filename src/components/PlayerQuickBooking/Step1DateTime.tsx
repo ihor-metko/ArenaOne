@@ -20,8 +20,16 @@ interface Step1DateTimeProps {
   estimatedPrice: number | null;
   estimatedPriceRange?: { min: number; max: number } | null;
   isLoading?: boolean;
+  availableCourtTypes?: ("Single" | "Double")[];
   businessHours?: ClubBusinessHours[];
 }
+
+// Translation key mapping for court types
+const COURT_TYPE_TRANSLATION_KEYS: Record<"Single" | "Double", string> = {
+  Single: "courts.padelCourtFormatSingle",
+  Double: "courts.padelCourtFormatDouble",
+};
+
 
 export function Step1DateTime({
   data,
@@ -29,6 +37,7 @@ export function Step1DateTime({
   estimatedPrice,
   estimatedPriceRange,
   isLoading = false,
+  availableCourtTypes = ["Single", "Double"], // Default to both types if not provided
   businessHours,
 }: Step1DateTimeProps) {
   const t = useTranslations();
@@ -115,30 +124,43 @@ export function Step1DateTime({
         )}
 
         {/* Court Type Selection */}
-        <div className="rsp-wizard-field">
-          <RadioGroup
-            label={t("courts.courtType")}
-            name="court-type"
-            options={[
-              {
-                value: "Single",
-                label: t("courts.padelCourtFormatSingle"),
-              },
-              {
-                value: "Double",
-                label: t("courts.padelCourtFormatDouble"),
-              },
-            ]}
-            value={data.courtType}
-            onChange={(value) => {
-              if (value === "Single" || value === "Double") {
-                onChange({ courtType: value });
-              }
-            }}
-            disabled={isLoading}
-            className="rsp-wizard-court-type-group"
-          />
-        </div>
+        {availableCourtTypes.length > 0 && (
+          <div className="rsp-wizard-field">
+            <RadioGroup
+              label={t("courts.courtType")}
+              name="court-type"
+              options={availableCourtTypes.map((type) => ({
+                value: type,
+                label: t(COURT_TYPE_TRANSLATION_KEYS[type]),
+              }))}
+              value={data.courtType}
+              onChange={(value) => {
+                if (value === "Single" || value === "Double") {
+                  onChange({ courtType: value });
+                }
+              }}
+              disabled={isLoading}
+              className="rsp-wizard-court-type-group"
+            />
+            <div className="rsp-wizard-hint rsp-wizard-hint--subtle">
+              <svg
+                className="rsp-wizard-hint-icon"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span>{t("wizard.courtTypeHint")}</span>
+            </div>
+          </div>
+        )}
 
         {/* Peak hours hint */}
         {isPeak && (
