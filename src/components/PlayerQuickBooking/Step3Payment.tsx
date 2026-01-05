@@ -166,10 +166,23 @@ export function Step3Payment({
 
   // Format date and time for display using locale-aware formatting
   const formatBookingDateTime = useCallback((dateStr: string, timeStr: string): string => {
+    // Validate time format (HH:MM)
+    if (!timeStr || !timeStr.includes(':')) {
+      return formatDateTimeLong(new Date(dateStr), locale);
+    }
+    
     // Create a date object from the date string and time
-    const [hours, minutes] = timeStr.split(':');
+    const [hoursStr, minutesStr] = timeStr.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    
+    // Validate parsed values
+    if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      return formatDateTimeLong(new Date(dateStr), locale);
+    }
+    
     const dateTime = new Date(dateStr);
-    dateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    dateTime.setHours(hours, minutes, 0, 0);
     
     return formatDateTimeLong(dateTime, locale);
   }, [locale]);
