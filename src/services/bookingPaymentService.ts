@@ -56,7 +56,9 @@ export async function initiatePlayerBookingPayment(
     throw new Error("Start time must be before end time");
   }
 
-  if (startTime < new Date()) {
+  // Compare with current time using UTC to avoid timezone issues
+  const now = new Date();
+  if (startTime <= now) {
     throw new Error("Cannot book in the past");
   }
 
@@ -209,10 +211,12 @@ async function generateWayForPayCheckoutUrl(
   const productPrice = amount;
 
   // Get base URL for return/callback URLs
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  // Use APP_URL (server-only) if available, fallback to NEXT_PUBLIC_APP_URL
+  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   // Default phone number for bookings when user doesn't have one
-  const DEFAULT_BOOKING_PHONE = "380000000000";
+  // This could be made configurable via club settings in the future
+  const DEFAULT_BOOKING_PHONE = process.env.DEFAULT_BOOKING_PHONE || "380000000000";
 
   // Parse user name into first and last name components
   let clientFirstName = "Player";
@@ -277,6 +281,7 @@ async function generateWayForPayCheckoutUrl(
       transactionType: "CREATE_INVOICE",
       ...paymentRequest,
     }),
+    signal: AbortSignal.timeout(10000), // 10 second timeout
   });
 
   if (!response.ok) {
@@ -295,10 +300,7 @@ async function generateWayForPayCheckoutUrl(
   }
 
   // If no direct URL was provided, log error and throw
-  console.error("[WayForPay] Failed to get checkout URL. API response:", {
-    reasonCode: data.reasonCode,
-    reason: data.reason,
-  });
+  console.error("[WayForPay] Failed to get checkout URL. Reason code:", data.reasonCode || "N/A");
 
   throw new Error(
     `Failed to generate WayForPay checkout URL. Please try again later.`

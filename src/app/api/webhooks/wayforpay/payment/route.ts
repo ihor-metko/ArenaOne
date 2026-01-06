@@ -41,10 +41,20 @@ export async function POST(request: Request) {
     } else {
       console.error("[WayForPay Payment Callback] Failed:", result.message);
 
-      // Still return accept to prevent retries, but log the failure
+      // Return appropriate error status for genuine failures
+      // but accept already-processed payments to prevent retries
+      if (result.message.includes("already processed")) {
+        return NextResponse.json({
+          orderReference: callbackData.orderReference,
+          status: "accept",
+          time: Math.floor(Date.now() / 1000),
+        });
+      }
+
+      // For validation failures, return decline to signal the error
       return NextResponse.json({
         orderReference: callbackData.orderReference,
-        status: "accept",
+        status: "decline",
         time: Math.floor(Date.now() / 1000),
       });
     }
