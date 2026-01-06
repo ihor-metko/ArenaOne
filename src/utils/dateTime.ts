@@ -1,9 +1,18 @@
 /**
  * Date and time utilities for the application
+ * 
+ * IMPORTANT: This file contains LEGACY timezone utilities.
+ * For new backend code, use @/utils/utcDateTime instead.
+ * 
+ * These utilities use PLATFORM_TIMEZONE which is club-specific.
+ * Backend should operate on UTC only.
  */
 
+import { DEFAULT_CLUB_TIMEZONE } from "@/constants/timezone";
+
 // Platform timezone (Europe/Kyiv)
-export const PLATFORM_TIMEZONE = "Europe/Kyiv";
+// @deprecated Use club.timezone instead for club-specific operations
+export const PLATFORM_TIMEZONE = DEFAULT_CLUB_TIMEZONE;
 
 /**
  * Create start and end of day Date objects for a given date string in platform timezone

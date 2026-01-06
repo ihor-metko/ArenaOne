@@ -6,6 +6,7 @@ import { emitBookingCreated } from "@/lib/socketEmitters";
 import type { OperationsBooking } from "@/types/booking";
 import { migrateLegacyStatus } from "@/utils/bookingStatus";
 import { updateStatisticsForBooking } from "@/services/statisticsService";
+import { isValidUTCString, getUTCDateString, getUTCTimeString } from "@/utils/utcDateTime";
 
 interface BookingRequest {
   courtId: string;
@@ -16,18 +17,13 @@ interface BookingRequest {
 }
 
 /**
- * Format a date to "HH:MM" time string.
+ * POST /api/bookings
+ * Create a booking for a player
+ * 
+ * IMPORTANT TIMEZONE RULE:
+ * This endpoint expects startTime and endTime in UTC ISO 8601 format (e.g., "2026-01-06T10:00:00.000Z")
+ * Frontend MUST convert club local time to UTC before calling this endpoint
  */
-function formatTimeString(date: Date): string {
-  return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
-}
-
-/**
- * Format a date to "YYYY-MM-DD" date string.
- */
-function formatDateString(date: Date): string {
-  return date.toISOString().split("T")[0];
-}
 
 export async function POST(request: Request) {
   try {
@@ -48,6 +44,21 @@ export async function POST(request: Request) {
     ) {
       return NextResponse.json(
         { error: "Missing required fields: courtId, startTime, endTime, and userId are required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate UTC format - CRITICAL for timezone safety
+    if (!isValidUTCString(body.startTime)) {
+      return NextResponse.json(
+        { error: "Invalid startTime format. Must be UTC ISO 8601 format (e.g., '2026-01-06T10:00:00.000Z')" },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidUTCString(body.endTime)) {
+      return NextResponse.json(
+        { error: "Invalid endTime format. Must be UTC ISO 8601 format (e.g., '2026-01-06T10:00:00.000Z')" },
         { status: 400 }
       );
     }
@@ -74,9 +85,9 @@ export async function POST(request: Request) {
     // Calculate duration in minutes
     const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
 
-    // Get date and time strings for price calculation
-    const dateStr = formatDateString(startTime);
-    const startTimeStr = formatTimeString(startTime);
+    // Get date and time strings for price calculation (UTC)
+    const dateStr = getUTCDateString(startTime);
+    const startTimeStr = getUTCTimeString(startTime);
 
     // Calculate resolved price using price rules
     let resolvedPrice: number;
