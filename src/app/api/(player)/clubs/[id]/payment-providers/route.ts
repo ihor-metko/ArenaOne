@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PaymentProvider, PaymentAccountScope } from "@/types/paymentAccount";
+import type { PaymentProviderInfo } from "@/components/PlayerQuickBooking/types";
 
 /**
  * Payment provider metadata configuration
@@ -25,13 +26,6 @@ const PAYMENT_PROVIDER_METADATA: Record<
     logoDark: "/logos/payment/liqpay-dark.svg",
   },
 };
-
-export interface PaymentProviderInfo {
-  id: string; // Provider enum value
-  name: string;
-  logoLight: string;
-  logoDark: string;
-}
 
 /**
  * GET /api/(player)/clubs/[id]/payment-providers

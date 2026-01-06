@@ -61,7 +61,6 @@ export interface PlayerBookingStep2Data {
 }
 
 export interface PlayerBookingStep3Data {
-  paymentMethod: PaymentMethod | null;
   selectedProviderId: string | null; // Selected payment provider ID
   reservationId: string | null;
   reservationExpiresAt: string | null;

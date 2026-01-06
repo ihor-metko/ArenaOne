@@ -18,7 +18,6 @@ import {
   PlayerBookingStep1Data,
   BookingCourt,
   BookingClub,
-  PaymentMethod,
   getTodayDateString,
   calculateEndTime,
   determineVisibleSteps,
