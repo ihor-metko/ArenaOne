@@ -528,3 +528,56 @@ export function isPastDay(dateStr: string): boolean {
   const todayStr = getTodayStr();
   return dateStr < todayStr;
 }
+
+/**
+ * Convert time-of-day from club local to UTC using a reference date
+ * This is useful for recurring time patterns (like business hours)
+ * 
+ * @param timeStr Time string in HH:MM format (club local time)
+ * @param clubTimezone IANA timezone string (e.g., "Europe/Kyiv")
+ * @param referenceDate Optional reference date for DST calculation (defaults to today)
+ * @returns UTC time string in HH:MM format
+ * 
+ * @example
+ * // Convert 10:00 Kyiv time to UTC (assuming UTC+2)
+ * timeOfDayToUTC("10:00", "Europe/Kyiv")
+ * // Returns: "08:00"
+ */
+export function timeOfDayToUTC(
+  timeStr: string,
+  clubTimezone: string,
+  referenceDate?: string
+): string {
+  const refDate = referenceDate || getTodayInClubTimezone(clubTimezone);
+  return clubLocalToUTCTime(refDate, timeStr, clubTimezone);
+}
+
+/**
+ * Convert time-of-day from UTC to club local using a reference date
+ * This is useful for displaying recurring time patterns (like business hours)
+ * 
+ * @param timeStr Time string in HH:MM format (UTC time)
+ * @param clubTimezone IANA timezone string (e.g., "Europe/Kyiv")
+ * @param referenceDate Optional reference date for DST calculation (defaults to today)
+ * @returns Club local time string in HH:MM format
+ * 
+ * @example
+ * // Convert 08:00 UTC to Kyiv time (assuming UTC+2)
+ * timeOfDayFromUTC("08:00", "Europe/Kyiv")
+ * // Returns: "10:00"
+ */
+export function timeOfDayFromUTC(
+  timeStr: string,
+  clubTimezone: string,
+  referenceDate?: string
+): string {
+  const refDate = referenceDate || getTodayInClubTimezone(clubTimezone);
+  // Create a UTC ISO string for the reference date and time
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  const [year, month, day] = refDate.split('-').map(Number);
+  
+  // Create a UTC date
+  const utcDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0, 0));
+  
+  return utcToClubLocalTime(utcDate.toISOString(), clubTimezone);
+}
