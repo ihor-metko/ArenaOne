@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
 import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useCourtAvailability } from "@/hooks/useCourtAvailability";
-import { clubLocalToUTC } from "@/utils/dateTime";
+import { clubLocalToUTC, clubLocalToUTCTime } from "@/utils/dateTime";
 import { getClubTimezone } from "@/constants/timezone";
 import { Step0SelectClub } from "./Step0SelectClub";
 import { Step1DateTime } from "./Step1DateTime";
@@ -308,14 +308,8 @@ export function PlayerQuickBooking({
       // Get club timezone (with fallback to default)
       const clubTimezone = getClubTimezone(selectedClub?.timezone);
       
-      // Convert club local time to UTC for API call
-      const utcISOString = clubLocalToUTC(date, startTime, clubTimezone);
-      const utcDate = new Date(utcISOString);
-      
-      // Extract UTC time in HH:MM format for API
-      const utcHours = utcDate.getUTCHours().toString().padStart(2, '0');
-      const utcMinutes = utcDate.getUTCMinutes().toString().padStart(2, '0');
-      const utcTimeString = `${utcHours}:${utcMinutes}`;
+      // Convert club local time to UTC time string (HH:MM format) for API
+      const utcTimeString = clubLocalToUTCTime(date, startTime, clubTimezone);
 
       const params = new URLSearchParams({
         date,
@@ -401,14 +395,8 @@ export function PlayerQuickBooking({
         // Get club timezone (with fallback to default)
         const clubTimezone = getClubTimezone(selectedClub?.timezone);
         
-        // Convert club local time to UTC for API call
-        const utcISOString = clubLocalToUTC(date, startTime, clubTimezone);
-        const utcDate = new Date(utcISOString);
-        
-        // Extract UTC time in HH:MM format for API
-        const utcHours = utcDate.getUTCHours().toString().padStart(2, '0');
-        const utcMinutes = utcDate.getUTCMinutes().toString().padStart(2, '0');
-        const utcTimeString = `${utcHours}:${utcMinutes}`;
+        // Convert club local time to UTC time string (HH:MM format) for API
+        const utcTimeString = clubLocalToUTCTime(date, startTime, clubTimezone);
 
         const params = new URLSearchParams({
           date,

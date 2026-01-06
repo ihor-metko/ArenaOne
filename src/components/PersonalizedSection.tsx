@@ -8,7 +8,7 @@ import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useCurrentLocale } from "@/hooks/useCurrentLocale";
 import { formatPrice } from "@/utils/price";
 import { formatDateWithWeekday, formatTime, formatDateLong } from "@/utils/date";
-import { getTodayStr, clubLocalToUTC } from "@/utils/dateTime";
+import { getTodayStr, clubLocalToUTC, clubLocalToUTCTime } from "@/utils/dateTime";
 import { getClubTimezone } from "@/constants/timezone";
 import "./PersonalizedSection.css";
 
@@ -191,14 +191,8 @@ export function PersonalizedSection({ userName }: PersonalizedSectionProps) {
       // Get club timezone (with fallback to default)
       const clubTimezone = getClubTimezone(selectedClub?.timezone);
       
-      // Convert club local time to UTC for API call
-      const utcISOString = clubLocalToUTC(selectedDate, selectedStartTime, clubTimezone);
-      const utcDate = new Date(utcISOString);
-      
-      // Extract UTC time in HH:MM format for API
-      const utcHours = utcDate.getUTCHours().toString().padStart(2, '0');
-      const utcMinutes = utcDate.getUTCMinutes().toString().padStart(2, '0');
-      const utcTimeString = `${utcHours}:${utcMinutes}`;
+      // Convert club local time to UTC time string (HH:MM format) for API
+      const utcTimeString = clubLocalToUTCTime(selectedDate, selectedStartTime, clubTimezone);
       
       const params = new URLSearchParams({
         date: selectedDate,
