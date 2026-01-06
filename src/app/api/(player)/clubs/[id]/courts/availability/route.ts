@@ -9,6 +9,7 @@ import {
   getWeekMondayInTimezone,
   isPastDayInTimezone
 } from "@/utils/utcDateTime";
+import { getClubTimezone } from "@/constants/timezone";
 
 // Business hours configuration
 const BUSINESS_START_HOUR = 8;
@@ -123,7 +124,7 @@ export async function GET(
     }
 
     // Use club timezone to determine "today"
-    const clubTimezone = club.timezone || "Europe/Kyiv";
+    const clubTimezone = getClubTimezone(club.timezone);
     const todayInClubTz = getTodayInTimezone(clubTimezone);
 
     let startDateStr: string;
