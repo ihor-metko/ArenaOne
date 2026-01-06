@@ -4,11 +4,9 @@ import {
   getTodayInTimezone,
   getDatesFromStart,
   getWeekMonday,
-  getRolling7Days,
-  getCalendarWeekDays,
   getTodayStr,
 } from "@/utils/dateTime";
-import { createUTCDate, addMinutesUTC, doUTCRangesOverlap, getUTCDayBounds } from "@/utils/utcDateTime";
+import { createUTCDate, doUTCRangesOverlap, getUTCDayBounds } from "@/utils/utcDateTime";
 
 // Business hours configuration
 const BUSINESS_START_HOUR = 8;

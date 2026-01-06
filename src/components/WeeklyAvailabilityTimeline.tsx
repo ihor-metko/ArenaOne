@@ -9,8 +9,6 @@ import {
   getTodayInTimezone,
   getTodayStr,
   getWeekMonday,
-  getRolling7Days,
-  getCalendarWeekDays,
 } from "@/utils/dateTime";
 import type {
   WeeklyAvailabilityResponse,

@@ -318,10 +318,9 @@ export function filterPastTimeSlots(timeSlots: string[], dateStr: string): strin
  * Get rolling 7 days starting from a given date (or today)
  * This is used for the "rolling" availability mode where the first day is always today
  * @param startDate Optional starting date (defaults to today in platform timezone)
- * @param timezone Optional timezone (defaults to PLATFORM_TIMEZONE)
  * @returns Array of date strings in YYYY-MM-DD format, starting from the given date
  */
-export function getRolling7Days(startDate?: Date, timezone: string = PLATFORM_TIMEZONE): string[] {
+export function getRolling7Days(startDate?: Date): string[] {
   const start = startDate || getTodayInTimezone();
   start.setHours(0, 0, 0, 0);
   return getDatesFromStart(start, 7);
@@ -331,10 +330,9 @@ export function getRolling7Days(startDate?: Date, timezone: string = PLATFORM_TI
  * Get calendar week days (Monday to Sunday) for the week containing the given date
  * This is used for the "calendar" availability mode where days are shown in calendar week order
  * @param date Optional reference date (defaults to today in platform timezone)
- * @param timezone Optional timezone (defaults to PLATFORM_TIMEZONE)
  * @returns Array of date strings in YYYY-MM-DD format, from Monday to Sunday
  */
-export function getCalendarWeekDays(date?: Date, timezone: string = PLATFORM_TIMEZONE): string[] {
+export function getCalendarWeekDays(date?: Date): string[] {
   const refDate = date || getTodayInTimezone();
   const monday = getWeekMonday(refDate);
   return getDatesFromStart(monday, 7);
@@ -343,10 +341,9 @@ export function getCalendarWeekDays(date?: Date, timezone: string = PLATFORM_TIM
 /**
  * Check if a given date is in the past (before today)
  * @param dateStr Date string in YYYY-MM-DD format
- * @param timezone Optional timezone (defaults to PLATFORM_TIMEZONE)
  * @returns true if the date is before today
  */
-export function isPastDay(dateStr: string, timezone: string = PLATFORM_TIMEZONE): boolean {
+export function isPastDay(dateStr: string): boolean {
   const todayStr = getTodayStr();
   return dateStr < todayStr;
 }
