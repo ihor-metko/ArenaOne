@@ -137,7 +137,8 @@ export async function POST(
 
     // Create PaymentIntent
     const orderReference = `booking_${booking.id}_${Date.now()}`;
-    const currency = booking.court.club.defaultCurrency || "UAH";
+    // const currency = booking.court.club.defaultCurrency || "UAH";
+    const currency = "UAH";
 
     const paymentIntent = await prisma.paymentIntent.create({
       data: {

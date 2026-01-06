@@ -78,7 +78,7 @@ const defaultFormValues: CourtFormData = {
   indoor: false,
   shortDescription: "",
   defaultPrice: 0,
-  currency: "USD",
+  currency: "UAH",
   defaultSlotLengthMinutes: 60,
   courtOpenTime: "",
   courtCloseTime: "",
