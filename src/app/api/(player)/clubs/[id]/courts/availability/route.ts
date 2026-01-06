@@ -49,7 +49,8 @@ interface WeeklyAvailabilityResponse {
   mode?: "rolling" | "calendar";
 }
 
-// Helper to get day name using native Date API (UTC-based)
+// Helper to get day name from UTC date string (YYYY-MM-DD format)
+// Returns the day name in English (e.g., "Monday", "Tuesday")
 function getDayName(dateStr: string): string {
   const date = new Date(dateStr + 'T00:00:00.000Z');
   return date.toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
