@@ -62,10 +62,6 @@ export async function POST(request: Request) {
       where: {
         bookingStatus: BOOKING_STATUS.CONFIRMED,
         paymentStatus: PAYMENT_STATUS.UNPAID,
-        // Only consider bookings that are not already cancelled
-        NOT: {
-          bookingStatus: BOOKING_STATUS.CANCELLED,
-        },
       },
       select: {
         id: true,
@@ -142,8 +138,8 @@ export async function POST(request: Request) {
       });
       cancelledCount = cancelResult.count;
 
-      // Send cancellation notifications (non-blocking)
-      for (const notification of cancellationNotifications) {
+      // Send cancellation notifications concurrently (non-blocking)
+      const emailPromises = cancellationNotifications.map((notification) =>
         sendBookingCancellationEmail({
           to: notification.userEmail,
           userName: notification.userName || undefined,
@@ -157,8 +153,12 @@ export async function POST(request: Request) {
             `[Cron] Failed to send cancellation email to ${notification.userEmail}:`,
             error
           );
-        });
-      }
+          return { success: false, error };
+        })
+      );
+      
+      // Wait for all emails to complete (or fail)
+      await Promise.allSettled(emailPromises);
     }
 
     // STEP 2: Mark completed bookings as "completed" in the database

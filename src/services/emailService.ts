@@ -34,6 +34,12 @@ function getResendClient(): Resend {
 // Default sender email (can be configured via environment)
 const getFromEmail = () => process.env.EMAIL_FROM || "ArenaOne <noreply@arenaone.com>";
 
+// Support email (can be configured via environment)
+const getSupportEmail = () => process.env.SUPPORT_EMAIL || "support@arenaone.com";
+
+// Default locale for date/time formatting (can be configured via environment)
+const getDefaultLocale = () => process.env.DEFAULT_LOCALE || "en-US";
+
 /**
  * Email sending result
  */
@@ -323,20 +329,21 @@ export async function sendBookingCancellationEmail(
   try {
     const { to, userName, courtName, clubName, startTime, endTime } = params;
 
-    // Format dates for display
+    // Format dates for display using configured locale
+    const locale = getDefaultLocale();
     const start = new Date(startTime);
     const end = new Date(endTime);
-    const formattedDate = start.toLocaleDateString("en-US", {
+    const formattedDate = start.toLocaleDateString(locale, {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-    const formattedStartTime = start.toLocaleTimeString("en-US", {
+    const formattedStartTime = start.toLocaleTimeString(locale, {
       hour: "2-digit",
       minute: "2-digit",
     });
-    const formattedEndTime = end.toLocaleTimeString("en-US", {
+    const formattedEndTime = end.toLocaleTimeString(locale, {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -400,6 +407,7 @@ function buildCancellationEmailHTML(params: {
   const { userName, courtName, clubName, formattedDate, formattedStartTime, formattedEndTime } = params;
 
   const greeting = userName ? `Hi ${userName}` : "Hi";
+  const supportEmail = getSupportEmail();
 
   return `
 <!DOCTYPE html>
@@ -527,7 +535,7 @@ function buildCancellationEmailHTML(params: {
       <p><strong>ArenaOne</strong></p>
       <p>Your premium padel booking platform</p>
       <p style="margin-top: 15px;">
-        Need help? Contact us at <a href="mailto:support@arenaone.com">support@arenaone.com</a>
+        Need help? Contact us at <a href="mailto:${supportEmail}">${supportEmail}</a>
       </p>
     </div>
   </div>
