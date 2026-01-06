@@ -225,6 +225,13 @@ export function PlayerQuickBooking({
     }
   }, [isOpen, state.step0.selectedClubId, preselectedClubId, clubsById, ensureClubById]);
 
+  // Helper to get club timezone consistently
+  const getClubTimezoneForBooking = useCallback(() => {
+    const clubId = state.step0.selectedClubId || preselectedClubId;
+    const clubDetails = clubId ? clubsById[clubId] : null;
+    return clubDetails?.timezone || preselectedClubData?.timezone || null;
+  }, [state.step0.selectedClubId, preselectedClubId, clubsById, preselectedClubData]);
+
   // Memoize club mapping to avoid unnecessary re-renders
   const mappedClubs: BookingClub[] = useMemo(() =>
     clubsFromStore.map((club) => ({
@@ -301,9 +308,8 @@ export function PlayerQuickBooking({
 
     const { date, startTime, duration, courtType } = state.step1;
     
-    // Get club timezone from club details
-    const clubDetails = clubsById[clubId];
-    const clubTimezone = clubDetails?.timezone || preselectedClubData?.timezone || null;
+    // Get club timezone consistently
+    const clubTimezone = getClubTimezoneForBooking();
     
     // Convert club local time to UTC
     const utcDateTime = toUtcDateTimeComponents(date, startTime, clubTimezone);
@@ -374,7 +380,7 @@ export function PlayerQuickBooking({
     }
     // Destructure step1 properties to avoid object reference changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.step0.selectedClubId, state.step1.date, state.step1.startTime, state.step1.duration, state.step1.courtType, preselectedClubId, clubsById, preselectedClubData, t]);
+  }, [state.step0.selectedClubId, state.step1.date, state.step1.startTime, state.step1.duration, state.step1.courtType, preselectedClubId, getClubTimezoneForBooking, t]);
 
   // Fetch estimated price when date/time/duration changes
   useEffect(() => {
@@ -384,9 +390,8 @@ export function PlayerQuickBooking({
 
       const { date, startTime, duration, courtType } = state.step1;
       
-      // Get club timezone from club details
-      const clubDetails = clubsById[clubId];
-      const clubTimezone = clubDetails?.timezone || preselectedClubData?.timezone || null;
+      // Get club timezone consistently
+      const clubTimezone = getClubTimezoneForBooking();
       
       // Convert club local time to UTC
       const utcDateTime = toUtcDateTimeComponents(date, startTime, clubTimezone);
@@ -456,7 +461,7 @@ export function PlayerQuickBooking({
     }
     // Destructure step1 properties to avoid object reference changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, state.step0.selectedClubId, state.step1.date, state.step1.startTime, state.step1.duration, state.step1.courtType, state.currentStep, preselectedClubId, clubsById, preselectedClubData]);
+  }, [isOpen, state.step0.selectedClubId, state.step1.date, state.step1.startTime, state.step1.duration, state.step1.courtType, state.currentStep, preselectedClubId, getClubTimezoneForBooking]);
 
   // Handle club selection
   const handleSelectClub = useCallback((club: BookingClub) => {
@@ -546,7 +551,7 @@ export function PlayerQuickBooking({
 
   // Submit booking
   const handleSubmit = useCallback(async () => {
-    const { step1, step2, step3, step0 } = state;
+    const { step1, step2, step3 } = state;
     const court = step2.selectedCourt;
 
     if (!court || !step3.paymentMethod) {
@@ -556,10 +561,8 @@ export function PlayerQuickBooking({
     setState((prev) => ({ ...prev, isSubmitting: true, submitError: null }));
 
     try {
-      // Get club timezone from club details
-      const clubId = step0.selectedClubId || preselectedClubId;
-      const clubDetails = clubId ? clubsById[clubId] : null;
-      const clubTimezone = clubDetails?.timezone || preselectedClubData?.timezone || null;
+      // Get club timezone consistently
+      const clubTimezone = getClubTimezoneForBooking();
 
       // Convert club local time to UTC
       const startDateTime = toUtcISOString(step1.date, step1.startTime, clubTimezone);
@@ -616,7 +619,7 @@ export function PlayerQuickBooking({
         submitError: t("auth.errorOccurred"),
       }));
     }
-  }, [state, t, preselectedClubId, clubsById, preselectedClubData]);
+  }, [state, t, getClubTimezoneForBooking]);
 
   // Navigate to next step
   const handleNext = useCallback(async () => {
