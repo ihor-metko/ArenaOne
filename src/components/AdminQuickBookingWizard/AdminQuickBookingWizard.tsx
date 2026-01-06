@@ -127,6 +127,7 @@ export function AdminQuickBookingWizard({
 
   const { courts, isLoading: isLoadingCourts, error: courtsError, fetchCourts } = useWizardCourts({
     clubId: state.stepClub.selectedClubId,
+    clubTimezone: state.stepClub.selectedClub?.timezone,
     dateTime: state.stepDateTime,
   });
 

@@ -382,6 +382,34 @@ export function clubLocalToUTC(
 }
 
 /**
+ * Extract UTC time in HH:MM format from a club-local date and time
+ * This is a convenience function for API calls that expect UTC time as HH:MM
+ *
+ * @param dateStr Date string in YYYY-MM-DD format (club local date)
+ * @param timeStr Time string in HH:MM format (club local time)
+ * @param clubTimezone IANA timezone string (e.g., "Europe/Kyiv")
+ * @returns UTC time string in HH:MM format (e.g., "08:00")
+ *
+ * @example
+ * // User selects 10:00 in Kyiv timezone (UTC+2)
+ * clubLocalToUTCTime("2026-01-06", "10:00", "Europe/Kyiv")
+ * // Returns: "08:00"
+ */
+export function clubLocalToUTCTime(
+  dateStr: string,
+  timeStr: string,
+  clubTimezone: string
+): string {
+  const utcISOString = clubLocalToUTC(dateStr, timeStr, clubTimezone);
+  const utcDate = new Date(utcISOString);
+  
+  const utcHours = utcDate.getUTCHours().toString().padStart(2, '0');
+  const utcMinutes = utcDate.getUTCMinutes().toString().padStart(2, '0');
+  
+  return `${utcHours}:${utcMinutes}`;
+}
+
+/**
  * Convert UTC ISO string to club-local time string (HH:MM format)
  *
  * @param utcISOString UTC ISO string (e.g., "2026-01-06T08:00:00.000Z")

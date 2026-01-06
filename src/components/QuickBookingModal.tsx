@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Modal, Button, Card, Select } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
-import { filterPastTimeSlots, getTodayStr, clubLocalToUTC } from "@/utils/dateTime";
+import { filterPastTimeSlots, getTodayStr, clubLocalToUTCTime } from "@/utils/dateTime";
 import { getClubTimezone } from "@/constants/timezone";
 import "./QuickBookingModal.css";
 
@@ -79,14 +79,8 @@ export function QuickBookingModal({
       // Get club timezone (with fallback to default)
       const timezone = getClubTimezone(clubTimezone);
       
-      // Convert club local time to UTC for API call
-      const utcISOString = clubLocalToUTC(date, startTime, timezone);
-      const utcDate = new Date(utcISOString);
-      
-      // Extract UTC time in HH:MM format for API
-      const utcHours = utcDate.getUTCHours().toString().padStart(2, '0');
-      const utcMinutes = utcDate.getUTCMinutes().toString().padStart(2, '0');
-      const utcTimeString = `${utcHours}:${utcMinutes}`;
+      // Convert club local time to UTC time string (HH:MM format) for API
+      const utcTimeString = clubLocalToUTCTime(date, startTime, timezone);
 
       const params = new URLSearchParams({
         date,

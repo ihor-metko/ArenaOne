@@ -8,7 +8,7 @@ import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useCurrentLocale } from "@/hooks/useCurrentLocale";
 import { formatPrice } from "@/utils/price";
 import { formatDateWithWeekday, formatTime, formatDateLong } from "@/utils/date";
-import { getTodayStr, clubLocalToUTC } from "@/utils/dateTime";
+import { getTodayStr, clubLocalToUTC, clubLocalToUTCTime } from "@/utils/dateTime";
 import { getClubTimezone } from "@/constants/timezone";
 import "./PersonalizedSection.css";
 
@@ -185,9 +185,18 @@ export function PersonalizedSection({ userName }: PersonalizedSectionProps) {
     setCourtsError(null);
 
     try {
+      // Get selected club to access its timezone
+      const selectedClub = clubs.find(c => c.id === selectedClubId);
+      
+      // Get club timezone (with fallback to default)
+      const clubTimezone = getClubTimezone(selectedClub?.timezone);
+      
+      // Convert club local time to UTC time string (HH:MM format) for API
+      const utcTimeString = clubLocalToUTCTime(selectedDate, selectedStartTime, clubTimezone);
+      
       const params = new URLSearchParams({
         date: selectedDate,
-        start: selectedStartTime,
+        start: utcTimeString, // Send UTC time
         duration: selectedDuration.toString(),
       });
 
@@ -240,7 +249,7 @@ export function PersonalizedSection({ userName }: PersonalizedSectionProps) {
     } finally {
       setIsLoadingCourts(false);
     }
-  }, [selectedClubId, selectedDate, selectedStartTime, selectedDuration, t]);
+  }, [selectedClubId, selectedDate, selectedStartTime, selectedDuration, clubs, t]);
 
   // Fetch estimated price when date/time/duration changes in step 2
   useEffect(() => {
