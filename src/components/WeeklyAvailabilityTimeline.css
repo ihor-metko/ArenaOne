@@ -98,8 +98,9 @@
   @apply contents;
 }
 
+/* Past day row - reduced opacity for visual indication */
 .tm-weekly-grid-row--past {
-  opacity: 0.5;
+  opacity: 0.6; /* Improved from 0.5 for better accessibility */
 }
 
 .tm-weekly-grid-day-label {
@@ -108,9 +109,11 @@
   color: var(--rsp-foreground);
 }
 
+/* Past day label - italic font and additional opacity reduction for clear distinction */
 .tm-weekly-grid-day-label--past {
-  opacity: 0.6;
+  opacity: 0.7; /* Improved from 0.6 for better contrast */
   font-style: italic;
+  text-decoration: line-through;
 }
 
 /* Today highlighting */

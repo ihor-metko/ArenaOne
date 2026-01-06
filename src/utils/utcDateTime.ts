@@ -245,29 +245,36 @@ export function getWeekMondayUTC(dateString: string): string {
  * 
  * @param timezone - IANA timezone string (e.g., "Europe/Kyiv", "America/New_York")
  * @returns Today's date string in YYYY-MM-DD format in the specified timezone
+ * @throws Error if timezone is invalid
  * 
  * @example
  * // When UTC is 2026-01-06 23:00 and timezone is Europe/Kyiv (UTC+2)
  * getTodayInTimezone("Europe/Kyiv") // Returns "2026-01-07"
  */
 export function getTodayInTimezone(timezone: string): string {
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: timezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  return formatter.format(new Date());
+  try {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    return formatter.format(new Date());
+  } catch {
+    throw new Error(`Invalid timezone: ${timezone}. Must be a valid IANA timezone string.`);
+  }
 }
 
 /**
  * Get the Monday of the week containing today in a specific timezone
+ * Uses getWeekMondayUTC internally which treats Monday as the first day of the week
  * 
  * @param timezone - IANA timezone string (e.g., "Europe/Kyiv")
  * @returns Date string in YYYY-MM-DD format representing Monday of this week in the timezone
+ * @throws Error if timezone is invalid
  */
 export function getWeekMondayInTimezone(timezone: string): string {
-  const todayInTz = getTodayInTimezone(timezone);
+  const todayInTz = getTodayInTimezone(timezone); // Will throw if timezone is invalid
   return getWeekMondayUTC(todayInTz);
 }
 
@@ -278,8 +285,14 @@ export function getWeekMondayInTimezone(timezone: string): string {
  * @param dateString - Date in YYYY-MM-DD format to check
  * @param timezone - IANA timezone string (e.g., "Europe/Kyiv")
  * @returns true if the date is before today in the specified timezone
+ * @throws Error if timezone is invalid or dateString is not in YYYY-MM-DD format
  */
 export function isPastDayInTimezone(dateString: string, timezone: string): boolean {
-  const todayInTz = getTodayInTimezone(timezone);
+  // Validate date string format
+  if (!isValidDateString(dateString)) {
+    throw new Error(`Invalid date format: ${dateString}. Expected YYYY-MM-DD`);
+  }
+  
+  const todayInTz = getTodayInTimezone(timezone); // Will throw if timezone is invalid
   return dateString < todayInTz;
 }

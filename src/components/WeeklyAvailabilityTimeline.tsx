@@ -507,7 +507,10 @@ export function WeeklyAvailabilityTimeline({
                   )}
                 </div>
                 {day.hours.map((slot) => {
-                  // Use client-side blocking logic in combination with server isPast flag
+                  // Blocking logic:
+                  // - Server isPast flag: indicates the entire day is in the past (used for visual styling)
+                  // - Client-side isSlotBlocked: blocks individual hour slots on today based on current time
+                  // This hybrid approach ensures both full-day and partial-day blocking work correctly
                   const blockStatus = isSlotBlocked(day.date, slot.hour, now);
                   const { isBlocked, reason } = blockStatus;
                   const blockReasonText = getBlockReasonText(reason);
