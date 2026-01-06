@@ -313,3 +313,156 @@ export function filterPastTimeSlots(timeSlots: string[], dateStr: string): strin
     return slotTotalMinutes > currentTotalMinutes;
   });
 }
+
+/**
+ * Convert club-local date and time to UTC ISO string
+ * Uses Intl.DateTimeFormat to properly handle timezone conversions and DST
+ * 
+ * @param dateStr Date string in YYYY-MM-DD format (club local date)
+ * @param timeStr Time string in HH:MM format (club local time)
+ * @param clubTimezone IANA timezone string (e.g., "Europe/Kyiv")
+ * @returns UTC ISO string (e.g., "2026-01-06T08:00:00.000Z")
+ * 
+ * @example
+ * // User selects 10:00 in Kyiv timezone (UTC+2)
+ * clubLocalToUTC("2026-01-06", "10:00", "Europe/Kyiv")
+ * // Returns: "2026-01-06T08:00:00.000Z"
+ */
+export function clubLocalToUTC(
+  dateStr: string,
+  timeStr: string,
+  clubTimezone: string
+): string {
+  // Parse components
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  
+  // Create a date-time string in ISO format without timezone (local interpretation)
+  const localDateTimeStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+  
+  // Create a formatter that will interpret this date in the club's timezone
+  // and give us the parts as they would appear in that timezone
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: clubTimezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  
+  // To find the UTC timestamp that corresponds to the local time in the club's timezone,
+  // we use an iterative approach:
+  // 1. Start with a guess (interpret as UTC)
+  // 2. See what that time looks like in the club timezone
+  // 3. Adjust and repeat until we find the right UTC time
+  
+  // Initial guess: assume the local time string is UTC
+  let guessUTC = new Date(`${localDateTimeStr}Z`);
+  
+  // Check what this UTC time looks like in the club timezone
+  let parts = formatter.formatToParts(guessUTC);
+  let tzYear = parseInt(parts.find(p => p.type === 'year')?.value || '0', 10);
+  let tzMonth = parseInt(parts.find(p => p.type === 'month')?.value || '0', 10);
+  let tzDay = parseInt(parts.find(p => p.type === 'day')?.value || '0', 10);
+  let tzHour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+  let tzMinute = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+  
+  // Calculate the difference
+  const targetDate = new Date(year, month - 1, day, hours, minutes);
+  const currentDate = new Date(tzYear, tzMonth - 1, tzDay, tzHour, tzMinute);
+  const diffMs = targetDate.getTime() - currentDate.getTime();
+  
+  // Adjust our guess
+  const correctUTC = new Date(guessUTC.getTime() + diffMs);
+  
+  return correctUTC.toISOString();
+}
+
+/**
+ * Convert UTC ISO string to club-local time string (HH:MM format)
+ * 
+ * @param utcISOString UTC ISO string (e.g., "2026-01-06T08:00:00.000Z")
+ * @param clubTimezone IANA timezone string (e.g., "Europe/Kyiv")
+ * @returns Time string in HH:MM format in club's local timezone
+ * 
+ * @example
+ * // Convert UTC time to Kyiv timezone (UTC+2)
+ * utcToClubLocalTime("2026-01-06T08:00:00.000Z", "Europe/Kyiv")
+ * // Returns: "10:00"
+ */
+export function utcToClubLocalTime(
+  utcISOString: string,
+  clubTimezone: string
+): string {
+  const date = new Date(utcISOString);
+  
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: clubTimezone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  
+  return formatter.format(date);
+}
+
+/**
+ * Convert UTC ISO string to club-local date string (YYYY-MM-DD format)
+ * 
+ * @param utcISOString UTC ISO string (e.g., "2026-01-06T22:00:00.000Z")
+ * @param clubTimezone IANA timezone string (e.g., "Europe/Kyiv")
+ * @returns Date string in YYYY-MM-DD format in club's local timezone
+ * 
+ * @example
+ * // Convert UTC time to Kyiv timezone (UTC+2)
+ * utcToClubLocalDate("2026-01-06T22:00:00.000Z", "Europe/Kyiv")
+ * // Returns: "2026-01-07" (next day in Kyiv)
+ */
+export function utcToClubLocalDate(
+  utcISOString: string,
+  clubTimezone: string
+): string {
+  const date = new Date(utcISOString);
+  
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: clubTimezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  
+  return formatter.format(date);
+}
+
+/**
+ * Get today's date in a specific timezone
+ * @param clubTimezone IANA timezone string (e.g., "Europe/Kyiv")
+ * @returns Date string in YYYY-MM-DD format
+ */
+export function getTodayInClubTimezone(clubTimezone: string): string {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: clubTimezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(new Date());
+}
+
+/**
+ * Get current time in a specific timezone
+ * @param clubTimezone IANA timezone string (e.g., "Europe/Kyiv")
+ * @returns Time string in HH:MM format
+ */
+export function getCurrentTimeInClubTimezone(clubTimezone: string): string {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: clubTimezone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return formatter.format(new Date());
+}
