@@ -8,6 +8,7 @@ import { useCurrentLocale } from "@/hooks/useCurrentLocale";
 import { useAuthGuardOnce } from "@/hooks";
 import { formatDateWithWeekday, formatTime } from "@/utils/date";
 import { useUserStore } from "@/stores/useUserStore";
+import { PAYMENT_STATUS } from "@/types/booking";
 import "./profile.css";
 
 interface Booking {
@@ -17,6 +18,9 @@ interface Booking {
   end: string;
   price: number;
   status: string;
+  bookingStatus: string;
+  paymentStatus: string;
+  reservationExpiresAt: string | null;
   court?: {
     id: string;
     name: string;
@@ -45,6 +49,8 @@ export default function PlayerProfilePage() {
   const [pastBookings, setPastBookings] = useState<Booking[]>([]);
   const [upcomingLoading, setUpcomingLoading] = useState(true);
   const [pastLoading, setPastLoading] = useState(true);
+  const [resumingPayment, setResumingPayment] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Redirect root admins to admin dashboard
   useEffect(() => {
@@ -95,6 +101,44 @@ export default function PlayerProfilePage() {
       setPastLoading(false);
     }
   }, [user?.id, router]);
+
+  // Resume payment for unpaid booking
+  const handleResumePayment = useCallback(async (bookingId: string) => {
+    setResumingPayment(bookingId);
+    setPaymentError(null);
+
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}/resume-payment`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setPaymentError(errorData.error || "Failed to resume payment");
+        return;
+      }
+
+      const data = await response.json();
+      
+      // NOTE: Payment flow integration is intentionally left as a TODO
+      // This PR implements the backend API and UI for resuming payment.
+      // The actual payment provider integration (WayForPay/LiqPay) will be
+      // implemented in a separate task as it requires additional payment
+      // gateway configuration and testing.
+      // For now, successfully calling resume-payment extends the reservation
+      // by 5 minutes, allowing users to complete payment when the payment
+      // flow is integrated.
+      console.log("Payment resumed:", data);
+      
+      // Refresh bookings to show updated expiration time
+      await fetchUpcomingBookings();
+    } catch (error) {
+      console.error("Error resuming payment:", error);
+      setPaymentError("An error occurred while resuming payment");
+    } finally {
+      setResumingPayment(null);
+    }
+  }, [fetchUpcomingBookings]);
 
   // Initial data fetch
   useEffect(() => {
@@ -180,27 +224,65 @@ export default function PlayerProfilePage() {
               />
             ) : (
               <div className="im-bookings-list">
-                {upcomingBookings.map((booking) => (
-                  <div key={booking.id} className="im-booking-item">
-                    <div className="im-booking-details">
-                      <div className="im-booking-time">
-                        <span className="im-booking-date">
-                          {formatDateWithWeekday(booking.start, currentLocale)}
-                        </span>
-                        <span className="im-booking-time-range">
-                          {formatTime(booking.start, currentLocale)} - {formatTime(booking.end, currentLocale)}
-                        </span>
-                      </div>
-                      <div className="im-booking-location">
-                        <span className="im-booking-club">{booking.court?.club?.name || ""}</span>
-                        <span className="im-booking-court">{booking.court?.name || ""}</span>
-                      </div>
-                      <span className={`im-status-badge ${getStatusBadgeClass(booking.status)}`}>
-                        {t(`common.${booking.status}`) || booking.status}
-                      </span>
-                    </div>
+                {paymentError && (
+                  <div className="im-error-message" role="alert">
+                    {paymentError}
                   </div>
-                ))}
+                )}
+                {upcomingBookings.map((booking) => {
+                  const isUnpaid = booking.paymentStatus === PAYMENT_STATUS.UNPAID;
+                  const isExpired = booking.reservationExpiresAt 
+                    ? new Date(booking.reservationExpiresAt) < new Date()
+                    : false;
+                  
+                  return (
+                    <div key={booking.id} className="im-booking-item">
+                      <div className="im-booking-details">
+                        <div className="im-booking-time">
+                          <span className="im-booking-date">
+                            {formatDateWithWeekday(booking.start, currentLocale)}
+                          </span>
+                          <span className="im-booking-time-range">
+                            {formatTime(booking.start, currentLocale)} - {formatTime(booking.end, currentLocale)}
+                          </span>
+                        </div>
+                        <div className="im-booking-location">
+                          <span className="im-booking-club">{booking.court?.club?.name || ""}</span>
+                          <span className="im-booking-court">{booking.court?.name || ""}</span>
+                        </div>
+                        <div className="im-booking-status-row">
+                          <span className={`im-status-badge ${getStatusBadgeClass(booking.status)}`}>
+                            {t(`common.${booking.status}`) || booking.status}
+                          </span>
+                          {isUnpaid && (
+                            <span className="im-status-badge im-status-badge--warning">
+                              {t("common.paymentStatusUnpaid")}
+                            </span>
+                          )}
+                        </div>
+                        {isUnpaid && (
+                          <div className="im-booking-actions">
+                            <Button
+                              onClick={() => handleResumePayment(booking.id)}
+                              disabled={resumingPayment === booking.id}
+                              variant="primary"
+                              size="small"
+                            >
+                              {resumingPayment === booking.id 
+                                ? t("playerProfile.resumingPayment") 
+                                : t("playerProfile.payNow")}
+                            </Button>
+                            {isExpired && (
+                              <span className="im-booking-warning">
+                                {t("playerProfile.reservationExpired")}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </Card>

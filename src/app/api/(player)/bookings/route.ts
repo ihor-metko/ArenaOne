@@ -6,6 +6,7 @@ import { emitBookingCreated } from "@/lib/socketEmitters";
 import type { OperationsBooking } from "@/types/booking";
 import { migrateLegacyStatus } from "@/utils/bookingStatus";
 import { updateStatisticsForBooking } from "@/services/statisticsService";
+import { LEGACY_STATUS, BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking";
 import { isValidUTCString, getUTCDateString, getUTCTimeString } from "@/utils/utcDateTime";
 
 interface BookingRequest {
@@ -19,7 +20,7 @@ interface BookingRequest {
 /**
  * POST /api/bookings
  * Create a booking for a player
- * 
+ *
  * IMPORTANT TIMEZONE RULE:
  * This endpoint expects startTime and endTime in UTC ISO 8601 format (e.g., "2026-01-06T10:00:00.000Z")
  * Frontend MUST convert club local time to UTC before calling this endpoint
@@ -130,26 +131,17 @@ export async function POST(request: Request) {
         throw new Error("COURT_NOT_FOUND");
       }
 
-      // Clean up expired reservations for this court
-      await tx.booking.deleteMany({
-        where: {
-          courtId: body.courtId,
-          status: "reserved",
-          reservationExpiresAt: {
-            lt: new Date(),
-          },
-        },
-      });
+      // Don't delete expired reservations - keep them for payment recovery
+      // Users can resume payment for their unpaid bookings
 
-      // Check if there's an existing valid reservation for this exact slot and user
+      // Check if there's an existing reservation for this exact slot and user (even if expired)
       const existingReservation = await tx.booking.findFirst({
         where: {
           courtId: body.courtId,
           userId: body.userId,
           start: startTime,
           end: endTime,
-          status: "reserved",
-          reservationExpiresAt: { gt: new Date() },
+          status: LEGACY_STATUS.RESERVED,
         },
       });
 
@@ -160,10 +152,10 @@ export async function POST(request: Request) {
           start: { lt: endTime },
           end: { gt: startTime },
           OR: [
-            { status: "paid" },
+            { status: LEGACY_STATUS.PAID },
             {
               AND: [
-                { status: "reserved" },
+                { status: LEGACY_STATUS.RESERVED },
                 { reservationExpiresAt: { gt: new Date() } },
                 // Exclude the current user's own reservation
                 existingReservation ? { id: { not: existingReservation.id } } : {},
@@ -185,9 +177,9 @@ export async function POST(request: Request) {
         newBooking = await tx.booking.update({
           where: { id: existingReservation.id },
           data: {
-            status: "paid",
-            bookingStatus: "Active",
-            paymentStatus: "Paid",
+            status: LEGACY_STATUS.PAID,
+            bookingStatus: BOOKING_STATUS.ACTIVE,
+            paymentStatus: PAYMENT_STATUS.PAID,
             reservationExpiresAt: null, // Clear expiry since it's now paid
           },
           include: {
@@ -222,9 +214,9 @@ export async function POST(request: Request) {
             end: endTime,
             price: resolvedPrice,
             sportType: court.sportType || "PADEL",
-            status: "paid",
-            bookingStatus: "Active",
-            paymentStatus: "Paid",
+            status: LEGACY_STATUS.PAID,
+            bookingStatus: BOOKING_STATUS.ACTIVE,
+            paymentStatus: PAYMENT_STATUS.PAID,
           },
           include: {
             user: {

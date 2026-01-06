@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/requireRole";
+import { LEGACY_STATUS } from "@/types/booking";
 
 /**
  * GET /api/bookings
@@ -41,8 +42,9 @@ export async function GET(request: NextRequest) {
 
     if (isUpcoming) {
       // Upcoming bookings: end time is in the future and has an active status
+      // Include "reserved" status for unpaid bookings that can still be paid
       whereClause.end = { gte: now };
-      whereClause.status = { in: ["reserved", "paid", "confirmed"] };
+      whereClause.status = { in: [LEGACY_STATUS.RESERVED, LEGACY_STATUS.PAID, "confirmed"] };
     } else {
       // Past bookings: end time is in the past
       whereClause.end = { lt: now };
@@ -76,6 +78,9 @@ export async function GET(request: NextRequest) {
       end: booking.end.toISOString(),
       price: booking.price,
       status: booking.status,
+      bookingStatus: booking.bookingStatus,
+      paymentStatus: booking.paymentStatus,
+      reservationExpiresAt: booking.reservationExpiresAt?.toISOString() || null,
       court: {
         id: booking.court.id,
         name: booking.court.name,

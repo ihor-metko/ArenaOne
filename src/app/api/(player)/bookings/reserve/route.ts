@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/requireRole";
 import { getResolvedPriceForSlot } from "@/lib/priceRules";
+import { RESERVATION_EXPIRATION_MS, LEGACY_STATUS, BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking";
 import { isValidUTCString, getUTCDateString, getUTCTimeString } from "@/utils/utcDateTime";
 
 interface ReservationRequest {
@@ -13,7 +14,7 @@ interface ReservationRequest {
 /**
  * Reserve a booking slot temporarily (5 minutes)
  * Desktop MVP only - creates a temporary reservation before payment
- * 
+ *
  * IMPORTANT TIMEZONE RULE:
  * This endpoint expects startTime and endTime in UTC ISO 8601 format (e.g., "2026-01-06T10:00:00.000Z")
  * Frontend MUST convert club local time to UTC before calling this endpoint
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
     }
 
     // Set reservation expiry time (5 minutes from now)
-    const reservationExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    const reservationExpiresAt = new Date(Date.now() + RESERVATION_EXPIRATION_MS);
 
     // Create reservation in transaction
     const reservation = await prisma.$transaction(async (tx) => {
@@ -115,16 +116,8 @@ export async function POST(request: Request) {
         throw new Error("COURT_NOT_FOUND");
       }
 
-      // First, clean up expired reservations for this court
-      await tx.booking.deleteMany({
-        where: {
-          courtId: body.courtId,
-          status: "reserved",
-          reservationExpiresAt: {
-            lt: new Date(),
-          },
-        },
-      });
+      // Don't delete expired reservations - keep them for payment recovery
+      // Users can resume payment for their unpaid bookings
 
       // Check for overlapping bookings or active reservations
       const overlapping = await tx.booking.findFirst({
@@ -133,9 +126,9 @@ export async function POST(request: Request) {
           start: { lt: endTime },
           end: { gt: startTime },
           OR: [
-            { status: "paid" },
+            { status: LEGACY_STATUS.PAID },
             {
-              status: "reserved",
+              status: LEGACY_STATUS.RESERVED,
               reservationExpiresAt: { gt: new Date() },
             },
           ],
@@ -157,9 +150,9 @@ export async function POST(request: Request) {
           end: endTime,
           price: resolvedPrice,
           sportType: court.sportType || "PADEL",
-          status: "reserved",
-          bookingStatus: "Pending",
-          paymentStatus: "Unpaid",
+          status: LEGACY_STATUS.RESERVED,
+          bookingStatus: BOOKING_STATUS.PENDING,
+          paymentStatus: PAYMENT_STATUS.UNPAID,
           reservedAt: new Date(),
           reservationExpiresAt: reservationExpiresAt,
         },
