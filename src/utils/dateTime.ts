@@ -286,24 +286,33 @@ export function getCurrentTimeInTimezone(): string {
 /**
  * Check if a given date is today in the platform timezone
  * @param dateStr Date string in YYYY-MM-DD format
+ * @param clubTimezone Optional club timezone (defaults to platform timezone)
  * @returns true if the date is today
  */
-export function isToday(dateStr: string): boolean {
+export function isToday(dateStr: string, clubTimezone?: string): boolean {
+  if (clubTimezone) {
+    return dateStr === getTodayInClubTimezone(clubTimezone);
+  }
   return dateStr === getTodayStr();
 }
 
 /**
  * Filter time slots to exclude past times if the date is today
- * @param timeSlots Array of time strings in HH:MM format
- * @param dateStr Date string in YYYY-MM-DD format
+ * @param timeSlots Array of time strings in HH:MM format (in club local time)
+ * @param dateStr Date string in YYYY-MM-DD format (in club local date)
+ * @param clubTimezone Optional club timezone (defaults to platform timezone for backward compatibility)
  * @returns Filtered array of time strings
  */
-export function filterPastTimeSlots(timeSlots: string[], dateStr: string): string[] {
-  if (!isToday(dateStr)) {
+export function filterPastTimeSlots(timeSlots: string[], dateStr: string, clubTimezone?: string): string[] {
+  // Check if the date is today in the club's timezone
+  if (!isToday(dateStr, clubTimezone)) {
     return timeSlots;
   }
 
-  const currentTime = getCurrentTimeInTimezone();
+  // Get current time in the club's timezone
+  const currentTime = clubTimezone 
+    ? getCurrentTimeInClubTimezone(clubTimezone)
+    : getCurrentTimeInTimezone();
   const [currentHour, currentMinute] = currentTime.split(":").map(Number);
   const currentTotalMinutes = currentHour * 60 + currentMinute;
 

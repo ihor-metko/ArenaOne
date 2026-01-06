@@ -999,6 +999,7 @@ export function PlayerQuickBooking({
               isLoading={state.isLoadingCourtTypes}
               availableCourtTypes={state.availableCourtTypes}
               businessHours={state.step0.selectedClub?.businessHours}
+              clubTimezone={state.step0.selectedClub?.timezone}
             />
           )}
 

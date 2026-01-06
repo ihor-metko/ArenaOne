@@ -599,6 +599,7 @@ export function AdminQuickBookingWizard({
               data={state.stepDateTime}
               onChange={handleDateTimeChange}
               isLoading={false}
+              clubTimezone={state.stepClub.selectedClub?.timezone}
             />
           )}
 
