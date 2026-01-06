@@ -33,6 +33,7 @@ export interface WizardClub {
   name: string;
   organizationId: string;
   organizationName?: string;
+  timezone?: string | null; // IANA timezone string (e.g., "Europe/Kyiv")
 }
 
 export interface WizardUser {

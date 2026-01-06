@@ -68,6 +68,7 @@ export function useWizardClubs({
           name: club.name,
           organizationId: club.organizationId || "",
           organizationName: org?.name,
+          timezone: club.timezone || null,
         };
       });
 

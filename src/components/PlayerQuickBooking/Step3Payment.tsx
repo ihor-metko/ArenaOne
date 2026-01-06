@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { formatPrice } from "@/utils/price";
 import { formatDateTimeLong, formatDateLong } from "@/utils/date";
+import { clubLocalToUTC } from "@/utils/dateTime";
+import { getClubTimezone } from "@/constants/timezone";
 import {
   PaymentMethod,
   BookingCourt,
@@ -99,8 +101,12 @@ export function Step3Payment({
       setReservationError(null);
 
       try {
-        const startDateTime = `${date}T${startTime}:00.000Z`;
-        const endDateTime = `${date}T${endTime}:00.000Z`;
+        // Get club timezone with fallback to default
+        const clubTimezone = getClubTimezone(club?.timezone);
+        
+        // Convert club-local time to UTC before sending to API
+        const startDateTime = clubLocalToUTC(date, startTime, clubTimezone);
+        const endDateTime = clubLocalToUTC(date, endTime, clubTimezone);
 
         const response = await fetch("/api/bookings/reserve", {
           method: "POST",
@@ -138,7 +144,7 @@ export function Step3Payment({
     };
 
     createReservation();
-  }, [court, date, startTime, endTime, reservationId, t, onReservationCreated, onReservationExpired]);
+  }, [court, club, date, startTime, endTime, reservationId, t, onReservationCreated, onReservationExpired]);
 
   // Update countdown timer
   useEffect(() => {
