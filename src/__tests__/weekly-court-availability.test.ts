@@ -100,6 +100,9 @@ describe("GET /api/clubs/[id]/courts/availability", () => {
   });
 
   it("should return 400 for invalid weekStart format", async () => {
+    // Mock club exists so we get past the club check
+    (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
+    
     const request = createRequest("club-123", "invalid-date");
     const response = await GET(request, {
       params: Promise.resolve({ id: "club-123" }),
