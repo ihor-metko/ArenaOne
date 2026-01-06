@@ -711,15 +711,16 @@ export function PlayerQuickBooking({
     } finally {
       isReservingRef.current = false;
     }
-  }, [state, t]);
+  }, [state, preselectedClubData, t]);
 
-  // Submit booking
+  // Initiate payment and redirect to payment gateway
   const handleSubmit = useCallback(async () => {
     const { step0, step1, step2, step3 } = state;
     const court = step2.selectedCourt;
     const selectedClub = step0.selectedClub || preselectedClubData;
+    const clubId = step0.selectedClubId || preselectedClubId;
 
-    if (!court || !step3.paymentProvider) {
+    if (!court || !step3.paymentProvider || !clubId) {
       return;
     }
 
@@ -736,16 +737,23 @@ export function PlayerQuickBooking({
       const endTimeLocal = calculateEndTime(step1.startTime, step1.duration);
       const endDateTime = clubLocalToUTC(step1.date, endTimeLocal, clubTimezone);
 
-      const response = await fetch("/api/bookings", {
+      // Call the existing payment API endpoint
+      // This will:
+      // 1. Create a booking with CONFIRMED status and UNPAID payment status
+      // 2. Resolve the correct payment account (club-level or org-level)
+      // 3. Create a payment intent
+      // 4. Generate a checkout URL from the payment provider
+      const response = await fetch("/api/bookings/pay", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          clubId,
           courtId: court.id,
-          startTime: startDateTime, // Already in UTC ISO format
-          endTime: endDateTime, // Already in UTC ISO format
-          userId: "current-user", // Will be resolved by the API from session
+          startAt: startDateTime, // ISO 8601 timestamp
+          endAt: endDateTime, // ISO 8601 timestamp
+          paymentProvider: step3.paymentProvider.id, // e.g., "WAYFORPAY"
         }),
       });
 
@@ -755,7 +763,7 @@ export function PlayerQuickBooking({
         setState((prev) => ({
           ...prev,
           isSubmitting: false,
-          submitError: t("booking.slotAlreadyBooked"),
+          submitError: data.error || t("booking.slotAlreadyBooked"),
         }));
         return;
       }
@@ -769,16 +777,18 @@ export function PlayerQuickBooking({
         return;
       }
 
-      // Move to confirmation step
-      setState((prev) => ({
-        ...prev,
-        isSubmitting: false,
-        currentStep: 4, // Always move to confirmation
-        step4: {
-          bookingId: data.bookingId,
-          confirmed: true,
-        },
-      }));
+      // Redirect to payment gateway checkout URL
+      // The payment webhook will update the booking status to PAID when payment succeeds
+      // On return, user will be redirected to /player/bookings?payment=return
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        setState((prev) => ({
+          ...prev,
+          isSubmitting: false,
+          submitError: t("auth.errorOccurred"),
+        }));
+      }
     } catch {
       setState((prev) => ({
         ...prev,
@@ -786,7 +796,7 @@ export function PlayerQuickBooking({
         submitError: t("auth.errorOccurred"),
       }));
     }
-  }, [state, preselectedClubData, t]);
+  }, [state, preselectedClubData, preselectedClubId, t]);
 
   // Navigate to next step
   const handleNext = useCallback(async () => {
