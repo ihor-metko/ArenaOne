@@ -705,7 +705,7 @@ export function PlayerQuickBooking({
     const court = step2.selectedCourt;
     const selectedClub = step0.selectedClub || preselectedClubData;
 
-    if (!court || !step3.paymentMethod) {
+    if (!court || !step3.paymentProvider) {
       return;
     }
 
