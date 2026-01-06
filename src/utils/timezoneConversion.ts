@@ -164,31 +164,63 @@ export function getLocalTimeString(
  * Check if a date is in DST (Daylight Saving Time) for a given timezone
  * Useful for debugging and displaying timezone information
  * 
+ * Note: This function checks if the date is in the DST period by comparing
+ * the UTC offset at the given date with the offsets at the extremes of the year.
+ * 
  * @param date - Date to check
  * @param timezone - IANA timezone (e.g., "Europe/Kyiv")
  * @returns true if date is in DST period
  */
 export function isDST(date: Date, timezone: string): boolean {
-  // Get the offset in January (standard time) and July (DST if applicable)
-  const jan = new Date(date.getFullYear(), 0, 1);
-  const jul = new Date(date.getFullYear(), 6, 1);
+  // Note: This is a simplified DST detection for debugging purposes.
+  // For production use, consider using a dedicated timezone library like moment-timezone
+  // or Luxon which provide more robust DST detection.
   
-  // Convert to zoned times to get the local representation
-  const janZoned = toZonedTime(jan, timezone);
-  const julZoned = toZonedTime(jul, timezone);
-  const currentZoned = toZonedTime(date, timezone);
+  // For our current use case (Europe/Kyiv and similar timezones),
+  // we can use Intl.DateTimeFormat to get the timezone offset
+  const winterDate = new Date(date.getFullYear(), 0, 1); // January
+  const summerDate = new Date(date.getFullYear(), 6, 1); // July
   
-  // Get UTC offset by comparing UTC and zoned times
-  const janOffset = janZoned.getTime() - jan.getTime();
-  const julOffset = julZoned.getTime() - jul.getTime();
-  const currentOffset = currentZoned.getTime() - date.getTime();
+  const getOffset = (d: Date): number => {
+    // Get the offset in minutes by comparing formatted local time with UTC
+    const utcTime = d.getTime();
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+    
+    const parts = formatter.formatToParts(d);
+    const year = parseInt(parts.find(p => p.type === 'year')!.value);
+    const month = parseInt(parts.find(p => p.type === 'month')!.value) - 1;
+    const day = parseInt(parts.find(p => p.type === 'day')!.value);
+    const hour = parseInt(parts.find(p => p.type === 'hour')!.value);
+    const minute = parseInt(parts.find(p => p.type === 'minute')!.value);
+    const second = parseInt(parts.find(p => p.type === 'second')!.value);
+    
+    const localTime = new Date(year, month, day, hour, minute, second).getTime();
+    return (utcTime - localTime) / 60000; // offset in minutes
+  };
   
-  // If offsets differ, DST is observed; check which period we're in
-  if (janOffset !== julOffset) {
-    return currentOffset === julOffset;
+  const winterOffset = getOffset(winterDate);
+  const summerOffset = getOffset(summerDate);
+  const currentOffset = getOffset(date);
+  
+  // If offsets don't differ, no DST is observed
+  if (winterOffset === summerOffset) {
+    return false;
   }
   
-  return false;
+  // DST is when offset is different from standard time
+  // In northern hemisphere: winter offset > summer offset (e.g., UTC+2 in winter, UTC+3 in summer)
+  // In southern hemisphere: winter offset < summer offset
+  const stdOffset = Math.max(winterOffset, summerOffset);
+  return currentOffset !== stdOffset;
 }
 
 /**
@@ -215,5 +247,7 @@ export function getTodayInClubTimezone(
   clubTimezone: string | null | undefined
 ): string {
   const timezone = getClubTimezone(clubTimezone);
-  return format(new Date(), 'yyyy-MM-dd', { timeZone: timezone });
+  const now = new Date();
+  const zonedNow = toZonedTime(now, timezone);
+  return format(zonedNow, 'yyyy-MM-dd');
 }
