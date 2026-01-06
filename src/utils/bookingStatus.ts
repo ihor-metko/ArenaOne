@@ -141,6 +141,13 @@ export function shouldCancelUnpaidBooking(
   }
 
   const createdTime = new Date(createdAt).getTime();
+  
+  // Validate date parsing
+  if (isNaN(createdTime)) {
+    console.error(`[shouldCancelUnpaidBooking] Invalid createdAt date: ${createdAt}`);
+    return false;
+  }
+  
   const currentTime = now.getTime();
   const timeElapsed = currentTime - createdTime;
 

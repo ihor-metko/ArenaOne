@@ -333,6 +333,16 @@ export async function sendBookingCancellationEmail(
     const locale = getDefaultLocale();
     const start = new Date(startTime);
     const end = new Date(endTime);
+    
+    // Validate date parsing
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      console.error(`[sendBookingCancellationEmail] Invalid date strings - start: ${startTime}, end: ${endTime}`);
+      return {
+        success: false,
+        error: "Invalid date format",
+      };
+    }
+    
     const formattedDate = start.toLocaleDateString(locale, {
       weekday: "long",
       year: "numeric",
