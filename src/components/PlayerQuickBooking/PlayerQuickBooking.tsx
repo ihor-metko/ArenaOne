@@ -98,6 +98,7 @@ export function PlayerQuickBooking({
         paymentProvider: null,
         reservationId: null,
         reservationExpiresAt: null,
+        paymentIntentId: null,
       },
       step4: {
         bookingId: null,
@@ -155,6 +156,7 @@ export function PlayerQuickBooking({
           paymentProvider: null,
           reservationId: null,
           reservationExpiresAt: null,
+          paymentIntentId: null,
         },
         step4: {
           bookingId: null,
@@ -778,10 +780,14 @@ export function PlayerQuickBooking({
           }));
         } else {
           // Payment window opened successfully
-          // Reset submitting state so user can close the modal if needed
+          // Save paymentIntentId for WebSocket tracking
           setState((prev) => ({
             ...prev,
             isSubmitting: false,
+            step3: {
+              ...prev.step3,
+              paymentIntentId: data.paymentIntentId,
+            },
           }));
         }
       } else {
@@ -1045,10 +1051,30 @@ export function PlayerQuickBooking({
               submitError={state.submitError}
               providersError={state.paymentProvidersError}
               reservationExpiresAt={state.step3.reservationExpiresAt}
+              reservationId={state.step3.reservationId}
+              paymentIntentId={state.step3.paymentIntentId}
               onReservationExpired={() => {
                 setState((prev) => ({
                   ...prev,
                   submitError: t("booking.reservationExpired"),
+                }));
+              }}
+              onPaymentSuccess={(bookingId: string) => {
+                // Payment successful - move to confirmation step
+                setState((prev) => ({
+                  ...prev,
+                  currentStep: 4,
+                  step4: {
+                    bookingId,
+                    confirmed: true,
+                  },
+                }));
+              }}
+              onPaymentFailed={(error: string) => {
+                // Payment failed - show error
+                setState((prev) => ({
+                  ...prev,
+                  submitError: error,
                 }));
               }}
             />

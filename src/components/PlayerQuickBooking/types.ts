@@ -64,6 +64,7 @@ export interface PlayerBookingStep3Data {
   paymentProvider: PaymentProviderInfo | null;
   reservationId: string | null;
   reservationExpiresAt: string | null;
+  paymentIntentId: string | null;
 }
 
 export interface PlayerBookingStep4Data {

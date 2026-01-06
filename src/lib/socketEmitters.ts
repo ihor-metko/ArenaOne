@@ -8,6 +8,7 @@ import type {
   LockExpiredEvent,
   PaymentConfirmedEvent,
   PaymentFailedEvent,
+  PaymentStatusUpdateEvent,
 } from '@/types/socket';
 
 /**
@@ -214,4 +215,26 @@ export function emitPaymentFailed(data: PaymentFailedEvent): void {
   
   // Emit to root admins
   io.to('root_admin').emit('payment_failed', data);
+}
+
+/**
+ * Emit a payment status update to a specific user
+ * This is used to notify the user who initiated the payment about status changes
+ * Emits to: user-specific room (player:{userId})
+ */
+export function emitPaymentStatusUpdate(data: PaymentStatusUpdateEvent): void {
+  const io = getSocketIO();
+  if (!io) return;
+
+  // Emit to user-specific room
+  const userRoom = `player:${data.userId}`;
+  io.to(userRoom).emit('payment_status_update', data);
+
+  console.log('Emitted payment_status_update event to room:', {
+    room: userRoom,
+    bookingId: data.bookingId,
+    paymentIntentId: data.paymentIntentId,
+    status: data.status,
+    userId: data.userId,
+  });
 }

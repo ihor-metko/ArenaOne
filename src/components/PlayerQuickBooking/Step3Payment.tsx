@@ -6,6 +6,8 @@ import { formatPrice } from "@/utils/price";
 import { formatDateTimeLong, formatDateLong } from "@/utils/date";
 import Image from "next/image";
 import { useTheme } from "@/hooks/useTheme";
+import { useSocket } from "@/contexts/SocketContext";
+import type { PaymentStatusUpdateEvent } from "@/types/socket";
 import {
   PaymentProviderInfo,
   BookingCourt,
@@ -27,7 +29,11 @@ interface Step3PaymentProps {
   submitError: string | null;
   providersError: string | null;
   reservationExpiresAt: string | null;
+  reservationId: string | null;
+  paymentIntentId: string | null;
   onReservationExpired?: () => void;
+  onPaymentSuccess?: (bookingId: string) => void;
+  onPaymentFailed?: (error: string) => void;
 }
 
 // Time validation constants
@@ -51,13 +57,19 @@ export function Step3Payment({
   submitError,
   providersError,
   reservationExpiresAt: reservationExpiresAtProp,
+  reservationId,
+  paymentIntentId,
   onReservationExpired,
+  onPaymentSuccess,
+  onPaymentFailed,
 }: Step3PaymentProps) {
   const t = useTranslations();
   const locale = useLocale();
   const theme = useTheme();
+  const { socket, isConnected } = useSocket();
 
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'failed' | null>(null);
 
   // Use reservation expiry from parent
   const reservationExpiresAt = reservationExpiresAtProp;
@@ -131,6 +143,61 @@ export function Step3Payment({
     }
   }, [locale]);
 
+  // Subscribe to payment status updates via WebSocket
+  useEffect(() => {
+    if (!socket || !isConnected || !paymentIntentId || !reservationId) {
+      return;
+    }
+
+    console.log('[Step3Payment] Subscribing to payment status updates', {
+      paymentIntentId,
+      reservationId,
+      isConnected,
+    });
+
+    const handlePaymentStatusUpdate = (data: PaymentStatusUpdateEvent) => {
+      console.log('[Step3Payment] Received payment status update:', data);
+
+      // Verify this update is for our payment
+      if (data.paymentIntentId !== paymentIntentId || data.bookingId !== reservationId) {
+        console.log('[Step3Payment] Ignoring update for different payment', {
+          expected: { paymentIntentId, reservationId },
+          received: { paymentIntentId: data.paymentIntentId, bookingId: data.bookingId },
+        });
+        return;
+      }
+
+      // Update payment status state
+      setPaymentStatus(data.status);
+
+      // Handle payment success
+      if (data.status === 'paid') {
+        console.log('[Step3Payment] Payment successful, notifying parent');
+        onPaymentSuccess?.(data.bookingId);
+      }
+
+      // Handle payment failure
+      if (data.status === 'failed') {
+        console.log('[Step3Payment] Payment failed, notifying parent');
+        onPaymentFailed?.(t('wizard.paymentFailed'));
+      }
+    };
+
+    // Subscribe to payment status updates
+    socket.on('payment_status_update', handlePaymentStatusUpdate);
+
+    // Set initial status to pending when payment window opens
+    if (paymentIntentId) {
+      setPaymentStatus('pending');
+    }
+
+    // Cleanup subscription on unmount
+    return () => {
+      console.log('[Step3Payment] Unsubscribing from payment status updates');
+      socket.off('payment_status_update', handlePaymentStatusUpdate);
+    };
+  }, [socket, isConnected, paymentIntentId, reservationId, onPaymentSuccess, onPaymentFailed, t]);
+
   return (
     <div className="rsp-wizard-step-content" role="group" aria-labelledby="step3-title">
       <h2 className="rsp-wizard-step-title" id="step3-title">
@@ -153,6 +220,34 @@ export function Step3Payment({
       {submitError && (
         <div className="rsp-wizard-alert rsp-wizard-alert--error" role="alert">
           {submitError}
+        </div>
+      )}
+
+      {/* Payment Status Messages */}
+      {paymentStatus === 'pending' && paymentIntentId && (
+        <div className="rsp-wizard-alert rsp-wizard-alert--info" role="status">
+          <div className="rsp-wizard-spinner" aria-hidden="true" />
+          <span>{t("wizard.paymentPending")}</span>
+        </div>
+      )}
+
+      {paymentStatus === 'paid' && (
+        <div className="rsp-wizard-alert rsp-wizard-alert--success" role="status">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="20,6 9,17 4,12" />
+          </svg>
+          <span>{t("wizard.paymentSuccess")}</span>
+        </div>
+      )}
+
+      {paymentStatus === 'failed' && (
+        <div className="rsp-wizard-alert rsp-wizard-alert--error" role="alert">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+          <span>{t("wizard.paymentFailedMessage")}</span>
         </div>
       )}
 

@@ -624,6 +624,39 @@
   color: var(--color-warning);
 }
 
+.rsp-wizard-alert--success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgb(34, 197, 94);
+  color: rgb(34, 197, 94);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.rsp-wizard-alert--info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgb(59, 130, 246);
+  color: rgb(59, 130, 246);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.rsp-wizard-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(59, 130, 246, 0.2);
+  border-top-color: rgb(59, 130, 246);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .rsp-wizard-court-info {
   display: flex;
   flex-direction: column;

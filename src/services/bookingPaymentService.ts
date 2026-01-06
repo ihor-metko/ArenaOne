@@ -410,6 +410,15 @@ export async function handleBookingPaymentCallback(
       `[BookingPaymentService] Booking ${paymentIntent.bookingId} marked as PAID`
     );
 
+    // Emit WebSocket event to notify user about successful payment
+    const { emitPaymentStatusUpdate } = await import("@/lib/socketEmitters");
+    emitPaymentStatusUpdate({
+      bookingId: paymentIntent.bookingId,
+      paymentIntentId: paymentIntent.id,
+      status: 'paid',
+      userId: paymentIntent.booking.userId,
+    });
+
     return { success: true, message: "Booking payment confirmed successfully" };
   } else if (isSignatureValid) {
     // Payment was not approved (declined, failed, etc.)
@@ -420,6 +429,15 @@ export async function handleBookingPaymentCallback(
         bookingStatus: BOOKING_STATUS.CANCELLED,
         paymentStatus: PAYMENT_STATUS.UNPAID,
       },
+    });
+
+    // Emit WebSocket event to notify user about failed payment
+    const { emitPaymentStatusUpdate } = await import("@/lib/socketEmitters");
+    emitPaymentStatusUpdate({
+      bookingId: paymentIntent.bookingId,
+      paymentIntentId: paymentIntent.id,
+      status: 'failed',
+      userId: paymentIntent.booking.userId,
     });
 
     return {
@@ -435,6 +453,15 @@ export async function handleBookingPaymentCallback(
         bookingStatus: BOOKING_STATUS.CANCELLED,
         paymentStatus: PAYMENT_STATUS.UNPAID,
       },
+    });
+
+    // Emit WebSocket event to notify user about failed payment
+    const { emitPaymentStatusUpdate } = await import("@/lib/socketEmitters");
+    emitPaymentStatusUpdate({
+      bookingId: paymentIntent.bookingId,
+      paymentIntentId: paymentIntent.id,
+      status: 'failed',
+      userId: paymentIntent.booking.userId,
     });
 
     console.error(

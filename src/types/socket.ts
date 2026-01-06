@@ -72,6 +72,17 @@ export interface PaymentFailedEvent {
 }
 
 /**
+ * Payment status update event payload
+ * Sent to specific users when their payment status changes
+ */
+export interface PaymentStatusUpdateEvent {
+  bookingId: string;
+  paymentIntentId: string;
+  status: 'pending' | 'paid' | 'failed';
+  userId: string; // For verification on client side
+}
+
+/**
  * Admin notification event payload
  * 
  * Supports both training request notifications and booking/payment event notifications.
@@ -129,6 +140,7 @@ export interface ServerToClientEvents {
   lock_expired: (data: LockExpiredEvent) => void;
   payment_confirmed: (data: PaymentConfirmedEvent) => void;
   payment_failed: (data: PaymentFailedEvent) => void;
+  payment_status_update: (data: PaymentStatusUpdateEvent) => void;
   admin_notification: (data: AdminNotificationEvent) => void;
 }
 
