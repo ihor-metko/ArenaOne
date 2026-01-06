@@ -185,9 +185,24 @@ export function PersonalizedSection({ userName }: PersonalizedSectionProps) {
     setCourtsError(null);
 
     try {
+      // Get selected club to access its timezone
+      const selectedClub = clubs.find(c => c.id === selectedClubId);
+      
+      // Get club timezone (with fallback to default)
+      const clubTimezone = getClubTimezone(selectedClub?.timezone);
+      
+      // Convert club local time to UTC for API call
+      const utcISOString = clubLocalToUTC(selectedDate, selectedStartTime, clubTimezone);
+      const utcDate = new Date(utcISOString);
+      
+      // Extract UTC time in HH:MM format for API
+      const utcHours = utcDate.getUTCHours().toString().padStart(2, '0');
+      const utcMinutes = utcDate.getUTCMinutes().toString().padStart(2, '0');
+      const utcTimeString = `${utcHours}:${utcMinutes}`;
+      
       const params = new URLSearchParams({
         date: selectedDate,
-        start: selectedStartTime,
+        start: utcTimeString, // Send UTC time
         duration: selectedDuration.toString(),
       });
 
@@ -240,7 +255,7 @@ export function PersonalizedSection({ userName }: PersonalizedSectionProps) {
     } finally {
       setIsLoadingCourts(false);
     }
-  }, [selectedClubId, selectedDate, selectedStartTime, selectedDuration, t]);
+  }, [selectedClubId, selectedDate, selectedStartTime, selectedDuration, clubs, t]);
 
   // Fetch estimated price when date/time/duration changes in step 2
   useEffect(() => {
