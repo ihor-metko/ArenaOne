@@ -20,6 +20,7 @@ interface PriceRuleFormProps {
   onCancel: () => void;
   isSubmitting?: boolean;
   holidays?: Array<{ id: string; name: string; date: string }>;
+  clubTimezone?: string | null;
 }
 
 const DAY_OF_WEEK_OPTIONS = [
@@ -47,6 +48,7 @@ export function PriceRuleForm({
   onCancel,
   isSubmitting = false,
   holidays = [],
+  clubTimezone,
 }: PriceRuleFormProps) {
   const [formData, setFormData] = useState<PriceRuleFormData>({
     ruleType: initialValues?.ruleType || "SPECIFIC_DAY",
@@ -59,6 +61,9 @@ export function PriceRuleForm({
   });
 
   const [error, setError] = useState("");
+
+  // Get timezone display name
+  const timezoneDisplay = clubTimezone || "Europe/Kyiv (default)";
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -256,6 +261,11 @@ export function PriceRuleForm({
           onChange={handleInputChange}
           disabled={isSubmitting}
         />
+      </div>
+
+      {/* Timezone notice */}
+      <div className="text-xs text-gray-500 dark:text-gray-400 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-sm border border-gray-200 dark:border-gray-700">
+        ℹ️ Times are in club timezone: <strong>{timezoneDisplay}</strong>
       </div>
 
       {/* Price */}

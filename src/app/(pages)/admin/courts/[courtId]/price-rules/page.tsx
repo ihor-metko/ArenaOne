@@ -404,6 +404,7 @@ export default function PriceRulesPage({
           onCancel={handleCloseModal}
           isSubmitting={submitting}
           holidays={holidays}
+          clubTimezone={court?.club?.timezone}
         />
       </Modal>
 

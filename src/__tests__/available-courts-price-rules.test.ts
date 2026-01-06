@@ -36,6 +36,7 @@ describe("GET /api/clubs/[id]/available-courts - Price Rules", () => {
   it("should return resolved prices based on court price rules", async () => {
     const mockClub = {
       id: "club-123",
+      timezone: "Europe/Kyiv",
       courts: [
         {
           id: "court-1",
@@ -93,14 +94,15 @@ describe("GET /api/clubs/[id]/available-courts - Price Rules", () => {
       priceCents: 4500, // Resolved price from price rules
     });
     
-    // Verify getResolvedPriceForSlot was called with correct parameters
-    expect(getResolvedPriceForSlot).toHaveBeenCalledWith("court-1", "2024-01-15", "18:00", 60);
-    expect(getResolvedPriceForSlot).toHaveBeenCalledWith("court-2", "2024-01-15", "18:00", 60);
+    // Verify getResolvedPriceForSlot was called with correct parameters including timezone
+    expect(getResolvedPriceForSlot).toHaveBeenCalledWith("court-1", "2024-01-15", "18:00", 60, "Europe/Kyiv");
+    expect(getResolvedPriceForSlot).toHaveBeenCalledWith("court-2", "2024-01-15", "18:00", 60, "Europe/Kyiv");
   });
 
   it("should calculate min/max price range correctly with different court prices", async () => {
     const mockClub = {
       id: "club-123",
+      timezone: "Europe/Kyiv",
       courts: [
         {
           id: "court-1",
@@ -169,6 +171,7 @@ describe("GET /api/clubs/[id]/available-courts - Price Rules", () => {
   it("should return empty array when no courts are available", async () => {
     const mockClub = {
       id: "club-123",
+      timezone: "Europe/Kyiv",
       courts: [
         {
           id: "court-1",
