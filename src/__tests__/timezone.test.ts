@@ -6,6 +6,7 @@ import {
   PLATFORM_TIMEZONE,
   isValidIANATimezone,
   getClubTimezone,
+  COMMON_TIMEZONES,
 } from "@/constants/timezone";
 
 describe("Timezone Constants", () => {
@@ -80,6 +81,55 @@ describe("Timezone Constants", () => {
       
       consoleWarnSpy.mockRestore();
       process.env.NODE_ENV = originalEnv;
+    });
+  });
+
+  describe("COMMON_TIMEZONES", () => {
+    it("should contain a list of timezone objects", () => {
+      expect(Array.isArray(COMMON_TIMEZONES)).toBe(true);
+      expect(COMMON_TIMEZONES.length).toBeGreaterThan(0);
+    });
+
+    it("should have valid structure for each timezone", () => {
+      COMMON_TIMEZONES.forEach((tz) => {
+        expect(tz).toHaveProperty("value");
+        expect(tz).toHaveProperty("label");
+        expect(tz).toHaveProperty("region");
+        expect(typeof tz.value).toBe("string");
+        expect(typeof tz.label).toBe("string");
+        expect(typeof tz.region).toBe("string");
+      });
+    });
+
+    it("should contain only valid IANA timezones", () => {
+      COMMON_TIMEZONES.forEach((tz) => {
+        expect(isValidIANATimezone(tz.value)).toBe(true);
+      });
+    });
+
+    it("should include the default club timezone", () => {
+      const hasDefault = COMMON_TIMEZONES.some(
+        (tz) => tz.value === DEFAULT_CLUB_TIMEZONE
+      );
+      expect(hasDefault).toBe(true);
+    });
+
+    it("should include UTC timezone", () => {
+      const hasUTC = COMMON_TIMEZONES.some((tz) => tz.value === "UTC");
+      expect(hasUTC).toBe(true);
+    });
+
+    it("should include major timezones from different regions", () => {
+      const regions = new Set(COMMON_TIMEZONES.map((tz) => tz.region));
+      expect(regions.has("Europe")).toBe(true);
+      expect(regions.has("North America")).toBe(true);
+      expect(regions.has("Asia")).toBe(true);
+    });
+
+    it("should not have duplicate timezone values", () => {
+      const values = COMMON_TIMEZONES.map((tz) => tz.value);
+      const uniqueValues = new Set(values);
+      expect(uniqueValues.size).toBe(values.length);
     });
   });
 });
