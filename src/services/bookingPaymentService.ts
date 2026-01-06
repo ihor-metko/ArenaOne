@@ -134,7 +134,7 @@ export async function initiatePlayerBookingPayment(
 
   // Step 7: Create PaymentIntent
   const orderReference = `booking_${booking.id}_${Date.now()}`;
-  const currency = court.club.defaultCurrency || "UAH";
+  const currency = "UAH";
 
   const paymentIntent = await prisma.paymentIntent.create({
     data: {
@@ -379,8 +379,8 @@ export async function handleBookingPaymentCallback(
       status: isPaymentApproved
         ? "paid"
         : isSignatureValid
-        ? "failed"
-        : "failed",
+          ? "failed"
+          : "failed",
       completedAt: new Date(),
       transactionId: callbackData.transactionId as string | undefined,
       authCode: callbackData.authCode as string | undefined,
@@ -389,8 +389,8 @@ export async function handleBookingPaymentCallback(
       errorMessage: !isSignatureValid
         ? "Invalid signature"
         : !isPaymentApproved
-        ? `Transaction status: ${transactionStatus}`
-        : null,
+          ? `Transaction status: ${transactionStatus}`
+          : null,
     },
   });
 
