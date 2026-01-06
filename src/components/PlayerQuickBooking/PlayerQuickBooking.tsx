@@ -715,44 +715,29 @@ export function PlayerQuickBooking({
 
   // Initiate payment and redirect to payment gateway
   const handleSubmit = useCallback(async () => {
-    const { step0, step1, step2, step3 } = state;
+    const { step2, step3 } = state;
     const court = step2.selectedCourt;
-    const selectedClub = step0.selectedClub || preselectedClubData;
-    const clubId = step0.selectedClubId || preselectedClubId;
+    const reservationId = step3.reservationId;
 
-    if (!court || !step3.paymentProvider || !clubId) {
+    if (!court || !step3.paymentProvider || !reservationId) {
       return;
     }
 
     setState((prev) => ({ ...prev, isSubmitting: true, submitError: null }));
 
     try {
-      // Get club timezone (with fallback to default)
-      const clubTimezone = getClubTimezone(selectedClub?.timezone);
-
-      // Convert club local start time to UTC
-      const startDateTime = clubLocalToUTC(step1.date, step1.startTime, clubTimezone);
-
-      // Calculate end time in club timezone
-      const endTimeLocal = calculateEndTime(step1.startTime, step1.duration);
-      const endDateTime = clubLocalToUTC(step1.date, endTimeLocal, clubTimezone);
-
-      // Call the existing payment API endpoint
+      // Call the new payment endpoint for existing reservations
       // This will:
-      // 1. Create a booking with CONFIRMED status and UNPAID payment status
+      // 1. Validate the reservation belongs to the current user
       // 2. Resolve the correct payment account (club-level or org-level)
-      // 3. Create a payment intent
+      // 3. Create a payment intent for the reservation
       // 4. Generate a checkout URL from the payment provider
-      const response = await fetch("/api/bookings/pay", {
+      const response = await fetch(`/api/bookings/${reservationId}/pay`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          clubId,
-          courtId: court.id,
-          startAt: startDateTime, // ISO 8601 timestamp
-          endAt: endDateTime, // ISO 8601 timestamp
           paymentProvider: step3.paymentProvider.id, // e.g., "WAYFORPAY"
         }),
       });
@@ -796,7 +781,7 @@ export function PlayerQuickBooking({
         submitError: t("auth.errorOccurred"),
       }));
     }
-  }, [state, preselectedClubData, preselectedClubId, t]);
+  }, [state, t]);
 
   // Navigate to next step
   const handleNext = useCallback(async () => {
