@@ -3,6 +3,8 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
+import { clubLocalToUTC } from "@/utils/dateTime";
+import { getClubTimezone } from "@/constants/timezone";
 import { Step1DateTime } from "./Step1DateTime";
 import { Step2Courts } from "./Step2Courts";
 import { Step3Payment } from "./Step3Payment";
@@ -54,6 +56,33 @@ export function QuickBookingWizard({
 }: QuickBookingWizardProps) {
   const t = useTranslations();
   const [state, setState] = useState<WizardState>(initialState);
+  const [clubTimezone, setClubTimezone] = useState<string | null>(null);
+
+  // Fetch club timezone (memoized to avoid refetching)
+  useEffect(() => {
+    const fetchClubTimezone = async () => {
+      // Skip if we already have the timezone
+      if (clubTimezone) return;
+      
+      try {
+        const response = await fetch(`/api/clubs/${clubId}`);
+        if (response.ok) {
+          const clubData = await response.json();
+          setClubTimezone(clubData.timezone || null);
+        }
+      } catch (error) {
+        // Log error in development, but continue with default timezone
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to fetch club timezone:', error);
+        }
+        // Fallback to null will use default timezone
+      }
+    };
+
+    if (isOpen && clubId && !clubTimezone) {
+      fetchClubTimezone();
+    }
+  }, [clubId, isOpen, clubTimezone]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -224,9 +253,13 @@ export function QuickBookingWizard({
     setState((prev) => ({ ...prev, isSubmitting: true, submitError: null }));
 
     try {
-      const startDateTime = `${step1.date}T${step1.startTime}:00.000Z`;
+      // Get club timezone with fallback to default
+      const timezone = getClubTimezone(clubTimezone);
+      
+      // Convert club-local time to UTC before sending to API
+      const startDateTime = clubLocalToUTC(step1.date, step1.startTime, timezone);
       const endTime = calculateEndTime(step1.startTime, step1.duration);
-      const endDateTime = `${step1.date}T${endTime}:00.000Z`;
+      const endDateTime = clubLocalToUTC(step1.date, endTime, timezone);
 
       const response = await fetch("/api/bookings", {
         method: "POST",
@@ -286,7 +319,7 @@ export function QuickBookingWizard({
         submitError: t("auth.errorOccurred"),
       }));
     }
-  }, [state, t, onBookingComplete, onClose]);
+  }, [state, clubTimezone, t, onBookingComplete, onClose]);
 
   // Navigate to next step
   const handleNext = useCallback(async () => {
