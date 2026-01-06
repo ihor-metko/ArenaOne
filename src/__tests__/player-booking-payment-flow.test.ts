@@ -1,8 +1,8 @@
 /**
  * @jest-environment node
  */
-import { POST as PaymentPOST } from "@/app/api/player/bookings/pay/route";
-import { GET as StatusGET } from "@/app/api/player/bookings/[id]/status/route";
+import { POST as PaymentPOST } from "@/app/api/(player)/bookings/pay/route";
+import { GET as StatusGET } from "@/app/api/(player)/bookings/[id]/status/route";
 import { POST as WebhookPOST } from "@/app/api/webhooks/wayforpay/payment/route";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/requireRole";
