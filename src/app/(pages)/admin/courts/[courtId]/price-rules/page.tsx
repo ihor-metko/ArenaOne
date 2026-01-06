@@ -37,6 +37,7 @@ interface Court {
   club?: {
     id: string;
     name: string;
+    timezone?: string | null;
   };
 }
 
