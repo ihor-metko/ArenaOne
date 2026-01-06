@@ -10,7 +10,6 @@ import { getClubTimezone } from "@/constants/timezone";
 import { Step0SelectClub } from "./Step0SelectClub";
 import { Step1DateTime } from "./Step1DateTime";
 import { Step2Courts } from "./Step2Courts";
-import { Step2_5Confirmation } from "./Step2_5Confirmation";
 import { Step3Payment } from "./Step3Payment";
 import { Step4Confirmation } from "./Step4Confirmation";
 import {
@@ -802,8 +801,8 @@ export function PlayerQuickBooking({
       return;
     }
 
-    // If moving from step 2.5 (confirmation) to step 3 (payment), create reservation first
-    if (currentStepConfig.id === 2.5 && currentStepIndex + 1 < visibleSteps.length && visibleSteps[currentStepIndex + 1].id === 3) {
+    // If moving from step 2 (court selection) to step 3 (payment), create reservation and fetch providers
+    if (currentStepConfig.id === 2 && currentStepIndex + 1 < visibleSteps.length && visibleSteps[currentStepIndex + 1].id === 3) {
       const reservationCreated = await handleCreateReservation();
       if (reservationCreated) {
         // Fetch payment providers when moving to step 3
@@ -859,9 +858,6 @@ export function PlayerQuickBooking({
       }
       case 2:
         return !!state.step2.selectedCourtId;
-      case 2.5:
-        // Confirmation step - just verify selection before proceeding to payment
-        return !!state.step2.selectedCourtId && !!state.step2.selectedCourt;
       case 3:
         return !!state.step3.selectedProviderId && !state.isSubmitting && !!state.step3.reservationId;
       case 4:
@@ -993,18 +989,6 @@ export function PlayerQuickBooking({
             />
           )}
 
-          {state.currentStep === 2.5 && (
-            <Step2_5Confirmation
-              club={state.step0.selectedClub}
-              date={state.step1.date}
-              startTime={state.step1.startTime}
-              duration={state.step1.duration}
-              court={state.step2.selectedCourt}
-              totalPrice={totalPrice}
-              submitError={state.submitError}
-            />
-          )}
-
           {state.currentStep === 3 && (
             <Step3Payment
               club={state.step0.selectedClub}
@@ -1083,10 +1067,8 @@ export function PlayerQuickBooking({
                   <span className="rsp-wizard-spinner" aria-hidden="true" />
                   {t("common.processing")}
                 </>
-              ) : state.currentStep === 2.5 ? (
-                t("wizard.confirmAndReserve")
               ) : state.currentStep === 3 ? (
-                t("wizard.confirmBooking")
+                t("wizard.payNow")
               ) : (
                 <>
                   {t("wizard.continue")}

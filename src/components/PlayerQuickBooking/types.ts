@@ -317,10 +317,8 @@ export function determineVisibleSteps(
     steps.push({ id: 2, label: "selectCourt", isRequired: true });
   }
 
-  // Step 2.5: Confirmation (always required before payment)
-  steps.push({ id: 2.5, label: "confirmation", isRequired: true });
-
   // Step 3: Payment (always required for players)
+  // Note: Step 2.5 (confirmation) was removed as Step 3 now includes booking summary
   steps.push({ id: 3, label: "payment", isRequired: true });
 
   // Step 4: Confirmation (always shown)
