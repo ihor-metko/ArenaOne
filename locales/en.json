@@ -402,6 +402,20 @@
         "alignmentBottom": "Bottom",
         "alignmentBottomDesc": "Focus on the bottom portion of the image"
       },
+      "timezone": {
+        "tabLabel": "Timezone",
+        "title": "Club Timezone",
+        "description": "Set the timezone for this club to ensure bookings and schedules display correctly",
+        "selectLabel": "Timezone",
+        "hint": "All booking times and schedules will be displayed in this timezone",
+        "warningTitle": "Timezone Change Warning",
+        "warningMessage": "Changing the timezone may affect how existing bookings are displayed. The bookings themselves remain unchanged, but the times shown will adjust to the new timezone.",
+        "infoTitle": "About Timezones",
+        "info1": "All data is stored in UTC and automatically converted to the club's timezone for display",
+        "info2": "Changing the timezone does not modify existing bookings, only how they are displayed",
+        "info3": "Players will see booking times in the club's timezone",
+        "saveFailed": "Failed to save timezone changes"
+      },
       "validation": {
         "nameRequired": "Club name is required",
         "countryRequired": "Country is required",
