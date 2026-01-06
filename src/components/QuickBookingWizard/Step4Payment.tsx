@@ -6,12 +6,10 @@ import { useTheme } from "next-themes";
 import {
   WizardCourt,
   PaymentProvider,
-  calculateEndTime,
 } from "./types";
 
 interface Step4PaymentProps {
   date: string;
-  startTime: string;
   duration: number;
   court: WizardCourt | null;
   totalPrice: number;
@@ -28,7 +26,6 @@ interface Step4PaymentProps {
 
 export function Step4Payment({
   date,
-  startTime,
   duration,
   court,
   totalPrice,
@@ -44,7 +41,6 @@ export function Step4Payment({
 }: Step4PaymentProps) {
   const t = useTranslations();
   const { theme } = useTheme();
-  const endTime = calculateEndTime(startTime, duration);
 
   // Success state
   if (isComplete && bookingId) {
@@ -159,6 +155,7 @@ export function Step4Payment({
                 src={theme === "dark" ? provider.logoDark : provider.logoLight}
                 alt={provider.displayName}
                 className="rsp-wizard-payment-provider-logo"
+                loading="lazy"
               />
               <span className="rsp-wizard-payment-provider-label">
                 {provider.displayName}

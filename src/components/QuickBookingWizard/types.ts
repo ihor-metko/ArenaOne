@@ -29,7 +29,8 @@ export interface WizardStep2Data {
 }
 
 export interface WizardStep3Data {
-  // Step 3 is now "Review & Confirm" - no data to store, just viewing
+  // Step 3 is now "Review & Confirm" - no data to store
+  confirmed?: boolean;
 }
 
 export interface WizardStep4Data {

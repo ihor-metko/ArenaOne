@@ -504,7 +504,6 @@ export function QuickBookingWizard({
           {state.currentStep === 4 && (
             <Step4Payment
               date={state.step1.date}
-              startTime={state.step1.startTime}
               duration={state.step1.duration}
               court={state.step2.selectedCourt}
               totalPrice={totalPrice}
