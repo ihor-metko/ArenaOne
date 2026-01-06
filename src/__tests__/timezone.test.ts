@@ -94,13 +94,13 @@ describe("Timezone Constants", () => {
     it("should return valid offset format for known timezones", () => {
       // Test various timezones - offsets may vary based on DST
       const offset1 = getTimezoneOffset("America/New_York");
-      expect(offset1).toMatch(/^UTC[+-]\d+(:30)?$/);
+      expect(offset1).toMatch(/^UTC[+-]\d+(:\d{2})?$/);
       
       const offset2 = getTimezoneOffset("Europe/London");
-      expect(offset2).toMatch(/^UTC[+-]?\d+(:30)?$/);
+      expect(offset2).toMatch(/^UTC[+-]\d+(:\d{2})?$/);
       
       const offset3 = getTimezoneOffset("Asia/Tokyo");
-      expect(offset3).toMatch(/^UTC[+-]\d+(:30)?$/);
+      expect(offset3).toMatch(/^UTC[+-]\d+(:\d{2})?$/);
     });
 
     it("should handle invalid timezone gracefully", () => {

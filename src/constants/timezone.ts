@@ -73,16 +73,48 @@ export function getClubTimezone(clubTimezone: string | null | undefined): string
  */
 export function getTimezoneOffset(timezone: string): string {
   try {
-    // Create a date formatter for the timezone
+    // Use Intl.DateTimeFormat to get reliable timezone offset
     const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      timeZoneName: 'longOffset',
+    });
     
-    // Get the offset in minutes
-    // We use a trick: format the date in UTC and in the target timezone,
-    // then compare the hour difference
+    const parts = formatter.formatToParts(now);
+    const timeZonePart = parts.find(part => part.type === 'timeZoneName');
+    
+    if (timeZonePart?.value) {
+      // timeZoneName: "longOffset" gives us "GMT" (for UTC) or "GMT-05:00", "GMT+02:00"
+      const gmtValue = timeZonePart.value;
+      
+      // Handle UTC/GMT specially
+      if (gmtValue === 'GMT') {
+        return 'UTC+0';
+      }
+      
+      // Parse offset like "GMT-05:00" or "GMT+02:00"
+      const match = gmtValue.match(/GMT([+-])(\d{2}):(\d{2})/);
+      if (match) {
+        const [, sign, hours, minutes] = match;
+        const hoursNum = parseInt(hours, 10);
+        const minutesNum = parseInt(minutes, 10);
+        
+        if (minutesNum === 0) {
+          return `UTC${sign}${hoursNum}`;
+        } else {
+          return `UTC${sign}${hoursNum}:${minutes}`;
+        }
+      }
+      
+      // Fallback: just replace GMT with UTC
+      return gmtValue.replace('GMT', 'UTC');
+    }
+    
+    // Fallback to manual calculation if formatToParts doesn't work
     const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
     const tzDate = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
     
-    const offsetMinutes = (tzDate.getTime() - utcDate.getTime()) / (1000 * 60);
+    const offsetMinutes = Math.round((tzDate.getTime() - utcDate.getTime()) / (1000 * 60));
     const offsetHours = offsetMinutes / 60;
     
     // Format the offset
@@ -91,13 +123,13 @@ export function getTimezoneOffset(timezone: string): string {
     }
     
     const sign = offsetHours > 0 ? '+' : '';
-    const hours = Math.floor(Math.abs(offsetHours));
     const minutes = Math.abs(offsetMinutes) % 60;
     
     if (minutes === 0) {
-      return `UTC${sign}${offsetHours > 0 ? hours : -hours}`;
+      return `UTC${sign}${Math.floor(offsetHours)}`;
     } else {
-      return `UTC${sign}${offsetHours > 0 ? hours : -hours}:${minutes.toString().padStart(2, '0')}`;
+      const hoursPart = Math.floor(offsetHours);
+      return `UTC${sign}${hoursPart}:${minutes.toString().padStart(2, '0')}`;
     }
   } catch {
     return 'UTC+0';
