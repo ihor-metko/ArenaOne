@@ -183,7 +183,8 @@ export function getBusinessHoursForDate(
 // Generate time options based on business hours for a specific date
 export function generateTimeOptionsForDate(
   date: string,
-  businessHours?: ClubBusinessHours[]
+  businessHours?: ClubBusinessHours[],
+  clubTimezone?: string | null
 ): string[] {
   const hours = getBusinessHoursForDate(date, businessHours);
 
@@ -214,8 +215,8 @@ export function generateTimeOptionsForDate(
     }
   }
 
-  // Filter out past times if the date is today using centralized utility
-  return filterPastTimeSlots(options, date);
+  // Filter out past times if the date is today using centralized utility with club timezone
+  return filterPastTimeSlots(options, date, clubTimezone || undefined);
 }
 
 // Check if a booking would end after closing time

@@ -62,7 +62,8 @@ export function QuickBookingModal({
   const [error, setError] = useState<string | null>(null);
 
   // Filter time options to exclude past times for today
-  const timeOptions = filterPastTimeSlots(generateTimeOptions(), date);
+  // Pass club timezone to ensure correct filtering in club's local time
+  const timeOptions = filterPastTimeSlots(generateTimeOptions(), date, clubTimezone || undefined);
 
   const handleFindCourts = useCallback(async () => {
     // Don't search if startTime is not selected

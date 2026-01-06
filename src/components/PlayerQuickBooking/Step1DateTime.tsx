@@ -23,6 +23,7 @@ interface Step1DateTimeProps {
   isLoading?: boolean;
   availableCourtTypes?: ("SINGLE" | "DOUBLE")[];
   businessHours?: ClubBusinessHours[];
+  clubTimezone?: string | null;
 }
 
 // Translation key mapping for court types
@@ -43,12 +44,14 @@ export function Step1DateTime({
   isLoading = false,
   availableCourtTypes = DEFAULT_AVAILABLE_COURT_TYPES,
   businessHours,
+  clubTimezone,
 }: Step1DateTimeProps) {
   const t = useTranslations();
   const isPeak = isPeakHour(data.date, data.startTime);
 
   // Generate time options based on business hours for the selected date
-  const TIME_OPTIONS = generateTimeOptionsForDate(data.date, businessHours);
+  // Pass club timezone to ensure correct filtering of past times
+  const TIME_OPTIONS = generateTimeOptionsForDate(data.date, businessHours, clubTimezone);
 
   // Check if booking would end after closing
   const endsAfterClosing = wouldEndAfterClosing(

@@ -14,17 +14,20 @@ interface Step3DateTimeProps {
   data: WizardStepDateTime;
   onChange: (data: Partial<WizardStepDateTime>) => void;
   isLoading?: boolean;
+  clubTimezone?: string | null;
 }
 
 export function Step3DateTime({
   data,
   onChange,
   isLoading = false,
+  clubTimezone,
 }: Step3DateTimeProps) {
   const t = useTranslations();
 
   // Filter time options to exclude past times for today
-  const TIME_OPTIONS = filterPastTimeSlots(generateTimeOptions(), data.date);
+  // Pass club timezone to ensure correct filtering in club's local time
+  const TIME_OPTIONS = filterPastTimeSlots(generateTimeOptions(), data.date, clubTimezone || undefined);
   const hasNoTimeSlots = TIME_OPTIONS.length === 0;
   const isToday = data.date === getTodayDateString();
 
