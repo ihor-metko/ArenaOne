@@ -89,11 +89,13 @@
 /* ===== Legacy Booking Status Classes (for backward compatibility) ===== */
 /* These maintain compatibility with any old code that uses specific status classes */
 
+.im-booking-status--upcoming,
 .im-booking-status--active {
   background: rgba(34, 197, 94, 0.15);
   color: rgb(34, 197, 94);
 }
 
+.im-booking-status--confirmed,
 .im-booking-status--pending {
   background: rgba(234, 179, 8, 0.15);
   color: rgb(234, 179, 8);
@@ -110,8 +112,7 @@
   color: rgb(239, 68, 68);
 }
 
-.im-booking-status--paid,
-.im-booking-status--confirmed {
+.im-booking-status--paid {
   background: rgba(34, 197, 94, 0.15);
   color: rgb(34, 197, 94);
 }
@@ -127,13 +128,14 @@
 }
 
 /* Dark mode for legacy classes */
+.dark .im-booking-status--upcoming,
 .dark .im-booking-status--active,
-.dark .im-booking-status--paid,
-.dark .im-booking-status--confirmed {
+.dark .im-booking-status--paid {
   background: rgba(34, 197, 94, 0.2);
   color: rgb(74, 222, 128);
 }
 
+.dark .im-booking-status--confirmed,
 .dark .im-booking-status--pending,
 .dark .im-booking-status--reserved {
   background: rgba(234, 179, 8, 0.2);
