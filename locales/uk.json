@@ -1498,6 +1498,7 @@
     "applePay": "Apple Pay",
     "googlePay": "Google Pay",
     "confirmBooking": "Підтвердити бронювання",
+    "confirmAndReserve": "Підтвердити та зарезервувати",
     "continue": "Продовжити",
     "bookingConfirmed": "Бронювання підтверджено!",
     "bookingConfirmedMessage": "Ваш корт успішно заброньований.",

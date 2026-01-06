@@ -1561,6 +1561,7 @@
     "applePay": "Apple Pay",
     "googlePay": "Google Pay",
     "confirmBooking": "Confirm Booking",
+    "confirmAndReserve": "Confirm & Reserve",
     "continue": "Continue",
     "bookingConfirmed": "Booking Confirmed!",
     "bookingConfirmedMessage": "Your court has been reserved successfully.",
