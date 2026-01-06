@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
 import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useCourtAvailability } from "@/hooks/useCourtAvailability";
-import { clubLocalToUTC, utcToClubLocalTime } from "@/utils/dateTime";
+import { clubLocalToUTC } from "@/utils/dateTime";
 import { getClubTimezone } from "@/constants/timezone";
 import { Step0SelectClub } from "./Step0SelectClub";
 import { Step1DateTime } from "./Step1DateTime";

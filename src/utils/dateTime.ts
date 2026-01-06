@@ -360,15 +360,15 @@ export function clubLocalToUTC(
   // 3. Adjust and repeat until we find the right UTC time
   
   // Initial guess: assume the local time string is UTC
-  let guessUTC = new Date(`${localDateTimeStr}Z`);
+  const guessUTC = new Date(`${localDateTimeStr}Z`);
   
   // Check what this UTC time looks like in the club timezone
-  let parts = formatter.formatToParts(guessUTC);
-  let tzYear = parseInt(parts.find(p => p.type === 'year')?.value || '0', 10);
-  let tzMonth = parseInt(parts.find(p => p.type === 'month')?.value || '0', 10);
-  let tzDay = parseInt(parts.find(p => p.type === 'day')?.value || '0', 10);
-  let tzHour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
-  let tzMinute = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+  const parts = formatter.formatToParts(guessUTC);
+  const tzYear = parseInt(parts.find(p => p.type === 'year')?.value || '0', 10);
+  const tzMonth = parseInt(parts.find(p => p.type === 'month')?.value || '0', 10);
+  const tzDay = parseInt(parts.find(p => p.type === 'day')?.value || '0', 10);
+  const tzHour = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10);
+  const tzMinute = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
   
   // Calculate the difference
   const targetDate = new Date(year, month - 1, day, hours, minutes);
