@@ -3,12 +3,12 @@ import { getPaymentAccountStatus } from "@/services/paymentAccountService";
 import { PaymentProvider } from "@/types/paymentAccount";
 
 /**
- * GET /api/(player)/clubs/[id]/payment-providers
- * 
+ * GET /api/clubs/[id]/payment-providers
+ *
  * Get available payment providers for a club (player-facing).
  * Returns list of configured and verified payment providers with their logos.
  * No sensitive data is exposed.
- * 
+ *
  * Access: Public (no authentication required for browsing)
  */
 export async function GET(
@@ -30,8 +30,8 @@ export async function GET(
     if (!status.isConfigured || !status.isAvailable || !status.provider) {
       return NextResponse.json({
         providers: [],
-        message: status.isConfigured && !status.isAvailable 
-          ? "Payment provider not yet verified" 
+        message: status.isConfigured && !status.isAvailable
+          ? "Payment provider not yet verified"
           : "No payment provider configured",
       });
     }

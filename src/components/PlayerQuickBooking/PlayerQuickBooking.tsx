@@ -68,7 +68,7 @@ export function PlayerQuickBooking({
   // Track previous step1 values to prevent unnecessary API calls
   const prevStep1ParamsRef = useRef<string>("");
   const prevCourtsParamsRef = useRef<string>("");
-  
+
   // Track if a reservation request is in progress to prevent duplicates
   const isReservingRef = useRef<boolean>(false);
 
@@ -130,7 +130,7 @@ export function PlayerQuickBooking({
       prevStep1ParamsRef.current = "";
       prevCourtsParamsRef.current = "";
       isReservingRef.current = false; // Reset reservation lock
-      
+
       const initialDateTime: PlayerBookingStep1Data = preselectedDateTime
         ? { ...preselectedDateTime, courtType: preselectedDateTime.courtType || DEFAULT_COURT_TYPE }
         : {
@@ -292,15 +292,15 @@ export function PlayerQuickBooking({
     if (!clubId) return;
 
     const { date, startTime, duration, courtType } = state.step1;
-    
+
     // Create a unique key for current parameters to prevent redundant requests
     const currentParams = `${clubId}-${date}-${startTime}-${duration}-${courtType}`;
-    
+
     // Skip if parameters haven't changed
     if (prevCourtsParamsRef.current === currentParams) {
       return;
     }
-    
+
     // Update the reference
     prevCourtsParamsRef.current = currentParams;
 
@@ -313,11 +313,11 @@ export function PlayerQuickBooking({
     try {
       // Get club timezone (with fallback to default)
       const clubTimezone = getClubTimezone(selectedClub?.timezone);
-      
+
       // Convert club local time to UTC for API call
       const utcISOString = clubLocalToUTC(date, startTime, clubTimezone);
       const utcDate = new Date(utcISOString);
-      
+
       // Extract UTC time in HH:MM format for API
       const utcHours = utcDate.getUTCHours().toString().padStart(2, '0');
       const utcMinutes = utcDate.getUTCMinutes().toString().padStart(2, '0');
@@ -385,7 +385,7 @@ export function PlayerQuickBooking({
     }));
 
     try {
-      const response = await fetch(`/api/(player)/clubs/${clubId}/payment-providers`);
+      const response = await fetch(`/api/clubs/${clubId}/payment-providers`);
 
       if (!response.ok) {
         setState((prev) => ({
@@ -421,7 +421,7 @@ export function PlayerQuickBooking({
       if (!clubId) return;
 
       const { date, startTime, duration, courtType } = state.step1;
-      
+
       // Don't fetch price if startTime is not selected
       if (!startTime) {
         setState((prev) => ({
@@ -431,26 +431,26 @@ export function PlayerQuickBooking({
         }));
         return;
       }
-      
+
       // Create a unique key for current parameters to prevent redundant requests
       const currentParams = `${clubId}-${date}-${startTime}-${duration}-${courtType}`;
-      
+
       // Skip if parameters haven't changed
       if (prevStep1ParamsRef.current === currentParams) {
         return;
       }
-      
+
       // Update the reference
       prevStep1ParamsRef.current = currentParams;
 
       try {
         // Get club timezone (with fallback to default)
         const clubTimezone = getClubTimezone(selectedClub?.timezone);
-        
+
         // Convert club local time to UTC for API call
         const utcISOString = clubLocalToUTC(date, startTime, clubTimezone);
         const utcDate = new Date(utcISOString);
-        
+
         // Extract UTC time in HH:MM format for API
         const utcHours = utcDate.getUTCHours().toString().padStart(2, '0');
         const utcMinutes = utcDate.getUTCMinutes().toString().padStart(2, '0');
@@ -528,7 +528,7 @@ export function PlayerQuickBooking({
     // This improves user experience by loading provider data early
     const preloadProviders = async () => {
       try {
-        const response = await fetch(`/api/(player)/clubs/${club.id}/payment-providers`);
+        const response = await fetch(`/api/clubs/${club.id}/payment-providers`);
         if (response.ok) {
           const data = await response.json();
           const providers: PaymentProviderInfo[] = data.providers || [];
@@ -667,7 +667,7 @@ export function PlayerQuickBooking({
         // This could be from:
         // 1. Our own duplicate request (safe to proceed)
         // 2. Another user's reservation (should show error)
-        
+
         // Check if we already have a reservation for this exact slot
         // If we don't have a reservationId yet, this is likely another user's reservation
         if (!state.step3.reservationId) {
@@ -678,7 +678,7 @@ export function PlayerQuickBooking({
           }));
           return false;
         }
-        
+
         // We have a reservationId, so this 409 is likely from our duplicate request
         // Proceed to payment step
         console.log("409 received but we have an existing reservation, proceeding to payment");
@@ -733,10 +733,10 @@ export function PlayerQuickBooking({
     try {
       // Get club timezone (with fallback to default)
       const clubTimezone = getClubTimezone(selectedClub?.timezone);
-      
+
       // Convert club local start time to UTC
       const startDateTime = clubLocalToUTC(step1.date, step1.startTime, clubTimezone);
-      
+
       // Calculate end time in club timezone
       const endTimeLocal = calculateEndTime(step1.startTime, step1.duration);
       const endDateTime = clubLocalToUTC(step1.date, endTimeLocal, clubTimezone);

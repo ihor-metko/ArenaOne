@@ -1,4 +1,7 @@
-<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="40" rx="4" fill="#BDBDBD"/>
-  <text x="60" y="25" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="white" text-anchor="middle">Payment</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+  <rect width="200" height="60" fill="#1A1A1A" rx="4"/>
+  <circle cx="40" cy="30" r="12" fill="#666"/>
+  <text x="100" y="35" font-family="Arial, sans-serif" font-size="16" font-weight="500" fill="#CCC" text-anchor="middle">
+    Payment Provider
+  </text>
 </svg>
