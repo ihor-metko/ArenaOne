@@ -78,7 +78,7 @@ export function MobileAvailabilityFlow({
     try {
       const startDate = getTodayUTC();
       const response = await fetch(
-        `/api/(player)/clubs/${clubId}/courts/availability?start=${startDate}&days=14&mode=rolling`
+        `/api/clubs/${clubId}/courts/availability?start=${startDate}&days=14&mode=rolling`
       );
 
       if (!response.ok) {
@@ -289,11 +289,11 @@ export function MobileAvailabilityFlow({
   const timeSlots = selectedDate ? getTimeSlotsForDate(selectedDate) : [];
   const courts = selectedDate && selectedTime !== null ? getCourtsForDateTime(selectedDate, selectedTime) : [];
 
-  const stepTitle = currentStep === "date" 
+  const stepTitle = currentStep === "date"
     ? t("availability.selectDate")
     : currentStep === "time"
-    ? t("availability.selectTime")
-    : t("availability.selectCourt");
+      ? t("availability.selectTime")
+      : t("availability.selectCourt");
 
   const canContinue = selectedDate !== null && selectedTime !== null && selectedCourt !== null;
 
