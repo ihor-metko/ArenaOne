@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Modal } from "@/components/ui";
 import { formatPrice } from "@/utils/price";
-import { formatDateTimeLong, formatDateLong } from "@/utils/date";
+import { formatDateLong } from "@/utils/date";
 import { getClubTimezone } from "@/constants/timezone";
-import { utcToClubLocal } from "@/utils/dateTime";
+import { utcToClubLocalTime, utcToClubLocalDate } from "@/utils/dateTime";
 import Image from "next/image";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -37,12 +37,6 @@ interface ResumePaymentModalProps {
   bookingId: string;
   onPaymentComplete?: () => void;
 }
-
-// Time validation constants
-const MIN_HOUR = 0;
-const MAX_HOUR = 23;
-const MIN_MINUTE = 0;
-const MAX_MINUTE = 59;
 
 export function ResumePaymentModal({
   isOpen,
@@ -170,24 +164,15 @@ export function ResumePaymentModal({
     try {
       const clubTz = getClubTimezone(timezone);
       
-      // Convert UTC to club local time
-      const startLocal = utcToClubLocal(startUTC, clubTz);
-      const endLocal = utcToClubLocal(endUTC, clubTz);
+      // Convert UTC to club local date and time
+      const dateStr = utcToClubLocalDate(startUTC, clubTz);
+      const startTime = utcToClubLocalTime(startUTC, clubTz);
+      const endTime = utcToClubLocalTime(endUTC, clubTz);
       
-      // Format date and time
-      const dateStr = formatDateLong(new Date(startLocal), locale);
-      const startTime = new Date(startLocal).toLocaleTimeString(locale, { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false 
-      });
-      const endTime = new Date(endLocal).toLocaleTimeString(locale, { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false 
-      });
+      // Format the date nicely
+      const formattedDate = formatDateLong(new Date(dateStr), locale);
       
-      return `${dateStr}, ${startTime} - ${endTime}`;
+      return `${formattedDate}, ${startTime} - ${endTime}`;
     } catch (error) {
       console.error("Error formatting booking date time:", error);
       return formatDateLong(new Date(startUTC), locale);
