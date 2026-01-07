@@ -172,6 +172,7 @@ export default function PlayerMobileHeader() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
 
   const userName = user?.name;
   const userEmail = user?.email;
@@ -179,8 +180,7 @@ export default function PlayerMobileHeader() {
   // Close drawer when clicking outside
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
-      const toggleButton = document.querySelector(".im-player-mobile-header-hamburger");
-      if (toggleButton && !toggleButton.contains(event.target as Node)) {
+      if (hamburgerRef.current && !hamburgerRef.current.contains(event.target as Node)) {
         setIsDrawerOpen(false);
       }
     }
@@ -214,9 +214,15 @@ export default function PlayerMobileHeader() {
   // Handle logout
   const handleLogout = async () => {
     setIsDrawerOpen(false);
-    clearUser();
-    clearSocketToken();
-    await signOut({ callbackUrl: "/" });
+    try {
+      clearUser();
+      clearSocketToken();
+      await signOut({ callbackUrl: "/" });
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still attempt to navigate away even if signOut fails
+      window.location.href = "/";
+    }
   };
 
   return (
@@ -224,6 +230,7 @@ export default function PlayerMobileHeader() {
       <header className="im-player-mobile-header">
         {/* Left: Hamburger menu */}
         <button
+          ref={hamburgerRef}
           className="im-player-mobile-header-hamburger"
           onClick={() => setIsDrawerOpen((prev) => !prev)}
           onKeyDown={handleHamburgerKeyDown}

@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { IMLink } from "@/components/ui";
+import { IMLink } from "@/components/ui/IMLink";
 import "./PlayerMobileFooter.css";
 
 /**
