@@ -65,6 +65,7 @@ export default function PlayerProfilePage() {
     duration: number;
     price: number;
     reservationExpiresAt: string | null;
+    timezone?: string;
   } | null>(null);
 
   // Redirect root admins to admin dashboard
@@ -95,19 +96,24 @@ export default function PlayerProfilePage() {
 
       const data = await response.json();
 
-      // Extract booking times from start/end ISO strings
-      const startDate = new Date(booking.start);
-      const endDate = new Date(booking.end);
+      // Get club timezone from the response (API includes it) or default
+      const clubTimezone = data.clubTimezone || "Europe/Kyiv";
+      
+      // Import timezone utilities dynamically
+      const { utcToClubLocalTime, utcToClubLocalDate } = await import("@/utils/dateTime");
+
+      // Convert UTC times to club local timezone
+      const startUTC = booking.start; // ISO string in UTC
+      const endUTC = booking.end; // ISO string in UTC
+      
+      const date = utcToClubLocalDate(startUTC, clubTimezone); // YYYY-MM-DD
+      const startTime = utcToClubLocalTime(startUTC, clubTimezone); // HH:MM
       
       // Calculate duration in minutes
+      const startDate = new Date(startUTC);
+      const endDate = new Date(endUTC);
       const durationMs = endDate.getTime() - startDate.getTime();
       const duration = Math.round(durationMs / (1000 * 60));
-      
-      // Format date as YYYY-MM-DD
-      const date = startDate.toISOString().split('T')[0];
-      
-      // Format time as HH:MM
-      const startTime = `${startDate.getUTCHours().toString().padStart(2, '0')}:${startDate.getUTCMinutes().toString().padStart(2, '0')}`;
 
       // Prepare resume payment data
       setResumePaymentData({
@@ -121,6 +127,7 @@ export default function PlayerProfilePage() {
         duration,
         price: booking.price,
         reservationExpiresAt: data.reservationExpiresAt, // Use extended expiration from API
+        timezone: clubTimezone,
       });
 
       // Open Quick Booking modal
