@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { PlayerQuickBooking } from "@/components/PlayerQuickBooking";
@@ -11,11 +12,16 @@ import { CourtAvailabilityModal } from "@/components/CourtAvailabilityModal";
 import { CourtScheduleModal } from "@/components/CourtScheduleModal";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { GalleryModal } from "@/components/GalleryModal";
-import { Button, IMLink, ImageCarousel, CourtCarousel, EntityBanner } from "@/components/ui";
+import { Button, IMLink, ImageCarousel, CourtCarousel, EntityBanner, EmptyState } from "@/components/ui";
+import { ClubMobileView } from "@/components/mobile-views";
 import { usePlayerClubStore } from "@/stores/usePlayerClubStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { useProfileStore } from "@/stores/useProfileStore";
 import { useActiveClub } from "@/contexts/ClubContext";
+import { useIsMobile } from "@/hooks";
 import { isValidImageUrl, getImageUrl } from "@/utils/image";
+import { getTodayStr, clubLocalToUTC, timeOfDayFromUTC } from "@/utils/dateTime";
+import { getClubTimezone } from "@/constants/timezone";
 import type { Court, AvailabilitySlot, AvailabilityResponse, CourtAvailabilityStatus } from "@/types/court";
 import "@/components/ClubDetailPage.css";
 import "@/components/EntityPageLayout.css";
@@ -79,17 +85,13 @@ interface Slot {
   endTime: string;
 }
 
-// Helper to get today's date in YYYY-MM-DD format
-function getTodayDateString(): string {
-  return new Date().toISOString().split("T")[0];
-}
-
 export default function ClubDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const t = useTranslations();
+  const router = useRouter();
   const { setActiveClubId } = useActiveClub();
 
   // Day names for business hours
@@ -106,6 +108,10 @@ export default function ClubDetailPage({
   // Use store for auth
   const user = useUserStore((state) => state.user);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+  const isMobile = useIsMobile();
+
+  // Use profile store for invalidation after booking
+  const invalidateProfile = useProfileStore((state) => state.invalidateProfile);
 
   // Use centralized player club store
   // Split selectors to avoid circular dependencies
@@ -139,6 +145,18 @@ export default function ClubDetailPage({
       imageUrl: court.bannerData?.url || null,
     }));
   }, [rawCourts]);
+
+  // Derive available court types from courts (to avoid separate API call)
+  const availableCourtTypes = useMemo(() => {
+    const courtTypes = new Set<"SINGLE" | "DOUBLE">();
+    rawCourts.forEach(court => {
+      if (court.courtFormat === "SINGLE" || court.courtFormat === "DOUBLE") {
+        courtTypes.add(court.courtFormat);
+      }
+    });
+    return Array.from(courtTypes).sort(); // Sort for consistency
+  }, [rawCourts]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCourtId, setSelectedCourtId] = useState<string | null>(null);
   const [courtAvailability, setCourtAvailability] = useState<Record<string, AvailabilitySlot[]>>({});
@@ -164,7 +182,7 @@ export default function ClubDetailPage({
 
   // Fetch availability for all courts
   const fetchAvailability = useCallback(async (courts: Court[]) => {
-    const today = getTodayDateString();
+    const today = getTodayStr();
     setAvailabilityLoading(true);
 
     try {
@@ -290,6 +308,9 @@ export default function ClubDetailPage({
   };
 
   const handleQuickBookingComplete = () => {
+    // Invalidate profile store to trigger refresh when user navigates to profile
+    invalidateProfile();
+    
     // Refresh availability data after successful booking
     if (courts && courts.length > 0) {
       fetchAvailability(courts);
@@ -331,8 +352,14 @@ export default function ClubDetailPage({
       setIsAuthPromptOpen(true);
       return;
     }
-    const startDateTime = `${date}T${startTime}:00.000Z`;
-    const endDateTime = `${date}T${endTime}:00.000Z`;
+    
+    // Get club timezone with fallback to default
+    const clubTimezone = getClubTimezone(club?.timezone);
+    
+    // Convert club-local time to UTC before creating booking slot
+    const startDateTime = clubLocalToUTC(date, startTime, clubTimezone);
+    const endDateTime = clubLocalToUTC(date, endTime, clubTimezone);
+    
     setPreselectedSlot({ startTime: startDateTime, endTime: endDateTime });
     setSelectedCourtId(courtId);
     setIsCourtAvailabilityOpen(false);
@@ -361,8 +388,8 @@ export default function ClubDetailPage({
     setGalleryIndex(index);
   };
 
-  // Loading skeleton
-  if (loadingClubs && !club) {
+  // Loading skeleton - show while loading OR when no club data yet and no error
+  if (loadingClubs || (!club && !clubsError)) {
     return (
       <main className="rsp-club-detail-page">
         <div className="rsp-club-skeleton-hero" />
@@ -379,13 +406,11 @@ export default function ClubDetailPage({
     );
   }
 
-  // Error state
-  if (clubsError || (!loadingClubs && !club)) {
-    const errorMessage = clubsError
-      ? (clubsError.includes("404") || clubsError.includes("not found")
-        ? t("clubs.clubNotFound")
-        : clubsError)
-      : t("clubs.clubNotFound");
+  // Error state - only show when there's an actual API error
+  if (clubsError) {
+    const errorMessage = clubsError.includes("404") || clubsError.includes("not found")
+      ? t("clubs.clubNotFound")
+      : clubsError;
 
     return (
       <main className="rsp-club-detail-page p-8">
@@ -401,6 +426,62 @@ export default function ClubDetailPage({
 
   if (!club) {
     return null;
+  }
+
+  // Mobile view - simplified skeleton
+  if (isMobile) {
+    const hasPublishedCourts = courts.length > 0;
+
+    const handleCheckAvailability = () => {
+      // Navigate to availability page
+      router.push(`/clubs/${club.id}/availability`);
+    };
+
+    const handleQuickBooking = () => {
+      if (!isAuthenticated) {
+        setIsAuthPromptOpen(true);
+        return;
+      }
+      setIsQuickBookingOpen(true);
+    };
+
+    return (
+      <>
+        <ClubMobileView
+          club={club}
+          hasPublishedCourts={hasPublishedCourts}
+          loading={loadingClubs || loadingCourts}
+          onCheckAvailability={handleCheckAvailability}
+          onQuickBooking={handleQuickBooking}
+        />
+
+        {/* Keep modals for mobile */}
+        {isAuthenticated && (
+          <PlayerQuickBooking
+            preselectedClubId={club.id}
+            preselectedClubData={club ? {
+              id: club.id,
+              name: club.name,
+              slug: club.slug || null,
+              location: (club.address as { formattedAddress?: string })?.formattedAddress || "",
+              city: (club.address as { city?: string })?.city || null,
+              timezone: club.timezone || null,
+              bannerData: club.bannerData || null,
+              businessHours: club.businessHours || [],
+            } : undefined}
+            availableCourtTypes={availableCourtTypes.length > 0 ? availableCourtTypes : undefined}
+            isOpen={isQuickBookingOpen}
+            onClose={() => setIsQuickBookingOpen(false)}
+            onBookingComplete={handleQuickBookingComplete}
+          />
+        )}
+
+        <AuthPromptModal
+          isOpen={isAuthPromptOpen}
+          onClose={() => setIsAuthPromptOpen(false)}
+        />
+      </>
+    );
   }
 
   // Prepare derived data
@@ -477,19 +558,22 @@ export default function ClubDetailPage({
           </div>
         )}
 
-        {/* Quick Actions Bar */}
-        <div className="rsp-club-actions-bar">
-          <Button onClick={handleQuickBookingClick} className="rsp-club-action-button" aria-label={t("clubs.quickBooking")}>
-            {t("clubs.quickBooking")}
-          </Button>
-        </div>
+        {/* Quick Actions Bar - Only show if there are published courts */}
+        {courts.length > 0 && (
+          <div className="rsp-club-actions-bar">
+            <Button onClick={handleQuickBookingClick} className="rsp-club-action-button" aria-label={t("clubs.quickBooking")}>
+              {t("clubs.quickBooking")}
+            </Button>
+          </div>
+        )}
 
         {/* Weekly Availability Timeline */}
         {courts.length > 0 && (
-          <section className="rsp-club-timeline-section mt-8">
+          <section className="rsp-club-timeline-section">
             <WeeklyAvailabilityTimeline
               key={timelineKey}
               clubId={club.id}
+              clubTimezone={club.timezone}
               onSlotClick={handleTimelineSlotClick}
             />
           </section>
@@ -500,6 +584,22 @@ export default function ClubDetailPage({
           <div className="im-club-description-gallery-grid">
             {/* Left Column - Description & Gallery */}
             <div className="im-club-description-gallery-left">
+              {/* Empty State when no published courts */}
+              {!loadingCourts && courts.length === 0 && (
+                <EmptyState
+                  title={t("clubs.noPublishedCourtsTitle")}
+                  description={t("clubs.noPublishedCourtsDescription")}
+                  icon={
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="7" height="7" />
+                      <rect x="14" y="3" width="7" height="7" />
+                      <rect x="3" y="14" width="7" height="7" />
+                      <rect x="14" y="14" width="7" height="7" />
+                    </svg>
+                  }
+                />
+              )}
+
               {/* Description Card */}
               {club.longDescription && (
                 <div className="im-club-description-card">
@@ -622,18 +722,31 @@ export default function ClubDetailPage({
                     {t("clubDetail.hours")}
                   </h2>
                   <div className="im-club-hours-list">
-                    {club.businessHours.map((hours) => (
-                      <div key={hours.id} className="im-club-hours-row">
-                        <span className="im-club-hours-day">{DAY_NAMES[hours.dayOfWeek]}</span>
-                        {hours.isClosed ? (
-                          <span className="im-club-hours-closed">{t("clubDetail.closed")}</span>
-                        ) : (
-                          <span className="im-club-hours-time">
-                            {hours.openTime} - {hours.closeTime}
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                    {club.businessHours.map((hours) => {
+                      // Get club timezone with fallback
+                      const clubTimezone = getClubTimezone(club.timezone);
+                      
+                      // Convert UTC times to club-local times for display
+                      const displayOpenTime = hours.openTime && !hours.isClosed
+                        ? timeOfDayFromUTC(hours.openTime, clubTimezone)
+                        : hours.openTime;
+                      const displayCloseTime = hours.closeTime && !hours.isClosed
+                        ? timeOfDayFromUTC(hours.closeTime, clubTimezone)
+                        : hours.closeTime;
+                      
+                      return (
+                        <div key={hours.id} className="im-club-hours-row">
+                          <span className="im-club-hours-day">{DAY_NAMES[hours.dayOfWeek]}</span>
+                          {hours.isClosed ? (
+                            <span className="im-club-hours-closed">{t("clubDetail.closed")}</span>
+                          ) : (
+                            <span className="im-club-hours-time">
+                              {displayOpenTime} - {displayCloseTime}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -643,7 +756,7 @@ export default function ClubDetailPage({
 
         {/* Map Section */}
         {hasValidCoordinates && (
-          <div className="rsp-club-info-card mb-8">
+          <div className="rsp-club-info-card">
             <h2 className="rsp-club-info-card-title">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2 1,6" />
@@ -667,52 +780,50 @@ export default function ClubDetailPage({
           </div>
         )}
 
-        {/* Courts Carousel Section */}
-        <section className="rsp-club-courts-section">
-          <div className="rsp-club-courts-header">
-            <h2 className="rsp-club-courts-title">{t("clubDetail.availableCourts")}</h2>
-          </div>
-          {loadingCourts ? (
-            <div className="rsp-club-loading-courts">
-              <p className="rsp-club-loading-text">{t("common.loading")}</p>
+        {/* Courts Carousel Section - Only show when there are courts */}
+        {courts.length > 0 && (
+          <section className="rsp-club-courts-section">
+            <div className="rsp-club-courts-header">
+              <h2 className="rsp-club-courts-title">{t("clubDetail.availableCourts")}</h2>
             </div>
-          ) : courts.length === 0 ? (
-            <div className="rsp-club-empty-courts">
-              <p className="rsp-club-empty-courts-text">{t("clubs.noCourts")}</p>
-            </div>
-          ) : (
-            <div className="im-court-carousel-section">
-              <CourtCarousel
-                items={courts}
-                itemKeyExtractor={(court) => court.id}
-                mobileVisible={1}
-                tabletVisible={2}
-                desktopVisible={3}
-                showIndicators={true}
-                showNavigation={true}
-                lazyLoad={true}
-                gap={16}
-                renderItem={(court) => (
-                  <CourtCard
-                    key={court.id}
-                    court={court}
-                    onBook={handleBookClick}
-                    onViewSchedule={handleViewSchedule}
-                    onCardClick={handleCardClick}
-                    isBookDisabled={!isAuthenticated}
-                    bookDisabledTooltip={t("auth.signInToBookTooltip")}
-                    availabilitySlots={courtAvailability[court.id] || []}
-                    isLoadingAvailability={availabilityLoading}
-                    maxVisibleSlots={6}
-                    showLegend={false}
-                    showAvailabilitySummary={true}
-                    showDetailedAvailability={false}
-                  />
-                )}
-              />
-            </div>
-          )}
-        </section>
+            {loadingCourts ? (
+              <div className="rsp-club-loading-courts">
+                <p className="rsp-club-loading-text">{t("common.loading")}</p>
+              </div>
+            ) : (
+              <div className="im-court-carousel-section">
+                <CourtCarousel
+                  items={courts}
+                  itemKeyExtractor={(court) => court.id}
+                  mobileVisible={1}
+                  tabletVisible={2}
+                  desktopVisible={3}
+                  showIndicators={true}
+                  showNavigation={true}
+                  lazyLoad={true}
+                  gap={16}
+                  renderItem={(court) => (
+                    <CourtCard
+                      key={court.id}
+                      court={court}
+                      onBook={handleBookClick}
+                      onViewSchedule={handleViewSchedule}
+                      onCardClick={handleCardClick}
+                      isBookDisabled={!isAuthenticated}
+                      bookDisabledTooltip={t("auth.signInToBookTooltip")}
+                      availabilitySlots={courtAvailability[court.id] || []}
+                      isLoadingAvailability={availabilityLoading}
+                      maxVisibleSlots={6}
+                      showLegend={false}
+                      showAvailabilitySummary={true}
+                      showDetailedAvailability={false}
+                    />
+                  )}
+                />
+              </div>
+            )}
+          </section>
+        )}
       </div>
 
       {/* Modals */}
@@ -731,6 +842,17 @@ export default function ClubDetailPage({
       {isAuthenticated && (
         <PlayerQuickBooking
           preselectedClubId={club.id}
+          preselectedClubData={club ? {
+            id: club.id,
+            name: club.name,
+            slug: club.slug || null,
+            location: formattedAddress,
+            city: (club.address as { city?: string })?.city || null,
+            timezone: club.timezone || null,
+            bannerData: club.bannerData || null,
+            businessHours: club.businessHours || [],
+          } : undefined}
+          availableCourtTypes={availableCourtTypes.length > 0 ? availableCourtTypes : undefined}
           isOpen={isQuickBookingOpen}
           onClose={handleQuickBookingClose}
           onBookingComplete={handleQuickBookingComplete}
