@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { shouldMarkAsCompleted, shouldCancelUnpaidBooking } from "@/utils/bookingStatus";
-import { PAYMENT_TIMEOUT_MS, BOOKING_STATUS, PAYMENT_STATUS, CANCEL_REASON } from "@/types/booking";
+import { BOOKING_STATUS, PAYMENT_STATUS, CANCEL_REASON } from "@/types/booking";
 import { sendBookingCancellationEmail } from "@/services/emailService";
 
 /**
@@ -57,17 +57,21 @@ export async function POST(request: Request) {
     const now = new Date();
     
     // STEP 1: Cancel unpaid bookings that exceeded payment timeout
-    // Find bookings with Confirmed status and Unpaid payment that exceeded the timeout
+    // Find bookings with Confirmed status and Unpaid payment where reservationExpiresAt has passed
     const unpaidBookings = await prisma.booking.findMany({
       where: {
         bookingStatus: BOOKING_STATUS.CONFIRMED,
         paymentStatus: PAYMENT_STATUS.UNPAID,
+        reservationExpiresAt: {
+          not: null, // Only consider bookings with reservationExpiresAt set
+          lt: now, // Reservation has expired
+        },
       },
       select: {
         id: true,
         bookingStatus: true,
         paymentStatus: true,
-        createdAt: true,
+        reservationExpiresAt: true,
         start: true,
         end: true,
         user: {
@@ -105,8 +109,7 @@ export async function POST(request: Request) {
         shouldCancelUnpaidBooking(
           booking.bookingStatus,
           booking.paymentStatus,
-          booking.createdAt,
-          PAYMENT_TIMEOUT_MS,
+          booking.reservationExpiresAt,
           now
         )
       ) {
@@ -253,8 +256,9 @@ export async function GET(request: Request) {
       where: {
         bookingStatus: BOOKING_STATUS.CONFIRMED,
         paymentStatus: PAYMENT_STATUS.UNPAID,
-        createdAt: {
-          lte: new Date(now.getTime() - PAYMENT_TIMEOUT_MS),
+        reservationExpiresAt: {
+          not: null, // Only consider bookings with reservationExpiresAt set
+          lt: now, // Reservation has expired
         },
       },
     });
