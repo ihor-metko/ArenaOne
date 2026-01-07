@@ -53,8 +53,10 @@ export async function PATCH(
     }
 
     // Build update data object
+    const formattedAddress = formatAddress(address);
+    const addressJson = JSON.stringify({ ...address, formattedAddress });
     const updateData: Record<string, unknown> = {
-      address: JSON.stringify({ ...address, formattedAddress: formatAddress(address) }),
+      address: addressJson,
     };
 
     console.log("Updating club address with data:", updateData.address);
@@ -63,7 +65,11 @@ export async function PATCH(
       data: updateData,
     });
 
-    return NextResponse.json({ success: true });
+    // Return only the updated address field (partial update)
+    return NextResponse.json({
+      id: clubId,
+      address: { ...address, formattedAddress },
+    });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error updating club location:", error);
