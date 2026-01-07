@@ -5,9 +5,9 @@ import { useTranslations } from "next-intl";
 import { Button, EmptyState } from "@/components/ui";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { useUserStore } from "@/stores/useUserStore";
-import { getTodayStr, getDatesFromStartUTC, createUTCDate } from "@/utils/utcDateTime";
+import { getTodayUTC, getDatesFromStartUTC } from "@/utils/utcDateTime";
 import { getClubTimezone } from "@/constants/timezone";
-import { clubLocalToUTC, utcToClubLocal } from "@/utils/dateTime";
+import { clubLocalToUTC } from "@/utils/dateTime";
 import "./MobileViews.css";
 
 interface MobileAvailabilityFlowProps {
@@ -63,7 +63,6 @@ export function MobileAvailabilityFlow({
 }: MobileAvailabilityFlowProps) {
   const t = useTranslations();
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
-  const user = useUserStore((state) => state.user);
 
   const [currentStep, setCurrentStep] = useState<Step>("date");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -81,7 +80,7 @@ export function MobileAvailabilityFlow({
     setLoading(true);
     setError(null);
     try {
-      const startDate = getTodayStr();
+      const startDate = getTodayUTC();
       const response = await fetch(
         `/api/(player)/clubs/${clubId}/courts/availability?start=${startDate}&days=14&mode=rolling`
       );
@@ -184,8 +183,9 @@ export function MobileAvailabilityFlow({
     const startTime = `${selectedTime.toString().padStart(2, "0")}:00`;
     const endTime = `${(selectedTime + 1).toString().padStart(2, "0")}:00`;
     
-    const startDateTime = clubLocalToUTC(selectedDate, startTime, timezone);
-    const endDateTime = clubLocalToUTC(selectedDate, endTime, timezone);
+    // Convert to UTC for booking (will be used when booking modal is implemented)
+    clubLocalToUTC(selectedDate, startTime, timezone);
+    clubLocalToUTC(selectedDate, endTime, timezone);
 
     // Navigate to booking confirmation (to be implemented)
     // For now, we'll redirect to the club page
@@ -208,7 +208,7 @@ export function MobileAvailabilityFlow({
   // Format date for display
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr + "T00:00:00.000Z");
-    const today = getTodayStr();
+    const today = getTodayUTC();
     const tomorrow = getDatesFromStartUTC(today, 2)[1];
 
     if (dateStr === today) {
