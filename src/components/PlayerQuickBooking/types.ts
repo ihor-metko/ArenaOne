@@ -318,8 +318,12 @@ export function determineVisibleSteps(
 ): BookingStepConfig[] {
   const steps: BookingStepConfig[] = [];
 
-  // In resume payment mode, only show payment step
+  // In resume payment mode, show all previous steps as read-only plus payment step
   if (resumePaymentMode) {
+    // Show all steps (1, 2, 2.5, 3) but they will be read-only except for step 3
+    steps.push({ id: 1, label: "dateTime", isRequired: true });
+    steps.push({ id: 2, label: "selectCourt", isRequired: true });
+    steps.push({ id: 2.5, label: "confirmation", isRequired: true });
     steps.push({ id: 3, label: "payment", isRequired: true });
     steps.push({ id: 4, label: "finalConfirmation", isRequired: true });
     return steps;

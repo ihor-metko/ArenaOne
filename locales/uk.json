@@ -1359,7 +1359,9 @@
     "type": {
       "single": "Одиночний",
       "double": "Парний"
-    }
+    },
+    "surface": "Покриття",
+    "location": "Розташування"
   },
   "weeklyAvailability": {
     "title": "Тижнева доступність кортів",
@@ -1557,7 +1559,9 @@
     "bookingConfirmedMessage": "Ваш корт успішно заброньований.",
     "bookingReference": "Номер бронювання",
     "bookingDetails": "Деталі бронювання",
-    "closeAndViewBookings": "Закрити"
+    "closeAndViewBookings": "Закрити",
+    "stepLockedInfo": "Цей крок заблоковано та не може бути змінений. Ви можете лише завершити оплату.",
+    "price": "Ціна"
   },
   "breadcrumbs": {
     "home": "Головна",
