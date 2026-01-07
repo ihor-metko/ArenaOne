@@ -38,14 +38,14 @@ export function LandingMobileView() {
     // Fetch next upcoming booking
     const fetchNextBooking = async () => {
       try {
-        const response = await fetch("/api/bookings/upcoming?limit=1");
+        const response = await fetch("/api/bookings?upcoming=true&take=1");
         if (response.ok) {
           const bookings = await response.json();
           if (bookings.length > 0) {
             const booking = bookings[0];
             setNextBooking({
-              clubName: booking.clubName || "Unknown Club",
-              dateTime: new Date(booking.startTime).toLocaleString(),
+              clubName: booking.court?.club?.name || "Unknown Club",
+              dateTime: new Date(booking.start).toLocaleString(),
               bookingId: booking.id,
             });
           }
@@ -106,7 +106,7 @@ export function LandingMobileView() {
               </div>
             ) : (
               <div className="im-mobile-landing-secondary-actions">
-                <IMLink href="/profile/bookings" className="im-mobile-landing-link">
+                <IMLink href="/profile" className="im-mobile-landing-link">
                   {t("landing.myBookings")}
                 </IMLink>
               </div>
@@ -130,7 +130,7 @@ export function LandingMobileView() {
             </div>
           </div>
           <Button
-            onClick={() => router.push(`/profile/bookings/${nextBooking.bookingId}`)}
+            onClick={() => router.push(`/profile`)}
             variant="outline"
             className="im-mobile-landing-next-booking-btn"
             aria-label={t("landing.viewBooking")}
