@@ -55,6 +55,15 @@ export default function PlayerProfilePage() {
   const [resumingPayment, setResumingPayment] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
+  // Pagination state
+  const ITEMS_PER_PAGE = 5;
+  const [hasMoreUpcoming, setHasMoreUpcoming] = useState(true);
+  const [hasMorePast, setHasMorePast] = useState(true);
+  const [hasMoreActivity, setHasMoreActivity] = useState(true);
+  const [loadingMoreUpcoming, setLoadingMoreUpcoming] = useState(false);
+  const [loadingMorePast, setLoadingMorePast] = useState(false);
+  const [loadingMoreActivity, setLoadingMoreActivity] = useState(false);
+
   // Redirect root admins to admin dashboard
   useEffect(() => {
     if (!isHydrated || isLoading) return;
@@ -64,67 +73,121 @@ export default function PlayerProfilePage() {
   }, [isHydrated, isLoading, user, router]);
 
   // Fetch upcoming bookings
-  const fetchUpcomingBookings = useCallback(async () => {
+  const fetchUpcomingBookings = useCallback(async (loadMore = false) => {
     if (!user?.id) return;
 
-    setUpcomingLoading(true);
+    if (loadMore) {
+      setLoadingMoreUpcoming(true);
+    } else {
+      setUpcomingLoading(true);
+    }
 
     try {
-      const response = await fetch(`/api/bookings?upcoming=true`);
+      const skip = loadMore ? upcomingBookings.length : 0;
+      const response = await fetch(`/api/bookings?upcoming=true&skip=${skip}&take=${ITEMS_PER_PAGE}`);
       if (response.ok) {
         const data = await response.json();
-        setUpcomingBookings(Array.isArray(data) ? data : []);
+        const newBookings = Array.isArray(data) ? data : [];
+        
+        if (loadMore) {
+          setUpcomingBookings(prev => [...prev, ...newBookings]);
+        } else {
+          setUpcomingBookings(newBookings);
+        }
+        
+        // If we got fewer items than requested, there are no more items
+        setHasMoreUpcoming(newBookings.length === ITEMS_PER_PAGE);
       } else if (response.status === 401) {
         router.push("/auth/sign-in");
       }
     } catch (error) {
       console.error("Failed to fetch upcoming bookings:", error);
     } finally {
-      setUpcomingLoading(false);
+      if (loadMore) {
+        setLoadingMoreUpcoming(false);
+      } else {
+        setUpcomingLoading(false);
+      }
     }
-  }, [user?.id, router]);
+  }, [user?.id, router, upcomingBookings.length]);
 
   // Fetch past bookings
-  const fetchPastBookings = useCallback(async () => {
+  const fetchPastBookings = useCallback(async (loadMore = false) => {
     if (!user?.id) return;
 
-    setPastLoading(true);
+    if (loadMore) {
+      setLoadingMorePast(true);
+    } else {
+      setPastLoading(true);
+    }
 
     try {
-      const response = await fetch(`/api/bookings?upcoming=false`);
+      const skip = loadMore ? pastBookings.length : 0;
+      const response = await fetch(`/api/bookings?upcoming=false&skip=${skip}&take=${ITEMS_PER_PAGE}`);
       if (response.ok) {
         const data = await response.json();
-        setPastBookings(Array.isArray(data) ? data : []);
+        const newBookings = Array.isArray(data) ? data : [];
+        
+        if (loadMore) {
+          setPastBookings(prev => [...prev, ...newBookings]);
+        } else {
+          setPastBookings(newBookings);
+        }
+        
+        // If we got fewer items than requested, there are no more items
+        setHasMorePast(newBookings.length === ITEMS_PER_PAGE);
       } else if (response.status === 401) {
         router.push("/auth/sign-in");
       }
     } catch (error) {
       console.error("Failed to fetch past bookings:", error);
     } finally {
-      setPastLoading(false);
+      if (loadMore) {
+        setLoadingMorePast(false);
+      } else {
+        setPastLoading(false);
+      }
     }
-  }, [user?.id, router]);
+  }, [user?.id, router, pastBookings.length]);
 
   // Fetch activity history (cancelled unpaid bookings)
-  const fetchActivityHistory = useCallback(async () => {
+  const fetchActivityHistory = useCallback(async (loadMore = false) => {
     if (!user?.id) return;
 
-    setActivityLoading(true);
+    if (loadMore) {
+      setLoadingMoreActivity(true);
+    } else {
+      setActivityLoading(true);
+    }
 
     try {
-      const response = await fetch(`/api/activity-history`);
+      const skip = loadMore ? activityHistory.length : 0;
+      const response = await fetch(`/api/activity-history?skip=${skip}&take=${ITEMS_PER_PAGE}`);
       if (response.ok) {
         const data = await response.json();
-        setActivityHistory(Array.isArray(data) ? data : []);
+        const newHistory = Array.isArray(data) ? data : [];
+        
+        if (loadMore) {
+          setActivityHistory(prev => [...prev, ...newHistory]);
+        } else {
+          setActivityHistory(newHistory);
+        }
+        
+        // If we got fewer items than requested, there are no more items
+        setHasMoreActivity(newHistory.length === ITEMS_PER_PAGE);
       } else if (response.status === 401) {
         router.push("/auth/sign-in");
       }
     } catch (error) {
       console.error("Failed to fetch activity history:", error);
     } finally {
-      setActivityLoading(false);
+      if (loadMore) {
+        setLoadingMoreActivity(false);
+      } else {
+        setActivityLoading(false);
+      }
     }
-  }, [user?.id, router]);
+  }, [user?.id, router, activityHistory.length]);
 
   // Resume payment for unpaid booking
   const handleResumePayment = useCallback(async (bookingId: string) => {
@@ -248,67 +311,80 @@ export default function PlayerProfilePage() {
                 title={t("playerProfile.upcomingBookings.noBookings")}
               />
             ) : (
-              <div className="im-bookings-list">
-                {paymentError && (
-                  <div className="im-error-message" role="alert">
-                    {paymentError}
-                  </div>
-                )}
-                {upcomingBookings.map((booking) => {
-                  const isUnpaid = booking.paymentStatus === PAYMENT_STATUS.UNPAID;
-                  const isExpired = booking.reservationExpiresAt 
-                    ? new Date(booking.reservationExpiresAt) < new Date()
-                    : false;
-                  
-                  return (
-                    <div key={booking.id} className="im-booking-item">
-                      <div className="im-booking-details">
-                        <div className="im-booking-time">
-                          <span className="im-booking-date">
-                            {formatDateWithWeekday(booking.start, currentLocale)}
-                          </span>
-                          <span className="im-booking-time-range">
-                            {formatTime(booking.start, currentLocale)} - {formatTime(booking.end, currentLocale)}
-                          </span>
-                        </div>
-                        <div className="im-booking-location">
-                          <span className="im-booking-club">{booking.court?.club?.name || ""}</span>
-                          <span className="im-booking-court">{booking.court?.name || ""}</span>
-                        </div>
-                        <div className="im-booking-status-row">
-                          <span className={`im-status-badge ${getStatusBadgeClass(booking.status)}`}>
-                            {t(`common.${booking.status}`) || booking.status}
-                          </span>
-                          {isUnpaid && (
-                            <span className="im-status-badge im-status-badge--warning">
-                              {t("common.paymentStatusUnpaid")}
+              <>
+                <div className="im-bookings-list">
+                  {paymentError && (
+                    <div className="im-error-message" role="alert">
+                      {paymentError}
+                    </div>
+                  )}
+                  {upcomingBookings.map((booking) => {
+                    const isUnpaid = booking.paymentStatus === PAYMENT_STATUS.UNPAID;
+                    const isExpired = booking.reservationExpiresAt 
+                      ? new Date(booking.reservationExpiresAt) < new Date()
+                      : false;
+                    
+                    return (
+                      <div key={booking.id} className="im-booking-item">
+                        <div className="im-booking-details">
+                          <div className="im-booking-time">
+                            <span className="im-booking-date">
+                              {formatDateWithWeekday(booking.start, currentLocale)}
                             </span>
-                          )}
-                        </div>
-                        {isUnpaid && (
-                          <div className="im-booking-actions">
-                            <Button
-                              onClick={() => handleResumePayment(booking.id)}
-                              disabled={resumingPayment === booking.id}
-                              variant="primary"
-                              size="small"
-                            >
-                              {resumingPayment === booking.id 
-                                ? t("playerProfile.resumingPayment") 
-                                : t("playerProfile.payNow")}
-                            </Button>
-                            {isExpired && (
-                              <span className="im-booking-warning">
-                                {t("playerProfile.reservationExpired")}
+                            <span className="im-booking-time-range">
+                              {formatTime(booking.start, currentLocale)} - {formatTime(booking.end, currentLocale)}
+                            </span>
+                          </div>
+                          <div className="im-booking-location">
+                            <span className="im-booking-club">{booking.court?.club?.name || ""}</span>
+                            <span className="im-booking-court">{booking.court?.name || ""}</span>
+                          </div>
+                          <div className="im-booking-status-row">
+                            <span className={`im-status-badge ${getStatusBadgeClass(booking.status)}`}>
+                              {t(`common.${booking.status}`) || booking.status}
+                            </span>
+                            {isUnpaid && (
+                              <span className="im-status-badge im-status-badge--warning">
+                                {t("common.paymentStatusUnpaid")}
                               </span>
                             )}
                           </div>
-                        )}
+                          {isUnpaid && (
+                            <div className="im-booking-actions">
+                              <Button
+                                onClick={() => handleResumePayment(booking.id)}
+                                disabled={resumingPayment === booking.id}
+                                variant="primary"
+                                size="small"
+                              >
+                                {resumingPayment === booking.id 
+                                  ? t("playerProfile.resumingPayment") 
+                                  : t("playerProfile.payNow")}
+                              </Button>
+                              {isExpired && (
+                                <span className="im-booking-warning">
+                                  {t("playerProfile.reservationExpired")}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+                {hasMoreUpcoming && (
+                  <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                    <Button
+                      onClick={() => fetchUpcomingBookings(true)}
+                      disabled={loadingMoreUpcoming}
+                      variant="outline"
+                    >
+                      {loadingMoreUpcoming ? t("playerProfile.loading") : t("playerProfile.loadMore")}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </Card>
         </section>
@@ -327,29 +403,42 @@ export default function PlayerProfilePage() {
                 title={t("playerProfile.pastBookings.noBookings")}
               />
             ) : (
-              <div className="im-bookings-list">
-                {pastBookings.map((booking) => (
-                  <div key={booking.id} className="im-booking-item">
-                    <div className="im-booking-details">
-                      <div className="im-booking-time">
-                        <span className="im-booking-date">
-                          {formatDateWithWeekday(booking.start, currentLocale)}
-                        </span>
-                        <span className="im-booking-time-range">
-                          {formatTime(booking.start, currentLocale)} - {formatTime(booking.end, currentLocale)}
+              <>
+                <div className="im-bookings-list">
+                  {pastBookings.map((booking) => (
+                    <div key={booking.id} className="im-booking-item">
+                      <div className="im-booking-details">
+                        <div className="im-booking-time">
+                          <span className="im-booking-date">
+                            {formatDateWithWeekday(booking.start, currentLocale)}
+                          </span>
+                          <span className="im-booking-time-range">
+                            {formatTime(booking.start, currentLocale)} - {formatTime(booking.end, currentLocale)}
+                          </span>
+                        </div>
+                        <div className="im-booking-location">
+                          <span className="im-booking-club">{booking.court?.club?.name || ""}</span>
+                          <span className="im-booking-court">{booking.court?.name || ""}</span>
+                        </div>
+                        <span className={`im-status-badge ${getStatusBadgeClass(booking.status)}`}>
+                          {t(`common.${booking.status}`) || booking.status}
                         </span>
                       </div>
-                      <div className="im-booking-location">
-                        <span className="im-booking-club">{booking.court?.club?.name || ""}</span>
-                        <span className="im-booking-court">{booking.court?.name || ""}</span>
-                      </div>
-                      <span className={`im-status-badge ${getStatusBadgeClass(booking.status)}`}>
-                        {t(`common.${booking.status}`) || booking.status}
-                      </span>
                     </div>
+                  ))}
+                </div>
+                {hasMorePast && (
+                  <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                    <Button
+                      onClick={() => fetchPastBookings(true)}
+                      disabled={loadingMorePast}
+                      variant="outline"
+                    >
+                      {loadingMorePast ? t("playerProfile.loading") : t("playerProfile.loadMore")}
+                    </Button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </Card>
         </section>
@@ -368,29 +457,42 @@ export default function PlayerProfilePage() {
                 title={t("playerProfile.activityHistory.noHistory")}
               />
             ) : (
-              <div className="im-bookings-list">
-                {activityHistory.map((booking) => (
-                  <div key={booking.id} className="im-booking-item im-booking-item--muted">
-                    <div className="im-booking-details">
-                      <div className="im-booking-time">
-                        <span className="im-booking-date">
-                          {formatDateWithWeekday(booking.start, currentLocale)}
-                        </span>
-                        <span className="im-booking-time-range">
-                          {formatTime(booking.start, currentLocale)} - {formatTime(booking.end, currentLocale)}
+              <>
+                <div className="im-bookings-list">
+                  {activityHistory.map((booking) => (
+                    <div key={booking.id} className="im-booking-item im-booking-item--muted">
+                      <div className="im-booking-details">
+                        <div className="im-booking-time">
+                          <span className="im-booking-date">
+                            {formatDateWithWeekday(booking.start, currentLocale)}
+                          </span>
+                          <span className="im-booking-time-range">
+                            {formatTime(booking.start, currentLocale)} - {formatTime(booking.end, currentLocale)}
+                          </span>
+                        </div>
+                        <div className="im-booking-location">
+                          <span className="im-booking-club">{booking.court?.club?.name || ""}</span>
+                          <span className="im-booking-court">{booking.court?.name || ""}</span>
+                        </div>
+                        <span className="im-status-badge im-status-badge--neutral">
+                          {t("playerProfile.activityHistory.cancelledPaymentTimeout")}
                         </span>
                       </div>
-                      <div className="im-booking-location">
-                        <span className="im-booking-club">{booking.court?.club?.name || ""}</span>
-                        <span className="im-booking-court">{booking.court?.name || ""}</span>
-                      </div>
-                      <span className="im-status-badge im-status-badge--neutral">
-                        {t("playerProfile.activityHistory.cancelledPaymentTimeout")}
-                      </span>
                     </div>
+                  ))}
+                </div>
+                {hasMoreActivity && (
+                  <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                    <Button
+                      onClick={() => fetchActivityHistory(true)}
+                      disabled={loadingMoreActivity}
+                      variant="outline"
+                    >
+                      {loadingMoreActivity ? t("playerProfile.loading") : t("playerProfile.loadMore")}
+                    </Button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </Card>
         </section>

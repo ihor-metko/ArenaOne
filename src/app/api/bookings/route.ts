@@ -10,6 +10,8 @@ import { LEGACY_STATUS, BOOKING_STATUS } from "@/types/booking";
  * 
  * Query parameters:
  * - upcoming: boolean (optional) - Filter for upcoming bookings only
+ * - skip: number (optional) - Number of items to skip for pagination (default: 0)
+ * - take: number (optional) - Number of items to return (default: all items)
  * 
  * Returns:
  * - Array of bookings with court and club information
@@ -27,6 +29,17 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const upcomingParam = searchParams.get("upcoming");
+    const skipParam = searchParams.get("skip");
+    const takeParam = searchParams.get("take");
+
+    // Parse pagination parameters with validation
+    const skipParsed = skipParam ? parseInt(skipParam, 10) : 0;
+    const skip = isNaN(skipParsed) ? 0 : Math.max(0, skipParsed);
+    
+    const takeParsed = takeParam ? parseInt(takeParam, 10) : undefined;
+    const take = takeParsed !== undefined 
+      ? (isNaN(takeParsed) ? undefined : Math.max(1, Math.min(100, takeParsed)))
+      : undefined;
 
     const now = new Date();
     const isUpcoming = upcomingParam === "true";
@@ -71,6 +84,8 @@ export async function GET(request: NextRequest) {
       orderBy: isUpcoming 
         ? { start: "asc" } 
         : { start: "desc" },
+      skip: skip,
+      take: take,
     });
 
     // Format response

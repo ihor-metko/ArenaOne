@@ -1469,7 +1469,9 @@
       "title": "Історія активності",
       "noHistory": "Немає історії для відображення",
       "cancelledPaymentTimeout": "Скасовано — оплата не завершена вчасно"
-    }
+    },
+    "loadMore": "Завантажити ще",
+    "loading": "Завантаження..."
   },
   "footer": {
     "brandName": "ArenaOne",
