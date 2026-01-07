@@ -15,6 +15,8 @@ import { ProfileBooking, useProfileStore } from "@/stores/useProfileStore";
 import { PAYMENT_STATUS, type BookingStatus, type PaymentStatus } from "@/types/booking";
 import { getPlayerBookingDisplayStatus } from "@/utils/bookingDisplayStatus";
 import { calculateEndTime } from "@/components/PlayerQuickBooking/types";
+import { utcToClubLocalTime, utcToClubLocalDate } from "@/utils/dateTime";
+import { DEFAULT_CLUB_TIMEZONE } from "@/constants/timezone";
 import "./profile.css";
 
 export default function PlayerProfilePage() {
@@ -96,12 +98,9 @@ export default function PlayerProfilePage() {
 
       const data = await response.json();
 
-      // Get club timezone from the response (API includes it) or default
-      const clubTimezone = data.clubTimezone || "Europe/Kyiv";
+      // Get club timezone from the response (API includes it) or use default
+      const clubTimezone = data.clubTimezone || DEFAULT_CLUB_TIMEZONE;
       
-      // Import timezone utilities dynamically
-      const { utcToClubLocalTime, utcToClubLocalDate } = await import("@/utils/dateTime");
-
       // Convert UTC times to club local timezone
       const startUTC = booking.start; // ISO string in UTC
       const endUTC = booking.end; // ISO string in UTC
@@ -548,6 +547,7 @@ export default function PlayerProfilePage() {
       {/* Quick Booking Modal for Resume Payment */}
       {resumePaymentData && (
         <PlayerQuickBooking
+          key={`resume-payment-${resumePaymentData.bookingId}`}
           isOpen={showQuickBookingModal}
           onClose={() => {
             setShowQuickBookingModal(false);
