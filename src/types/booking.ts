@@ -84,6 +84,15 @@ export type DynamicBookingStatus = "reserved" | "ongoing" | "completed";
 export type CancelReason = "PAYMENT_TIMEOUT" | "USER_CANCELLED" | "ADMIN_CANCELLED";
 
 /**
+ * Cancel reason constants
+ */
+export const CANCEL_REASON = {
+  PAYMENT_TIMEOUT: "PAYMENT_TIMEOUT" as const,
+  USER_CANCELLED: "USER_CANCELLED" as const,
+  ADMIN_CANCELLED: "ADMIN_CANCELLED" as const,
+} as const;
+
+/**
  * Basic booking type
  */
 export interface Booking {

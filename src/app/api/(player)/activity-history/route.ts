@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/requireRole";
-import { BOOKING_STATUS } from "@/types/booking";
+import { BOOKING_STATUS, CANCEL_REASON } from "@/types/booking";
 
 /**
  * GET /api/(player)/activity-history
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       where: {
         userId,
         bookingStatus: BOOKING_STATUS.CANCELLED,
-        cancelReason: "PAYMENT_TIMEOUT",
+        cancelReason: CANCEL_REASON.PAYMENT_TIMEOUT,
       },
       include: {
         court: {
