@@ -5,9 +5,9 @@ import { BOOKING_STATUS, CANCEL_REASON } from "@/types/booking";
 
 /**
  * GET /api/(player)/activity-history
- * 
+ *
  * Fetch activity history (cancelled unpaid bookings) for the authenticated user
- * 
+ *
  * Returns:
  * - Array of cancelled unpaid bookings with court and club information
  */
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       where: {
         userId,
         bookingStatus: BOOKING_STATUS.CANCELLED,
-        cancelReason: CANCEL_REASON.PAYMENT_TIMEOUT,
+        // cancelReason: CANCEL_REASON.PAYMENT_TIMEOUT,
       },
       include: {
         court: {
