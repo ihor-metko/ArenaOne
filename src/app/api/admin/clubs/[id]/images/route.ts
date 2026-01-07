@@ -10,6 +10,10 @@ import {
 /**
  * POST /api/admin/clubs/[id]/images
  * Upload a gallery image for a club
+ * 
+ * @param request - The HTTP request containing the image file in FormData
+ * @param params - Route parameters containing the club ID
+ * @returns JSON with the uploaded image URL and key
  */
 export async function POST(
   request: NextRequest,

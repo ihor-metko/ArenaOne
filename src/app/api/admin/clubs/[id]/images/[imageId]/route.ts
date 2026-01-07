@@ -6,6 +6,10 @@ import { prisma } from "@/lib/prisma";
 /**
  * DELETE /api/admin/clubs/[id]/images/[imageId]
  * Delete a gallery image
+ * 
+ * @param request - The HTTP request
+ * @param params - Route parameters containing the club ID and image ID
+ * @returns JSON with success status
  */
 export async function DELETE(
   request: NextRequest,
