@@ -8,7 +8,6 @@ import {
   isTerminalStatus,
   toBookingStatus,
 } from "@/utils/bookingStatus";
-import { PAYMENT_TIMEOUT_MS } from "@/types/booking";
 
 describe("Booking Status Utilities", () => {
   describe("calculateBookingStatus", () => {
@@ -267,33 +266,31 @@ describe("Booking Status Utilities", () => {
   });
 
   describe("shouldCancelUnpaidBooking", () => {
-    it("should return true for Confirmed + Unpaid bookings past payment timeout", () => {
+    it("should return true for Confirmed + Unpaid bookings with expired reservation", () => {
       const now = new Date("2024-01-15T14:00:00Z");
-      const createdAt = new Date("2024-01-15T13:00:00Z"); // 1 hour ago (60 minutes)
+      const reservationExpiresAt = new Date("2024-01-15T13:00:00Z"); // Expired 1 hour ago
       
-      // Should cancel if timeout is 30 minutes
+      // Should cancel if reservation has expired
       expect(
         shouldCancelUnpaidBooking(
           "Confirmed",
           "Unpaid",
-          createdAt.toISOString(),
-          PAYMENT_TIMEOUT_MS,
+          reservationExpiresAt.toISOString(),
           now
         )
       ).toBe(true);
     });
 
-    it("should return false for Confirmed + Unpaid bookings within payment timeout", () => {
+    it("should return false for Confirmed + Unpaid bookings with non-expired reservation", () => {
       const now = new Date("2024-01-15T14:00:00Z");
-      const createdAt = new Date("2024-01-15T13:50:00Z"); // 10 minutes ago
+      const reservationExpiresAt = new Date("2024-01-15T14:10:00Z"); // Expires in 10 minutes
       
-      // Should NOT cancel if timeout is 30 minutes
+      // Should NOT cancel if reservation hasn't expired yet
       expect(
         shouldCancelUnpaidBooking(
           "Confirmed",
           "Unpaid",
-          createdAt.toISOString(),
-          PAYMENT_TIMEOUT_MS,
+          reservationExpiresAt.toISOString(),
           now
         )
       ).toBe(false);
@@ -301,14 +298,13 @@ describe("Booking Status Utilities", () => {
 
     it("should return false for Confirmed + Paid bookings", () => {
       const now = new Date("2024-01-15T14:00:00Z");
-      const createdAt = new Date("2024-01-15T13:00:00Z"); // 1 hour ago
+      const reservationExpiresAt = new Date("2024-01-15T13:00:00Z"); // Expired 1 hour ago
       
       expect(
         shouldCancelUnpaidBooking(
           "Confirmed",
           "Paid",
-          createdAt.toISOString(),
-          PAYMENT_TIMEOUT_MS,
+          reservationExpiresAt.toISOString(),
           now
         )
       ).toBe(false);
@@ -316,14 +312,13 @@ describe("Booking Status Utilities", () => {
 
     it("should return false for UPCOMING + Unpaid bookings", () => {
       const now = new Date("2024-01-15T14:00:00Z");
-      const createdAt = new Date("2024-01-15T13:00:00Z"); // 1 hour ago
+      const reservationExpiresAt = new Date("2024-01-15T13:00:00Z"); // Expired 1 hour ago
       
       expect(
         shouldCancelUnpaidBooking(
           "UPCOMING",
           "Unpaid",
-          createdAt.toISOString(),
-          PAYMENT_TIMEOUT_MS,
+          reservationExpiresAt.toISOString(),
           now
         )
       ).toBe(false);
@@ -331,33 +326,45 @@ describe("Booking Status Utilities", () => {
 
     it("should return false for Cancelled bookings", () => {
       const now = new Date("2024-01-15T14:00:00Z");
-      const createdAt = new Date("2024-01-15T13:00:00Z"); // 1 hour ago
+      const reservationExpiresAt = new Date("2024-01-15T13:00:00Z"); // Expired 1 hour ago
       
       expect(
         shouldCancelUnpaidBooking(
           "Cancelled",
           "Unpaid",
-          createdAt.toISOString(),
-          PAYMENT_TIMEOUT_MS,
+          reservationExpiresAt.toISOString(),
           now
         )
       ).toBe(false);
     });
 
-    it("should handle exactly at timeout boundary", () => {
+    it("should handle exactly at expiry time", () => {
       const now = new Date("2024-01-15T14:30:00Z");
-      const createdAt = new Date("2024-01-15T14:00:00Z"); // Exactly 30 minutes ago
+      const reservationExpiresAt = new Date("2024-01-15T14:30:00Z"); // Exactly at expiry
       
-      // Should cancel at exactly the timeout
+      // Should cancel at exactly the expiry time
       expect(
         shouldCancelUnpaidBooking(
           "Confirmed",
           "Unpaid",
-          createdAt.toISOString(),
-          30 * 60 * 1000, // 30 minutes
+          reservationExpiresAt.toISOString(),
           now
         )
       ).toBe(true);
+    });
+
+    it("should return false for bookings without reservationExpiresAt (backwards compatibility)", () => {
+      const now = new Date("2024-01-15T14:00:00Z");
+      
+      // Should NOT cancel if reservationExpiresAt is null
+      expect(
+        shouldCancelUnpaidBooking(
+          "Confirmed",
+          "Unpaid",
+          null,
+          now
+        )
+      ).toBe(false);
     });
   });
 });
