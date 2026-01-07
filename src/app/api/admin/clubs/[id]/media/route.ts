@@ -90,13 +90,29 @@ export async function PATCH(
         }
       }
 
-      // Fetch and return the updated club with gallery
+      // Fetch and return the updated club with all relations
       const updatedClub = await tx.club.findUnique({
         where: { id: clubId },
         include: {
           gallery: {
             orderBy: { sortOrder: "asc" },
           },
+          courts: true,
+          coaches: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          businessHours: {
+            orderBy: { dayOfWeek: "asc" },
+          },
+          specialHours: true,
         },
       });
 
