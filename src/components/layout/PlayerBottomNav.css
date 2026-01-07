@@ -1,4 +1,4 @@
-@reference "tailwindcss";
+@import "tailwindcss";
 
 /**
  * PlayerBottomNav Component Styles

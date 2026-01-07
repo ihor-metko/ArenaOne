@@ -119,11 +119,10 @@ export function PlayerBottomNav() {
   // Determine active state based on current pathname
   const isHomeActive = pathname === "/";
   const isClubsActive = pathname.startsWith("/clubs") || pathname.startsWith("/courts");
-  const isBookingsActive = pathname.startsWith("/profile") || pathname.startsWith("/bookings") || pathname.startsWith("/dashboard");
-  const isProfileActive = pathname.startsWith("/profile") && !isBookingsActive;
-
-  // For bookings, we use profile page which shows bookings
-  // The active state logic prioritizes bookings over profile since profile page shows bookings
+  // Profile page shows bookings, so we treat /profile as bookings page for navigation
+  // The "Bookings" nav item is active when on /profile or /dashboard
+  // The "Profile" nav item is not used in active state since profile page = bookings
+  const isBookingsActive = pathname.startsWith("/profile") || pathname.startsWith("/dashboard");
 
   return (
     <nav className="im-player-bottom-nav" aria-label={t("playerDashboard.navigation.title")}>
@@ -159,9 +158,8 @@ export function PlayerBottomNav() {
 
       <IMLink
         href="/profile"
-        className={`im-player-bottom-nav-item ${isProfileActive ? "im-player-bottom-nav-item--active" : ""}`}
+        className="im-player-bottom-nav-item"
         aria-label={t("playerDashboard.navigation.profile")}
-        aria-current={isProfileActive ? "page" : undefined}
       >
         <ProfileIcon className="im-player-bottom-nav-icon" />
         <span className="im-player-bottom-nav-label">{t("playerDashboard.navigation.profile")}</span>
