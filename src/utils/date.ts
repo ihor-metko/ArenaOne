@@ -212,14 +212,9 @@ export function formatDateSimple(date: string | Date, locale: string): string {
  */
 export function formatPaymentDeadline(date: string | Date, locale: string): string {
   const dateObj = toDate(date);
-  const intlLocale = getIntlLocale(locale);
   
-  // Format time (e.g., "15:30")
-  const time = dateObj.toLocaleTimeString(intlLocale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+  // Reuse existing formatTime function for consistency
+  const time = formatTime(date, locale);
   
   // Format date in DD.MM.YYYY format
   const day = dateObj.getDate().toString().padStart(2, '0');

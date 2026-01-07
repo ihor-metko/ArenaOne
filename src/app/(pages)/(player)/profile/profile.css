@@ -181,6 +181,7 @@
 .im-booking-warning {
   font-size: 0.75rem;
   color: var(--im-warning-text, #92400e);
+  font-style: italic;
 }
 
 .im-error-message {
