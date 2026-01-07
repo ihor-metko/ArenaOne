@@ -181,7 +181,7 @@ When generating UI components, **do not add `outline` or browser default focus r
 
 Instead, use custom visual indicators (like box-shadow or border changes) if needed, but never rely on the default browser outline.
 
-**Example:**
+<!-- **Example:**
 
 ```css
 /* Avoid default outline */
@@ -190,4 +190,69 @@ Instead, use custom visual indicators (like box-shadow or border changes) if nee
 .my-button:active,
 .my-button:hover {
   outline: none;
-}
+} -->
+
+# 9. Mobile Player Flow – Mandatory Documentation Reference
+
+## Rule
+
+When working on any **mobile player-facing feature**, you must **always** reference and strictly follow the document: /docs/player-mobile-flow.md
+
+This document is the **single source of truth** for:
+- Player role behavior
+- Mobile-first UX decisions
+- Screen order and navigation
+- Availability and booking flow
+- Forbidden UI patterns
+
+---
+
+## Mandatory Requirements
+
+- Do **not** invent, modify, or reinterpret player UX or flow.
+- Do **not** reorder, skip, or merge screens defined in the document.
+- Do **not** introduce desktop-first patterns or grid-based availability views.
+- Do **not** show unpublished courts or clubs without published courts.
+- Do **not** mix admin and player UI components.
+- Do **not** require authentication to browse clubs or availability.
+- If any requirement is unclear, **stop and ask for clarification** instead of guessing.
+
+---
+
+## Enforcement
+
+If a requested change conflicts with `/docs/player-mobile-flow.md`,
+the implementation **must not proceed** until the document is updated and approved.
+
+---
+
+## Copilot Instruction
+
+> Before implementing any mobile player feature, re-read
+> `/docs/player-mobile-flow.md`
+> and ensure the implementation fully complies with it.
+
+# 10. Time & Date Handling Rule (UTC-first)
+
+- All date and time values sent to the backend MUST always be in UTC (UTC+0).
+- The backend stores and operates ONLY with UTC values. No timezone calculations should be introduced on the backend side.
+- All timezone conversions MUST happen on the frontend only, based on the club’s configured timezone.
+
+- Frontend responsibility:
+  - Convert local (club) date/time → UTC before sending any API request.
+  - Convert UTC values received from the backend → club timezone for display.
+
+- DO NOT add new date/time utility functions if existing helpers already exist in the codebase. Always reuse the current utilities.
+- DO NOT calculate or adjust timezones inside API endpoints, services, or backend logic.
+
+- This rule applies to all features including (but not limited to):
+  - Availability
+  - Bookings
+  - Pricing rules
+  - Working hours
+  - Quick booking flow
+  - Player profile (past and future bookings)
+
+**Single source of truth:**
+- Backend = UTC
+- Frontend = timezone-aware UI
