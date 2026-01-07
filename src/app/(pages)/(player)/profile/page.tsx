@@ -368,38 +368,38 @@ export default function PlayerProfilePage() {
                               {displayStatus}
                             </span>
                           </div>
-                          {isUnpaid && (
-                            <div className="im-booking-actions">
-                              {booking.reservationExpiresAt && (
-                                <div className="im-payment-deadline">
-                                  <span className="im-payment-deadline-label">
-                                    {t("playerProfile.payBy", { 
-                                      deadline: formatPaymentDeadline(booking.reservationExpiresAt, currentLocale) 
-                                    })}
-                                  </span>
-                                </div>
-                              )}
-                              <Button
-                                onClick={() => handleResumePayment(booking.id)}
-                                disabled={resumingPayment === booking.id}
-                                variant="primary"
-                                size="small"
-                              >
-                                {resumingPayment === booking.id 
-                                  ? t("playerProfile.resumingPayment") 
-                                  : t("playerProfile.payNow")}
-                              </Button>
-                              <p className="im-warning-text-base im-payment-warning">
-                                {t("playerProfile.paymentWarning")}
-                              </p>
-                              {isExpired && (
-                                <span className="im-warning-text-base im-booking-warning">
-                                  {t("playerProfile.reservationExpired")}
-                                </span>
-                              )}
-                            </div>
-                          )}
                         </div>
+                        {isUnpaid && (
+                          <div className="im-booking-actions">
+                            {booking.reservationExpiresAt && (
+                              <div className="im-payment-deadline">
+                                <span className="im-payment-deadline-label">
+                                  {t("playerProfile.payBy", { 
+                                    deadline: formatPaymentDeadline(booking.reservationExpiresAt, currentLocale) 
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                            <Button
+                              onClick={() => handleResumePayment(booking.id)}
+                              disabled={resumingPayment === booking.id}
+                              variant="primary"
+                              size="small"
+                            >
+                              {resumingPayment === booking.id 
+                                ? t("playerProfile.resumingPayment") 
+                                : t("playerProfile.payNow")}
+                            </Button>
+                            <p className="im-warning-text-base im-payment-warning">
+                              {t("playerProfile.paymentWarning")}
+                            </p>
+                            {isExpired && (
+                              <span className="im-warning-text-base im-booking-warning">
+                                {t("playerProfile.reservationExpired")}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -458,9 +458,11 @@ export default function PlayerProfilePage() {
                             <span className="im-booking-club">{booking.court?.club?.name || ""}</span>
                             <span className="im-booking-court">{booking.court?.name || ""}</span>
                           </div>
-                          <span className={`im-status-badge ${getStatusBadgeClass(displayStatus)}`}>
-                            {displayStatus}
-                          </span>
+                          <div className="im-booking-status-row">
+                            <span className={`im-status-badge ${getStatusBadgeClass(displayStatus)}`}>
+                              {displayStatus}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     );
@@ -513,9 +515,11 @@ export default function PlayerProfilePage() {
                           <span className="im-booking-club">{booking.court?.club?.name || ""}</span>
                           <span className="im-booking-court">{booking.court?.name || ""}</span>
                         </div>
-                        <span className="im-status-badge im-status-badge--neutral">
-                          {t("playerProfile.activityHistory.cancelledPaymentTimeout")}
-                        </span>
+                        <div className="im-booking-status-row">
+                          <span className="im-status-badge im-status-badge--neutral">
+                            {t("playerProfile.activityHistory.cancelledPaymentTimeout")}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}
