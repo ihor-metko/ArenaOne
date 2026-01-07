@@ -106,7 +106,6 @@ export default function CreateCourtPage() {
 
   // User store for auth and role checks
   const hasRole = useUserStore(state => state.hasRole);
-  const hasAnyRole = useUserStore(state => state.hasAnyRole);
   const adminStatus = useUserStore(state => state.adminStatus);
   const isHydrated = useUserStore(state => state.isHydrated);
   const isLoading = useUserStore(state => state.isLoading);
@@ -128,7 +127,8 @@ export default function CreateCourtPage() {
   // Determine which steps to show based on user role
   const isRootAdmin = hasRole("ROOT_ADMIN");
   const isOrgAdmin = hasRole("ORGANIZATION_ADMIN");
-  const isClubAdmin = hasRole("CLUB_ADMIN");
+  // Club admins and club owners are identified via adminStatus, not global roles
+  const isClubLevelAdmin = adminStatus?.adminType === "club_admin" || adminStatus?.adminType === "club_owner";
 
   // Build tabs array based on role
   const ALL_TABS = useMemo(() => {
@@ -267,21 +267,21 @@ export default function CreateCourtPage() {
       setValue("organizationId", orgId);
     }
 
-    if (isClubAdmin && adminStatus?.managedIds && adminStatus.managedIds.length > 0) {
-      // For club admin, pre-select their club (organizationId will be populated when club data loads)
+    if (isClubLevelAdmin && adminStatus?.managedIds && adminStatus.managedIds.length > 0) {
+      // For club admin/owner, pre-select their club (organizationId will be populated when club data loads)
       const clubId = adminStatus.managedIds[0];
       setValue("clubId", clubId);
     }
-  }, [isOrgAdmin, isClubAdmin, adminStatus, setValue]);
+  }, [isOrgAdmin, isClubLevelAdmin, adminStatus, setValue]);
 
-  // Auth check - allow any admin
+  // Auth check - allow any admin (root, org admin, club owner, or club admin)
   useEffect(() => {
     if (!isHydrated || isLoading) return;
 
-    if (!isLoggedIn || !hasAnyRole(["ROOT_ADMIN", "ORGANIZATION_ADMIN", "CLUB_ADMIN"])) {
+    if (!isLoggedIn || !adminStatus?.isAdmin) {
       router.push("/auth/sign-in");
     }
-  }, [isLoggedIn, isLoading, hasAnyRole, router, isHydrated]);
+  }, [isLoggedIn, isLoading, adminStatus, router, isHydrated]);
 
   const showToast = useCallback((type: "success" | "error", message: string) => {
     setToast({ type, message });
