@@ -13,6 +13,7 @@ jest.mock("@/lib/prisma", () => ({
     clubBusinessHours: {
       deleteMany: jest.fn(),
       createMany: jest.fn(),
+      findMany: jest.fn(),
     },
     clubSpecialHours: {
       deleteMany: jest.fn(),
@@ -382,7 +383,7 @@ describe("Admin Club Domain-Specific APIs", () => {
     });
   });
 
-  describe("PATCH /api/admin/clubs/[id]/location", () => {
+  describe("PATCH /api/admin/clubs/[id]/address", () => {
     it("should return 400 when address is empty", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "admin-123", isRoot: true },
@@ -391,10 +392,10 @@ describe("Admin Club Domain-Specific APIs", () => {
       (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
 
       const request = new Request(
-        "http://localhost:3000/api/admin/clubs/club-123/location",
+        "http://localhost:3000/api/admin/clubs/club-123/address",
         {
           method: "PATCH",
-          body: JSON.stringify({ location: "" }),
+          body: JSON.stringify(null),
           headers: { "Content-Type": "application/json" },
         }
       );
@@ -735,7 +736,6 @@ describe("Admin Club Domain-Specific APIs", () => {
       expect(response.status).toBe(200);
       expect(data.id).toBe("club-123");
       expect(data.address).toBeDefined();
-    });
     });
 
     it("should deny club_admin access to another club", async () => {
