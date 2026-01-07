@@ -134,6 +134,7 @@ export async function POST(request: Request) {
         data: {
           bookingStatus: BOOKING_STATUS.CANCELLED,
           status: "cancelled", // Update legacy status as well
+          cancelReason: "PAYMENT_TIMEOUT", // Set cancel reason for activity history
         },
       });
       cancelledCount = cancelResult.count;

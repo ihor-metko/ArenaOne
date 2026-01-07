@@ -76,6 +76,14 @@ export const LEGACY_STATUS = {
 export type DynamicBookingStatus = "reserved" | "ongoing" | "completed";
 
 /**
+ * Cancel reason types
+ * - PAYMENT_TIMEOUT: Booking was cancelled because payment was not completed in time
+ * - USER_CANCELLED: User manually cancelled the booking
+ * - ADMIN_CANCELLED: Admin cancelled the booking
+ */
+export type CancelReason = "PAYMENT_TIMEOUT" | "USER_CANCELLED" | "ADMIN_CANCELLED";
+
+/**
  * Basic booking type
  */
 export interface Booking {
@@ -90,6 +98,7 @@ export interface Booking {
   bookingStatus: BookingStatus;
   paymentStatus: PaymentStatus;
   paymentId: string | null;
+  cancelReason: string | null;
   createdAt: string;
 }
 
