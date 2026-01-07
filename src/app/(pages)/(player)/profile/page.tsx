@@ -241,14 +241,15 @@ export default function PlayerProfilePage() {
   const getStatusBadgeClass = (displayStatus: string) => {
     const status = displayStatus.toLowerCase();
     
-    // Error states (cancelled, no-show, missed)
+    // Error states (cancelled, no-show, missed) - highest priority
+    // Note: "Cancelled (Refunded)" will match here and show as error, which is correct
     if (status.includes("cancelled") || 
         status.includes("no-show") || 
         status.includes("missed")) {
       return "im-status-badge--error";
     }
     
-    // Info states (refunded)
+    // Info states (refunded) - for standalone refunded status
     if (status.includes("refunded")) {
       return "im-status-badge--info";
     }
