@@ -483,24 +483,10 @@ describe("Admin Club Domain-Specific APIs", () => {
   });
 
   describe("PATCH /api/admin/clubs/[id]/metadata", () => {
-    it("should update metadata successfully", async () => {
+    it("should return 501 Not Implemented (metadata is internal-only)", async () => {
       mockAuth.mockResolvedValue({
         user: { id: "admin-123", isRoot: true },
       });
-
-      (prisma.club.findUnique as jest.Mock).mockResolvedValue(mockClub);
-
-      const updatedClub = {
-        ...mockClub,
-        metadata: JSON.stringify({ logoTheme: "dark", bannerAlignment: "top" }),
-        courts: [],
-        coaches: [],
-        gallery: [],
-        businessHours: [],
-        specialHours: [],
-      };
-
-      (prisma.club.update as jest.Mock).mockResolvedValue(updatedClub);
 
       const request = new Request(
         "http://localhost:3000/api/admin/clubs/club-123/metadata",
@@ -514,16 +500,11 @@ describe("Admin Club Domain-Specific APIs", () => {
       );
 
       const response = await PatchMetadata(request, { params: mockParams });
-      await response.json();
+      const data = await response.json();
 
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(prisma.club.update).toHaveBeenCalledWith({
-        where: { id: "club-123" },
-        data: {
-          metadata: JSON.stringify({ logoTheme: "dark", bannerAlignment: "top" }),
-        },
-      });
+      expect(response.status).toBe(501);
+      expect(data.error).toContain("Metadata");
+      expect(data.error).toContain("internal-only");
     });
   });
 
@@ -565,7 +546,11 @@ describe("Admin Club Domain-Specific APIs", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
+      expect(data).toMatchObject({
+        id: "club-123",
+        logoData: JSON.stringify({ url: "/logo.jpg" }),
+        bannerData: JSON.stringify({ url: "/banner.jpg" }),
+      });
       expect(prisma.$transaction).toHaveBeenCalled();
     });
   });
