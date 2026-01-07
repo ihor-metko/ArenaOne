@@ -118,7 +118,20 @@
     "november": "Листопад",
     "december": "Грудень",
     "loadingMap": "Завантаження карти...",
-    "mapHiddenInDev": "Карта прихована в режимі розробки"
+    "mapHiddenInDev": "Карта прихована в режимі розробки",
+    "UPCOMING": "Майбутнє",
+    "Completed": "Завершено",
+    "No-show": "Не з'явився",
+    "Paid": "Оплачено",
+    "Unpaid": "Не оплачено",
+    "Refunded": "Повернено",
+    "reserved": "Зарезервовано",
+    "paid": "Оплачено",
+    "completed": "Завершено",
+    "ongoing": "В процесі",
+    "paymentStatusUnpaid": "Не оплачено",
+    "paymentStatusPaid": "Оплачено",
+    "paymentStatusRefunded": "Повернено"
   },
   "entityBanner": {
     "edit": "Редагувати",
