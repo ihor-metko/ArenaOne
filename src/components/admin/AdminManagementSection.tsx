@@ -226,7 +226,7 @@ export default function AdminManagementSection({
   // Permission checks
   const canManageAdmins = context === "organization"
     ? (isRoot || isOwner)
-    : hasAnyRole(["ROOT_ADMIN", "ORGANIZATION_ADMIN"]);
+    : (isRoot || isOwner || hasAnyRole(["ORGANIZATION_ADMIN"]));
 
   // Check if an owner already exists to determine allowed roles
   const hasOwner = !!primaryOwner;
