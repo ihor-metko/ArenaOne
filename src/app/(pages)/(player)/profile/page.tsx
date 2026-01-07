@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Card, EmptyState } from "@/components/ui";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
+import { PlayerQuickBooking } from "@/components/PlayerQuickBooking";
 import { useCurrentLocale } from "@/hooks/useCurrentLocale";
 import { useAuthGuardOnce } from "@/hooks";
 import { formatDateWithWeekday, formatTime, formatPaymentDeadline } from "@/utils/date";
@@ -13,6 +14,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { ProfileBooking, useProfileStore } from "@/stores/useProfileStore";
 import { PAYMENT_STATUS, type BookingStatus, type PaymentStatus } from "@/types/booking";
 import { getPlayerBookingDisplayStatus } from "@/utils/bookingDisplayStatus";
+import { calculateEndTime } from "@/components/PlayerQuickBooking/types";
 import "./profile.css";
 
 export default function PlayerProfilePage() {
@@ -45,12 +47,25 @@ export default function PlayerProfilePage() {
   const loadMorePast = useProfileStore((state) => state.loadMorePast);
   const loadMoreActivity = useProfileStore((state) => state.loadMoreActivity);
 
-  // Local state for payment operations
+  // Local state for payment operations and Quick Booking modal
   const [resumingPayment, setResumingPayment] = useState<string | null>(null);
   const [cancellingBooking, setCancellingBooking] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<ProfileBooking | null>(null);
+  const [showQuickBookingModal, setShowQuickBookingModal] = useState(false);
+  const [resumePaymentData, setResumePaymentData] = useState<{
+    bookingId: string;
+    clubId: string;
+    clubName: string;
+    courtId: string;
+    courtName: string;
+    date: string;
+    startTime: string;
+    duration: number;
+    price: number;
+    reservationExpiresAt: string | null;
+  } | null>(null);
 
   // Redirect root admins to admin dashboard
   useEffect(() => {
@@ -60,46 +75,63 @@ export default function PlayerProfilePage() {
     }
   }, [isHydrated, isLoading, user, router]);
 
-  // Resume payment for unpaid booking
-  const handleResumePayment = useCallback(async (bookingId: string) => {
-    setResumingPayment(bookingId);
+  // Resume payment for unpaid booking - opens Quick Booking modal on payment step
+  const handleResumePayment = useCallback(async (booking: ProfileBooking) => {
+    setResumingPayment(booking.id);
     setPaymentError(null);
 
     try {
-      const response = await fetch(`/api/bookings/${bookingId}/resume-payment`, {
+      // Call resume-payment API to extend reservation and validate booking
+      const response = await fetch(`/api/bookings/${booking.id}/resume-payment`, {
         method: "POST",
       });
 
       if (!response.ok) {
         const errorData = await response.json();
         setPaymentError(errorData.error || "Failed to resume payment");
+        setResumingPayment(null);
         return;
       }
 
       const data = await response.json();
 
-      // NOTE: Payment flow integration is intentionally left as a TODO
-      // This PR implements the backend API and UI for resuming payment.
-      // The actual payment provider integration (WayForPay/LiqPay) will be
-      // implemented in a separate task as it requires additional payment
-      // gateway configuration and testing.
-      // For now, successfully calling resume-payment extends the reservation
-      // by 5 minutes, allowing users to complete payment when the payment
-      // flow is integrated.
-      console.log("Payment resumed:", data);
+      // Extract booking times from start/end ISO strings
+      const startDate = new Date(booking.start);
+      const endDate = new Date(booking.end);
+      
+      // Calculate duration in minutes
+      const durationMs = endDate.getTime() - startDate.getTime();
+      const duration = Math.round(durationMs / (1000 * 60));
+      
+      // Format date as YYYY-MM-DD
+      const date = startDate.toISOString().split('T')[0];
+      
+      // Format time as HH:MM
+      const startTime = `${startDate.getUTCHours().toString().padStart(2, '0')}:${startDate.getUTCMinutes().toString().padStart(2, '0')}`;
 
-      // Invalidate profile data to trigger refresh on next access
-      invalidateProfile();
+      // Prepare resume payment data
+      setResumePaymentData({
+        bookingId: booking.id,
+        clubId: booking.court?.club?.id || "",
+        clubName: booking.court?.club?.name || "",
+        courtId: booking.courtId,
+        courtName: booking.court?.name || "",
+        date,
+        startTime,
+        duration,
+        price: booking.price,
+        reservationExpiresAt: data.reservationExpiresAt, // Use extended expiration from API
+      });
 
-      // Refresh profile data to show updated expiration time
-      await fetchProfileDataIfNeeded({ force: true });
+      // Open Quick Booking modal
+      setShowQuickBookingModal(true);
+      setResumingPayment(null);
     } catch (error) {
       console.error("Error resuming payment:", error);
       setPaymentError("An error occurred while resuming payment");
-    } finally {
       setResumingPayment(null);
     }
-  }, [invalidateProfile, fetchProfileDataIfNeeded]);
+  }, []);
 
   // Handle cancel booking button click
   const handleCancelClick = useCallback((booking: ProfileBooking) => {
@@ -299,7 +331,7 @@ export default function PlayerProfilePage() {
                             )}
                             <div className="im-booking-action-buttons">
                               <Button
-                                onClick={() => handleResumePayment(booking.id)}
+                                onClick={() => handleResumePayment(booking)}
                                 disabled={resumingPayment === booking.id || isExpired}
                                 variant="primary"
                                 size="small"
@@ -505,6 +537,27 @@ export default function PlayerProfilePage() {
           </div>
         )}
       </ConfirmationModal>
+
+      {/* Quick Booking Modal for Resume Payment */}
+      {resumePaymentData && (
+        <PlayerQuickBooking
+          isOpen={showQuickBookingModal}
+          onClose={() => {
+            setShowQuickBookingModal(false);
+            setResumePaymentData(null);
+          }}
+          onBookingComplete={(bookingId) => {
+            // Payment completed successfully
+            setShowQuickBookingModal(false);
+            setResumePaymentData(null);
+            // Invalidate and refresh profile data to show updated booking status
+            invalidateProfile();
+            fetchProfileDataIfNeeded({ force: true });
+          }}
+          resumePaymentMode={true}
+          resumePaymentBooking={resumePaymentData}
+        />
+      )}
     </main>
   );
 }
