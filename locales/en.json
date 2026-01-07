@@ -139,9 +139,6 @@
     "tomorrow": "Tomorrow",
     "retry": "Retry"
   },
-  "errors": {
-    "failedToLoadAvailability": "Failed to load availability data. Please try again."
-  },
   "entityBanner": {
     "edit": "Edit",
     "publish": "Publish",
@@ -4835,6 +4832,7 @@
     "noCourtsAvailable": "No Courts Available",
     "noCourtsDescription": "All courts are booked for this time slot. Please select another time.",
     "courtsAvailable": "courts available",
-    "continueToBooking": "Continue to Booking"
+    "continueToBooking": "Continue to Booking",
+    "failedToLoadAvailability": "Failed to load availability data. Please try again."
   }
 }

@@ -6,14 +6,11 @@ import { Button, EmptyState } from "@/components/ui";
 import { AuthPromptModal } from "@/components/AuthPromptModal";
 import { useUserStore } from "@/stores/useUserStore";
 import { getTodayUTC, getDatesFromStartUTC } from "@/utils/utcDateTime";
-import { getClubTimezone } from "@/constants/timezone";
-import { clubLocalToUTC } from "@/utils/dateTime";
 import "./MobileViews.css";
 
 interface MobileAvailabilityFlowProps {
   clubId: string;
   clubName: string;
-  clubTimezone?: string;
   onBack: () => void;
   onBookingComplete: () => void;
 }
@@ -57,7 +54,6 @@ interface AvailabilityData {
 export function MobileAvailabilityFlow({
   clubId,
   clubName,
-  clubTimezone,
   onBack,
   onBookingComplete,
 }: MobileAvailabilityFlowProps) {
@@ -93,7 +89,7 @@ export function MobileAvailabilityFlow({
       setAvailabilityData(data);
     } catch (err) {
       console.error("Error fetching availability:", err);
-      setError(t("errors.failedToLoadAvailability"));
+      setError(t("availability.failedToLoadAvailability"));
     } finally {
       setLoading(false);
     }
@@ -176,16 +172,12 @@ export function MobileAvailabilityFlow({
       return;
     }
 
-    // Get club timezone with fallback
-    const timezone = getClubTimezone(clubTimezone);
-
-    // Create booking slot times in UTC
-    const startTime = `${selectedTime.toString().padStart(2, "0")}:00`;
-    const endTime = `${(selectedTime + 1).toString().padStart(2, "0")}:00`;
-    
-    // Convert to UTC for booking (will be used when booking modal is implemented)
-    clubLocalToUTC(selectedDate, startTime, timezone);
-    clubLocalToUTC(selectedDate, endTime, timezone);
+    // TODO: When booking modal is integrated, convert times to UTC:
+    // const timezone = getClubTimezone(clubTimezone);
+    // const startTime = `${selectedTime.toString().padStart(2, "0")}:00`;
+    // const endTime = `${(selectedTime + 1).toString().padStart(2, "0")}:00`;
+    // const startDateTime = clubLocalToUTC(selectedDate, startTime, timezone);
+    // const endDateTime = clubLocalToUTC(selectedDate, endTime, timezone);
 
     // Navigate to booking confirmation (to be implemented)
     // For now, we'll redirect to the club page

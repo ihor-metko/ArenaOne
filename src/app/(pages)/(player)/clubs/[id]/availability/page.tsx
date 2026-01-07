@@ -86,7 +86,6 @@ export default function AvailabilityPage({
     <MobileAvailabilityFlow
       clubId={currentClub.id}
       clubName={currentClub.name}
-      clubTimezone={currentClub.timezone || undefined}
       onBack={handleBack}
       onBookingComplete={handleBookingComplete}
     />
